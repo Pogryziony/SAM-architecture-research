@@ -318,6 +318,76 @@ Original prior: 60-70% that tiny core cannot compose retrieved vectors.
 
 Revised prior after Experiment 0.6: **~20-30%.** The oracle memory result (99.9% with correct injection) proves the core has sufficient capacity. The remaining risk is whether *retrieved* memory (with imperfect recall) can approach oracle performance.
 
+### 7.5 Full Experiment Pipeline
+
+| Experiment | Phase | Key Result |
+|-----------|-------|-----------|
+| 0.0 | Pipeline setup + dense baseline | 5.9% val acc (original sparse dataset). Open-book: 100% |
+| 0.1 | Initial SAM | Pipeline bugs found: `best_val_loss: Infinity`, dead-slot InfoNCE |
+| 0.2 | Compact retrieval + oracle text | PKM 16K: Rec@8=25.8%. Oracle text 100% overfit. Core CAN use explicit context |
+| 0.3 | PKM diagnostics + subkey loss | Candidate generation: SOLVED (100% k1/k2). Ranking: 88% train but 29% val (59pp generalization gap) |
+| 0.4 | Retrieval baselines + dataset fix | Linear classifier 16.5%, contrastive k-NN 42.2%. Root cause: 29% val slots unseen in training |
+| 0.5 | Dense dataset + dual encoder | 1,650 shared slots, 21.8 ex/slot. Dual encoder: **99.3% Rec@8.** Gate 1 PASSED |
+| 0.6 | SAM validation | Oracle 99.9% vs core 68.7%. **Architecture VALIDATED.** +31pp from memory |
+
+### 7.6 Retrieval Comparison Table
+
+| Retriever | Dataset | Slots | Ex/Slot | Rec@8 | Notes |
+|-----------|---------|-------|---------|-------|-------|
+| Linear classifier | v1 (sparse) | 2,844 | 1.5 | 13.1% | One-vs-all CE fails |
+| PKM compact | v1 | 4,781 | — | 25.8% | Candidate gen works |
+| PKM + subkey loss | v1 | 4,781 | — | 29.3% | Subkey helps routing |
+| Contrastive k-NN | v3 (fact pool) | 4,505 | 6.4 | 42.2% | Best on sparse data |
+| Dual encoder | v3 | 4,505 | 6.4 | 41.3% | Matches contrastive |
+| **Dual encoder (dense)** | **v4 (shared)** | **1,650** | **21.8** | **99.3%** | **Gate 1 PASS** |
+
+### 7.7 Dataset Evolution
+
+| Version | Train | Slots | Ex/Slot | Unseen Val | Key Change |
+|---------|-------|-------|---------|-----------|------------|
+| v1 | 2,102 | 2,844 | 1.5 | many | Original, strict dedup |
+| v2 | 5,067 | 2,156 | 4.9 | ~30% | 3 templates per task |
+| v3 | 15,200 | 4,505 | 6.4 | ~29% | Fact pool + relaxed dedup |
+| **v4** | **19,000** | **1,650** | **21.8** | **0%** | **Shared KB, entity_sep=none, 5 repeats** |
+
+### 7.8 Decision Gate Status
+
+| Gate | Criterion | Result | Status |
+|------|-----------|--------|--------|
+| Gate 1 | Retrieval Rec@8 ≥ 80% | 99.3% (dual encoder) | ✓ PASS |
+| Gate 2 | Oracle > Core-only | 99.9% > 68.7% (+31pp) | ✓ PASS |
+| Gate 3 | Retrieved gap ≤ 20pp | TBD | Pending |
+| Gate 4 | Multi-hop sustained | 100% two-hop, 100% three-hop (oracle) | ✓ PASS |
+| Gate 5 | Retrieved > Dense | TBD | Pending |
+
+### 7.9 Bugs Found and Fixed
+
+| Bug | Impact | Fix |
+|-----|--------|-----|
+| `best_val_loss: Infinity` | eval_every=500 > total_steps=264 → no validation ever ran | Per-epoch eval in all training scripts |
+| Dead-slot InfoNCE | Negatives from 1M PKM slots, 99.5% dead → zero learning signal | Live-slot-only negative sampling |
+| SAM eval used wrong checkpoints | Directory walker used first checkpoint for all modes | Recursive discovery + mode detection from path |
+| 29% val slots unseen | Train/val used separate fact pools → guaranteed retrieval failures | Shared KB with entity_separation=none |
+
+### 7.10 Key Architectural Decisions Validated
+
+| Decision | Pre-Experiment Status | Post-Experiment Status |
+|----------|----------------------|----------------------|
+| Small dense core can reason | `[plausible]` | **Confirmed** — matches same-size dense |
+| Core can use memory | `[speculative]` | **Confirmed** — +31pp with oracle |
+| Product-key candidate generation | `[proven]` | **Confirmed** — 100% k1/k2 accuracy |
+| PKM final ranking | `[plausible]` | **Partially confirmed** — works on train (88%), needs data for val generalization |
+| Dual encoder retrieval | `[plausible]` | **Confirmed** — 99.3% Rec@8 on dense dataset |
+| CPU-native mmap runtime | N/A | Not tested (deferred) |
+
+### 7.11 Next Recommended Actions
+
+1. **Run SAM retrieved_memory** with dual encoder backend to close Gate 3 and Gate 5
+2. **Scale memory** to larger slot counts (10K, 50K, 100K)
+3. **Test on real-world tasks** — code/API documentation retrieval
+4. **Add adaptive re-query** for multi-hop memory chains
+5. **Implement mmap-backed memory** for CPU-native operation
+
 ### 7.5 Next Phase
 
 Proceed to Phase 2: SAM retrieved-memory with dual encoder backend, then memory scaling to larger slot counts.
