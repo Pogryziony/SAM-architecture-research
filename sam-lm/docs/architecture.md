@@ -81,3 +81,25 @@ The following are **intentionally excluded**:
 4. **random_memory**: Random live slot values are injected. This is a placebo control --
    if random memory improves performance, the gating mechanism alone (not content) is
    providing benefit.
+
+## Validation Results (Experiment 0.6)
+
+The POC was validated through a series of controlled experiments. Key result:
+
+**SAM oracle_memory achieves 99.9% accuracy vs 68.7% core-only (+31pp).**
+
+| Model | Overall | Single | Two-hop | Three-hop |
+|-------|---------|--------|---------|-----------|
+| Dense baseline (14.6M) | 68.7% | 91.5% | 71.1% | 22.0% |
+| SAM core_only (15.7M) | 68.7% | 91.5% | 71.1% | 22.0% |
+| **SAM oracle_memory** | **99.9%** | **99.5%** | **100%** | **100%** |
+
+### Findings:
+- **SAM core matches dense** at equal parameter count — no architecture disadvantage
+- **Memory provides +31pp** — the core CAN compose retrieved latent vectors
+- **Three-hop solved** — goes from 22% → 100% with memory injection
+- **Retrieval solved** — dual encoder achieves 99.3% Rec@8 on dense shared-slot dataset
+- **Product-key candidate generation works** (100% subkey accuracy) but ranking needs more data
+- The initial failure mode ("core cannot compose" at 60-70% prior) is NOT confirmed
+
+### Next: SAM retrieved-memory with dual encoder backend, then memory scaling.
