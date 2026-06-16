@@ -1,0 +1,28 @@
+# Dense cosine retriever baseline
+run_name: cosine_compact_16k
+seed: 42
+data_dir: data/synthetic
+output_dir: experiments/exp_0_4/cosine_baseline
+
+model:
+  type: cosine
+  retriever_type: cosine
+  slot_dim: 256
+  query_encoder:
+    d_model: 256
+    n_layers: 3
+    n_heads: 4
+    d_ff: 1024
+    dropout: 0.0
+    max_seq_len: 64
+
+train:
+  batch_size: 64
+  lr: 1.0e-3
+  weight_decay: 0.0
+  epochs: 30
+  warmup_steps: 100
+  grad_clip: 1.0
+  device: auto
+  log_every: 20
+  eval_every: 50

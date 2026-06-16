@@ -1,0 +1,37 @@
+# Compact retrieval overfit: 64 subkeys -> 4096 slots, ~558 live.
+# Must achieve Recall@8 >= 95%.
+run_name: retrieval_compact_overfit_100
+seed: 42
+data_dir: data/synthetic_overfit
+output_dir: experiments/debug/retrieval_compact_overfit_100
+
+model:
+  type: retrieval
+  query_encoder:
+    d_model: 128
+    n_layers: 2
+    n_heads: 4
+    d_ff: 512
+    dropout: 0.0
+    max_seq_len: 64
+  memory:
+    num_subkeys: 64         # 4096 slots, ~558 live
+    key_dim: 64
+    value_dim: 64
+    top_a: 16
+    top_b: 16
+    top_k: 8
+    soft_candidates: false
+
+train:
+  batch_size: 16
+  lr: 1.0e-3
+  weight_decay: 0.0
+  epochs: 50
+  max_steps: null
+  warmup_steps: 20
+  grad_clip: 1.0
+  device: auto
+  num_negatives: 32
+  log_every: 10
+  eval_every: 25

@@ -1,0 +1,43 @@
+# SAM with compact retrieved memory: 128 subkeys -> 16,384 slots PKM.
+# Live slots are remapped into compact address space.
+run_name: sam_retrieved_compact_16k
+seed: 42
+data_dir: data/synthetic
+output_dir: experiments/exp_0_2/sam_retrieved_compact_16k
+
+model:
+  type: sam
+  d_model: 512
+  n_layers: 6
+  n_heads: 8
+  d_ff: 2048
+  dropout: 0.0
+  max_seq_len: 128
+  memory_every: 3
+  memory_query: tokenwise
+  memory_integration: gated_sum
+  memory:
+    num_subkeys: 128        # 16,384 slots, compact mode auto-remaps ~4781 live
+    key_dim: 128
+    value_dim: 128
+    top_a: 16
+    top_b: 16
+    top_k: 8
+    soft_candidates: false
+
+train:
+  batch_size: 64
+  lr: 3.0e-4
+  weight_decay: 0.01
+  epochs: 8
+  max_steps: null
+  warmup_steps: 200
+  grad_clip: 1.0
+  device: auto
+  lambda_contrastive: 0.5
+  log_every: 50
+  eval_every: 500
+
+eval:
+  max_new_tokens: 6
+  batch_size: 128

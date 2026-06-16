@@ -1,0 +1,36 @@
+# Tiny smoke config for retrieval pretraining. CPU, seconds.
+run_name: retrieval_smoke
+seed: 42
+data_dir: data/synthetic_tiny
+output_dir: experiments/smoke/retrieval
+
+model:
+  type: retrieval
+  query_encoder:
+    d_model: 64
+    n_layers: 2
+    n_heads: 2
+    d_ff: 128
+    dropout: 0.0
+    max_seq_len: 48
+  memory:
+    num_subkeys: 64          # 4096 slots
+    key_dim: 32
+    value_dim: 48
+    top_a: 16
+    top_b: 16
+    top_k: 32
+    soft_candidates: false
+
+train:
+  batch_size: 64
+  lr: 2.0e-3
+  weight_decay: 0.0
+  epochs: 1
+  max_steps: 30
+  warmup_steps: 2
+  grad_clip: 1.0
+  device: cpu
+  num_negatives: 32
+  log_every: 5
+  eval_every: 1000

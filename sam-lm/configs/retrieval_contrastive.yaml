@@ -1,0 +1,27 @@
+# Contrastive retriever: InfoNCE pulls same-slot questions together
+run_name: contrastive_retrieval
+seed: 42
+data_dir: data/synthetic
+output_dir: experiments/exp_0_4/contrastive_baseline
+
+model:
+  type: contrastive
+  retriever_type: contrastive
+  query_encoder:
+    d_model: 256
+    n_layers: 3
+    n_heads: 4
+    d_ff: 1024
+    dropout: 0.0
+    max_seq_len: 64
+
+train:
+  batch_size: 128
+  lr: 3.0e-4
+  weight_decay: 1.0e-4
+  epochs: 15
+  warmup_steps: 200
+  grad_clip: 1.0
+  device: auto
+  temperature: 0.07
+  log_every: 50

@@ -1,0 +1,43 @@
+# Tiny smoke config for SAM. CPU, seconds, NOT a real result.
+# num_subkeys=64 -> 4096 total slots (enough for the tiny KB).
+run_name: sam_smoke
+seed: 42
+data_dir: data/synthetic_tiny
+output_dir: experiments/smoke/sam
+
+model:
+  type: sam
+  d_model: 64
+  n_layers: 3
+  n_heads: 2
+  d_ff: 128
+  dropout: 0.0
+  max_seq_len: 64
+  memory_every: 2
+  memory_query: tokenwise
+  memory_integration: gated_sum
+  memory:
+    num_subkeys: 64          # 4096 slots
+    key_dim: 32
+    value_dim: 48
+    top_a: 8
+    top_b: 8
+    top_k: 4
+    soft_candidates: false
+
+train:
+  batch_size: 32
+  lr: 1.0e-3
+  weight_decay: 0.01
+  epochs: 1
+  max_steps: 20
+  warmup_steps: 2
+  grad_clip: 1.0
+  device: cpu
+  lambda_contrastive: 0.5
+  log_every: 5
+  eval_every: 1000
+
+eval:
+  max_new_tokens: 4
+  batch_size: 64

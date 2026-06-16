@@ -1,0 +1,32 @@
+# Tiny smoke config for the dense baseline. CPU, seconds, NOT a real result.
+run_name: dense_smoke
+seed: 42
+data_dir: data/synthetic_tiny
+output_dir: experiments/smoke/dense
+
+model:
+  type: dense
+  d_model: 64
+  n_layers: 2
+  n_heads: 2
+  d_ff: 128
+  dropout: 0.0
+  max_seq_len: 96
+  open_book: false
+
+train:
+  batch_size: 32
+  lr: 1.0e-3
+  weight_decay: 0.01
+  epochs: 1
+  max_steps: 20
+  warmup_steps: 2
+  grad_clip: 1.0
+  device: cpu
+  fact_injection_ratio: 0.5
+  log_every: 5
+  eval_every: 1000
+
+eval:
+  max_new_tokens: 4
+  batch_size: 64

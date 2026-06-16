@@ -1,0 +1,38 @@
+# Product-key memory retrieval pretraining (Gate 1 diagnostic).
+# Trains a small query encoder + product keys to retrieve required_slots.
+# Reports Recall@1 / Recall@8 / Recall@32.
+run_name: retrieval_1m
+seed: 42
+data_dir: data/synthetic
+output_dir: experiments/exp_001_pkm_retrieval
+
+model:
+  type: retrieval
+  query_encoder:
+    d_model: 256
+    n_layers: 2
+    n_heads: 4
+    d_ff: 1024
+    dropout: 0.0
+    max_seq_len: 64
+  memory:
+    num_subkeys: 1024        # 1,048,576 slots
+    key_dim: 128
+    value_dim: 128           # values unused for retrieval-only training
+    top_a: 32
+    top_b: 32
+    top_k: 32                # retrieve up to 32 for Recall@32
+    soft_candidates: false
+
+train:
+  batch_size: 128
+  lr: 1.0e-3
+  weight_decay: 0.0
+  epochs: 10
+  max_steps: null
+  warmup_steps: 200
+  grad_clip: 1.0
+  device: auto
+  num_negatives: 64          # InfoNCE negatives per example
+  log_every: 50
+  eval_every: 500

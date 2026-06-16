@@ -1,0 +1,44 @@
+# SAM-Tiny. Small reasoning core + product-key associative memory.
+# The --mode flag (core_only | oracle_memory | retrieved_memory | random_memory)
+# is passed on the CLI and overrides model.memory_mode.
+run_name: sam_tiny
+seed: 42
+data_dir: data/synthetic
+output_dir: experiments/exp_sam
+
+model:
+  type: sam
+  d_model: 512
+  n_layers: 6
+  n_heads: 8
+  d_ff: 2048
+  dropout: 0.0
+  max_seq_len: 128
+  memory_every: 3            # a memory layer every 3 blocks (layers 2 and 5 here)
+  memory_query: tokenwise    # tokenwise | sequence  (see docs/architecture.md)
+  memory_integration: gated_sum   # gated_sum (spec) | cross_attention (richer, optional)
+  memory:
+    num_subkeys: 1024        # total_slots = num_subkeys**2 = 1,048,576
+    key_dim: 128             # per half; query_dim = 2 * key_dim = 256
+    value_dim: 128
+    top_a: 16
+    top_b: 16
+    top_k: 4
+    soft_candidates: false   # if true, softmax over the full A*B candidate grid (denser gradient)
+
+train:
+  batch_size: 64
+  lr: 3.0e-4
+  weight_decay: 0.01
+  epochs: 8
+  max_steps: null
+  warmup_steps: 200
+  grad_clip: 1.0
+  device: auto
+  lambda_contrastive: 0.5    # query<->required-slot InfoNCE (retrieved_memory mode)
+  log_every: 50
+  eval_every: 500
+
+eval:
+  max_new_tokens: 6
+  batch_size: 128

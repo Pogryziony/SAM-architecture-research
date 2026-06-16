@@ -1,0 +1,43 @@
+# SAM retrieved-memory overfit: same 100 examples for train/val.
+# Must achieve >80% accuracy if retrieval works.
+run_name: sam_retrieved_overfit_100
+seed: 42
+data_dir: data/synthetic
+output_dir: experiments/debug/sam_retrieved_overfit_100
+
+model:
+  type: sam
+  d_model: 256
+  n_layers: 4
+  n_heads: 4
+  d_ff: 1024
+  dropout: 0.0
+  max_seq_len: 128
+  memory_every: 2
+  memory_query: tokenwise
+  memory_integration: gated_sum
+  memory:
+    num_subkeys: 64          # 4096 slots
+    key_dim: 32
+    value_dim: 128
+    top_a: 8
+    top_b: 8
+    top_k: 4
+    soft_candidates: false
+
+train:
+  batch_size: 16
+  lr: 3.0e-4
+  weight_decay: 0.01
+  epochs: 50
+  max_steps: null
+  warmup_steps: 20
+  grad_clip: 1.0
+  device: auto
+  lambda_contrastive: 0.5
+  log_every: 10
+  eval_every: 50
+
+eval:
+  max_new_tokens: 6
+  batch_size: 64

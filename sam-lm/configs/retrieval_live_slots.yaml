@@ -1,0 +1,38 @@
+# Live-slot retrieval: retrieves only from populated slots, not the full PKM address space.
+# This isolates whether retrieval failures are from sparse-addressing or query/label issues.
+run_name: retrieval_live_slots
+seed: 42
+data_dir: data/synthetic
+output_dir: experiments/debug/retrieval_live_slots
+
+model:
+  type: retrieval
+  query_encoder:
+    d_model: 256
+    n_layers: 2
+    n_heads: 4
+    d_ff: 1024
+    dropout: 0.0
+    max_seq_len: 64
+  memory:
+    num_subkeys: 128        # 16,384 slots — keeps live-slot density high (~30%)
+    key_dim: 128
+    value_dim: 128
+    top_a: 8
+    top_b: 8
+    top_k: 8
+    soft_candidates: false
+  live_slots_only: true      # NEW: restrict retrieval to live slots only
+
+train:
+  batch_size: 64
+  lr: 1.0e-3
+  weight_decay: 0.0
+  epochs: 20
+  max_steps: null
+  warmup_steps: 100
+  grad_clip: 1.0
+  device: auto
+  num_negatives: 32
+  log_every: 20
+  eval_every: 100

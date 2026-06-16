@@ -1,0 +1,34 @@
+# Dense Transformer, OPEN BOOK reference (facts concatenated into the prompt).
+# This is an upper-bound: the model can attend to the gold facts directly.
+# Useful to bracket the SAM result, NOT the primary thesis baseline.
+run_name: dense_openbook
+seed: 42
+data_dir: data/synthetic
+output_dir: experiments/exp_000_dense_openbook
+
+model:
+  type: dense
+  d_model: 512
+  n_layers: 8
+  n_heads: 8
+  d_ff: 2048
+  dropout: 0.0
+  max_seq_len: 256
+  open_book: true
+
+train:
+  batch_size: 64
+  lr: 3.0e-4
+  weight_decay: 0.01
+  epochs: 8
+  max_steps: null
+  warmup_steps: 200
+  grad_clip: 1.0
+  device: auto
+  fact_injection_ratio: 0.0
+  log_every: 50
+  eval_every: 500
+
+eval:
+  max_new_tokens: 6
+  batch_size: 128

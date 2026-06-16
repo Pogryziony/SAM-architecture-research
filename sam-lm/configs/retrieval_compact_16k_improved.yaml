@@ -1,0 +1,39 @@
+# Improved compact retrieval: key_dim=256 + cosine + slot keys for generalization.
+run_name: retrieval_compact_16k_improved
+seed: 42
+data_dir: data/synthetic
+output_dir: experiments/exp_0_3/retrieval_compact_16k_improved
+
+model:
+  type: retrieval
+  query_encoder:
+    d_model: 256
+    n_layers: 3            # deeper encoder
+    n_heads: 4
+    d_ff: 1024
+    dropout: 0.0
+    max_seq_len: 64
+  memory:
+    num_subkeys: 128        # 16,384 slots
+    key_dim: 256            # 2x bigger keys for more discrimination
+    value_dim: 128
+    top_a: 32
+    top_b: 32
+    top_k: 8
+    soft_candidates: false
+    use_cosine: true        # normalize queries and keys
+    slot_key_alpha: 0.3     # slot-specific keys contribute 30% weight
+
+train:
+  batch_size: 64
+  lr: 1.0e-3
+  weight_decay: 0.0
+  epochs: 25
+  max_steps: null
+  warmup_steps: 100
+  grad_clip: 1.0
+  device: auto
+  num_negatives: 32
+  lambda_subkey: 0.5
+  log_every: 20
+  eval_every: 100
