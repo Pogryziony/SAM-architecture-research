@@ -5,7 +5,12 @@ __pycache__/
 .venv/
 venv/
 .pytest_cache/
-data/synthetic/
-experiments/**/checkpoint*.pt
+data/synthetic*/
+experiments/exp_*/
+experiments/smoke/
+experiments/debug/
+experiments/**/checkpoint*
 experiments/**/*.log
+experiments/**/metrics.*
+experiments/**/config.yaml
 .DS_Store
