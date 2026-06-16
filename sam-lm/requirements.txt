@@ -1,0 +1,7 @@
+# Core POC dependencies. Pinned loosely; CPU-only is fine.
+torch>=2.0
+numpy>=1.23
+PyYAML>=6.0
+
+# Dev / tests
+pytest>=7.0
