@@ -1,0 +1,41 @@
+# Iterative chain retrieval diagnostic
+# Step 0: query = question, retrieve top-k
+# Step 1: query = question + previous slot text, retrieve next
+# Step 2: query = question + previous slot texts, retrieve next
+# Union all retrieved slots.
+run_name: iterative_chain_dense
+seed: 42
+data_dir: data/synthetic_dense
+output_dir: experiments/exp_0_11/iterative_chain
+
+model:
+  type: iterative_chain
+  retriever_type: iterative_chain
+  slot_dim: 256
+  query_encoder:
+    d_model: 256
+    n_layers: 3
+    n_heads: 4
+    d_ff: 1024
+    dropout: 0.0
+    max_seq_len: 64
+  steps: 3
+  topk_per_step: 32
+  expansion_factor: 1.0
+
+train:
+  batch_size: 128
+  lr: 3.0e-4
+  weight_decay: 1.0e-4
+  epochs: 15
+  warmup_steps: 300
+  grad_clip: 1.0
+  device: auto
+  temperature: 0.05
+  log_every: 40
+  negatives_per_positive: 16
+  pos_weight: 5.0
+
+eval:
+  max_new_tokens: 6
+  batch_size: 128

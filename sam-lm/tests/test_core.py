@@ -357,3 +357,124 @@ class TestConfig:
         cfg = load_config("configs/dense_smoke.yaml",
                           overrides={"train.epochs": 5})
         assert cfg.train.epochs == 5
+
+
+class TestChainSetRetrieval:
+    """Tests for Experiment 0.11 chain-set retrieval."""
+
+    def test_chain_set_retriever_creation(self):
+        from sam.training.train_retrieval import ChainSetRetriever, QueryEncoder
+        from sam.data.dataset import Tokenizer
+        import tempfile, subprocess
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            subprocess.run([
+                sys.executable, "-m", "sam.data.synthetic_facts",
+                "--output", tmpdir, "--train", "50", "--val", "30", "--test", "30",
+                "--seed", "42", "--entity-separation", "none",
+            ], capture_output=True, text=True,
+               cwd=os.path.dirname(__file__) + "/..")
+
+            tok = Tokenizer.from_dir(tmpdir)
+            enc = QueryEncoder(vocab_size=tok.vocab_size, d_model=256,
+                             n_layers=2, n_heads=4, d_ff=512, query_dim=256,
+                             max_seq_len=64, pad_id=tok.pad)
+            model = ChainSetRetriever(enc, 256, 100, temperature=0.07)
+            assert model.param_count() > 0
+            assert model.num_slots == 100
+
+    def test_multi_positive_bce_loss(self):
+        from sam.training.train_retrieval import multi_positive_bce_loss
+        import torch
+
+        B, D, S = 4, 256, 100
+        q = torch.nn.functional.normalize(torch.randn(B, D), dim=-1)
+        s = torch.nn.functional.normalize(torch.randn(S, D), dim=-1)
+        req = torch.tensor([[5, 10, -1], [3, -1, -1],
+                           [7, 20, 25], [1, -1, -1]])
+
+        loss = multi_positive_bce_loss(q, s, req, S, "cpu",
+                                       temperature=0.07,
+                                       negatives_per_positive=8,
+                                       pos_weight=5.0)
+        assert loss.item() > 0
+        assert not torch.isnan(loss)
+
+    def test_multi_positive_infonce_loss(self):
+        from sam.training.train_retrieval import multi_positive_infonce_loss
+        import torch
+
+        B, D, S = 4, 256, 100
+        q = torch.nn.functional.normalize(torch.randn(B, D), dim=-1)
+        s = torch.nn.functional.normalize(torch.randn(S, D), dim=-1)
+        req = torch.tensor([[5, 10, -1], [3, -1, -1],
+                           [7, 20, 25], [1, -1, -1]])
+
+        loss = multi_positive_infonce_loss(q, s, req, S, "cpu",
+                                           temperature=0.07,
+                                           negatives_per_positive=8)
+        assert loss.item() > 0
+        assert not torch.isnan(loss)
+
+    def test_slot_graph_expander(self):
+        from sam.training.train_retrieval import SlotGraphExpander
+
+        model = SlotGraphExpander(slot_dim=256, num_slots=200, hidden_dim=128)
+        anchors = torch.tensor([[5, 10, 15], [20, 25, 30]])
+        scores = model.forward(anchors)
+        assert scores.shape == (2, 3, 200)
+
+        neighbors, _ = model.expand(anchors, 8)
+        assert neighbors.shape == (2, 3, 8)
+
+    def test_required_set_rank_metrics(self):
+        from sam.eval.analyze_required_set_retrieval import compute_extended_rank_metrics
+
+        n = 3
+        required = [[5], [10, 15], [20, 25, 30]]
+        retrieved = [[5, 2, 10, 3], [15, 10, 1, 2], [20, 25, 30, 1]]
+        k_values = (1, 4)
+
+        metrics = compute_extended_rank_metrics(required, retrieved, k_values)
+        assert "mrr_first_required_at_4" in metrics
+        # Slot 5 found at rank 1 in first example -> MRR contribution 1.0
+        assert metrics["mrr_first_required_at_4"] > 0.5
+
+    def test_chain_set_retrieval_from_query(self):
+        from sam.training.train_retrieval import ChainSetRetriever, QueryEncoder, \
+            multi_positive_bce_loss
+        from sam.data.dataset import Tokenizer
+        import tempfile, subprocess
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            subprocess.run([
+                sys.executable, "-m", "sam.data.synthetic_facts",
+                "--output", tmpdir, "--train", "100", "--val", "50", "--test", "50",
+                "--seed", "42", "--entity-separation", "none",
+            ], capture_output=True, text=True,
+               cwd=os.path.dirname(__file__) + "/..")
+
+            tok = Tokenizer.from_dir(tmpdir)
+            enc = QueryEncoder(vocab_size=tok.vocab_size, d_model=256,
+                             n_layers=2, n_heads=4, d_ff=512, query_dim=256,
+                             max_seq_len=64, pad_id=tok.pad)
+
+            import json
+            with open(os.path.join(tmpdir, "meta.json")) as f:
+                meta = json.load(f)
+
+            num_slots = meta.get("num_slots", 100)
+            model = ChainSetRetriever(enc, 256, num_slots, temperature=0.07)
+
+            # Forward pass with dummy input
+            dummy = torch.randint(0, tok.vocab_size, (2, 32))
+            lens = torch.tensor([16, 20])
+            q, s = model(dummy, lens)
+            assert q.shape == (2, 256)
+            assert s.shape == (num_slots, 256)
+
+            # Retrieve top-k (k limited by actual slot count)
+            k_retrieve = min(8, num_slots)
+            slots, scores = model.retrieve_topk(q, k_retrieve)
+            assert slots.shape == (2, k_retrieve)
+            assert scores.shape == (2, k_retrieve)

@@ -13,6 +13,7 @@ import argparse
 import json
 import math
 import os
+import random
 import sys
 from typing import Any, Dict, List, Tuple
 
@@ -23,7 +24,7 @@ from torch.optim import AdamW
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
 
-from ..data.dataset import QADataset, Tokenizer, collate_qa, build_kb_tensors
+from ..data.dataset import QADataset, Tokenizer, collate_qa, build_kb_tensors, load_jsonl
 from ..model.product_key_memory import ProductKeyMemory
 from ..model.transformer import RMSNorm
 from ..utils.config import load_config, Config
@@ -825,6 +826,56 @@ class DualEncoderRetriever(nn.Module):
     def max_seq_len(self): return self.query_encoder.max_seq_len
 
 
+class ChainSetRetriever(nn.Module):
+    """Chain-set retriever: query encoder + slot embeddings, multi-positive BCE training.
+
+    Each example has multiple required slots (the full reasoning chain).
+    Training uses BCE loss over positive + negative slots with positive weighting.
+    """
+    def __init__(self, query_encoder: QueryEncoder, slot_dim: int, num_slots: int,
+                 temperature: float = 0.07):
+        super().__init__()
+        self.query_encoder = query_encoder
+        self.slot_emb = nn.Embedding(num_slots, slot_dim)
+        nn.init.normal_(self.slot_emb.weight, std=0.02)
+        self.query_proj = nn.Linear(query_encoder.query_dim, slot_dim, bias=False)
+        self.temperature = temperature
+        self._num_slots = num_slots
+
+    def forward(self, input_ids, prompt_lens):
+        q = self.query_encoder(input_ids, prompt_lens)
+        q = F.normalize(self.query_proj(q), dim=-1)
+        s = F.normalize(self.slot_emb.weight, dim=-1)
+        return q, s
+
+    def score(self, q, slot_ids):
+        """Score specific slots given query vectors.
+        q: [B, D] normalized query
+        slot_ids: [B, N] slot indices
+        Returns: [B, N] cosine scores
+        """
+        s = F.normalize(self.slot_emb(slot_ids), dim=-1)
+        return (q.unsqueeze(1) * s).sum(-1)  # [B, N]
+
+    def retrieve_topk(self, q, k):
+        """Retrieve top-k slots for a query.
+        q: [B, D] normalized query
+        Returns: (slot_ids [B, k], scores [B, k])
+        """
+        s = F.normalize(self.slot_emb.weight, dim=-1)
+        scores = q @ s.t()
+        values, indices = scores.topk(min(k, scores.size(-1)), dim=-1)
+        return indices, values
+
+    @property
+    def num_slots(self): return self._num_slots
+
+    def param_count(self): return sum(p.numel() for p in self.parameters())
+
+    @property
+    def max_seq_len(self): return self.query_encoder.max_seq_len
+
+
 def dual_encoder_loss_fn(q, s, slot_ids, temp=0.07):
     """InfoNCE: q[i] scores against s[i] (positive) and s[j!=i] (in-batch negatives).
     q, s: [B, D]; slot_ids: [B]."""
@@ -1063,6 +1114,674 @@ def _evaluate_baseline_recall(model, dataloader, device):
     return {f"recall_at_{k}": hits[k] / max(total, 1) for k in (1, 8, 32)}
 
 
+# ---------------------------------------------------------------------------
+# Chain-set retrieval: multi-positive BCE / InfoNCE
+# ---------------------------------------------------------------------------
+
+def multi_positive_bce_loss(q, s_all, required_slots, num_live, device,
+                            temperature=0.07, negatives_per_positive=16,
+                            pos_weight=5.0):
+    """Multi-positive BCE loss for chain-set retrieval — all live slots.
+
+    For each example, scores ALL live slots and applies BCE loss with
+    targets=1 for required slots, 0 for all others.
+
+    This ensures the model learns to rank required slots above ALL other slots,
+    not just a small sampled set.
+    """
+    B = q.size(0)
+    # Score all slots at once [B, num_live]
+    scores = q @ s_all.t() / temperature  # [B, num_live]
+
+    # Build target matrix [B, num_live]
+    targets = torch.zeros(B, num_live, device=device)
+    for i in range(B):
+        req = [int(s) for s in required_slots[i] if int(s) >= 0 and int(s) < num_live]
+        for rs in req:
+            targets[i, rs] = 1.0
+
+    # BCE over all live slots
+    loss_fn = nn.BCEWithLogitsLoss(pos_weight=torch.tensor(pos_weight, device=device))
+    return loss_fn(scores.view(-1), targets.view(-1))
+
+
+def multi_positive_infonce_loss(q, s_all, required_slots, num_live, device,
+                                 temperature=0.07, negatives_per_positive=16):
+    """Multi-positive InfoNCE over ALL live slots.
+
+    L = -log sum_{p in positives} exp(sim(q, s_p) / temp)
+         / sum_{all j in live_slots} exp(sim(q, s_j) / temp)
+    """
+    B = q.size(0)
+    # Score all slots [B, num_live]
+    scores = q @ s_all.t() / temperature  # [B, num_live]
+
+    total_loss = torch.tensor(0.0, device=device, requires_grad=True)
+    count = 0
+
+    for i in range(B):
+        req = [int(s) for s in required_slots[i] if int(s) >= 0 and int(s) < num_live]
+        if len(req) == 0:
+            continue
+
+        # Numerator: sum of exp for positive slots
+        pos_exp = scores[i, req].exp().sum()  # scalar
+
+        # Denominator: sum of exp for ALL live slots
+        denom = scores[i].exp().sum()  # scalar
+
+        loss_i = -torch.log(pos_exp / (denom + 1e-10))
+        total_loss = total_loss + loss_i
+        count += 1
+
+    if count > 0:
+        return total_loss / count
+    return total_loss
+
+
+def _compute_chain_set_recall(q, s_all, required_slots, k_values=(1, 3, 8, 16, 32, 64)):
+    """Compute full-slot recall@k against ALL live slots."""
+    B = q.size(0)
+    results = {}
+    max_k = max(k_values)
+    # Already normalized
+    scores = q @ s_all.t()
+    _, top_slots = scores.topk(min(max_k, scores.size(-1)), dim=-1)
+
+    for k in k_values:
+        hits_any = 0
+        hits_all = 0
+        total_coverage = 0
+        total_req = 0
+        total_examples = 0
+        for i in range(B):
+            req = set(int(s) for s in required_slots[i] if int(s) >= 0)
+            if not req:
+                continue
+            total_examples += 1
+            ret = set(int(s) for s in top_slots[i, :k])
+            n_retrieved = len(req & ret)
+            if n_retrieved > 0:
+                hits_any += 1
+            if n_retrieved == len(req):
+                hits_all += 1
+            total_coverage += n_retrieved
+            total_req += len(req)
+        n_total = max(total_examples, 1)
+        results[f"any_recall_at_{k}"] = hits_any / n_total
+        results[f"all_recall_at_{k}"] = hits_all / n_total
+        results[f"coverage_at_{k}"] = total_coverage / max(total_req, 1)
+
+    return results
+
+
+def train_chain_set(cfg: Config, loss_type: str = "bce"):
+    """Train chain-set retriever with multi-positive objective.
+
+    loss_type: "bce" or "infonce"
+    """
+    import random as _random
+    seed_everything(cfg.get("seed", 42))
+    device = _pick_device(cfg.train.get("device", "auto"))
+    data_dir = cfg.get("data_dir", "data/synthetic_dense")
+    output_dir = cfg.get("output_dir", "experiments/exp_0_11/chain_set")
+    os.makedirs(output_dir, exist_ok=True)
+
+    tokenizer = Tokenizer.from_dir(data_dir)
+    run_name = cfg.get("run_name", f"chain_set_{loss_type}")
+    mlogger = MetricLogger(output_dir, run_name)
+    mlogger.logger.info("Chain-set %s training — device=%s data=%s", loss_type, device, data_dir)
+
+    _, num_live = build_kb_tensors(data_dir, 65536, tokenizer)
+    mlogger.logger.info("Live slots: %d", num_live)
+
+    ec = cfg.model.query_encoder
+    sd = cfg.model.get("slot_dim", 256)
+    encoder = QueryEncoder(
+        vocab_size=tokenizer.vocab_size,
+        d_model=ec.get("d_model", 256),
+        n_layers=ec.get("n_layers", 3),
+        n_heads=ec.get("n_heads", 4),
+        d_ff=ec.get("d_ff", 1024),
+        query_dim=256,
+        max_seq_len=ec.get("max_seq_len", 64),
+        pad_id=tokenizer.pad,
+    )
+    temp = cfg.train.get("temperature", 0.07)
+    model = ChainSetRetriever(encoder, sd, num_live, temperature=temp).to(device)
+    mlogger.logger.info("Model: %d params", model.param_count())
+
+    tc = cfg.train
+    bs = tc.get("batch_size", 128)
+    ms = ec.get("max_seq_len", 64)
+    train_ds = QADataset(data_dir, "train", tokenizer, kind="qa", open_book=False, max_seq_len=ms)
+    val_ds = QADataset(data_dir, "val", tokenizer, kind="qa", open_book=False, max_seq_len=ms)
+    train_ld = DataLoader(train_ds, batch_size=bs, shuffle=True, collate_fn=lambda b: collate_qa(b, tokenizer.pad))
+    val_ld = DataLoader(val_ds, batch_size=bs, shuffle=False, collate_fn=lambda b: collate_qa(b, tokenizer.pad))
+    mlogger.logger.info("Train: %d, Val: %d", len(train_ds), len(val_ds))
+
+    opt = AdamW(model.parameters(), lr=tc.get("lr", 3e-4), weight_decay=tc.get("weight_decay", 1e-4))
+    epochs = tc.get("epochs", 15)
+    total_steps = epochs * len(train_ld)
+    sched = _cosine_warmup_schedule(opt, tc.get("warmup_steps", 300), total_steps)
+    log_every = tc.get("log_every", 40)
+    negatives_per_pos = tc.get("negatives_per_positive", 16)
+    pos_weight = tc.get("pos_weight", 5.0)
+
+    gs = 0
+    best_recall = 0.0
+    k_values = (1, 3, 8, 16, 32, 64)
+
+    for ep in range(epochs):
+        model.train()
+        for batch in train_ld:
+            ids = batch["input_ids"].to(device)
+            pl = torch.tensor(batch["prompt_len"], device=device)
+            required = batch["required_slots"].to(device)
+
+            q, s_all = model(ids, pl)
+
+            if loss_type == "bce":
+                loss = multi_positive_bce_loss(
+                    q, s_all, required, num_live, device,
+                    temperature=temp,
+                    negatives_per_positive=negatives_per_pos,
+                    pos_weight=pos_weight,
+                )
+            elif loss_type == "infonce":
+                loss = multi_positive_infonce_loss(
+                    q, s_all, required, num_live, device,
+                    temperature=temp,
+                    negatives_per_positive=negatives_per_pos,
+                )
+            else:
+                raise ValueError(f"Unknown loss_type: {loss_type}")
+
+            opt.zero_grad()
+            loss.backward()
+            nn.utils.clip_grad_norm_(model.parameters(), tc.get("grad_clip", 1.0))
+            opt.step()
+            sched.step()
+            gs += 1
+
+            if gs % log_every == 0:
+                recall = _compute_chain_set_recall(q, s_all, required, k_values)
+                log_data = {"loss": loss.item(), "lr": sched.get_last_lr()[0],
+                           **recall}
+                mlogger.log(gs, log_data)
+
+                # Validation
+                with torch.no_grad():
+                    model.eval()
+                    _, vs_all = model(torch.zeros(1, 64, dtype=torch.long, device=device),
+                                      torch.tensor([1], device=device))
+                    v_recall = _compute_val_chain_set_recall(model, val_ld, device, k_values, vs_all)
+                    model.train()
+                    mlogger.log(gs, {f"val_{k}": v for k, v in v_recall.items()})
+                    val_all_8 = v_recall.get("all_recall_at_8", 0)
+                    if val_all_8 > best_recall:
+                        best_recall = val_all_8
+                        mlogger.logger.info("New best all_recall@8=%.4f (step %d)", best_recall, gs)
+
+        mlogger.logger.info("Epoch %d/%d — best any_recall@8=%.4f", ep + 1, epochs, best_recall)
+
+    # Save checkpoint
+    ckpt_path = os.path.join(output_dir, "checkpoint.pt")
+    torch.save(model.state_dict(), ckpt_path)
+    mlogger.logger.info("Saved checkpoint to %s", ckpt_path)
+
+    summary = {
+        "run_name": run_name,
+        "loss_type": loss_type,
+        "best_any_recall_at_8": best_recall,
+        "num_live": num_live,
+    }
+    mlogger.save_summary(summary)
+    return best_recall
+
+
+@torch.no_grad()
+def _compute_val_chain_set_recall(model, dataloader, device, k_values, vs_all):
+    """Compute chain-set validation recall — all metrics."""
+    hits_any = {k: 0 for k in k_values}
+    hits_all = {k: 0 for k in k_values}
+    total_examples = 0
+    total_cov = 0
+    total_req = 0
+    max_kv = max(k_values)
+    for batch in dataloader:
+        q, _ = model(batch["input_ids"].to(device),
+                     torch.tensor(batch["prompt_len"], device=device))
+        req_slots = batch["required_slots"]
+        scores = q @ vs_all.t()
+        _, top_slots = scores.topk(min(max_kv, scores.size(-1)), dim=-1)
+        for i in range(q.size(0)):
+            req = set(int(s) for s in req_slots[i] if int(s) >= 0)
+            if not req:
+                continue
+            total_examples += 1
+            total_req += len(req)
+            for kv in k_values:
+                ret = set(int(s) for s in top_slots[i, :kv])
+                n = len(req & ret)
+                if n > 0:
+                    hits_any[kv] += 1
+                if n == len(req):
+                    hits_all[kv] += 1
+            ret_max = set(int(s) for s in top_slots[i, :max_kv])
+            total_cov += len(req & ret_max)
+    ne = max(total_examples, 1)
+    results = {}
+    for kv in k_values:
+        results[f"any_recall_at_{kv}"] = hits_any[kv] / ne
+        results[f"all_recall_at_{kv}"] = hits_all[kv] / ne
+    results["coverage_at_max"] = total_cov / max(total_req, 1)
+    return results
+
+
+def train_chain_set_hardneg(cfg: Config):
+    """Train chain-set retriever with structured hard negative mining.
+
+    Hard negatives include slots sharing entity/relation/type/family
+    with required slots but not part of the required chain.
+    """
+    seed_everything(cfg.get("seed", 42))
+    device = _pick_device(cfg.train.get("device", "auto"))
+    data_dir = cfg.get("data_dir", "data/synthetic_dense")
+    output_dir = cfg.get("output_dir", "experiments/exp_0_11/chain_set_hardneg")
+    os.makedirs(output_dir, exist_ok=True)
+
+    tokenizer = Tokenizer.from_dir(data_dir)
+    run_name = cfg.get("run_name", "chain_set_hardneg")
+    mlogger = MetricLogger(output_dir, run_name)
+    mlogger.logger.info("Chain-set hard-neg training — device=%s data=%s", device, data_dir)
+
+    _, num_live = build_kb_tensors(data_dir, 65536, tokenizer)
+    mlogger.logger.info("Live slots: %d", num_live)
+
+    # Load KB for hard negative mining metadata
+    kb = load_jsonl(os.path.join(data_dir, "kb.jsonl"))
+    slot_meta = _build_slot_metadata(kb, num_live, tokenizer)
+
+    ec = cfg.model.query_encoder
+    sd = cfg.model.get("slot_dim", 256)
+    encoder = QueryEncoder(
+        vocab_size=tokenizer.vocab_size,
+        d_model=ec.get("d_model", 256),
+        n_layers=ec.get("n_layers", 3),
+        n_heads=ec.get("n_heads", 4),
+        d_ff=ec.get("d_ff", 1024),
+        query_dim=256,
+        max_seq_len=ec.get("max_seq_len", 64),
+        pad_id=tokenizer.pad,
+    )
+    temp = cfg.train.get("temperature", 0.07)
+    model = ChainSetRetriever(encoder, sd, num_live, temperature=temp).to(device)
+    mlogger.logger.info("Model: %d params", model.param_count())
+
+    tc = cfg.train
+    bs = tc.get("batch_size", 128)
+    ms = ec.get("max_seq_len", 64)
+    train_ds = QADataset(data_dir, "train", tokenizer, kind="qa", open_book=False, max_seq_len=ms)
+    val_ds = QADataset(data_dir, "val", tokenizer, kind="qa", open_book=False, max_seq_len=ms)
+    train_ld = DataLoader(train_ds, batch_size=bs, shuffle=True, collate_fn=lambda b: collate_qa(b, tokenizer.pad))
+    val_ld = DataLoader(val_ds, batch_size=bs, shuffle=False, collate_fn=lambda b: collate_qa(b, tokenizer.pad))
+    mlogger.logger.info("Train: %d, Val: %d", len(train_ds), len(val_ds))
+
+    opt = AdamW(model.parameters(), lr=tc.get("lr", 3e-4), weight_decay=tc.get("weight_decay", 1e-4))
+    epochs = tc.get("epochs", 15)
+    total_steps = epochs * len(train_ld)
+    sched = _cosine_warmup_schedule(opt, tc.get("warmup_steps", 300), total_steps)
+    log_every = tc.get("log_every", 40)
+    negatives_per_pos = tc.get("negatives_per_positive", 16)
+    pos_weight = tc.get("pos_weight", 5.0)
+    hard_neg_ratio = tc.get("hard_negative_ratio", 0.5)
+    random_neg_ratio = tc.get("random_negative_ratio", 0.5)
+
+    gs = 0
+    best_recall = 0.0
+    k_values = (1, 3, 8, 16, 32, 64)
+
+    for ep in range(epochs):
+        model.train()
+        for batch in train_ld:
+            ids = batch["input_ids"].to(device)
+            pl = torch.tensor(batch["prompt_len"], device=device)
+            required = batch["required_slots"].to(device)
+
+            q, s_all = model(ids, pl)
+
+            loss = multi_positive_bce_loss_hardneg(
+                q, s_all, required, num_live, device, slot_meta,
+                temperature=temp,
+                negatives_per_positive=negatives_per_pos,
+                pos_weight=pos_weight,
+                hard_neg_ratio=hard_neg_ratio,
+                random_neg_ratio=random_neg_ratio,
+            )
+
+            opt.zero_grad()
+            loss.backward()
+            nn.utils.clip_grad_norm_(model.parameters(), tc.get("grad_clip", 1.0))
+            opt.step()
+            sched.step()
+            gs += 1
+
+            if gs % log_every == 0:
+                recall = _compute_chain_set_recall(q, s_all, required, k_values)
+                mlogger.log(gs, {"loss": loss.item(), **recall, "lr": sched.get_last_lr()[0]})
+
+                with torch.no_grad():
+                    model.eval()
+                    _, vs_all = model(torch.zeros(1, 64, dtype=torch.long, device=device),
+                                      torch.tensor([1], device=device))
+                    v_recall = _compute_val_chain_set_recall(model, val_ld, device, k_values, vs_all)
+                    model.train()
+                    mlogger.log(gs, {f"val_{k}": v for k, v in v_recall.items()})
+                    val_any_8 = v_recall.get("any_recall_at_8", 0)
+                    if val_any_8 > best_recall:
+                        best_recall = val_any_8
+                        mlogger.logger.info("New best any_recall@8=%.4f (step %d)", best_recall, gs)
+
+        mlogger.logger.info("Epoch %d/%d — best any_recall@8=%.4f", ep + 1, epochs, best_recall)
+
+    ckpt_path = os.path.join(output_dir, "checkpoint.pt")
+    torch.save(model.state_dict(), ckpt_path)
+    mlogger.logger.info("Saved checkpoint to %s", ckpt_path)
+    mlogger.save_summary({"run_name": run_name, "best_any_recall_at_8": best_recall, "num_live": num_live})
+    return best_recall
+
+
+def _build_slot_metadata(kb: List[Dict], num_live: int, tokenizer) -> Dict[int, Dict]:
+    """Extract metadata for each slot for hard negative mining."""
+    meta = {}
+    for rec in kb:
+        sid = int(rec.get("slot_id", -1))
+        if sid < 0 or sid >= num_live:
+            continue
+        meta[sid] = {
+            "entity_type": rec.get("entity_type", ""),
+            "relation": rec.get("relation", ""),
+            "answer_type": rec.get("answer_type", ""),
+            "template": rec.get("template", ""),
+            "api_family": rec.get("api_family", ""),
+            "output_family": rec.get("output_family", ""),
+            "text": rec.get("text", ""),
+        }
+    return meta
+
+
+def multi_positive_bce_loss_hardneg(q, s_all, required_slots, num_live, device,
+                                     slot_meta, temperature=0.07,
+                                     negatives_per_positive=16, pos_weight=5.0,
+                                     hard_neg_ratio=0.5, random_neg_ratio=0.5):
+    """Multi-positive BCE loss with structured hard negative mining.
+
+    Hard negatives are slots that share attributes (entity type, relation, etc.)
+    with required slots but are not actually required.
+    """
+    B = q.size(0)
+    total_loss = torch.tensor(0.0, device=device, requires_grad=True)
+    count = 0
+
+    for i in range(B):
+        req = [int(s) for s in required_slots[i] if int(s) >= 0 and int(s) < num_live]
+        if len(req) == 0:
+            continue
+
+        n_pos = len(req)
+        pos_tensor = torch.tensor(req, dtype=torch.long, device=device)
+        pos_set = set(req)
+
+        # Collect hard negative candidates: slots sharing attributes with positives
+        hard_neg_candidates = set()
+        for rs in req:
+            if rs not in slot_meta:
+                continue
+            rm = slot_meta[rs]
+            for sid, sm in slot_meta.items():
+                if sid in pos_set:
+                    continue
+                # Same entity type
+                if rm.get("entity_type") and sm.get("entity_type") == rm["entity_type"]:
+                    hard_neg_candidates.add(sid)
+                # Same relation type
+                elif rm.get("relation") and sm.get("relation") == rm["relation"]:
+                    hard_neg_candidates.add(sid)
+                # Same API family
+                elif rm.get("api_family") and sm.get("api_family") == rm["api_family"]:
+                    hard_neg_candidates.add(sid)
+                # Same answer type
+                elif rm.get("answer_type") and sm.get("answer_type") == rm["answer_type"]:
+                    hard_neg_candidates.add(sid)
+                # Same template
+                elif rm.get("template") and sm.get("template") == rm["template"]:
+                    hard_neg_candidates.add(sid)
+                # Same output family
+                elif rm.get("output_family") and sm.get("output_family") == rm["output_family"]:
+                    hard_neg_candidates.add(sid)
+
+        # Determine how many hard vs random negatives
+        total_neg = n_pos * negatives_per_positive
+        n_hard = max(0, min(int(total_neg * hard_neg_ratio), len(hard_neg_candidates)))
+        n_random = total_neg - n_hard
+
+        # Select hard negatives
+        hard_selected = []
+        if hard_neg_candidates and n_hard > 0:
+            hard_selected = random.sample(list(hard_neg_candidates), n_hard)
+
+        # Select random negatives (excluding positives and hard negatives)
+        hard_set = set(hard_selected)
+        neg_pool = [s for s in range(num_live) if s not in pos_set and s not in hard_set]
+        n_random = min(n_random, len(neg_pool))
+        random_selected = []
+        if neg_pool and n_random > 0:
+            random_selected = random.sample(neg_pool, n_random)
+
+        all_negatives = hard_selected + random_selected
+        if not all_negatives:
+            continue
+
+        neg_indices = torch.tensor(all_negatives, dtype=torch.long, device=device)
+        candidates = torch.cat([pos_tensor, neg_indices])
+
+        s_cand = s_all[candidates]
+        scores = (q[i:i+1] @ s_cand.t()).squeeze(0) / temperature
+
+        targets = torch.zeros(len(candidates), device=device)
+        targets[:n_pos] = 1.0
+
+        loss_fn = nn.BCEWithLogitsLoss(pos_weight=torch.tensor(pos_weight, device=device))
+        loss_i = loss_fn(scores, targets)
+        total_loss = total_loss + loss_i
+        count += 1
+
+    if count > 0:
+        return total_loss / count
+    return total_loss
+
+
+# ---------------------------------------------------------------------------
+# Slot graph expander
+# ---------------------------------------------------------------------------
+
+class SlotGraphExpander(nn.Module):
+    """Slot-to-slot expansion model for chain retrieval.
+
+    Given a set of anchor slots, predicts which other slots should be
+    included in the memory set. Trained to connect required chain slots.
+    """
+    def __init__(self, slot_dim: int, num_slots: int, hidden_dim: int = 128):
+        super().__init__()
+        self.slot_emb = nn.Embedding(num_slots, slot_dim)
+        nn.init.normal_(self.slot_emb.weight, std=0.02)
+        self._num_slots = num_slots
+        # Small MLP transition scorer
+        self.scorer = nn.Sequential(
+            nn.Linear(slot_dim * 2, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, 1, bias=False),
+        )
+
+    def forward(self, anchor_slots: torch.Tensor):
+        """Score all slots against anchor slots.
+        anchor_slots: [B, A] slot indices
+        Returns: scores [B, A, num_slots]
+        """
+        B, A = anchor_slots.shape
+        anchor_emb = self.slot_emb(anchor_slots)  # [B, A, D]
+        all_emb = self.slot_emb.weight  # [num_slots, D]
+
+        # Concatenate pair embeddings
+        anchor_exp = anchor_emb.unsqueeze(2).expand(B, A, self._num_slots, -1)  # [B, A, S, D]
+        all_exp = all_emb.unsqueeze(0).unsqueeze(0).expand(B, A, self._num_slots, -1)  # [B, A, S, D]
+        pairs = torch.cat([anchor_exp, all_exp], dim=-1)  # [B, A, S, 2*D]
+
+        scores = self.scorer(pairs).squeeze(-1)  # [B, A, S]
+        return scores
+
+    def expand(self, anchor_slots: torch.Tensor, k: int):
+        """Retrieve top-k neighbor slots for each anchor.
+        Returns: neighbor_slots [B, A, k], neighbor_scores [B, A, k]
+        """
+        scores = self.forward(anchor_slots)  # [B, A, S]
+        B, A = scores.shape[:2]
+        scores_flat = scores.view(B * A, -1)  # [B*A, S]
+        top_scores, top_slots = scores_flat.topk(min(k, scores_flat.size(-1)), dim=-1)
+        return top_slots.view(B, A, k), top_scores.view(B, A, k)
+
+    def param_count(self):
+        return sum(p.numel() for p in self.parameters())
+
+    @property
+    def num_slots(self):
+        return self._num_slots
+
+
+def train_slot_graph_expander(cfg: Config):
+    """Train slot-to-slot expansion model."""
+    seed_everything(cfg.get("seed", 42))
+    device = _pick_device(cfg.train.get("device", "auto"))
+    data_dir = cfg.get("data_dir", "data/synthetic_dense")
+    output_dir = cfg.get("output_dir", "experiments/exp_0_11/slot_graph_expander")
+    os.makedirs(output_dir, exist_ok=True)
+
+    tokenizer = Tokenizer.from_dir(data_dir)
+    run_name = cfg.get("run_name", "slot_graph_expander")
+    mlogger = MetricLogger(output_dir, run_name)
+    mlogger.logger.info("Slot graph expander training — device=%s data=%s", device, data_dir)
+
+    _, num_live = build_kb_tensors(data_dir, 65536, tokenizer)
+    mlogger.logger.info("Live slots: %d", num_live)
+
+    ec = cfg.model.get("slot_encoder", {})
+    sd = ec.get("slot_dim", 256) if isinstance(ec, dict) else 256
+    hd = cfg.model.get("hidden_dim", 128)
+
+    model = SlotGraphExpander(sd, num_live, hd).to(device)
+    mlogger.logger.info("Model: %d params", model.param_count())
+
+    tc = cfg.train
+    bs = tc.get("batch_size", 128)
+    ms = tc.get("max_seq_len", 64)
+
+    # Load training data to extract slot-to-slot pairs
+    train_examples = load_jsonl(os.path.join(data_dir, "train.jsonl"))
+
+    # Build positive slot pairs: each required slot pair (s_i, s_j) for i != j
+    pos_pairs = []
+    for ex in train_examples:
+        req_slots = [int(s.split("_")[1]) for s in ex.get("required_slots", [])]
+        for i, si in enumerate(req_slots):
+            for j, sj in enumerate(req_slots):
+                if i != j:
+                    pos_pairs.append((si, sj))
+
+    mlogger.logger.info("Positive slot pairs: %d", len(pos_pairs))
+
+    opt = AdamW(model.parameters(), lr=tc.get("lr", 3e-4), weight_decay=tc.get("weight_decay", 1e-4))
+    epochs = tc.get("epochs", 15)
+    total_steps = epochs * (len(pos_pairs) // bs)
+    sched = _cosine_warmup_schedule(opt, tc.get("warmup_steps", 100), max(total_steps, 1))
+    log_every = tc.get("log_every", 50)
+    temp = tc.get("temperature", 0.07)
+    negatives_per_pos = tc.get("negatives_per_positive", 16)
+
+    gs = 0
+    best_acc = 0.0
+
+    for ep in range(epochs):
+        model.train()
+        # Shuffle pairs
+        random.shuffle(pos_pairs)
+
+        for batch_start in range(0, len(pos_pairs), bs):
+            batch_pairs = pos_pairs[batch_start:batch_start + bs]
+            if len(batch_pairs) < 2:
+                continue
+
+            src_slots = torch.tensor([p[0] for p in batch_pairs], dtype=torch.long, device=device)
+            tgt_slots = torch.tensor([p[1] for p in batch_pairs], dtype=torch.long, device=device)
+            B = len(batch_pairs)
+
+            # Anchor: source slots, Target: target slots
+            anchors = src_slots.unsqueeze(1)  # [B, 1]
+
+            # Score all slots and compute InfoNCE-like loss
+            all_scores = model.forward(anchors).squeeze(1)  # [B, S]
+
+            # Sample negatives
+            total_loss = torch.tensor(0.0, device=device, requires_grad=True)
+            valid_count = 0
+
+            for i in range(B):
+                pos = int(tgt_slots[i])
+                # Negative slots
+                neg_pool = [s for s in range(num_live) if s != pos]
+                n_neg = min(negatives_per_pos, len(neg_pool))
+                neg_s = torch.tensor(random.sample(neg_pool, n_neg), dtype=torch.long, device=device)
+
+                cand = torch.cat([torch.tensor([pos], device=device), neg_s])
+                cand_scores = all_scores[i, cand] / temp
+
+                # InfoNCE: positive is index 0
+                loss_i = F.cross_entropy(cand_scores.unsqueeze(0), torch.tensor([0], device=device))
+                total_loss = total_loss + loss_i
+                valid_count += 1
+
+            if valid_count == 0:
+                continue
+
+            loss = total_loss / valid_count
+            opt.zero_grad()
+            loss.backward()
+            nn.utils.clip_grad_norm_(model.parameters(), tc.get("grad_clip", 1.0))
+            opt.step()
+            sched.step()
+            gs += 1
+
+            if gs % log_every == 0:
+                # Compute accuracy: is target in top-k of source?
+                with torch.no_grad():
+                    topk_scores, topk_slots = all_scores.topk(8, dim=-1)
+                    hits = (topk_slots == tgt_slots.unsqueeze(1)).any(dim=1).float().mean().item()
+                mlogger.log(gs, {"loss": loss.item(), "acc@8": hits, "lr": sched.get_last_lr()[0]})
+                if hits > best_acc:
+                    best_acc = hits
+                    mlogger.logger.info("New best acc@8=%.4f (step %d)", best_acc, gs)
+
+        mlogger.logger.info("Epoch %d/%d — best acc@8=%.4f", ep + 1, epochs, best_acc)
+
+    ckpt_path = os.path.join(output_dir, "checkpoint.pt")
+    torch.save(model.state_dict(), ckpt_path)
+    mlogger.logger.info("Saved checkpoint to %s", ckpt_path)
+    mlogger.save_summary({"run_name": run_name, "best_acc_at_8": best_acc, "num_live": num_live})
+    return best_acc
+
+
 def main():
     ap = argparse.ArgumentParser(description="Train product-key memory retrieval.")
     ap.add_argument("--config", default="configs/retrieval_1m.yaml")
@@ -1087,6 +1806,14 @@ def main():
         train_contrastive(cfg)
     elif retriever_type == "dual_encoder":
         train_dual_encoder(cfg)
+    elif retriever_type == "chain_set_bce":
+        train_chain_set(cfg, loss_type="bce")
+    elif retriever_type == "chain_set_infonce":
+        train_chain_set(cfg, loss_type="infonce")
+    elif retriever_type in ("chain_set_bce_hardneg", "chain_set_hardneg"):
+        train_chain_set_hardneg(cfg)
+    elif retriever_type == "slot_graph_expander":
+        train_slot_graph_expander(cfg)
     else:
         train_retrieval(cfg)
 

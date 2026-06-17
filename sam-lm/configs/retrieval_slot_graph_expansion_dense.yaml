@@ -1,0 +1,29 @@
+# Slot graph expansion retriever
+# Trains slot-to-slot connections to expand from anchor slots to chain slots.
+run_name: slot_graph_expansion_dense
+seed: 42
+data_dir: data/synthetic_dense
+output_dir: experiments/exp_0_11/slot_graph_expander
+
+model:
+  type: slot_graph_expander
+  retriever_type: slot_graph_expander
+  slot_dim: 256
+  hidden_dim: 128
+
+train:
+  batch_size: 128
+  lr: 3.0e-4
+  weight_decay: 1.0e-4
+  epochs: 15
+  warmup_steps: 100
+  grad_clip: 1.0
+  device: auto
+  temperature: 0.07
+  log_every: 50
+  negatives_per_positive: 16
+  max_seq_len: 64
+
+eval:
+  max_new_tokens: 6
+  batch_size: 128

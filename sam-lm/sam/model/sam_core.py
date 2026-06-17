@@ -74,6 +74,52 @@ class DualEncoderWrapper:
         return q  # already normalized by dual.forward
 
 
+class ChainSetRetrieverWrapper:
+    """Wraps a trained chain-set retriever for use as SAM's retrieval backend."""
+    def __init__(self, ckpt_path: str, tokenizer, device: str = "cpu"):
+        from ..training.train_retrieval import ChainSetRetriever, QueryEncoder
+
+        state = torch.load(ckpt_path, map_location=device, weights_only=False)
+        ms = state.get("model_state", state)
+
+        enc = QueryEncoder(
+            vocab_size=tokenizer.vocab_size, d_model=256,
+            n_layers=3, n_heads=4, d_ff=1024, query_dim=256,
+            max_seq_len=64, pad_id=tokenizer.pad
+        )
+        num_slots = ms["slot_emb.weight"].shape[0]
+        slot_dim = ms["slot_emb.weight"].shape[1]
+
+        self.chain = ChainSetRetriever(enc, slot_dim, num_slots)
+        self.chain.load_state_dict(ms, strict=False)
+        self.chain.to(device)
+        self.chain.eval()
+        self._slot_emb = self.chain.slot_emb.weight.clone()
+        self.device = device
+
+    @torch.no_grad()
+    def retrieve(self, query_vectors: torch.Tensor, k: int = 8):
+        """query_vectors: [B, D] — from SAM's memory head query projection.
+        Returns (slot_ids [B, k], scores [B, k])."""
+        q = F.normalize(self.chain.query_proj(query_vectors[:, :256].to(self.device)), dim=-1)
+        s = F.normalize(self._slot_emb.to(self.device), dim=-1)
+        scores = q @ s.t()
+        sv, si = scores.topk(k, dim=-1)
+        return si, sv
+
+    @torch.no_grad()
+    def encode_text(self, input_ids: torch.Tensor, prompt_lens: torch.Tensor) -> torch.Tensor:
+        """Encode raw question text through the chain-set retriever's query encoder.
+        Returns normalized query vectors [B, query_dim]."""
+        q, _ = self.chain(input_ids.to(self.device), prompt_lens.to(self.device))
+        return q  # already normalized by chain.forward
+
+    @property
+    def dual(self):
+        """Compatibility shim for SAM's set_kb which accesses retriever.dual."""
+        return self.chain
+
+
 class MemoryQueryAdapter(nn.Module):
     """Adapter from SAM hidden state to dual encoder query embedding space.
 

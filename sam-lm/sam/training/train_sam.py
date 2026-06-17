@@ -199,6 +199,14 @@ def train_sam(cfg: Config, mode: str):
             mlogger.logger.info("Dual encoder retriever loaded from %s", r_ckpt)
         else:
             mlogger.logger.warning("Dual encoder checkpoint not found: %s", r_ckpt)
+    elif mode in retrieved_modes and cfg.get("retriever_backend") == "chain_set":
+        r_ckpt = cfg.get("retriever_checkpoint")
+        if r_ckpt and os.path.exists(r_ckpt):
+            from ..model.sam_core import ChainSetRetrieverWrapper
+            retriever = ChainSetRetrieverWrapper(r_ckpt, tokenizer, device)
+            mlogger.logger.info("Chain-set retriever loaded from %s", r_ckpt)
+        else:
+            mlogger.logger.warning("Chain-set checkpoint not found: %s", r_ckpt)
 
     model.set_kb(slot_value_token, retriever=retriever)
     # Set tokenizer for multi-query mode

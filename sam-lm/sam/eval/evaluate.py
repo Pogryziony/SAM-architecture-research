@@ -51,6 +51,8 @@ def _load_checkpoint(model, ckpt_path: str, device: str, vocab_size: int) -> Opt
     # Pop live_slot_ids buffer to avoid shape mismatch (it gets reconfigured by set_kb)
     model_state.pop("live_slot_ids", None)
     model_state.pop("pkm.slot_value_token", None)
+    model_state.pop("pkm.compact_to_original", None)
+    model_state.pop("pkm.original_to_compact", None)
     model.load_state_dict(model_state, strict=False)
     return model
 
@@ -356,6 +358,14 @@ def main():
                     print(f"  Dual encoder retriever loaded from {r_ckpt}")
                 else:
                     print(f"  WARNING: Dual encoder checkpoint not found: {r_ckpt}")
+            elif cfg and cfg.get("retriever_backend") == "chain_set":
+                r_ckpt = cfg.get("retriever_checkpoint")
+                if r_ckpt and os.path.exists(r_ckpt):
+                    from ..model.sam_core import ChainSetRetrieverWrapper
+                    retriever = ChainSetRetrieverWrapper(r_ckpt, tokenizer, device)
+                    print(f"  Chain-set retriever loaded from {r_ckpt}")
+                else:
+                    print(f"  WARNING: Chain-set checkpoint not found: {r_ckpt}")
 
             # Set retrieval topK if configured
             if cfg and cfg.get("topK"):

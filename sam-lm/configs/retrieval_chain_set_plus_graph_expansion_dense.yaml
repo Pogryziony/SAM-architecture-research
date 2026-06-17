@@ -1,0 +1,43 @@
+# Combined: chain-set retriever + slot graph expansion
+# First retrieves anchor slots via chain-set, then expands via slot graph.
+run_name: chain_set_plus_graph_expansion_dense
+seed: 42
+data_dir: data/synthetic_dense
+output_dir: experiments/exp_0_11/chain_set_plus_graph
+
+model:
+  type: chain_set_plus_graph_expansion
+  retriever_type: chain_set_plus_graph_expansion
+  chain_set_retriever:
+    retriever_type: chain_set_bce
+    slot_dim: 256
+    query_encoder:
+      d_model: 256
+      n_layers: 3
+      n_heads: 4
+      d_ff: 1024
+      dropout: 0.0
+      max_seq_len: 64
+  slot_graph_expander:
+    slot_dim: 256
+    hidden_dim: 128
+  top_anchors: 8
+  top_neighbors: 8
+  max_total: 64
+
+train:
+  batch_size: 128
+  lr: 3.0e-4
+  weight_decay: 1.0e-4
+  epochs: 15
+  warmup_steps: 300
+  grad_clip: 1.0
+  device: auto
+  temperature: 0.05
+  log_every: 40
+  negatives_per_positive: 16
+  pos_weight: 5.0
+
+eval:
+  max_new_tokens: 6
+  batch_size: 128
