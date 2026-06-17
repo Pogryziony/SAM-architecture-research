@@ -1,0 +1,45 @@
+# SAM external text query with top3 aggregation
+run_name: sam_ext_top3_dense
+seed: 42
+data_dir: data/synthetic_dense
+output_dir: experiments/exp_0_9
+
+retriever_backend: dual_encoder
+retriever_checkpoint: experiments/exp_0_6/retrieval_dual_encoder/checkpoint.pt
+topK: 8
+memory_aggregation_mode: top3
+
+model:
+  type: sam
+  d_model: 384
+  n_layers: 6
+  n_heads: 6
+  d_ff: 1536
+  dropout: 0.0
+  max_seq_len: 128
+  memory_every: 3
+  memory_query: tokenwise
+  memory_integration: gated_sum
+  memory:
+    num_subkeys: 64
+    key_dim: 64
+    value_dim: 128
+    top_a: 8
+    top_b: 8
+    top_k: 8
+    aggregation_mode: top3
+
+train:
+  batch_size: 64
+  lr: 3.0e-4
+  weight_decay: 0.01
+  epochs: 3
+  warmup_steps: 200
+  grad_clip: 1.0
+  device: auto
+  log_every: 50
+  eval_every: 150
+
+eval:
+  max_new_tokens: 6
+  batch_size: 128

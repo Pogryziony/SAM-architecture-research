@@ -1,0 +1,51 @@
+# Adapter pretraining: train hidden-state→query adapter to match dual encoder
+run_name: sam_memory_adapter_dense
+seed: 42
+data_dir: data/synthetic_dense
+output_dir: experiments/exp_0_7/memory_adapter_pretrain
+
+# Optional: path to pretrained SAM core checkpoint (loads core, trains only adapter)
+core_checkpoint: experiments/exp_0_6/core_only/checkpoint_best.pt
+
+model:
+  type: sam
+  d_model: 384
+  n_layers: 6
+  n_heads: 6
+  d_ff: 1536
+  dropout: 0.0
+  max_seq_len: 128
+  memory_every: 3
+  memory_query: tokenwise
+  memory_integration: gated_sum
+  memory:
+    num_subkeys: 64
+    key_dim: 64
+    value_dim: 128
+    top_a: 8
+    top_b: 8
+    top_k: 8
+    soft_candidates: false
+    adapter_query_dim: 256
+
+# Dual encoder retriever backend
+retriever_backend: dual_encoder
+retriever_checkpoint: experiments/exp_0_6/retrieval_dual_encoder/checkpoint.pt
+topK: 8
+
+train:
+  batch_size: 64
+  lr: 1.0e-3
+  weight_decay: 0.0
+  epochs: 5
+  warmup_steps: 100
+  grad_clip: 1.0
+  device: auto
+  lambda_adapter: 1.0
+  lambda_retrieval: 0.5
+  log_every: 50
+  eval_every: 150
+
+eval:
+  max_new_tokens: 6
+  batch_size: 128
