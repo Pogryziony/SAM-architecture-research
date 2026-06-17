@@ -82,9 +82,39 @@ The following are **intentionally excluded**:
    if random memory improves performance, the gating mechanism alone (not content) is
    providing benefit.
 
-## Validation Results (Experiment 0.6)
+5. **retrieved_memory_external_text_query**: A standalone retriever (dual encoder or
+   chain-set) encodes raw question text into a query vector. Retrieved slots provide
+   fact text as input tokens. Decouples retrieval training from SAM core training.
 
-The POC was validated through a series of controlled experiments. Key result:
+6. **oracle_text_memory**: Oracle facts injected as input text tokens. Upper bound
+   for text-based memory without product-key retrieval.
+
+## Retriever Architectures
+
+### Dual Encoder (Experiment 0.6)
+
+Question → query_encoder → query_vector · slot_embedding → topK slots.
+
+Trained with InfoNCE on the first required slot only. Achieves 99.3% any_required@8 but
+fails catastrophically on all_required@K for multi-hop tasks (3-hop = 0%).
+
+### Chain-Set BCE Retriever (Experiment 0.11)
+
+Question → query_encoder → query_vector · slot_embedding → topK slots.
+
+Trained with multi-positive BCE loss treating ALL required slots as positives against
+all live slots. This directly optimizes complete chain retrieval.
+
+### Slot Graph Expander (Experiment 0.11)
+
+Anchor slots → MLP transition scorer → neighbor slots → union.
+
+Two-stage: retrieve anchor slots from question, expand to related chain slots via
+learned slot-to-slot transitions.
+
+## Validation Results
+
+### Experiment 0.6 — Oracle Memory Validation
 
 **SAM oracle_memory achieves 99.9% accuracy vs 68.7% core-only (+31pp).**
 
@@ -94,12 +124,71 @@ The POC was validated through a series of controlled experiments. Key result:
 | SAM core_only (15.7M) | 68.7% | 91.5% | 71.1% | 22.0% |
 | **SAM oracle_memory** | **99.9%** | **99.5%** | **100%** | **100%** |
 
-### Findings:
-- **SAM core matches dense** at equal parameter count — no architecture disadvantage
-- **Memory provides +31pp** — the core CAN compose retrieved latent vectors
-- **Three-hop solved** — goes from 22% → 100% with memory injection
-- **Retrieval solved** — dual encoder achieves 99.3% Rec@8 on dense shared-slot dataset
-- **Product-key candidate generation works** (100% subkey accuracy) but ranking needs more data
-- The initial failure mode ("core cannot compose" at 60-70% prior) is NOT confirmed
+### Experiment 0.10 — Required-Set Retrieval Diagnostic
 
-### Next: SAM retrieved-memory with dual encoder backend, then memory scaling.
+The dual encoder retriever (trained on single-slot InfoNCE) achieves near-perfect
+any_required@K but fails on all_required@K for multi-hop tasks:
+
+| K | all_required@K | 1-hop | 2-hop | 3-hop |
+|---|---------------|-------|-------|-------|
+| 1 | 0.2408 | 0.915 | 0.000 | 0.000 |
+| 8 | 0.2634 | 1.000 | 0.001 | 0.000 |
+| 64 | 0.2729 | 1.000 | 0.017 | 0.000 |
+
+73% of examples had required slots completely absent from top64. The retriever
+finds the output slot but misses intermediate chain slots.
+
+### Experiment 0.11 — Chain-Aware Retrieval
+
+The chain-set BCE retriever eliminates the multi-hop retrieval bottleneck:
+
+| K | all_required@K | 2-hop all@K | 3-hop all@K |
+|---|---------------|-------------|-------------|
+| 8 | 0.8103 | 0.8514 | 0.3433 |
+| 16 | 0.9653 | 0.9600 | 0.9267 |
+| 32 | **1.0000** | **1.0000** | **1.0000** |
+
+**Retrieval is solved.** All three retrieval gates (A/B/C) pass at K=32.
+
+However, SAM with chain-aware retrieved memory achieves identical accuracy to
+core_only and random_memory (68.7%). The model does not benefit from perfect
+retrieval — reasoning capacity or memory integration is the new bottleneck.
+
+### Full SAM Mode Comparison (val set, 3800 examples)
+
+| Mode | Overall | 1-hop | 2-hop | 3-hop | Recall@32 |
+|------|---------|-------|-------|-------|-----------|
+| core_only | 0.6874 | 0.915 | 0.711 | 0.22 | — |
+| random_memory | 0.6874 | 0.915 | 0.711 | 0.22 | — |
+| dual_encoder retrieved | 0.6868 | 0.915 | 0.711 | 0.22 | 1.0* |
+| **chain_set retrieved** | **0.6866** | **0.915** | **0.710** | **0.22** | **1.0†** |
+| oracle_memory | 0.9987 | 0.995 | 1.000 | 1.00 | — |
+
+\* any_required@32 = 1.0 (all_required@32 = 0.27)\
+† any_required@32 = 1.0, all_required@32 = 1.0
+
+### Key Findings:
+
+- **Core CAN compose** — Oracle memory proves the architecture works (99.9%)
+- **Retrieval is solved** — Chain-set BCE achieves 100% all_required@32
+- **Retrieval ≠ Accuracy** — Perfect retrieval doesn't improve SAM QA accuracy
+- **SAM is the new bottleneck** — Memory integration or capacity limits benefit
+
+## Current Status & On-Track Assessment
+
+The original thesis has been partially validated:
+- ✅ Core CAN use memory (oracle → 99.9%)
+- ✅ Retrieval CAN find complete chains (chain-set → 100%)
+- ❌ Retrieved memory does NOT improve accuracy over core_only
+
+We are on track for the **retrieval** dimension but off-track for the
+**memory integration** dimension. The next priority is investigating why
+SAM's gated_sum memory integration doesn't convert accurate retrieval
+into improved reasoning.
+
+### Next Steps:
+1. Investigate memory integration — gated_sum may not be effective for external text
+2. Train SAM for more epochs / larger models to benefit from accurate retrieval
+3. Consider cross-attention memory integration instead of gated_sum
+4. Test whether the core learns to ignore external memory (loss analysis)
+5. Scale to larger datasets where core_only capacity is insufficient

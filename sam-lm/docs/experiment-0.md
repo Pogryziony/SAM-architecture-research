@@ -32,6 +32,13 @@ Additional failure modes:
 | SAM + random memory | Random live slot values injected                              | Placebo: is gating alone helping?  |
 | SAM + retrieved     | Learned product-key retrieval                                 | The real SAM mechanism             |
 
+## Retriever Architectures
+
+| Retriever | Training Objective | all_required@32 (3-hop) | Description |
+|-----------|-------------------|------------------------|-------------|
+| Dual Encoder | InfoNCE (1st slot only) | 0.000 (0%) | Single-slot contrastive, finds output slot |
+| Chain-Set BCE | Multi-positive BCE (all slots) | **1.000 (100%)** | All required slots as positives vs all live slots |
+
 ## Dataset Design
 
 Synthetic dataset with explicit facts and multi-hop questions, organized into task types:
@@ -48,11 +55,14 @@ Key design properties:
 - Bridge entities intentionally not named in questions, forcing chaining.
 - Each answer is a single vocabulary token for clean exact-match evaluation.
 
-### Sizes
+### Dense Dataset (data/synthetic_dense)
 
-- Training: 10,000 examples (default)
-- Validation: 1,000 examples
-- Test: 1,000 examples
+- **Slots**: 1,650 (shared — many questions reference the same facts)
+- **Training**: 19,000 examples
+- **Validation**: 3,800 examples
+- **Test**: 3,800 examples
+- **Vocab**: 853 tokens
+- All experiments 0.6–0.11 use this dataset
 
 ## Metrics
 
@@ -65,82 +75,154 @@ Core metrics:
 - oracle_gap = oracle_accuracy - retrieved_accuracy
 - dense_gap = retrieved_accuracy - dense_baseline_accuracy
 
+Experiment 0.10+ required-set metrics:
+- any_required_present@K, all_required_present@K
+- required_slot_coverage@K
+- Per-hop breakdowns (1-hop, 2-hop, 3-hop)
+- MRR of first required slot, mean rank per slot position
+
 ## Decision Gates
 
-1. **Gate 1 -- Retrieval**: If Recall@8 < 80%, stop and improve retrieval before
-   training SAM end-to-end.
+### Original Gates (Experiments 0.0–0.6)
 
-2. **Gate 2 -- Memory usefulness**: If SAM + oracle memory does not beat SAM core-only,
-   stop. The model is not using memory correctly.
+1. **Gate 1 — Retrieval**: If Recall@8 < 80%, stop and improve retrieval.
+2. **Gate 2 — Memory usefulness**: If SAM + oracle memory does not beat SAM core-only, stop.
+3. **Gate 3 — Retrieval gap**: If oracle_gap > 20pp, retrieval is the bottleneck.
+4. **Gate 4 — Reasoning**: If SAM improves single-hop but not multi-hop, do not scale.
+5. **Gate 5 — Dense baseline**: If SAM + retrieved does not beat same-size dense, do not scale.
 
-3. **Gate 3 -- Retrieval gap**: If oracle_gap > 20 percentage points, retrieval is
-   the bottleneck.
+### Experiment 0.11 Retrieval Gates
 
-4. **Gate 4 -- Reasoning**: If SAM improves single-hop accuracy but not two-hop or
-   three-hop, do not scale. The architecture is recall-only.
+| Gate | Condition | Result |
+|------|-----------|--------|
+| Gate A | 2-hop all_required@16 ≥ 80% | **PASS** — 0.9600 |
+| Gate B | 3-hop all_required@32 ≥ 70% | **PASS** — 1.0000 |
+| Gate C | 3-hop coverage@32 ≥ 90% | **PASS** — 1.0000 |
+| Gate D | retrieved_memory > core_only | **FAIL** — 0.6866 = 0.6874 |
+| Gate E | SAM improves 2-hop and 3-hop | **FAIL** — identical to core_only |
 
-5. **Gate 5 -- Dense baseline**: If SAM + retrieved memory does not beat the same-size
-   dense Transformer on knowledge-heavy tasks, do not scale.
+## Full Experiment History
 
-## Expected Outcomes
+### Experiment 0.0–0.5: Infrastructure & Baselines
 
-If the thesis holds:
-- SAM + oracle memory >> SAM core-only (+15-30% absolute on multi-hop).
-- SAM + retrieved > dense baseline (+5-15% absolute on multi-hop).
-- Gap widens with increasing hop count.
+- Synthetic data generation, tokenizer, dense Transformer baseline
+- Product-key memory with 1M slots, retrieval pretraining
+- SAM core-only and oracle memory modes
 
-If the thesis fails:
-- SAM + oracle approximately equal to SAM core-only: model cannot use memory.
-- SAM + retrieved approximately equal to dense baseline: no advantage.
-- SAM improves single-hop but not multi-hop: recall-only architecture.
+### Experiment 0.6: Validation (dense dataset)
 
-## Actual Outcomes (Experiments 0.0–0.6)
+**SAM oracle_memory = 99.9% vs core_only = 68.7% (+31pp). Thesis CONFIRMED.**
 
-**The thesis is CONFIRMED at this scale.**
+| Model | Overall | 1-hop | 2-hop | 3-hop |
+|-------|---------|-------|-------|-------|
+| Dense baseline | 68.7% | 91.5% | 71.1% | 22.0% |
+| SAM core_only | 68.7% | 91.5% | 71.1% | 22.0% |
+| SAM oracle_memory | **99.9%** | **99.5%** | **100%** | **100%** |
+| SAM retrieved (dual enc) | 68.7% | 91.5% | 71.1% | 22.0% |
 
-| Condition | Expected | Actual | Verdict |
-|-----------|----------|--------|---------|
-| SAM oracle >> core-only | +15-30% | **+31pp** (68.7% → 99.9%) | ✓ CONFIRMED |
-| Multi-hop improvement | ✓ | Three-hop: 22% → 100% | ✓ CONFIRMED |
-| Gap widens with hops | ✓ | Single +8pp, Two +29pp, Three +78pp | ✓ CONFIRMED |
-| SAM core = dense | equal | Both 68.7% at 14.6M params | ✓ CONFIRMED |
-| Retrieval Rec@8 ≥ 80% | Gate 1 | 99.3% (dual encoder) | ✓ CONFIRMED |
+Dual encoder Rec@8 = 99.3%. Retrieved memory = core_only.
 
-**The primary failure mode (60-70% prior) is NOT confirmed.** The core CAN compose retrieved latent vectors into reasoning chains. SAM is NOT merely a recall-only architecture.
+### Experiment 0.7: External Text Query & Hidden Adapter
 
-## Updated Decision Gates (Post-Experiment 0.6)
+Two new retrieval-to-SAM interfaces:
+- **External text query**: Dual encoder encodes raw question → retrieves slot text → feeds as input tokens
+- **Hidden adapter**: Trainable MLP from SAM hidden state → dual encoder query space
+
+Both modes = core_only accuracy (68.7%). Memory integration doesn't convert retrieval into accuracy.
+
+### Experiment 0.8: Oracle Slots & Thresholding
+
+SAM with oracle slot selection shows that even perfect retrieval → text doesn't help.
+Thresholding and score-based filtering cannot recover from absent slots.
+
+### Experiment 0.9: Multi-Query Unions, TopK Sweeps
+
+Extensive parameter sweeps (topK=1..64, score temperatures, weighted aggregation).
+All retrieved modes = core_only. Retrieval quality ≠ QA accuracy.
+
+### Experiment 0.10: Required-Set Retrieval Diagnostic
+
+First systematic measurement of multi-hop retrieval quality:
+
+| K | all_required@K | 2-hop all@K | 3-hop all@K |
+|---|---------------|-------------|-------------|
+| 1 | 0.2408 | 0.000 | 0.000 |
+| 8 | 0.2634 | 0.001 | 0.000 |
+| 64 | 0.2729 | 0.017 | 0.000 |
+
+73% of examples have required slots absent from top64. 3-hop = 0% at all K.
+Root cause: dual encoder trained on first required slot only — finds output slot but misses chain.
+
+### Experiment 0.11: Chain-Aware Retrieval (CURRENT)
+
+**Chain-Set BCE Retriever — retrieval solved at K=32:**
+
+| K | all_required@K | 2-hop all@K | 3-hop all@K | coverage@K |
+|---|---------------|-------------|-------------|------------|
+| 1 | 0.2408 | 0.000 | 0.000 | 0.431 |
+| 8 | 0.8103 | 0.851 | 0.343 | 0.873 |
+| 16 | 0.9653 | 0.960 | 0.927 | 0.980 |
+| 32 | **1.0000** | **1.000** | **1.000** | **1.000** |
+
+3-hop all_required went from 0.000 (Exp 0.10) → 1.000 (Exp 0.11). **267x improvement on 2-hop, infinite on 3-hop.**
+
+**SAM with chain-aware retriever:**
+
+| Mode | Overall | 1-hop | 2-hop | 3-hop |
+|------|---------|-------|-------|-------|
+| core_only | 0.6874 | 0.915 | 0.711 | 0.22 |
+| chain_set retrieved | 0.6866 | 0.915 | 0.710 | 0.22 |
+| oracle_memory | 0.9987 | 0.995 | 1.000 | 1.00 |
+
+Retrieved = core_only despite perfect retrieval. SAM is the new bottleneck.
+
+## Updated Decision Gates (Post-Experiment 0.11)
 
 | Gate | Result |
 |------|--------|
-| Gate 1 — Retrieval Rec@8 ≥ 80% | **PASS** (99.3%) |
-| Gate 2 — Memory usefulness | **PASS** (99.9% vs 68.7%) |
-| Gate 4 — Multi-hop reasoning | **PASS** (100% two-hop, 100% three-hop) |
-| Gate 5 — Dense comparison | TBD (retrieved_memory pending) |
+| Gate 1 — Retrieval Rec@8 ≥ 80% | **PASS** (99.3% any, 81% all) |
+| Gate 2 — Memory usefulness (oracle) | **PASS** (99.9% vs 68.7%) |
+| Gate A — 2-hop all@16 ≥ 80% | **PASS** (96.0%) |
+| Gate B — 3-hop all@32 ≥ 70% | **PASS** (100%) |
+| Gate C — 3-hop coverage@32 ≥ 90% | **PASS** (100%) |
+| Gate 4 — Multi-hop reasoning (retrieved) | **FAIL** (chain-aware = core_only) |
+| Gate 5 — Dense comparison (retrieved) | **FAIL** (chain-aware = dense baseline) |
+| Gate D — retrieved > core_only | **FAIL** (–0.1pp) |
+| Gate E — 2/3-hop improvement | **FAIL** (no improvement) |
+
+## Actual Outcomes Summary
+
+| Condition | Expected | Actual | Verdict |
+|-----------|----------|--------|---------|
+| SAM oracle >> core-only | +15-30% | **+31pp** | ✓ CONFIRMED |
+| Multi-hop improvement (oracle) | ✓ | Three-hop: 22% → 100% | ✓ CONFIRMED |
+| Gap widens with hops (oracle) | ✓ | +8pp / +29pp / +78pp | ✓ CONFIRMED |
+| SAM core = dense | equal | Both 68.7% | ✓ CONFIRMED |
+| Retrieval any_required@8 ≥ 80% | Gate 1 | 99.3% → 97.6% | ✓ CONFIRMED |
+| Retrieval all_required@32 ≥ 70% | Gate B | 100% | ✓ CONFIRMED |
+| Retrieved improves over core_only | Gate D | 68.7% = 68.7% | ✗ FAILED |
+| Retrieved improves multi-hop | Gate E | 2-hop: 71% = 71%, 3-hop: 22% = 22% | ✗ FAILED |
+
+## Root Cause Analysis
+
+1. **Retrieval bottleneck (solved)**: The dual encoder was trained on single-slot contrastive
+   loss. Multi-positive BCE over all live slots fixes this — all_required@32 = 100%.
+
+2. **Memory integration bottleneck (open)**: The SAM model's gated_sum memory integration
+   doesn't convert accurate retrieval into improved reasoning. At 16M params / 3 epochs,
+   the core cannot effectively use external text facts. Oracle memory (injecting correct
+   latent vectors) still works (99.9%), confirming the core CAN compose — but external
+   text is not being used.
+
+3. **Likely causes**: (a) Model capacity too low to process retrieved text, (b) gated_sum
+   insufficient for text integration, (c) training too short for memory utilization,
+   (d) the core learns to ignore external memory input.
 
 ## Next Steps
 
-1. Train SAM retrieved_memory with dual encoder backend
-2. Compare retrieved vs oracle vs core-only vs dense
-3. Scale memory to larger slot counts
-4. Test on real-world code/API tasks
-
-## CLI Usage
-
-```bash
-# Generate data
-python -m sam.data.synthetic_facts --output data/synthetic --train 10000 --val 1000 --test 1000 --seed 42
-
-# Train dense baseline
-python -m sam.training.train_dense --config configs/dense_tiny.yaml
-
-# Train retrieval (Gate 1 diagnostic)
-python -m sam.training.train_retrieval --config configs/retrieval_1m.yaml
-
-# Train SAM variants
-python -m sam.training.train_sam --mode core_only --config configs/sam_tiny.yaml
-python -m sam.training.train_sam --mode oracle_memory --config configs/sam_tiny.yaml
-python -m sam.training.train_sam --mode retrieved_memory --config configs/sam_tiny.yaml
-
-# Evaluate
-python -m sam.eval.evaluate --runs experiments/
-```
+1. **Investigate memory integration**: Compare gated_sum vs cross-attention
+2. **Longer training**: Extend from 3 to 10+ epochs with chain-aware retriever
+3. **Larger models**: Scale SAM core to 50M+ params to process retrieved facts
+4. **Loss analysis**: Check if gradients flow through memory path during training
+5. **Attention visualization**: See if the model attends to retrieved fact tokens
+6. **Scale dataset**: Move to larger/synthetic_50k where core_only capacity is insufficient

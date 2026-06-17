@@ -59,6 +59,60 @@ recall_at_k = |{i : required_slots_i ∩ retrieved_top_k_i ≠ ∅}| / N
 - recall@8 ~= random: keys have collapsed. Check key normalization, temperature, or
   add a spread loss.
 
+## Required-Set Retrieval Metrics (Experiment 0.10+)
+
+These metrics measure whether the retriever finds the *complete set* of required facts,
+not just *any* required fact. Introduced in Experiment 0.10 when it was discovered that
+the dual encoder achieved 99.3% any_required@8 but 0% all_required@8 for 3-hop tasks.
+
+### any_required_present@K
+Fraction of examples where at least one required slot appears in top-K retrieval.
+```
+any_required@K = |{i : required_i ∩ topK_i ≠ ∅}| / N
+```
+Equivalent to the original recall_at_k. Near-perfect results can mask catastrophic
+all_required failures.
+
+### all_required_present@K
+Fraction of examples where ALL required slots appear in top-K retrieval.
+```
+all_required@K = |{i : required_i ⊆ topK_i}| / N
+```
+**This is the critical multi-hop retrieval metric.** A retriever that finds the output
+slot but misses intermediate chain slots will have high any_required@K but low
+all_required@K. The dual encoder baseline (Exp 0.10) achieved 0% all_required@K for
+3-hop at all K values.
+
+### required_slot_coverage@K
+Fraction of total required slots retrieved across all examples.
+```
+coverage@K = Σ|required_i ∩ topK_i| / Σ|required_i|
+```
+
+### Per-hop all_required@K
+all_required@K broken down by number of reasoning hops (1-hop, 2-hop, 3-hop).
+```
+all_required_single_hop@K: only examples with hops == 1
+all_required_two_hop@K:   only examples with hops == 2
+all_required_three_hop@K: only examples with hops == 3
+```
+
+### Rank Metrics
+- **MRR_first_required@K**: Mean reciprocal rank of the first required slot in top-K
+- **mean_rank_slot_N@K**: Mean rank of N-th required slot (1st, 2nd, 3rd)
+- **mean_max_required_rank@K**: Mean of the maximum rank among all required slots
+
+These diagnose whether required slots are present but ranked too low.
+Example: if all_required@8 = 0 but all_required@32 = 1.0, the slots are ranked between
+8-32 (ranked_too_low failure). If MRR is near 1.0, the first required slot is always top-ranked.
+
+### Failure Type Distribution
+- **none_all_present**: All required slots in top-K
+- **ranked_too_low**: All required present at K=32 but not K=8
+- **ranked_beyond_64**: All required present at K=64 but not K=32
+- **missing_required_slot**: Some (but not all) required slots in top-K
+- **no_required_in_topk**: Zero required slots in top-K
+
 ## Derived Metrics
 
 ### oracle_gap
@@ -95,6 +149,15 @@ Gate 5 requires this to be positive.
 - Zero or negative: SAM is not competitive. Inspect whether retrieval or reasoning
   is the root cause before scaling.
 
+### retrieval_gain (Experiment 0.11)
+```
+retrieval_gain = accuracy(chain_set_retrieved) - accuracy(dual_encoder_retrieved)
+```
+
+The accuracy gained by improving retrieval from any_required to all_required.
+If this is zero despite perfect all_required retrieval, the bottleneck has shifted
+from retrieval to reasoning capacity or memory integration.
+
 ## Training Metrics
 
 ### training_loss
@@ -123,6 +186,9 @@ Memory usage. Important for understanding when to move to mmap-backed memory.
 | oracle >> core, retrieved >> dense                | SAM works; some retrieval noise but net positive    |
 | oracle >> core, retrieved ~= dense                | Retrieval is the bottleneck                        |
 | oracle ~= core                                    | Core cannot use memory; architecture problem       |
+| oracle >> core, retrieved ~= core                 | Memory integration bottleneck (Exp 0.11)           |
 | oracle ~= retrieved, both > dense                 | Retrieval works but memory not adding value        |
+| all_required@32 = 1.0, SAM ~= core                | Retrieval solved; reasoning/memory new bottleneck  |
+| any_required@K >> all_required@K                  | Retriever finds output slot, misses chain slots    |
 | all variants similar                               | Task is too easy or models too similar              |
 | dense > all SAM variants                           | SAM thesis rejected at this scale                  |
