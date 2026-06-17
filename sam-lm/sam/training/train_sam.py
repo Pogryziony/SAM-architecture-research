@@ -1,16 +1,20 @@
-"""SAM model training with four memory modes.
+"""SAM model training with memory modes.
 
 Modes:
-  core_only         — no memory (capacity floor)
-  oracle_memory     — inject correct required slot values (upper bound)
-  retrieved_memory  — learned product-key retrieval (the real SAM)
-  random_memory     — inject random live slot values (placebo control)
+  core_only                          — no memory (capacity floor)
+  oracle_memory                      — inject correct required slot values (upper bound)
+  retrieved_memory                   — learned product-key retrieval (the real SAM)
+  random_memory                      — inject random live slot values (placebo control)
+  oracle_text_memory                 — inject oracle text into input (text upper bound)
+  retrieved_memory_external_text_query — query dual encoder with raw question text
+  retrieved_memory_hidden_adapter    — train adapter from hidden state to query space
+  train_memory_adapter               — pretrain adapter to match dual encoder queries
 
 Usage:
     python -m sam.training.train_sam --mode core_only --config configs/sam_tiny.yaml
-    python -m sam.training.train_sam --mode oracle_memory --config configs/sam_tiny.yaml
-    python -m sam.training.train_sam --mode retrieved_memory --config configs/sam_tiny.yaml
-    python -m sam.training.train_sam --mode random_memory --config configs/sam_tiny.yaml
+    python -m sam.training.train_sam --mode retrieved_memory_external_text_query --config configs/sam_retrieved_external_text_dense.yaml
+    python -m sam.training.train_sam --mode train_memory_adapter --config configs/sam_memory_adapter_dense.yaml
+    python -m sam.training.train_sam --mode retrieved_memory_hidden_adapter --config configs/sam_retrieved_hidden_adapter_dense.yaml
 """
 from __future__ import annotations
 
@@ -125,7 +129,12 @@ def train_sam(cfg: Config, mode: str):
     seed_everything(cfg.get("seed", 42))
     device = _pick_device(cfg.train.get("device", "auto"))
     data_dir = cfg.get("data_dir", "data/synthetic")
-    output_dir = os.path.join(cfg.get("output_dir", "experiments/exp_sam"), mode)
+
+    # train_memory_adapter uses its own output_dir
+    if mode == "train_memory_adapter":
+        output_dir = cfg.get("output_dir", "experiments/exp_sam/memory_adapter")
+    else:
+        output_dir = os.path.join(cfg.get("output_dir", "experiments/exp_sam"), mode)
     os.makedirs(output_dir, exist_ok=True)
 
     tokenizer = Tokenizer.from_dir(data_dir)
@@ -156,12 +165,64 @@ def train_sam(cfg: Config, mode: str):
         pad_id=tokenizer.pad,
     )
     model.memory_mode = mode
+    model._aggregation_mode = cfg.get("memory_aggregation_mode",
+                                       memory_cfg.get("aggregation_mode", "uniform_mean"))
+    model._aggregation_temperature = float(cfg.get("memory_score_temperature",
+                                                    memory_cfg.get("aggregation_temperature", 0.1)))
+    # Experiment 0.10: Threshold/margin selection parameters
+    if cfg.get("aggregation_threshold") is not None:
+        model._aggregation_threshold = float(cfg.get("aggregation_threshold"))
+    if cfg.get("aggregation_top_n") is not None:
+        model._aggregation_top_n = int(cfg.get("aggregation_top_n"))
+    if cfg.get("aggregation_delta") is not None:
+        model._aggregation_delta = float(cfg.get("aggregation_delta"))
+    if cfg.get("aggregation_mass_p") is not None:
+        model._aggregation_mass_p = float(cfg.get("aggregation_mass_p"))
 
-    # Wire KB
+    # Set retrieval topK
+    model._retrieval_k = cfg.get("topK", 8)
+
+    # Wire KB and retriever
     n_subkeys = memory_cfg.get("num_subkeys", 1024)
     total_slots = n_subkeys * n_subkeys
     slot_value_token, num_live = build_kb_tensors(data_dir, total_slots, tokenizer)
-    model.set_kb(slot_value_token)
+
+    # Wire dual encoder retriever for all retrieved modes
+    retrieved_modes = ("retrieved_memory", "retrieved_memory_external_text_query",
+                       "retrieved_memory_hidden_adapter", "train_memory_adapter")
+    retriever = None
+    if mode in retrieved_modes and cfg.get("retriever_backend") == "dual_encoder":
+        r_ckpt = cfg.get("retriever_checkpoint")
+        if r_ckpt and os.path.exists(r_ckpt):
+            from ..model.sam_core import DualEncoderWrapper
+            retriever = DualEncoderWrapper(r_ckpt, tokenizer, device)
+            mlogger.logger.info("Dual encoder retriever loaded from %s", r_ckpt)
+        else:
+            mlogger.logger.warning("Dual encoder checkpoint not found: %s", r_ckpt)
+
+    model.set_kb(slot_value_token, retriever=retriever)
+    # Set tokenizer for multi-query mode
+    if mode == "retrieved_multi_query_union":
+        model.set_tokenizer(tokenizer)
+
+    # Load pretrained SAM core for adapter-only training (after KB setup)
+    if mode == "train_memory_adapter":
+        core_ckpt = cfg.get("core_checkpoint")
+        if core_ckpt and os.path.exists(core_ckpt):
+            ckpt_state = torch.load(core_ckpt, map_location=device, weights_only=False)
+            ms = ckpt_state.get("model_state", ckpt_state)
+            ms.pop("live_slot_ids", None)
+            ms.pop("pkm.slot_value_token", None)
+            model.load_state_dict(ms, strict=False)
+            mlogger.logger.info("Loaded SAM core from %s", core_ckpt)
+
+        # Freeze SAM core, only train adapter
+        for name, param in model.named_parameters():
+            if "memory_query_adapter" not in name:
+                param.requires_grad = False
+        model._adapter_frozen = True
+        mlogger.logger.info("Froze SAM core; only adapter is trainable")
+
     model.to(device)
 
     pc = model.param_count()
@@ -174,7 +235,13 @@ def train_sam(cfg: Config, mode: str):
     t_cfg = cfg.train
     batch_size = t_cfg.get("batch_size", 64)
     oracle_text = (mode == "oracle_text_memory")
-    forward_mode = "core_only" if oracle_text else mode
+    # For new retrieved modes, forward mode is the mode itself (not core_only)
+    if mode in ("retrieved_memory_external_text_query", "retrieved_memory_hidden_adapter",
+                "train_memory_adapter", "retrieved_oracle_slots",
+                "retrieved_multi_query_union"):
+        forward_mode = mode
+    else:
+        forward_mode = "core_only" if oracle_text else mode
     train_ds = QADataset(data_dir, "train", tokenizer, kind="qa",
                          open_book=False, oracle_text=oracle_text,
                          max_seq_len=m_cfg.get("max_seq_len", 128))
@@ -231,6 +298,11 @@ def train_sam(cfg: Config, mode: str):
             required_slots = batch["required_slots"].to(device)
             prompt_lens = torch.tensor(batch["prompt_len"], device=device)
 
+            # Set batch metadata for multi-query mode
+            if mode == "retrieved_multi_query_union":
+                model._batch_task_types = batch["task_type"]
+                model._batch_hops = batch["hops"]
+
             _, loss, aux = model(
                 input_ids, labels=labels,
                 required_slots=required_slots,
@@ -244,6 +316,35 @@ def train_sam(cfg: Config, mode: str):
             # Optional InfoNCE contrastive loss on retrieved slots
             total_loss = loss
             aux_loss_value = 0.0
+            adapter_cos_value = 0.0
+
+            # Adapter alignment loss for hidden_adapter / train_memory_adapter modes
+            lambda_adapter = t_cfg.get("lambda_adapter", 1.0)
+            lambda_retrieval = t_cfg.get("lambda_retrieval", 0.5)
+            adapter_modes = ("retrieved_memory_hidden_adapter", "train_memory_adapter")
+            if mode in adapter_modes and "adapter_query" in aux:
+                # Cosine alignment: push adapter output toward teacher query
+                if hasattr(model, '_retriever') and model._retriever is not None:
+                    teacher_q = model._retriever.encode_text(input_ids, prompt_lens)
+                    student_q = aux["adapter_query"]
+                    cos_sim = F.cosine_similarity(student_q, teacher_q, dim=-1)
+                    adapter_loss = (1.0 - cos_sim).mean()
+                    adapter_cos_value = cos_sim.mean().item()
+
+                    # For train_memory_adapter, only use adapter loss
+                    if mode == "train_memory_adapter":
+                        total_loss = lambda_adapter * adapter_loss
+                    else:
+                        total_loss = loss + lambda_adapter * adapter_loss
+
+                    # Optional retrieval InfoNCE: push adapter query toward correct slots
+                    if lambda_retrieval > 0 and "adapter_query" in aux:
+                        student_q = aux["adapter_query"]
+                        s_frozen = F.normalize(model._slot_emb_frozen.to(device), dim=-1)
+                        full_scores = student_q @ s_frozen.t()  # [B, num_slots]
+                        pos_slot = required_slots[:, 0].clamp(min=0)
+                        retrieval_loss = F.cross_entropy(full_scores, pos_slot)
+                        total_loss = total_loss + lambda_retrieval * retrieval_loss
 
             if mode == "retrieved_memory" and lambda_contrastive > 0:
                 if "primary_query" in aux and "retrieved_slots" in aux:
@@ -304,6 +405,8 @@ def train_sam(cfg: Config, mode: str):
             }
             if aux_loss_value > 0:
                 log_metrics["contrastive_loss"] = aux_loss_value
+            if adapter_cos_value > 0:
+                log_metrics["adapter_cos"] = adapter_cos_value
 
             if global_step % log_every == 0:
                 mlogger.log(global_step, log_metrics)
@@ -342,9 +445,27 @@ def train_sam(cfg: Config, mode: str):
                           max_new_tokens=cfg.eval.get("max_new_tokens", 6),
                           mode=forward_mode, device=device)
     recall = {}
-    if mode == "retrieved_memory":
+    eval_mode = mode if mode in ("retrieved_memory", "retrieved_memory_external_text_query",
+                                  "retrieved_memory_hidden_adapter") else None
+    if eval_mode:
         recall = recall_at_k(model, val_loader, tokenizer,
-                            k_values=(1, 8, 32), device=device)
+                            k_values=(1, 8, 32), device=device, mode=eval_mode)
+
+    # Compute adapter cosine alignment on val set
+    adapter_cos_val = 0.0
+    if mode in ("retrieved_memory_hidden_adapter", "train_memory_adapter"):
+        if hasattr(model, '_retriever') and model._retriever is not None:
+            cos_vals = []
+            for batch in val_loader:
+                ids = batch["input_ids"].to(device)
+                pl = torch.tensor(batch["prompt_len"], device=device)
+                teacher_q = model._retriever.encode_text(ids, pl)
+                _, _, aux_batch = model(ids, prompt_lens=pl, mode=forward_mode)
+                if "adapter_query" in aux_batch:
+                    cos = F.cosine_similarity(aux_batch["adapter_query"], teacher_q, dim=-1)
+                    cos_vals.append(cos.mean().item())
+            if cos_vals:
+                adapter_cos_val = sum(cos_vals) / len(cos_vals)
 
     summary = {
         "run_name": run_name,
@@ -360,6 +481,8 @@ def train_sam(cfg: Config, mode: str):
         **{f"val_{k}": v for k, v in acc.items() if not isinstance(v, dict)},
         **{f"val_{k}": v for k, v in recall.items()},
     }
+    if adapter_cos_val > 0:
+        summary["val_adapter_cosine"] = adapter_cos_val
     mlogger.save_summary(summary)
 
     mlogger.logger.info("Training complete. Best val_loss=%.4f", best_val_loss)
@@ -405,7 +528,7 @@ def main():
     ap = argparse.ArgumentParser(description="Train SAM model.")
     ap.add_argument("--mode", required=True,
                     choices=list(MEMORY_MODES),
-                    help="Memory mode: core_only, oracle_memory, retrieved_memory, random_memory")
+                    help="Memory mode: core_only, oracle_memory, retrieved_memory, random_memory, oracle_text_memory, retrieved_memory_external_text_query, retrieved_memory_hidden_adapter, train_memory_adapter")
     ap.add_argument("--config", default="configs/sam_tiny.yaml",
                     help="Path to YAML config file.")
     ap.add_argument("--override", nargs="*", default=None)

@@ -240,10 +240,42 @@ class ProductKeyMemory(nn.Module):
         return pk_score
 
     def read_slot_values(self, slot_ids: torch.Tensor, value_emb_weight: torch.Tensor,
-                         uniform: bool = True) -> torch.Tensor:
-        """Oracle read: uniform-weighted value sum over the given slot ids.
+                         uniform: bool = True, scores: Optional[torch.Tensor] = None,
+                         aggregation_mode: str = "uniform_mean",
+                         temperature: float = 0.1,
+                         required_slots: Optional[torch.Tensor] = None,
+                         threshold: Optional[float] = None,
+                         top_n: Optional[int] = None,
+                         delta: Optional[float] = None,
+                         mass_p: Optional[float] = None) -> torch.Tensor:
+        """Read and aggregate slot values with configurable aggregation.
 
         slot_ids: [N, M] in ORIGINAL slot ID space. Maps to compact if needed.
+        scores: [N, M] optional retrieval scores for weighted aggregation.
+        aggregation_mode:
+          Original modes:
+          - "uniform_mean" (default): equal-weight average over all slots.
+          - "top1": use only the highest-scoring slot.
+          - "top3": use only the top 3 scoring slots (uniform).
+          - "score_weighted_softmax": softmax(scores / temperature) weighting.
+          - "score_weighted_top3": softmax over top 3 only.
+          - "oracle_filter_diagnostic": filter to required_slots only (diagnostic).
+
+          Experiment 0.10 — Threshold/margin selection modes:
+          - "score_threshold_absolute": select slots where score >= threshold.
+          - "score_threshold_relative_to_top": select slots where
+            score >= top_score - delta.
+          - "softmax_mass_threshold": select smallest prefix of ranked slots
+            such that cumulative softmax mass >= mass_p.
+          - "score_gap_cutoff": select ranked slots until the score gap
+            between adjacent slots exceeds threshold.
+          - "fixed_topN": select top N slots by score (uniform average).
+
+        Extra params for threshold modes:
+          threshold: float (required for score_threshold_absolute, score_gap_cutoff)
+          delta: float (required for score_threshold_relative_to_top)
+          mass_p: float (required for softmax_mass_threshold)
+          top_n: int (required for fixed_topN)
         Returns [N, value_dim].
         """
         # Map original slot IDs to compact if in compact mode
@@ -258,8 +290,122 @@ class ProductKeyMemory(nn.Module):
         obj_valid = (obj >= 0).float() * valid
         vals = F.embedding(obj.clamp(min=0), value_emb_weight)      # [N, M, value_dim]
         vals = vals * obj_valid[..., None]
-        denom = obj_valid.sum(dim=1, keepdim=True).clamp(min=1.0)
-        return vals.sum(dim=1) / denom
+
+        N, M, V = vals.shape
+
+        # Compute aggregation weights
+        if aggregation_mode == "oracle_filter_diagnostic" and required_slots is not None:
+            # Filter to only required slots: build mask from required_slots per batch item
+            mask = torch.zeros(N, M, device=vals.device)
+            for i in range(N):
+                req_i = set(int(s) for s in required_slots[i] if int(s) >= 0)
+                if not req_i:
+                    mask[i, :] = obj_valid[i]
+                else:
+                    for j in range(M):
+                        sid = int(slot_ids[i, j].item())
+                        if sid in req_i:
+                            mask[i, j] = 1.0
+            mask = mask * obj_valid
+            weights = mask / mask.sum(dim=1, keepdim=True).clamp(min=1.0)
+        elif aggregation_mode == "score_threshold_absolute":
+            assert threshold is not None, "score_threshold_absolute requires threshold"
+            assert scores is not None, "score_threshold_absolute requires scores"
+            # Select slots where score >= threshold
+            mask = (scores >= threshold).float() * obj_valid
+            weights = mask / mask.sum(dim=1, keepdim=True).clamp(min=1.0)
+        elif aggregation_mode == "score_threshold_relative_to_top":
+            assert delta is not None, "score_threshold_relative_to_top requires delta"
+            assert scores is not None, "score_threshold_relative_to_top requires scores"
+            # Select slots where score >= top_score - delta
+            top_scores = scores.max(dim=-1, keepdim=True).values  # [N, 1]
+            mask = (scores >= top_scores - delta).float() * obj_valid
+            weights = mask / mask.sum(dim=1, keepdim=True).clamp(min=1.0)
+        elif aggregation_mode == "softmax_mass_threshold":
+            assert mass_p is not None, "softmax_mass_threshold requires mass_p"
+            assert scores is not None, "softmax_mass_threshold requires scores"
+            # Select smallest prefix such that cumulative softmax mass >= mass_p
+            # Slots are already ranked. Compute softmax weights, then cumulative sum.
+            w_soft = F.softmax(scores / temperature, dim=-1)  # [N, M]
+            cumsum = w_soft.cumsum(dim=-1)  # [N, M]
+            # Find first index where cumsum >= mass_p
+            exceed = (cumsum >= mass_p).float()  # [N, M]
+            # For each row, mask up to and including the first exceeding index
+            # Use argmax to find the first 1
+            first_idx = exceed.argmax(dim=-1, keepdim=True)  # [N, 1] — 0 if never exceeds
+            # Build mask: include all positions <= first_idx
+            range_t = torch.arange(M, device=vals.device).unsqueeze(0)  # [1, M]
+            mask = (range_t <= first_idx).float() * obj_valid
+            weights = mask / mask.sum(dim=1, keepdim=True).clamp(min=1.0)
+        elif aggregation_mode == "score_gap_cutoff":
+            assert threshold is not None, "score_gap_cutoff requires threshold"
+            assert scores is not None, "score_gap_cutoff requires scores"
+            # Select ranked slots until score gap between adjacent slots exceeds threshold.
+            # Compute gap: scores[:, :-1] - scores[:, 1:]  ([N, M-1])
+            # Find first gap that exceeds threshold.
+            gaps = scores[:, :-1] - scores[:, 1:]  # [N, M-1]
+            gap_mask = (gaps > threshold).float()  # [N, M-1]
+            # Find first position where gap exceeds threshold
+            first_gap_idx = gap_mask.argmax(dim=-1, keepdim=True)  # [N, 1]
+            # Build mask: include positions up to and including first_gap_idx
+            range_t = torch.arange(M, device=vals.device).unsqueeze(0)  # [1, M]
+            mask = (range_t <= first_gap_idx).float() * obj_valid
+            weights = mask / mask.sum(dim=1, keepdim=True).clamp(min=1.0)
+        elif aggregation_mode == "top1":
+            # Use only the top-scoring slot
+            weights = torch.zeros(N, M, device=vals.device)
+            if scores is not None:
+                best_idx = scores.argmax(dim=-1)  # [N]
+                weights[torch.arange(N, device=vals.device), best_idx] = 1.0
+            else:
+                weights[:, 0] = 1.0
+            weights = weights * obj_valid
+            weights = weights / weights.sum(dim=1, keepdim=True).clamp(min=1.0)
+        elif aggregation_mode == "top3":
+            # Use top 3 scoring slots (uniform among them)
+            weights = torch.zeros(N, M, device=vals.device)
+            if scores is not None and M >= 3:
+                _, top3_idx = scores.topk(min(3, M), dim=-1)  # [N, 3]
+                for i in range(N):
+                    for j in top3_idx[i]:
+                        weights[i, j] = 1.0
+            else:
+                k = min(3, M)
+                weights[:, :k] = 1.0
+            weights = weights * obj_valid
+            weights = weights / weights.sum(dim=1, keepdim=True).clamp(min=1.0)
+        elif aggregation_mode == "fixed_topN":
+            assert top_n is not None, "fixed_topN requires top_n"
+            n = min(top_n, M)
+            weights = torch.zeros(N, M, device=vals.device)
+            if scores is not None and M >= n:
+                _, top_idx = scores.topk(n, dim=-1)  # [N, n]
+                for i in range(N):
+                    for j in top_idx[i]:
+                        weights[i, j] = 1.0
+            else:
+                weights[:, :n] = 1.0
+            weights = weights * obj_valid
+            weights = weights / weights.sum(dim=1, keepdim=True).clamp(min=1.0)
+        elif aggregation_mode in ("score_weighted_softmax", "score_weighted_top3"):
+            if scores is not None:
+                if aggregation_mode == "score_weighted_top3" and M > 3:
+                    # Only keep top 3, mask others
+                    top3_vals, top3_idx = scores.topk(min(3, M), dim=-1)
+                    masked_scores = torch.full_like(scores, float('-inf'))
+                    masked_scores.scatter_(1, top3_idx, top3_vals)
+                    w = F.softmax(masked_scores / temperature, dim=-1)
+                else:
+                    w = F.softmax(scores / temperature, dim=-1)
+                weights = w * obj_valid
+                weights = weights / weights.sum(dim=1, keepdim=True).clamp(min=1.0)
+            else:
+                weights = obj_valid / obj_valid.sum(dim=1, keepdim=True).clamp(min=1.0)
+        else:  # uniform_mean (default)
+            weights = obj_valid / obj_valid.sum(dim=1, keepdim=True).clamp(min=1.0)
+
+        result = (vals * weights.unsqueeze(-1)).sum(dim=1)  # [N, V]
+        return result
 
     def num_live_slots(self) -> int:
         return int((self.slot_value_token >= 0).sum().item())

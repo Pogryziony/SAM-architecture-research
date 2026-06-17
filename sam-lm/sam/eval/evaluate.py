@@ -124,7 +124,7 @@ def evaluate_model(
 
     if compute_recall:
         recall = recall_at_k(model, test_loader, tokenizer,
-                             k_values=(1, 8, 32), device=device)
+                             k_values=(1, 8, 32), device=device, mode=mode)
         acc.update(recall)
 
     return acc
@@ -345,7 +345,27 @@ def main():
                 n_subkeys = 64
             total_slots = n_subkeys * n_subkeys
             slot_value_token, num_live = build_kb_tensors(data_dir, total_slots, tokenizer)
-            model.set_kb(slot_value_token)
+
+            # Wire dual encoder retriever if config specifies one
+            retriever = None
+            if cfg and cfg.get("retriever_backend") == "dual_encoder":
+                r_ckpt = cfg.get("retriever_checkpoint")
+                if r_ckpt and os.path.exists(r_ckpt):
+                    from ..model.sam_core import DualEncoderWrapper
+                    retriever = DualEncoderWrapper(r_ckpt, tokenizer, device)
+                    print(f"  Dual encoder retriever loaded from {r_ckpt}")
+                else:
+                    print(f"  WARNING: Dual encoder checkpoint not found: {r_ckpt}")
+
+            # Set retrieval topK if configured
+            if cfg and cfg.get("topK"):
+                model._retrieval_k = cfg.get("topK")
+            if cfg and cfg.get("memory_aggregation_mode"):
+                model._aggregation_mode = cfg.get("memory_aggregation_mode")
+            if cfg and cfg.get("memory_score_temperature"):
+                model._aggregation_temperature = float(cfg.get("memory_score_temperature"))
+
+            model.set_kb(slot_value_token, retriever=retriever)
             model.to(device)
 
             eval_cfg_dict = {}
@@ -355,10 +375,25 @@ def main():
                 elif isinstance(cfg.eval, dict):
                     eval_cfg_dict = cfg.eval
 
-            # Detect mode from directory name
+            # Read trained mode from checkpoint (saved in extra['mode'])
+            ckpt_mode = None
+            ckpt_state = torch.load(ckpt, map_location=device, weights_only=False)
+            ckpt_mode = ckpt_state.get("mode", None)
+
+            # Detect mode from directory name (check more specific patterns first)
             mode = None
             name_lower = name.lower()
-            if "oracle" in name_lower:
+            if "oracle_text" in name_lower:
+                mode = "oracle_text_memory"
+            elif "retrieved_oracle" in name_lower:
+                mode = "retrieved_oracle_slots"
+            elif "external_text" in name_lower or "multi_query" in name_lower:
+                mode = "retrieved_memory_external_text_query"
+            elif "hidden_adapter" in name_lower:
+                mode = "retrieved_memory_hidden_adapter"
+            elif "memory_adapter" in name_lower and "pretrain" not in name_lower:
+                mode = "train_memory_adapter"
+            elif "oracle" in name_lower:
                 mode = "oracle_memory"
             elif "retrieved" in name_lower:
                 mode = "retrieved_memory"
@@ -367,13 +402,22 @@ def main():
             elif "core_only" in name_lower or "core" in name_lower:
                 mode = "core_only"
 
+            # Fall back to checkpoint mode if directory detection fails
+            if mode is None and ckpt_mode is not None:
+                mode = ckpt_mode
+
             # If mode detected, evaluate only that mode
-            modes_to_eval = [mode] if mode else ["core_only", "oracle_memory", "retrieved_memory"]
+            default_modes = ["core_only", "oracle_memory", "retrieved_memory"]
+            modes_to_eval = [mode] if mode else default_modes
             for m in modes_to_eval:
+                # Set memory_mode on model so core_only/random_memory forward correctly
+                model.memory_mode = m
                 print(f"  mode={m}...")
+                compute_recall = m in ("retrieved_memory", "retrieved_memory_external_text_query",
+                                        "retrieved_memory_hidden_adapter")
                 res = evaluate_model(
                     f"sam_{name}_{m}", model, data_dir, tokenizer,
-                    device, mode=m, compute_recall=(m == "retrieved_memory"),
+                    device, mode=m, compute_recall=compute_recall,
                     eval_cfg=eval_cfg_dict,
                 )
                 all_results.append(res)

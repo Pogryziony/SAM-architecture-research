@@ -213,6 +213,138 @@ class TestEvalMetrics:
         assert gates["gate_3_retrieval_gap"]["passed"]  # gap = 0.15 < 0.20
 
 
+class TestRequiredSetMetrics:
+    """Experiment 0.10: Required-set retrieval metrics."""
+
+    def test_single_required_slot_found(self):
+        from sam.eval.metrics import compute_required_set_metrics
+        results = compute_required_set_metrics(
+            required_slots_list=[[5]],
+            retrieved_topk_list=[[5, 10, 20, 30, 40, 50, 60, 70]],
+            hops_list=[1],
+            k_values=(1, 3, 8),
+        )
+        assert results["any_required_present_at_1"] == 1.0
+        assert results["all_required_present_at_1"] == 1.0
+        assert results["required_slot_coverage_at_1"] == 1.0
+        assert results["any_required_present_at_8"] == 1.0
+        assert results["all_required_present_at_8"] == 1.0
+        assert results["mean_required_count"] == 1.0
+        assert results["mean_retrieved_required_at_8"] == 1.0
+
+    def test_single_required_slot_not_found(self):
+        from sam.eval.metrics import compute_required_set_metrics
+        results = compute_required_set_metrics(
+            required_slots_list=[[99]],
+            retrieved_topk_list=[[5, 10, 20, 30]],
+            hops_list=[1],
+            k_values=(1, 4),
+        )
+        assert results["any_required_present_at_4"] == 0.0
+        assert results["all_required_present_at_4"] == 0.0
+        assert results["required_slot_coverage_at_4"] == 0.0
+
+    def test_multiple_required_slots_partial(self):
+        from sam.eval.metrics import compute_required_set_metrics
+        results = compute_required_set_metrics(
+            required_slots_list=[[5, 10, 15]],
+            retrieved_topk_list=[[5, 10, 20, 30, 40, 50, 60, 70]],
+            hops_list=[2],
+            k_values=(1, 2, 3, 8),
+        )
+        # at K=1: only slot 5 present, so any=True, all=False
+        assert results["any_required_present_at_1"] == 1.0
+        assert results["all_required_present_at_1"] == 0.0
+        assert results["required_slot_coverage_at_1"] == 1.0 / 3.0
+
+        # at K=2: slots 5 and 10 present, so any=True, all=False
+        assert results["any_required_present_at_2"] == 1.0
+        assert results["all_required_present_at_2"] == 0.0
+        assert results["required_slot_coverage_at_2"] == 2.0 / 3.0
+
+        # at K=3: still missing 15 (slot 20 is not required)
+        assert results["any_required_present_at_3"] == 1.0
+        assert results["all_required_present_at_3"] == 0.0
+
+    def test_multiple_required_slots_all_found(self):
+        from sam.eval.metrics import compute_required_set_metrics
+        results = compute_required_set_metrics(
+            required_slots_list=[[5, 10, 15]],
+            retrieved_topk_list=[[5, 15, 10, 20, 30, 40, 50, 60]],
+            hops_list=[3],
+            k_values=(3, 8),
+        )
+        assert results["all_required_present_at_3"] == 1.0
+        assert results["all_required_present_at_8"] == 1.0
+        assert results["required_slot_coverage_at_3"] == 1.0
+        assert results["all_required_three_hop_at_3"] == 1.0
+
+    def test_duplicate_retrieved_slots(self):
+        """Duplicate retrieved slots should not affect required-set metrics."""
+        from sam.eval.metrics import compute_required_set_metrics
+        results = compute_required_set_metrics(
+            required_slots_list=[[5]],
+            retrieved_topk_list=[[5, 5, 10, 5, 20, 30, 40, 50]],
+            hops_list=[1],
+            k_values=(3, 8),
+        )
+        assert results["all_required_present_at_3"] == 1.0
+        assert results["required_slot_coverage_at_3"] == 1.0
+
+    def test_no_required_slots(self):
+        """Examples with no required slots should not break metrics."""
+        from sam.eval.metrics import compute_required_set_metrics
+        results = compute_required_set_metrics(
+            required_slots_list=[[]],
+            retrieved_topk_list=[[5, 10, 20, 30]],
+            hops_list=[0],
+            k_values=(4,),
+        )
+        # With no required slots, all_present should be True (vacuously) and any False
+        assert results["any_required_present_at_4"] == 0.0
+        # all_required is True when n_required > 0 and all are present;
+        # with n_required==0, it's False
+        assert results["all_required_present_at_4"] == 0.0
+        assert results["required_slot_coverage_at_4"] == 0.0
+
+    def test_multi_hop_per_hop_breakdown(self):
+        from sam.eval.metrics import compute_required_set_metrics
+        results = compute_required_set_metrics(
+            required_slots_list=[[1], [2, 3], [4, 5, 6]],
+            retrieved_topk_list=[[1, 10, 11], [2, 20, 21], [4, 7, 8, 9, 5, 6, 30, 31]],
+            hops_list=[1, 2, 3],
+            k_values=(3, 8),
+        )
+        # 1-hop: all present at K=3
+        assert results["all_required_single_hop_at_3"] == 1.0
+        # 2-hop: only slot 2 present, missing 3
+        assert results["all_required_two_hop_at_3"] == 0.0
+        # 3-hop: at K=3 only slot 4 present, missing 5, 6
+        assert results["all_required_three_hop_at_3"] == 0.0
+        # at K=8: all 3-hop required present
+        assert results["all_required_three_hop_at_8"] == 1.0
+
+    def test_aggregate_over_multiple_examples(self):
+        from sam.eval.metrics import compute_required_set_metrics
+        results = compute_required_set_metrics(
+            required_slots_list=[[1], [2, 3], [99]],
+            retrieved_topk_list=[
+                [1, 10, 11, 12, 13, 14, 15, 16],
+                [10, 11, 3, 2, 14, 15, 16, 17],
+                [1, 2, 3, 4, 5, 6, 7, 8],
+            ],
+            hops_list=[1, 2, 1],
+            k_values=(8,),
+        )
+        n = 3
+        # Example 0: any=True, all=True. Example 1: any=True, all=True (2,3 both in top8)
+        # Example 2: any=False, all=False
+        assert results["any_required_present_at_8"] == 2.0 / n
+        assert results["all_required_present_at_8"] == 2.0 / n
+        # Total required: 1 + 2 + 1 = 4. Retrieved: 1 + 2 + 0 = 3
+        assert results["required_slot_coverage_at_8"] == 3.0 / 4.0
+
+
 class TestConfig:
     def test_load_config(self):
         from sam.utils.config import load_config, Config

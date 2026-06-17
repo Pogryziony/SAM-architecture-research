@@ -7,6 +7,11 @@ Implements every metric specified in docs/metrics.md:
   training_loss, validation_loss, parameter_count.
 
 Also implements the five decision gates from docs/experiment-0.md.
+
+Experiment 0.10: Required-set retrieval metrics
+  any_required_present@K, all_required_present@K, required_slot_coverage@K,
+  mean_required_retrieved_count@K, required_count, retrieved_required_count@K,
+  missing_required_count@K.
 """
 from __future__ import annotations
 
@@ -134,6 +139,7 @@ def recall_at_k(
     tokenizer: Tokenizer,
     k_values: Tuple[int, ...] = (1, 8, 32),
     device: str = "cpu",
+    mode: Optional[str] = None,
 ) -> Dict[str, float]:
     """Compute retrieval Recall@k for product-key memory.
 
@@ -152,7 +158,7 @@ def recall_at_k(
         required_slots = batch["required_slots"].to(device)
         prompt_lens = torch.tensor(batch["prompt_len"], device=device)
 
-        retrieved = model.retrieve(input_ids, prompt_lens, k=max(k_values))
+        retrieved = model.retrieve(input_ids, prompt_lens, k=max(k_values), mode=mode)
         if retrieved is None:
             continue
 
@@ -170,6 +176,209 @@ def recall_at_k(
     results = {}
     for k in k_values:
         results[f"recall_at_{k}"] = hits[k] / max(total, 1)
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Experiment 0.10: Required-set retrieval metrics
+# ---------------------------------------------------------------------------
+
+def compute_required_set_metrics(
+    required_slots_list: List[List[int]],
+    retrieved_topk_list: List[List[int]],
+    hops_list: List[int],
+    k_values: Tuple[int, ...] = (1, 3, 8, 16, 32, 64),
+) -> Dict[str, Any]:
+    """Compute required-set retrieval metrics across examples.
+
+    Args:
+        required_slots_list: List of required slot ID lists per example.
+        retrieved_topk_list: List of retrieved top-k slot ID lists per example.
+        hops_list: Number of reasoning hops per example.
+        k_values: K thresholds to compute metrics at.
+
+    Returns:
+        Dict with per-K metrics (any_required_present, all_required_present,
+        coverage, counts) globally and per hop (1-hop, 2-hop, 3-hop).
+    """
+    results: Dict[str, Any] = {}
+    total_examples = len(required_slots_list)
+
+    for k in k_values:
+        any_present = 0
+        all_present = 0
+        total_required = 0
+        total_retrieved_required = 0
+        total_missing = 0
+
+        # Per-hop trackers
+        hop_any: Dict[int, int] = defaultdict(int)
+        hop_all: Dict[int, int] = defaultdict(int)
+        hop_total: Dict[int, int] = defaultdict(int)
+        hop_tot_required: Dict[int, int] = defaultdict(int)
+        hop_tot_retrieved_required: Dict[int, int] = defaultdict(int)
+
+        for i in range(total_examples):
+            req = set(required_slots_list[i])
+            ret = list(retrieved_topk_list[i])[:k]  # top-k
+            ret_set = set(ret)
+            h = int(hops_list[i]) if i < len(hops_list) else 0
+
+            n_required = len(req)
+            n_retrieved_required = len(req & ret_set)
+            n_missing = n_required - n_retrieved_required
+
+            total_required += n_required
+            total_retrieved_required += n_retrieved_required
+            total_missing += n_missing
+
+            has_any = n_retrieved_required > 0
+            has_all = n_required > 0 and n_retrieved_required == n_required
+
+            any_present += int(has_any)
+            all_present += int(has_all)
+
+            # Per-hop counts
+            hop_total[h] = hop_total.get(h, 0) + 1
+            hop_any[h] = hop_any.get(h, 0) + int(has_any)
+            hop_all[h] = hop_all.get(h, 0) + int(has_all)
+            hop_tot_required[h] = hop_tot_required.get(h, 0) + n_required
+            hop_tot_retrieved_required[h] = hop_tot_retrieved_required.get(h, 0) + n_retrieved_required
+
+        prefix = f"at_{k}"
+        results[f"any_required_present_{prefix}"] = any_present / max(total_examples, 1)
+        results[f"all_required_present_{prefix}"] = all_present / max(total_examples, 1)
+        results[f"required_slot_coverage_{prefix}"] = (
+            total_retrieved_required / max(total_required, 1)
+        )
+        results[f"mean_required_count"] = total_required / max(total_examples, 1)
+        results[f"mean_retrieved_required_{prefix}"] = (
+            total_retrieved_required / max(total_examples, 1)
+        )
+        results[f"mean_missing_required_{prefix}"] = (
+            total_missing / max(total_examples, 1)
+        )
+
+        # Per-hop all_required_present
+        for h in sorted(hop_total.keys()):
+            hop_name = {1: "single_hop", 2: "two_hop", 3: "three_hop"}.get(h, f"hop_{h}")
+            n = max(hop_total[h], 1)
+            results[f"all_required_{hop_name}_{prefix}"] = hop_all.get(h, 0) / n
+            results[f"any_required_{hop_name}_{prefix}"] = hop_any.get(h, 0) / n
+            results[f"coverage_{hop_name}_{prefix}"] = (
+                hop_tot_retrieved_required.get(h, 0) / max(hop_tot_required.get(h, 1), 1)
+            )
+
+    return results
+
+
+@torch.no_grad()
+def required_set_recall_eval(
+    model,
+    dataloader: DataLoader,
+    tokenizer: Tokenizer,
+    k_values: Tuple[int, ...] = (1, 3, 8, 16, 32, 64),
+    device: str = "cpu",
+    mode: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Evaluate required-set retrieval metrics on a dataloader.
+
+    For each example, retrieves topK slots and computes required-set coverage
+    metrics (any_required, all_required, coverage) per K value and per hop.
+
+    Returns a dict with all metrics, plus per-example details.
+    """
+    model.eval()
+    model.to(device)
+
+    required_slots_list: List[List[int]] = []
+    retrieved_topk_list: List[List[int]] = []
+    hops_list: List[int] = []
+    per_example_details: List[Dict] = []
+
+    max_k = max(k_values)
+
+    for batch in dataloader:
+        input_ids = batch["input_ids"].to(device)
+        required_slots = batch["required_slots"].to(device)
+        prompt_lens = torch.tensor(batch["prompt_len"], device=device)
+
+        retrieved = model.retrieve(input_ids, prompt_lens, k=max_k, mode=mode)
+        if retrieved is None:
+            continue
+
+        B = required_slots.size(0)
+        for i in range(B):
+            req = [int(s) for s in required_slots[i] if int(s) >= 0]
+            ret = [int(s) for s in retrieved[i]]
+            h = int(batch["hops"][i])
+
+            required_slots_list.append(req)
+            retrieved_topk_list.append(ret)
+            hops_list.append(h)
+
+            # Per-example detail
+            ret_set = set(ret)
+            n_required = len(req)
+            retrieved_required = [s for s in ret if s in set(req)]
+            missing = [s for s in req if s not in ret_set]
+
+            detail: Dict[str, Any] = {
+                "required_slots": req,
+                "retrieved_topk": ret,
+                "required_count": n_required,
+                "retrieved_required_count": len(retrieved_required),
+                "missing_required_count": len(missing),
+                "retrieved_required_slots": retrieved_required,
+                "missing_required_slots": missing,
+                "reasoning_hops": h,
+            }
+
+            for k in k_values:
+                ret_k_set = set(ret[:k])
+                retrieved_required_k = [s for s in ret[:k] if s in set(req)]
+                missing_k = [s for s in req if s not in ret_k_set]
+                n_retrieved_k = len(retrieved_required_k)
+                detail[f"all_required_present_at_{k}"] = (
+                    n_required > 0 and n_retrieved_k == n_required
+                )
+                detail[f"any_required_present_at_{k}"] = n_retrieved_k > 0
+                detail[f"required_slot_coverage_at_{k}"] = (
+                    n_retrieved_k / max(n_required, 1)
+                )
+                detail[f"retrieved_required_at_{k}"] = retrieved_required_k
+                detail[f"missing_required_at_{k}"] = missing_k
+
+            # Determine failure type
+            all_at_8 = detail.get(f"all_required_present_at_{8}", False)
+            all_at_32 = detail.get(f"all_required_present_at_{32}", False)
+            all_at_64 = detail.get(f"all_required_present_at_{64}", False)
+
+            if n_required == 0:
+                failure = "no_required_slots"
+            elif all_at_8:
+                failure = "none_all_present"
+            elif all_at_32:
+                failure = "ranked_too_low"
+            elif all_at_64:
+                failure = "ranked_beyond_64"
+            else:
+                # Check if any required are in top 64
+                if detail.get(f"any_required_present_at_{64}", False):
+                    failure = "missing_required_slot"
+                else:
+                    failure = "no_required_in_top64"
+
+            detail["failure_type"] = failure
+            per_example_details.append(detail)
+
+    # Compute aggregate metrics
+    results = compute_required_set_metrics(
+        required_slots_list, retrieved_topk_list, hops_list, k_values,
+    )
+    results["num_examples"] = len(required_slots_list)
+    results["per_example"] = per_example_details
+
     return results
 
 
@@ -339,7 +548,7 @@ def run_qa_eval(
 
     if compute_recall:
         recall = recall_at_k(model, test_loader, tokenizer,
-                             k_values=(1, 8, 32), device=device)
+                             k_values=(1, 8, 32), device=device, mode=mode)
         results.update(recall)
 
     return results

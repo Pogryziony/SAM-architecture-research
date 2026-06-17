@@ -24,7 +24,10 @@ import torch.nn.functional as F
 from .transformer import RMSNorm, TransformerBlock
 from .product_key_memory import ProductKeyMemory
 
-MEMORY_MODES = ("core_only", "oracle_memory", "retrieved_memory", "random_memory", "oracle_text_memory")
+MEMORY_MODES = ("core_only", "oracle_memory", "retrieved_memory", "random_memory", "oracle_text_memory",
+                "retrieved_memory_external_text_query", "retrieved_memory_hidden_adapter",
+                "train_memory_adapter", "retrieved_oracle_slots",
+                "retrieved_multi_query_union")
 
 
 class DualEncoderWrapper:
@@ -62,6 +65,44 @@ class DualEncoderWrapper:
         scores = q @ s.t()
         sv, si = scores.topk(k, dim=-1)
         return si, sv
+
+    @torch.no_grad()
+    def encode_text(self, input_ids: torch.Tensor, prompt_lens: torch.Tensor) -> torch.Tensor:
+        """Encode raw question text through the dual encoder's query encoder.
+        Returns normalized query vectors [B, query_dim]."""
+        q, _ = self.dual(input_ids.to(self.device), prompt_lens.to(self.device))
+        return q  # already normalized by dual.forward
+
+
+class MemoryQueryAdapter(nn.Module):
+    """Adapter from SAM hidden state to dual encoder query embedding space.
+
+    Architecture: Linear or 2-layer MLP with LayerNorm, output L2-normalized.
+    Used by retrieved_memory_hidden_adapter mode.
+    """
+    def __init__(self, hidden_dim: int, query_dim: int, hidden_mult: int = 4):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.query_dim = query_dim
+        mid_dim = hidden_dim * hidden_mult
+        self.norm = nn.LayerNorm(hidden_dim)
+        self.fc1 = nn.Linear(hidden_dim, mid_dim)
+        self.fc2 = nn.Linear(mid_dim, query_dim)
+        self._init_weights()
+
+    def _init_weights(self):
+        nn.init.normal_(self.fc1.weight, std=0.02)
+        nn.init.zeros_(self.fc1.bias)
+        nn.init.normal_(self.fc2.weight, std=0.02)
+        nn.init.zeros_(self.fc2.bias)
+
+    def forward(self, h_last: torch.Tensor) -> torch.Tensor:
+        """h_last: [B, hidden_dim] — SAM hidden state at last prompt token.
+        Returns normalized query [B, query_dim]."""
+        h = self.norm(h_last)
+        h = F.relu(self.fc1(h))
+        q = self.fc2(h)
+        return F.normalize(q, dim=-1)
 
 
 class MemoryHead(nn.Module):
@@ -157,8 +198,25 @@ class SamModel(nn.Module):
              for _ in self.memory_at]
         )
 
+        # Adapter for hidden-state → dual encoder query (retrieved_memory_hidden_adapter)
+        adapter_query_dim = int(memory_cfg.get("adapter_query_dim", 256))
+        self.memory_query_adapter = MemoryQueryAdapter(
+            hidden_dim=d_model, query_dim=adapter_query_dim,
+        )
+        self._adapter_frozen = False
+
         self.register_buffer("live_slot_ids", torch.zeros(1, dtype=torch.long))
         self.rand_m = int(memory_cfg.get("top_k", 4))
+        self._aggregation_mode = memory_cfg.get("aggregation_mode", "uniform_mean")
+        self._aggregation_temperature = float(memory_cfg.get("aggregation_temperature", 0.1))
+        # Experiment 0.10: Threshold/margin selection parameters
+        self._aggregation_threshold = memory_cfg.get("aggregation_threshold", None)
+        self._aggregation_top_n = memory_cfg.get("aggregation_top_n", None)
+        self._aggregation_delta = memory_cfg.get("aggregation_delta", None)
+        self._aggregation_mass_p = memory_cfg.get("aggregation_mass_p", None)
+        self._multi_query_k = memory_cfg.get("multi_query_k", 8)  # topK per query in multi-query mode
+        self._multi_query_count = memory_cfg.get("multi_query_count", 4)  # number of query variants
+        self._tokenizer = None  # Set via set_tokenizer() for multi-query
         self.apply(self._init)
 
     @staticmethod
@@ -177,10 +235,137 @@ class SamModel(nn.Module):
         self.live_slot_ids = live.to(self.pkm.slot_value_token.device)
         self._retriever = retriever  # optional dual-encoder for retrieved_memory
 
+        # Cache frozen slot embeddings for adapter retrieval
+        if retriever is not None:
+            self._slot_emb_frozen = retriever.dual.slot_emb.weight.clone().detach().to(
+                self.pkm.slot_value_token.device
+            )
+        else:
+            self._slot_emb_frozen = None
+
+    def set_tokenizer(self, tokenizer) -> None:
+        """Store tokenizer reference for multi-query mode."""
+        self._tokenizer = tokenizer
+
     def _sample_random_slots(self, B: int, M: int, device) -> torch.Tensor:
         n = max(1, self.live_slot_ids.numel())
         idx = torch.randint(0, n, (B, M), device=device)
         return self.live_slot_ids.to(device)[idx]
+
+    @torch.no_grad()
+    def _compute_multi_query_retrieval(
+        self,
+        input_ids: torch.Tensor,
+        prompt_lens: torch.Tensor,
+        task_types: List[str],
+        hops: List[int],
+        device: torch.device,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Multi-query union retrieval for multi-hop diagnostic.
+
+        Generates multiple query variants per example:
+          1. Original question text
+          2. Question + task_type context
+          3. Question + hops context
+          4. Task type + hops combined context
+
+        Retrieves topK_per_query for each variant, unions, deduplicates,
+        and reranks by max score across queries.
+        """
+        tokenizer = self._tokenizer
+        if tokenizer is None:
+            # Fallback: just use original question
+            q_text = self._retriever.encode_text(input_ids, prompt_lens.to(device))
+            s_frozen = F.normalize(self._slot_emb_frozen.to(device), dim=-1)
+            scores = q_text @ s_frozen.t()
+            return scores.topk(getattr(self, '_retrieval_k', 8), dim=-1)
+
+        retriever = self._retriever
+        slot_emb = F.normalize(self._slot_emb_frozen.to(device), dim=-1)
+        k_per_query = getattr(self, '_multi_query_k', 8)
+        ret_k = getattr(self, '_retrieval_k', 32)
+        n_queries = getattr(self, '_multi_query_count', 4)
+        B = input_ids.size(0)
+
+        # Collect all query texts per example
+        # Each example contributes up to n_queries query variants
+        all_query_texts: List[List[str]] = [[] for _ in range(B)]
+        for i in range(B):
+            # Query 1: Original question
+            p_len = int(prompt_lens[i].item())
+            orig_text = tokenizer.decode(input_ids[i, :p_len].tolist()).strip()
+            all_query_texts[i].append(orig_text)
+
+            # Query 2: Question + task_type
+            tt = task_types[i] if i < len(task_types) else "unknown"
+            all_query_texts[i].append(f"{orig_text} [task: {tt}]")
+
+            # Query 3: Question + hops
+            h = hops[i] if i < len(hops) else 0
+            all_query_texts[i].append(f"{orig_text} [hops: {h}]")
+
+            # Query 4: Task + hops combined
+            all_query_texts[i].append(f"task:{tt} hops:{h}")
+
+            # Trim to requested count
+            all_query_texts[i] = all_query_texts[i][:n_queries]
+
+        # Flatten: encode all queries at once
+        flat_texts: List[str] = []
+        example_query_counts: List[int] = []
+        for i in range(B):
+            texts = all_query_texts[i]
+            flat_texts.extend(texts)
+            example_query_counts.append(len(texts))
+
+        # Tokenize and encode all queries
+        max_q_len = 64  # Match dual encoder config
+        pad_id = tokenizer.pad
+        flat_input_ids = torch.full((len(flat_texts), max_q_len), pad_id, dtype=torch.long, device=device)
+        flat_prompt_lens = torch.zeros(len(flat_texts), dtype=torch.long, device=device)
+        for j, t in enumerate(flat_texts):
+            ids = tokenizer.encode(t)[:max_q_len]
+            flat_input_ids[j, :len(ids)] = torch.tensor(ids, dtype=torch.long, device=device)
+            flat_prompt_lens[j] = min(len(ids), max_q_len)
+
+        # Encode all queries through dual encoder
+        q_vectors = retriever.encode_text(flat_input_ids, flat_prompt_lens)  # [total_queries, D]
+        scores_all = q_vectors @ slot_emb.t()  # [total_queries, num_slots]
+
+        # Collect per-example results: union topK from each query variant
+        all_slots: List[List[int]] = []
+        all_scores: List[List[float]] = []
+        offset = 0
+        for i in range(B):
+            nq = example_query_counts[i]
+            # Get topK per query for this example's variants
+            seen_slots: Dict[int, float] = {}  # slot_id -> max score
+            for q_idx in range(nq):
+                q_scores = scores_all[offset + q_idx]  # [num_slots]
+                top_scores, top_slots = q_scores.topk(k_per_query, dim=-1)
+                for s in range(top_slots.numel()):
+                    sid = int(top_slots[s].item())
+                    sc = float(top_scores[s].item())
+                    if sid not in seen_slots or sc > seen_slots[sid]:
+                        seen_slots[sid] = sc
+
+            # Sort by score and take top ret_k
+            sorted_slots = sorted(seen_slots.items(), key=lambda x: x[1], reverse=True)[:ret_k]
+            slots = [s for s, _ in sorted_slots]
+            scores = [sc for _, sc in sorted_slots]
+            # Pad if fewer than ret_k
+            while len(slots) < ret_k:
+                slots.append(-1)
+                scores.append(float('-inf'))
+            all_slots.append(slots)
+            all_scores.append(scores)
+            offset += nq
+
+        # Convert to tensors
+        ret_slots = torch.tensor(all_slots, dtype=torch.long, device=device)
+        ret_scores = torch.tensor(all_scores, dtype=torch.float, device=device)
+
+        return ret_slots, ret_scores
 
     # -- forward -------------------------------------------------------------
     def forward(
@@ -209,13 +394,33 @@ class SamModel(nn.Module):
 
         # precompute oracle / random memory vector (same at all positions/layers)
         broadcast_vec = None
-        if mode == "oracle_memory":
-            assert required_slots is not None, "oracle_memory needs required_slots"
+        if mode in ("oracle_memory", "retrieved_oracle_slots"):
+            assert required_slots is not None, f"{mode} needs required_slots"
             broadcast_vec = self.pkm.read_slot_values(
                 required_slots.to(device), self.value_emb.weight)        # [B,vd]
         elif mode == "random_memory":
             rand_slots = self._sample_random_slots(B, self.rand_m, device)
             broadcast_vec = self.pkm.read_slot_values(rand_slots, self.value_emb.weight)
+
+        # Precompute retrieval for external text query mode (uses raw input_ids)
+        external_text_slots = None
+        external_text_scores = None
+        if mode == "retrieved_memory_external_text_query":
+            if hasattr(self, '_retriever') and self._retriever is not None:
+                ret_k = getattr(self, '_retrieval_k', 8)
+                q_text = self._retriever.encode_text(input_ids, prompt_lens.to(device))
+                s_frozen = F.normalize(self._slot_emb_frozen.to(device), dim=-1)
+                scores = q_text @ s_frozen.t()
+                external_text_scores, external_text_slots = scores.topk(ret_k, dim=-1)
+        elif mode == "retrieved_multi_query_union":
+            if hasattr(self, '_retriever') and self._retriever is not None:
+                # Need task_types and hops from batch
+                # These are passed via extra kwargs or can be inferred
+                task_types_list = getattr(self, '_batch_task_types', ["unknown"] * B)
+                hops_list = getattr(self, '_batch_hops', [0] * B)
+                external_text_slots, external_text_scores = self._compute_multi_query_retrieval(
+                    input_ids, prompt_lens, task_types_list, hops_list, device,
+                )
 
         aux: Dict = {}
         first_done = False
@@ -223,10 +428,57 @@ class SamModel(nn.Module):
             x = blk(x)
             if i in self.memory_at and mode != "core_only":
                 head = self.memory_heads[self.mem_index[i]]
-                if mode in ("oracle_memory", "random_memory"):
+                if mode in ("oracle_memory", "random_memory", "retrieved_oracle_slots"):
                     mem_val = broadcast_vec[:, None, :].expand(B, T, self.value_dim)
                     x = head.integrate_gated(x, mem_val)
-                else:  # retrieved_memory
+                elif mode in ("retrieved_memory_external_text_query", "retrieved_multi_query_union"):
+                    if external_text_slots is not None:
+                        extra_kw = {}
+                        if self._aggregation_mode == "oracle_filter_diagnostic":
+                            extra_kw["required_slots"] = required_slots
+                        # Pass threshold/margin parameters
+                        if self._aggregation_threshold is not None:
+                            extra_kw["threshold"] = self._aggregation_threshold
+                        if self._aggregation_top_n is not None:
+                            extra_kw["top_n"] = self._aggregation_top_n
+                        if self._aggregation_delta is not None:
+                            extra_kw["delta"] = self._aggregation_delta
+                        if self._aggregation_mass_p is not None:
+                            extra_kw["mass_p"] = self._aggregation_mass_p
+                        mem_val = self.pkm.read_slot_values(
+                            external_text_slots, self.value_emb.weight,
+                            scores=external_text_scores,
+                            aggregation_mode=self._aggregation_mode,
+                            temperature=self._aggregation_temperature,
+                            **extra_kw,
+                        )
+                        mem_val = mem_val[:, None, :].expand(B, T, self.value_dim)
+                        x = head.integrate_gated(x, mem_val)
+                elif mode in ("retrieved_memory_hidden_adapter", "train_memory_adapter"):
+                    # Use adapter on h_last to query frozen slot embeddings
+                    h_last = x[arangeB, last_idx]
+                    q_adapter = self.memory_query_adapter(h_last)
+                    s_frozen = F.normalize(self._slot_emb_frozen.to(device), dim=-1)
+                    scores = q_adapter @ s_frozen.t()
+                    ret_k = getattr(self, '_retrieval_k', 8)
+                    top_scores, slot_ids = scores.topk(ret_k, dim=-1)
+                    mem_val = self.pkm.read_slot_values(
+                        slot_ids, self.value_emb.weight,
+                        scores=top_scores,
+                        aggregation_mode=self._aggregation_mode,
+                        temperature=self._aggregation_temperature,
+                        threshold=self._aggregation_threshold,
+                        top_n=self._aggregation_top_n,
+                        delta=self._aggregation_delta,
+                        mass_p=self._aggregation_mass_p,
+                    )
+                    mem_val = mem_val[:, None, :].expand(B, T, self.value_dim)
+                    x = head.integrate_gated(x, mem_val)
+                    if not first_done:
+                        aux["adapter_query"] = q_adapter.detach()
+                        aux["adapter_retrieved_slots"] = slot_ids.detach()
+                        aux["adapter_scores"] = top_scores.detach()
+                else:  # retrieved_memory (original)
                     if hasattr(self, '_retriever') and self._retriever is not None:
                         # Use external dual-encoder retriever
                         h_last = x[arangeB, last_idx]
@@ -293,9 +545,50 @@ class SamModel(nn.Module):
 
     @torch.no_grad()
     def retrieve(self, input_ids: torch.Tensor, prompt_lens: Optional[torch.Tensor],
-                 k: int) -> Optional[torch.Tensor]:
-        """Diagnostic retrieval: top-k slots from the first memory layer's query
-        at the last prompt token. Returns slot_ids [B, k] (or None if no memory)."""
+                 k: int, mode: Optional[str] = None) -> Optional[torch.Tensor]:
+        """Diagnostic retrieval: top-k slots. Returns slot_ids [B, k] (or None).
+
+        For external_text_query / hidden_adapter: uses the respective retrieval path.
+        For other modes: uses PKM from first memory layer."""
+        mode = mode or self.memory_mode
+
+        if mode in ("retrieved_memory_external_text_query", "retrieved_multi_query_union"):
+            if hasattr(self, '_retriever') and self._retriever is not None:
+                q_text = self._retriever.encode_text(input_ids, prompt_lens)
+                s_frozen = F.normalize(self._slot_emb_frozen.to(q_text.device), dim=-1)
+                scores = q_text @ s_frozen.t()
+                _, slots = scores.topk(k, dim=-1)
+                return slots
+            return None
+
+        if mode == "retrieved_memory_hidden_adapter":
+            if not self.memory_at or self._slot_emb_frozen is None:
+                return None
+            self.eval()
+            B, T = input_ids.shape
+            T = min(T, self.max_seq_len)
+            input_ids = input_ids[:, :T]
+            device = input_ids.device
+            pos = torch.arange(T, device=device)
+            x = self.token_emb(input_ids) + self.pos_emb(pos)[None]
+            if prompt_lens is not None:
+                last_idx = (prompt_lens.to(device) - 1).clamp(0, T - 1)
+            else:
+                last_idx = torch.full((B,), T - 1, device=device, dtype=torch.long)
+            arangeB = torch.arange(B, device=device)
+            first = self.memory_at[0]
+            for i, blk in enumerate(self.blocks):
+                x = blk(x)
+                if i == first:
+                    h_last = x[arangeB, last_idx]
+                    q_adapter = self.memory_query_adapter(h_last)
+                    s_frozen = F.normalize(self._slot_emb_frozen.to(device), dim=-1)
+                    scores = q_adapter @ s_frozen.t()
+                    _, slots = scores.topk(k, dim=-1)
+                    return slots
+            return None
+
+        # Original PKM retrieval path
         if not self.memory_at:
             return None
         self.eval()
