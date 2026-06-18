@@ -67,6 +67,12 @@ def accuracy_by_hop(
         if required is not None:
             required = required.to(device)
 
+        # Set batch metadata for hop-aware aggregation modes
+        if mode in ("retrieved_multi_query_union", "retrieved_memory_external_text_query"):
+            if hasattr(model, '_batch_hops'):
+                model._batch_task_types = batch["task_type"]
+                model._batch_hops = batch["hops"]
+
         B = input_ids.size(0)
         for i in range(B):
             p_len = prompt_lens[i]
@@ -80,6 +86,11 @@ def accuracy_by_hop(
             if mode is not None and mode != "core_only":
                 # SAM model with memory
                 req_i = required[i:i+1] if required is not None else None
+                # Set per-example hops for aggregation modes
+                if hasattr(model, '_batch_hops'):
+                    model._batch_hops = [hops[i]]
+                    if hasattr(model, '_batch_task_types'):
+                        model._batch_task_types = [task_types[i]]
                 generated = model.generate(
                     prompt, max_new_tokens=max_new_tokens,
                     eos_id=tokenizer.eos, required_slots=req_i, mode=mode,

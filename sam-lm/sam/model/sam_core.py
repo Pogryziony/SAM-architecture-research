@@ -152,12 +152,21 @@ class MemoryQueryAdapter(nn.Module):
 
 
 class MemoryHead(nn.Module):
-    """Per-memory-layer projections. The bank (keys+values) is shared at model level."""
+    """Per-memory-layer projections. The bank (keys+values) is shared at model level.
+
+    Integration modes:
+      gated_sum          - learned sigmoid gate (default)
+      cross_attention    - cross-attention over slot values
+      forced_gate_1      - gate = 1.0 (full memory addition)
+      forced_gate_scalar - gate = scalar alpha (no learnable gate)
+      concat_projection  - concatenate x and mem_d, project back to d_model
+    """
 
     def __init__(self, d_model: int, key_dim: int, value_dim: int,
-                 integration: str = "gated_sum"):
+                 integration: str = "gated_sum", gate_alpha: float = 0.5):
         super().__init__()
         self.integration = integration
+        self.gate_alpha = gate_alpha
         self.d_model = d_model
         self.Wq = nn.Linear(d_model, 2 * key_dim, bias=False)
         self.mem_proj = nn.Linear(value_dim, d_model, bias=False)
@@ -166,11 +175,29 @@ class MemoryHead(nn.Module):
             self.q_proj = nn.Linear(d_model, d_model, bias=False)
             self.k_proj = nn.Linear(value_dim, d_model, bias=False)
             self.v_proj = nn.Linear(value_dim, d_model, bias=False)
+        if integration == "concat_projection":
+            self.concat_proj = nn.Linear(2 * d_model, d_model, bias=False)
 
     def integrate_gated(self, x: torch.Tensor, mem_val: torch.Tensor) -> torch.Tensor:
         mem_d = self.mem_proj(mem_val)                      # [B,T,d]
         gate = torch.sigmoid(self.Wg(torch.cat([x, mem_d], dim=-1)))
         return x + gate * mem_d
+
+    def integrate_forced_gate_1(self, x: torch.Tensor, mem_val: torch.Tensor) -> torch.Tensor:
+        """Gate = 1.0: full memory addition without learned suppression."""
+        mem_d = self.mem_proj(mem_val)                      # [B,T,d]
+        return x + mem_d
+
+    def integrate_forced_gate_scalar(self, x: torch.Tensor, mem_val: torch.Tensor) -> torch.Tensor:
+        """Gate = scalar alpha: controlled memory addition weight."""
+        mem_d = self.mem_proj(mem_val)                      # [B,T,d]
+        return x + self.gate_alpha * mem_d
+
+    def integrate_concat_projection(self, x: torch.Tensor, mem_val: torch.Tensor) -> torch.Tensor:
+        """Concatenate x and memory, project back to d_model (no gate)."""
+        mem_d = self.mem_proj(mem_val)                      # [B,T,d]
+        concat = torch.cat([x, mem_d], dim=-1)              # [B,T,2d]
+        return self.concat_proj(concat)                     # [B,T,d]
 
     def integrate_xattn(self, x: torch.Tensor, slot_vals: torch.Tensor) -> torch.Tensor:
         # slot_vals: [B,T,K,value_dim]
@@ -182,6 +209,59 @@ class MemoryHead(nn.Module):
         ctx = (att[..., None] * vh).sum(2)                  # [B,T,d]
         gate = torch.sigmoid(self.Wg(torch.cat([x, ctx], dim=-1)))
         return x + gate * ctx
+
+    def integrate(self, x: torch.Tensor, mem_val: torch.Tensor) -> torch.Tensor:
+        """Dispatch to the correct integration method based on self.integration."""
+        if self.integration == "forced_gate_1":
+            return self.integrate_forced_gate_1(x, mem_val)
+        elif self.integration == "forced_gate_scalar":
+            return self.integrate_forced_gate_scalar(x, mem_val)
+        elif self.integration == "concat_projection":
+            return self.integrate_concat_projection(x, mem_val)
+        else:
+            return self.integrate_gated(x, mem_val)
+
+
+def _extract_gate_diagnostics(
+    head: MemoryHead,
+    x_before: torch.Tensor,  # [B,T,d]
+    mem_val: torch.Tensor,   # [B,T,d] after mem_proj
+    x_after: torch.Tensor,   # [B,T,d]
+    aux: Dict,
+    B: int,
+    T: int,
+) -> None:
+    """Extract gate, memory norm, and residual diagnostics for the first memory block."""
+    with torch.no_grad():
+        d_model = head.d_model
+        # Project memory value
+        mem_d = head.mem_proj(mem_val)  # [B,T,d]
+        # Compute gate values (only valid for gated_sum mode)
+        if head.integration == "gated_sum":
+            gate = torch.sigmoid(head.Wg(torch.cat([x_before, mem_d], dim=-1)))
+            aux["gate_mean"] = gate.mean().item()
+            aux["gate_min"] = gate.min().item()
+            aux["gate_max"] = gate.max().item()
+        elif head.integration == "forced_gate_1":
+            aux["gate_mean"] = 1.0
+            aux["gate_min"] = 1.0
+            aux["gate_max"] = 1.0
+        elif head.integration == "forced_gate_scalar":
+            alpha = head.gate_alpha
+            aux["gate_mean"] = alpha
+            aux["gate_min"] = alpha
+            aux["gate_max"] = alpha
+        elif head.integration == "concat_projection":
+            aux["gate_mean"] = -1.0  # not applicable
+            aux["gate_min"] = -1.0
+            aux["gate_max"] = -1.0
+        # Memory and residual norms
+        mem_norm = mem_d.norm(dim=-1).mean().item()  # mean over B,T
+        residual = x_after - x_before
+        residual_norm = residual.norm(dim=-1).mean().item()
+        aux["memory_norm"] = mem_norm
+        aux["residual_norm"] = residual_norm
+        aux["memory_residual_ratio"] = mem_norm / max(residual_norm, 1e-8)
 
 
 class SamModel(nn.Module):
@@ -239,8 +319,13 @@ class SamModel(nn.Module):
         # value content: learnable embedding of the stored object token
         self.value_emb = nn.Embedding(vocab_size, self.value_dim)
 
+        # Build memory heads with potential override integration mode
+        _int_mode = memory_cfg.get("memory_integration_mode", None)
+        head_integration = _int_mode if _int_mode else memory_integration
+        head_alpha = float(memory_cfg.get("integration_gate_alpha", 0.5))
         self.memory_heads = nn.ModuleList(
-            [MemoryHead(d_model, self.key_dim, self.value_dim, memory_integration)
+            [MemoryHead(d_model, self.key_dim, self.value_dim, head_integration,
+                       gate_alpha=head_alpha)
              for _ in self.memory_at]
         )
 
@@ -263,6 +348,30 @@ class SamModel(nn.Module):
         self._multi_query_k = memory_cfg.get("multi_query_k", 8)  # topK per query in multi-query mode
         self._multi_query_count = memory_cfg.get("multi_query_count", 4)  # number of query variants
         self._tokenizer = None  # Set via set_tokenizer() for multi-query
+        # Experiment 0.12: Curriculum stage tracking
+        self._curriculum_stage = memory_cfg.get("curriculum_stage", None)
+        # Experiment 0.13A: Controlled noisy memory mode
+        self._memory_noise_mode = memory_cfg.get("memory_noise_mode", None)
+        self._num_distractors = int(memory_cfg.get("num_distractors", 0))
+        self._distractor_score = float(memory_cfg.get("distractor_score", 0.0))
+        # Experiment 0.13A: Memory integration mode override
+        self._integration_mode = memory_cfg.get("memory_integration_mode", None)
+        # Experiment 0.12: Learned slot selector
+        self._selector = None
+        self._selector_threshold = float(memory_cfg.get("selector_threshold", 0.5))
+        self._selector_top_n = memory_cfg.get("selector_top_n", None)
+        self._selector_use_hop_count = bool(memory_cfg.get("selector_use_hop_count", True))
+        self._selector_positive_weight = float(memory_cfg.get("selector_positive_weight", 8.0))
+        self._selector_loss_weight = float(memory_cfg.get("selector_loss_weight", 1.0))
+        self._selector_query_dim = int(memory_cfg.get("retriever_query_dim", 256))
+        if self._aggregation_mode == "learned_selector":
+            from .slot_selector import SlotSelector
+            self._selector = SlotSelector(
+                query_dim=self._selector_query_dim,
+                value_dim=self.value_dim,
+                hidden_dim=int(memory_cfg.get("selector_hidden_dim", 256)),
+                use_hop_count=self._selector_use_hop_count,
+            )
         self.apply(self._init)
 
     @staticmethod
@@ -292,6 +401,171 @@ class SamModel(nn.Module):
     def set_tokenizer(self, tokenizer) -> None:
         """Store tokenizer reference for multi-query mode."""
         self._tokenizer = tokenizer
+
+    @torch.no_grad()
+    def _build_selector_target(
+        self,
+        retrieved_slots: torch.Tensor,  # [B, K]
+        required_slots: torch.Tensor,  # [B, max_req]
+        B: int,
+    ) -> Optional[torch.Tensor]:
+        """Build binary target for slot selector: 1 if slot is required, 0 otherwise."""
+        if required_slots is None:
+            return None
+        K = retrieved_slots.size(1)
+        target = torch.zeros(B, K, device=retrieved_slots.device)
+        for i in range(B):
+            req_i = set(int(s) for s in required_slots[i] if int(s) >= 0)
+            if not req_i:
+                continue
+            for j in range(K):
+                sid = int(retrieved_slots[i, j].item())
+                if sid >= 0 and sid in req_i:
+                    target[i, j] = 1.0
+        return target
+
+    def _compute_selector_loss(
+        self,
+        logits: torch.Tensor,  # [B, K]
+        target: torch.Tensor,  # [B, K]
+    ) -> torch.Tensor:
+        """Compute weighted BCE loss for selector.
+        
+        Positive class weight compensates for sparse positives (few required slots
+        among many candidates).
+        """
+        pos_weight = torch.tensor([self._selector_positive_weight], device=logits.device)
+        return F.binary_cross_entropy_with_logits(
+            logits, target, pos_weight=pos_weight,
+        )
+
+    @torch.no_grad()
+    def _build_curriculum_slots(
+        self,
+        required_slots: torch.Tensor,  # [B, max_req]
+        B: int,
+        K: int,
+        device: torch.device,
+    ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
+        """Build retrieval slots for curriculum training stages.
+        
+        Stage 'oracle_clean': required_slots only (padded to K).
+        Stage 'oracle_plus_N_distractors': required_slots + N random distractors.
+        
+        Returns (slot_ids [B, K], scores [B, K] or None).
+        """
+        if self._curriculum_stage is None or self._curriculum_stage.startswith("chain_set"):
+            return torch.empty(0), None  # signal to use normal retrieval
+        
+        if self._curriculum_stage == "oracle_clean":
+            # Just required slots, zero-pad to K
+            max_req = required_slots.size(1)
+            slots = torch.full((B, K), -1, dtype=torch.long, device=device)
+            scores = torch.full((B, K), float('-inf'), device=device)
+            for i in range(B):
+                req_i = [int(s) for s in required_slots[i] if int(s) >= 0]
+                for j, sid in enumerate(req_i[:K]):
+                    slots[i, j] = sid
+                    scores[i, j] = 10.0  # high score
+            return slots, scores
+        
+        # oracle_plus_N_distractors
+        import re
+        match = re.match(r'oracle_plus_(\d+)_distractors', self._curriculum_stage)
+        if not match:
+            return torch.empty(0), None
+        
+        n_distractors = int(match.group(1))
+        live = self.live_slot_ids
+        
+        max_req = required_slots.size(1)
+        slots = torch.full((B, K), -1, dtype=torch.long, device=device)
+        scores = torch.full((B, K), float('-inf'), device=device)
+        
+        for i in range(B):
+            req_i = set(int(s) for s in required_slots[i] if int(s) >= 0)
+            n_req = len(req_i)
+            
+            # Add required slots with high scores
+            req_list = list(req_i)
+            for j in range(min(n_req, K - n_distractors)):
+                slots[i, j] = req_list[j]
+                scores[i, j] = 10.0
+            
+            # Add random distractors
+            n_live = live.numel()
+            pos = n_req
+            remaining = min(n_distractors, K - pos)
+            if remaining > 0 and n_live > 0:
+                # Sample distractors that aren't required
+                dist_idx = torch.randint(0, n_live, (remaining * 3,), device=device)
+                dist_slots = live[dist_idx]
+                # Filter out required
+                added = 0
+                for ds in dist_slots:
+                    if added >= remaining:
+                        break
+                    if int(ds.item()) not in req_i:
+                        slots[i, pos + added] = ds
+                        scores[i, pos + added] = 0.0  # low score for distractors
+                        added += 1
+        
+        return slots, scores
+
+    @torch.no_grad()
+    def _build_noisy_memory_slots(
+        self,
+        required_slots: torch.Tensor,  # [B, max_req]
+        B: int,
+        K: int,
+        device: torch.device,
+        num_distractors: int,
+        distractor_score: float,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Build noisy memory slots: required_slots + N random distractors.
+
+        - Required slots get score 1.0 (upper bound diagnostic).
+        - Distractor slots get distractor_score (default 0.0).
+        - Pads to K slots.
+
+        Returns (slot_ids [B, K], scores [B, K]).
+        """
+        max_req = required_slots.size(1)
+        live = self.live_slot_ids
+
+        slots = torch.full((B, K), -1, dtype=torch.long, device=device)
+        scores = torch.full((B, K), float('-inf'), device=device)
+
+        for i in range(B):
+            req_i = set(int(s) for s in required_slots[i] if int(s) >= 0)
+            n_req = len(req_i)
+            req_list = list(req_i)
+
+            # Add required slots with diagnostic score 1.0
+            for j in range(min(n_req, K)):
+                slots[i, j] = req_list[j]
+                scores[i, j] = 1.0
+
+            # Add random distractors
+            n_live = live.numel()
+            pos = n_req
+            remaining = min(num_distractors, K - pos)
+            if remaining > 0 and n_live > 0:
+                # Sample distractors that aren't required slots
+                # Oversample to ensure we can find enough non-required slots
+                dist_idx = torch.randint(0, n_live, (remaining * 5,), device=device)
+                dist_slots = live[dist_idx]
+                added = 0
+                for ds in dist_slots:
+                    if added >= remaining:
+                        break
+                    sid = int(ds.item())
+                    if sid not in req_i and sid >= 0:
+                        slots[i, pos + added] = sid
+                        scores[i, pos + added] = distractor_score
+                        added += 1
+
+        return slots, scores
 
     def _sample_random_slots(self, B: int, M: int, device) -> torch.Tensor:
         n = max(1, self.live_slot_ids.numel())
@@ -451,8 +725,41 @@ class SamModel(nn.Module):
         # Precompute retrieval for external text query mode (uses raw input_ids)
         external_text_slots = None
         external_text_scores = None
+        _noisy_memory_info = {}  # Per-example diagnostics for noisy memory mode
         if mode == "retrieved_memory_external_text_query":
-            if hasattr(self, '_retriever') and self._retriever is not None:
+            # Experiment 0.13A: Controlled noisy memory mode takes priority
+            if self._memory_noise_mode == "oracle_plus_distractors" and required_slots is not None:
+                n_dist = self._num_distractors
+                max_slots = max(required_slots.size(1) + n_dist, n_dist + 1)
+                ret_k = getattr(self, '_retrieval_k', max(max_slots, 32))
+                external_text_slots, external_text_scores = self._build_noisy_memory_slots(
+                    required_slots, B, ret_k, device,
+                    num_distractors=n_dist,
+                    distractor_score=self._distractor_score,
+                )
+                # Store per-example diagnostics
+                for i in range(B):
+                    req_i = set(int(s) for s in required_slots[i] if int(s) >= 0)
+                    all_slots = [int(s) for s in external_text_slots[i] if int(s) >= 0]
+                    dist_slots = [s for s in all_slots if s not in req_i]
+                    _noisy_memory_info[i] = {
+                        "num_required": len(req_i),
+                        "num_distractors": len(dist_slots),
+                        "distractor_slots": dist_slots,
+                        "required_slots": list(req_i),
+                        "all_slots_injected": all_slots,
+                    }
+            # Check for curriculum stage (skip if noise mode is active)
+            elif self._curriculum_stage is not None and self._curriculum_stage != "chain_set_top32" and self._curriculum_stage != "chain_set_top64":
+                ret_k = getattr(self, '_retrieval_k', 32)
+                external_text_slots, external_text_scores = self._build_curriculum_slots(
+                    required_slots, B, ret_k, device,
+                )
+                if external_text_slots.numel() == 0:
+                    external_text_slots = None
+                    external_text_scores = None
+            # Fall through to normal retrieval if no noise/curriculum slots
+            if external_text_slots is None and hasattr(self, '_retriever') and self._retriever is not None:
                 ret_k = getattr(self, '_retrieval_k', 8)
                 q_text = self._retriever.encode_text(input_ids, prompt_lens.to(device))
                 s_frozen = F.normalize(self._slot_emb_frozen.to(device), dim=-1)
@@ -476,30 +783,88 @@ class SamModel(nn.Module):
                 head = self.memory_heads[self.mem_index[i]]
                 if mode in ("oracle_memory", "random_memory", "retrieved_oracle_slots"):
                     mem_val = broadcast_vec[:, None, :].expand(B, T, self.value_dim)
-                    x = head.integrate_gated(x, mem_val)
+                    x = head.integrate(x, mem_val)
                 elif mode in ("retrieved_memory_external_text_query", "retrieved_multi_query_union"):
                     if external_text_slots is not None:
-                        extra_kw = {}
-                        if self._aggregation_mode == "oracle_filter_diagnostic":
-                            extra_kw["required_slots"] = required_slots
-                        # Pass threshold/margin parameters
-                        if self._aggregation_threshold is not None:
-                            extra_kw["threshold"] = self._aggregation_threshold
-                        if self._aggregation_top_n is not None:
-                            extra_kw["top_n"] = self._aggregation_top_n
-                        if self._aggregation_delta is not None:
-                            extra_kw["delta"] = self._aggregation_delta
-                        if self._aggregation_mass_p is not None:
-                            extra_kw["mass_p"] = self._aggregation_mass_p
-                        mem_val = self.pkm.read_slot_values(
-                            external_text_slots, self.value_emb.weight,
-                            scores=external_text_scores,
-                            aggregation_mode=self._aggregation_mode,
-                            temperature=self._aggregation_temperature,
-                            **extra_kw,
-                        )
+                        if self._aggregation_mode == "learned_selector" and self._selector is not None:
+                            # Query embedding for selector
+                            q_text_local = self._retriever.encode_text(input_ids, prompt_lens.to(device))
+                            # Slot embeddings for retrieved slots
+                            slot_embs = F.embedding(
+                                external_text_slots.clamp(min=0),
+                                F.normalize(self._slot_emb_frozen.to(device), dim=-1),
+                            )  # [B, K, D]
+                            # Slot value vectors
+                            obj = self.pkm.slot_value_token[external_text_slots.clamp(min=0)]
+                            val_valid = (obj >= 0).float()
+                            slot_vals = F.embedding(obj.clamp(min=0), self.value_emb.weight)
+                            slot_vals = slot_vals * val_valid[..., None]
+
+                            # Hop counts for selector
+                            hop_vals = getattr(self, '_batch_hops', None)
+                            hop_tensor = None
+                            if hop_vals is not None and self._selector_use_hop_count:
+                                hop_tensor = torch.tensor(hop_vals, dtype=torch.long, device=device)
+
+                            # Run selector
+                            sel_logits = self._selector(
+                                q_text_local, slot_embs, slot_vals,
+                                external_text_scores, hops=hop_tensor,
+                            )  # [B, K]
+
+                            # Build selector target
+                            sel_target = self._build_selector_target(
+                                external_text_slots, required_slots, B,
+                            )  # [B, K]
+
+                            # Select slots
+                            sel_mask, sel_probs = self._selector.select_slots(
+                                sel_logits, external_text_slots,
+                                threshold=self._selector_threshold,
+                                top_n=self._selector_top_n,
+                            )
+
+                            # Aggregate selected slot values (uniformly among selected)
+                            weights = sel_mask / sel_mask.sum(dim=1, keepdim=True).clamp(min=1.0)
+                            mem_val = (slot_vals * weights.unsqueeze(-1)).sum(dim=1)  # [B, value_dim]
+
+                            # Store diagnostics (keep logits undetached for training)
+                            if not first_done:
+                                sel_target_d = sel_target.detach() if sel_target is not None else None
+                                aux["selector_logits"] = sel_logits  # NOT detached — need gradients
+                                aux["selector_target"] = sel_target_d
+                                aux["selector_probs"] = sel_probs.detach()
+                                aux["selector_mask"] = sel_mask.detach()
+                        else:
+                            extra_kw = {}
+                            if self._aggregation_mode == "oracle_filter_diagnostic":
+                                extra_kw["required_slots"] = required_slots
+                            if self._aggregation_mode == "fixed_top_by_hop":
+                                hop_vals = getattr(self, '_batch_hops', None)
+                                if hop_vals is not None:
+                                    extra_kw["hops"] = torch.tensor(hop_vals, dtype=torch.long, device=device)
+                            # Pass threshold/margin parameters
+                            if self._aggregation_threshold is not None:
+                                extra_kw["threshold"] = self._aggregation_threshold
+                            if self._aggregation_top_n is not None:
+                                extra_kw["top_n"] = self._aggregation_top_n
+                            if self._aggregation_delta is not None:
+                                extra_kw["delta"] = self._aggregation_delta
+                            if self._aggregation_mass_p is not None:
+                                extra_kw["mass_p"] = self._aggregation_mass_p
+                            mem_val = self.pkm.read_slot_values(
+                                external_text_slots, self.value_emb.weight,
+                                scores=external_text_scores,
+                                aggregation_mode=self._aggregation_mode,
+                                temperature=self._aggregation_temperature,
+                                **extra_kw,
+                            )
                         mem_val = mem_val[:, None, :].expand(B, T, self.value_dim)
-                        x = head.integrate_gated(x, mem_val)
+                        x_before = x.clone()
+                        x = head.integrate(x, mem_val)
+                        # Extract gate diagnostics from first memory block
+                        if not first_done:
+                            _extract_gate_diagnostics(head, x_before, mem_val, x, aux, B, T)
                 elif mode in ("retrieved_memory_hidden_adapter", "train_memory_adapter"):
                     # Use adapter on h_last to query frozen slot embeddings
                     h_last = x[arangeB, last_idx]
@@ -519,7 +884,7 @@ class SamModel(nn.Module):
                         mass_p=self._aggregation_mass_p,
                     )
                     mem_val = mem_val[:, None, :].expand(B, T, self.value_dim)
-                    x = head.integrate_gated(x, mem_val)
+                    x = head.integrate(x, mem_val)
                     if not first_done:
                         aux["adapter_query"] = q_adapter.detach()
                         aux["adapter_retrieved_slots"] = slot_ids.detach()
@@ -531,13 +896,13 @@ class SamModel(nn.Module):
                         slots, scores = self._retriever.retrieve(h_last, k=4)
                         mem_val = self.pkm.read_slot_values(slots, self.value_emb.weight)
                         mem_val = mem_val[:, None, :].expand(B, T, self.value_dim)
-                        x = head.integrate_gated(x, mem_val)
+                        x = head.integrate(x, mem_val)
                     elif self.memory_query == "sequence":
                         h_last = x[arangeB, last_idx]                    # [B,d]
                         q = head.Wq(h_last)                              # [B,2k]
                         mem, sids, w = self.pkm(q, self.value_emb.weight)
                         mem_val = mem[:, None, :].expand(B, T, self.value_dim)
-                        x = head.integrate_gated(x, mem_val)
+                        x = head.integrate(x, mem_val)
                     else:  # tokenwise
                         q = head.Wq(x)                                   # [B,T,2k]
                         if self.memory_integration == "cross_attention":
@@ -546,7 +911,7 @@ class SamModel(nn.Module):
                             x = head.integrate_xattn(x, slot_vals)
                         else:
                             mem, sids, w = self.pkm(q, self.value_emb.weight)
-                            x = head.integrate_gated(x, mem)
+                            x = head.integrate(x, mem)
                     if not first_done:
                         # primary retrieval diagnostic from last prompt token
                         h_last = x[arangeB, last_idx]
@@ -555,6 +920,10 @@ class SamModel(nn.Module):
                         aux["primary_query"] = q_prim.detach()
                         aux["retrieved_slots"] = rs.detach()
                 first_done = True
+
+        # Attach noisy memory diagnostics to aux
+        if _noisy_memory_info:
+            aux["_noisy_memory_info"] = _noisy_memory_info
 
         x = self.norm(x)
         logits = self.lm_head(x)

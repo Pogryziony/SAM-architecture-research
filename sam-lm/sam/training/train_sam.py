@@ -179,6 +179,16 @@ def train_sam(cfg: Config, mode: str):
     if cfg.get("aggregation_mass_p") is not None:
         model._aggregation_mass_p = float(cfg.get("aggregation_mass_p"))
 
+    # Experiment 0.13A: Controlled noisy memory mode
+    if cfg.get("memory_noise_mode") is not None:
+        model._memory_noise_mode = cfg.get("memory_noise_mode")
+    if cfg.get("num_distractors") is not None:
+        model._num_distractors = int(cfg.get("num_distractors"))
+    if cfg.get("distractor_score") is not None:
+        model._distractor_score = float(cfg.get("distractor_score"))
+    if cfg.get("memory_integration_mode") is not None:
+        model._integration_mode = cfg.get("memory_integration_mode")
+
     # Set retrieval topK
     model._retrieval_k = cfg.get("topK", 8)
 
@@ -239,6 +249,15 @@ def train_sam(cfg: Config, mode: str):
     mlogger.logger.info("Model: %d total (%d core + %d memory) params, %d live slots",
                         pc, core, mem, num_live)
 
+    # Experiment 0.12: Curriculum training
+    curriculum_cfg = cfg.get("memory_curriculum", None)
+    curriculum_stages = []
+    if curriculum_cfg is not None and curriculum_cfg.get("enabled", False):
+        curriculum_stages = curriculum_cfg.get("stages", [])
+        mlogger.logger.info("Curriculum training enabled: %d stages", len(curriculum_stages))
+        for stage in curriculum_stages:
+            mlogger.logger.info("  Stage: %s (%d epochs)", stage.get("name", "unknown"), stage.get("epochs", 0))
+
     # --- data ---
     t_cfg = cfg.train
     batch_size = t_cfg.get("batch_size", 64)
@@ -287,10 +306,49 @@ def train_sam(cfg: Config, mode: str):
     eval_every = t_cfg.get("eval_every", 500)
     global_step = 0
     best_val_loss = float("inf")
-    epoch = 0
+    epoch_offset = 0  # for curriculum tracking
 
-    mlogger.logger.info("Training: epochs=%d steps=%d warmup=%d batch=%d",
-                        epochs, total_steps, warmup, batch_size)
+    # Experiment 0.12: Curriculum stages
+    if curriculum_stages:
+        total_curriculum_epochs = sum(s.get("epochs", 0) for s in curriculum_stages)
+        mlogger.logger.info("Training: curriculum=%d stages total_epochs=%d steps_per_epoch=%d warmup=%d batch=%d",
+                            len(curriculum_stages), total_curriculum_epochs, steps_per_epoch, warmup, batch_size)
+    else:
+        mlogger.logger.info("Training: epochs=%d steps=%d warmup=%d batch=%d",
+                            epochs, total_steps, warmup, batch_size)
+
+    # Compute total curriculum steps
+    if curriculum_stages:
+        total_curriculum_steps = sum(s.get("epochs", 0) * steps_per_epoch for s in curriculum_stages)
+    else:
+        total_curriculum_steps = total_steps
+
+    for epoch in range(epochs):
+        # Apply curriculum stage
+        current_curriculum_stage = None
+        if curriculum_stages:
+            cumulative = 0
+            for stage in curriculum_stages:
+                cumulative += stage.get("epochs", 0)
+                if epoch < cumulative:
+                    current_curriculum_stage = stage.get("name", "unknown")
+                    break
+            if current_curriculum_stage is None:
+                current_curriculum_stage = curriculum_stages[-1].get("name", "unknown")
+            model._curriculum_stage = current_curriculum_stage
+            # Update retrieval_k for curriculum stages that use chain_set
+            if current_curriculum_stage == "chain_set_top32":
+                model._retrieval_k = 32
+            elif current_curriculum_stage == "chain_set_top64":
+                model._retrieval_k = 64
+            else:
+                # For oracle stages, use enough slots for required + distractors
+                model._retrieval_k = 32  # generous default
+            
+            if epoch == 0 or (curriculum_stages and current_curriculum_stage != prev_stage):
+                mlogger.logger.info("Curriculum stage: %s (epoch %d)", 
+                                    current_curriculum_stage, epoch + 1)
+            prev_stage = getattr(model, '_curriculum_stage', None) if epoch > 0 else current_curriculum_stage
 
     for epoch in range(epochs):
         model.train()
@@ -306,8 +364,8 @@ def train_sam(cfg: Config, mode: str):
             required_slots = batch["required_slots"].to(device)
             prompt_lens = torch.tensor(batch["prompt_len"], device=device)
 
-            # Set batch metadata for multi-query mode
-            if mode == "retrieved_multi_query_union":
+            # Set batch metadata for multi-query mode and fixed_top_by_hop aggregation
+            if mode in ("retrieved_multi_query_union", "retrieved_memory_external_text_query"):
                 model._batch_task_types = batch["task_type"]
                 model._batch_hops = batch["hops"]
 
@@ -325,6 +383,42 @@ def train_sam(cfg: Config, mode: str):
             total_loss = loss
             aux_loss_value = 0.0
             adapter_cos_value = 0.0
+            selector_loss_value = 0.0
+
+            # Experiment 0.12: Selector loss
+            sel_diag_metrics = {}
+            if mode == "retrieved_memory_external_text_query" and "selector_logits" in aux:
+                sel_logits = aux["selector_logits"]
+                sel_target = aux.get("selector_target")
+                if sel_target is not None:
+                    pos_w = float(cfg.get("selector_positive_weight", 8.0))
+                    sel_loss = F.binary_cross_entropy_with_logits(
+                        sel_logits, sel_target,
+                        pos_weight=torch.tensor([pos_w], device=device),
+                    )
+                    sel_weight = float(cfg.get("selector_loss_weight", 1.0))
+                    total_loss = total_loss + sel_weight * sel_loss
+                    selector_loss_value = sel_loss.item()
+                    # Compute diagnostics (no_grad)
+                    with torch.no_grad():
+                        sel_probs = aux.get("selector_probs",
+                            torch.sigmoid(sel_logits))
+                        sel_mask = aux.get("selector_mask",
+                            (sel_probs >= float(cfg.get("selector_threshold", 0.5))).float())
+                        # Simple precision/recall from target
+                        pred_pos = (sel_probs >= 0.5).float()
+                        tp = ((pred_pos == 1) & (sel_target == 1)).float().sum()
+                        fp = ((pred_pos == 1) & (sel_target == 0)).float().sum()
+                        fn = ((pred_pos == 0) & (sel_target == 1)).float().sum()
+                        precision = tp / (tp + fp).clamp(min=1)
+                        recall = tp / (tp + fn).clamp(min=1)
+                        f1 = 2 * precision * recall / (precision + recall).clamp(min=1e-8)
+                        sel_diag_metrics = {
+                            "sel_precision": precision.item(),
+                            "sel_recall": recall.item(),
+                            "sel_f1": f1.item(),
+                            "sel_selected": (pred_pos.sum() / pred_pos.size(0)).item(),
+                        }
 
             # Adapter alignment loss for hidden_adapter / train_memory_adapter modes
             lambda_adapter = t_cfg.get("lambda_adapter", 1.0)
@@ -415,6 +509,10 @@ def train_sam(cfg: Config, mode: str):
                 log_metrics["contrastive_loss"] = aux_loss_value
             if adapter_cos_value > 0:
                 log_metrics["adapter_cos"] = adapter_cos_value
+            if selector_loss_value > 0:
+                log_metrics["selector_loss"] = selector_loss_value
+            if sel_diag_metrics:
+                log_metrics.update(sel_diag_metrics)
 
             if global_step % log_every == 0:
                 mlogger.log(global_step, log_metrics)
@@ -505,7 +603,183 @@ def train_sam(cfg: Config, mode: str):
                             recall.get("recall_at_8", 0),
                             recall.get("recall_at_32", 0))
 
+    # Experiment 0.13A: Detailed evaluation with gate/noise diagnostics
+    if model._memory_noise_mode == "oracle_plus_distractors" or model._integration_mode is not None:
+        mlogger.logger.info("Running detailed evaluation with gate/noise diagnostics...")
+        detailed_metrics, _ = _detailed_evaluate_sam(
+            model, val_loader, tokenizer, forward_mode, device, output_dir,
+            max_new_tokens=cfg.eval.get("max_new_tokens", 6),
+        )
+        for k, v in detailed_metrics.items():
+            summary[f"detailed_{k}"] = v
+        mlogger.logger.info("Detailed acc: overall=%.4f 1-hop=%.4f 2-hop=%.4f 3-hop=%.4f",
+                            detailed_metrics.get("accuracy_overall", 0),
+                            detailed_metrics.get("accuracy_1_hop", 0),
+                            detailed_metrics.get("accuracy_2_hop", 0),
+                            detailed_metrics.get("accuracy_3_hop", 0))
+
     return model, summary
+
+
+@torch.no_grad()
+def _detailed_evaluate_sam(
+    model,
+    dataloader: DataLoader,
+    tokenizer,
+    mode: str,
+    device: str,
+    output_dir: str,
+    max_new_tokens: int = 6,
+):
+    """Enhanced evaluation with gate diagnostics and prediction-level logging.
+
+    Saves:
+      experiments/debug/noisy_memory_0_13_metrics.json
+      experiments/debug/noisy_memory_0_13_predictions.jsonl
+    """
+    import json as _json
+    model.eval()
+    model.to(device)
+
+    correct: Dict[str, int] = {"overall": 0, "1-hop": 0, "2-hop": 0, "3-hop": 0}
+    total: Dict[str, int] = {"overall": 0, "1-hop": 0, "2-hop": 0, "3-hop": 0}
+    gate_means = []
+    gate_mins = []
+    gate_maxs = []
+    memory_norms = []
+    residual_norms = []
+    mem_res_ratios = []
+    predictions = []
+
+    for batch in dataloader:
+        input_ids = batch["input_ids"].to(device)
+        labels = batch["labels"].to(device)
+        hops = batch["hops"]
+        task_types = batch["task_type"]
+        prompt_lens = batch["prompt_len"]
+        required = batch.get("required_slots", None)
+        if required is not None:
+            required = required.to(device)
+
+        # Set batch metadata
+        if mode in ("retrieved_multi_query_union", "retrieved_memory_external_text_query"):
+            if hasattr(model, '_batch_hops'):
+                model._batch_task_types = batch["task_type"]
+                model._batch_hops = batch["hops"]
+
+        B = input_ids.size(0)
+        for i in range(B):
+            p_len = prompt_lens[i]
+            prompt = input_ids[i, :p_len]
+            target_ids = labels[i]
+            target_mask = target_ids != -100
+            expected = target_ids[target_mask].tolist()
+
+            # Set per-example hops
+            if hasattr(model, '_batch_hops'):
+                model._batch_hops = [hops[i]]
+                if hasattr(model, '_batch_task_types'):
+                    model._batch_task_types = [task_types[i]]
+
+            # Forward pass to get aux diagnostics
+            pl_tensor = torch.tensor([p_len], device=device)
+            req_i = required[i:i+1] if required is not None else None
+            _, _, aux = model(
+                prompt.unsqueeze(0), labels=None,
+                required_slots=req_i, prompt_lens=pl_tensor, mode=mode,
+            )
+
+            # Generate prediction
+            if mode is not None and mode != "core_only":
+                generated = model.generate(
+                    prompt, max_new_tokens=max_new_tokens,
+                    eos_id=tokenizer.eos, required_slots=req_i, mode=mode,
+                )
+            else:
+                generated = model.generate(
+                    prompt, max_new_tokens=max_new_tokens, eos_id=tokenizer.eos,
+                )
+
+            pred_text = tokenizer.decode(generated.tolist()).strip().split()[0] if generated.numel() > 0 else ""
+            expected_text = tokenizer.decode(expected).strip().split()[0] if expected else ""
+            is_correct = (pred_text == expected_text)
+
+            h = int(hops[i])
+            hop_key = "1-hop" if h == 1 else "2-hop" if h == 2 else "3-hop"
+            correct[hop_key] = correct.get(hop_key, 0) + int(is_correct)
+            total[hop_key] = total.get(hop_key, 0) + 1
+            correct["overall"] += int(is_correct)
+            total["overall"] += 1
+
+            # Collect gate diagnostics
+            if "gate_mean" in aux:
+                gate_means.append(aux["gate_mean"])
+                gate_mins.append(aux["gate_min"])
+                gate_maxs.append(aux["gate_max"])
+            if "memory_norm" in aux:
+                memory_norms.append(aux["memory_norm"])
+                residual_norms.append(aux["residual_norm"])
+                mem_res_ratios.append(aux["memory_residual_ratio"])
+
+            # Build prediction row
+            noisy_info = aux.get("_noisy_memory_info", {})
+            ex_info = noisy_info.get(i, {}) if isinstance(noisy_info, dict) else {}
+            req_slots = [int(s) for s in required[i] if int(s) >= 0] if required is not None else []
+            pred_row = {
+                "question": tokenizer.decode(prompt.tolist()),
+                "reasoning_hops": h,
+                "required_slots": req_slots,
+                "distractor_slots": ex_info.get("distractor_slots", []),
+                "all_slots_injected": ex_info.get("all_slots_injected", []),
+                "num_distractors": ex_info.get("num_distractors", 0),
+                "aggregation_mode": getattr(model, '_aggregation_mode', 'unknown'),
+                "integration_mode": getattr(model, '_integration_mode', 'gated_sum'),
+                "gate_mean": aux.get("gate_mean", -1.0),
+                "memory_norm": aux.get("memory_norm", -1.0),
+                "memory_residual_ratio": aux.get("memory_residual_ratio", -1.0),
+                "prediction": pred_text,
+                "gold_answer": expected_text,
+                "correct": is_correct,
+            }
+            predictions.append(pred_row)
+
+    # Compute accuracy metrics
+    metrics = {}
+    for key in ["overall", "1-hop", "2-hop", "3-hop"]:
+        metrics[f"accuracy_{key.replace('-', '_')}"] = correct.get(key, 0) / max(total.get(key, 1), 1)
+    if gate_means:
+        import statistics
+        metrics["gate_mean_avg"] = statistics.mean(gate_means)
+        metrics["gate_mean_min"] = min(gate_means)
+        metrics["gate_mean_max"] = max(gate_means)
+    if memory_norms:
+        import statistics
+        metrics["memory_norm_avg"] = statistics.mean(memory_norms)
+        metrics["residual_norm_avg"] = statistics.mean(residual_norms)
+        metrics["memory_residual_ratio_avg"] = statistics.mean(mem_res_ratios)
+
+    # Save diagnostics
+    debug_dir = os.path.join("experiments", "debug")
+    os.makedirs(debug_dir, exist_ok=True)
+
+    metrics_path = os.path.join(debug_dir, "noisy_memory_0_13_metrics.json")
+    with open(metrics_path, "w") as f:
+        _json.dump(metrics, f, indent=2)
+
+    preds_path = os.path.join(debug_dir, "noisy_memory_0_13_predictions.jsonl")
+    with open(preds_path, "w") as f:
+        for pred in predictions:
+            f.write(_json.dumps(pred) + "\n")
+
+    # Also save to output_dir for per-run tracking
+    os.makedirs(output_dir, exist_ok=True)
+    with open(os.path.join(output_dir, "detailed_metrics.json"), "w") as f:
+        _json.dump(metrics, f, indent=2)
+    with open(os.path.join(output_dir, "detailed_predictions.jsonl"), "w") as f:
+        for pred in predictions:
+            f.write(_json.dumps(pred) + "\n")
+
+    return metrics, predictions
 
 
 @torch.no_grad()
@@ -518,6 +792,11 @@ def _evaluate_loss(model, dataloader, device, mode):
         labels = batch["labels"].to(device)
         required_slots = batch["required_slots"].to(device)
         prompt_lens = torch.tensor(batch["prompt_len"], device=device)
+
+        # Set batch metadata for aggregation modes that need it
+        if mode in ("retrieved_multi_query_union", "retrieved_memory_external_text_query"):
+            model._batch_task_types = batch["task_type"]
+            model._batch_hops = batch["hops"]
 
         _, loss, _ = model(
             input_ids, labels=labels,

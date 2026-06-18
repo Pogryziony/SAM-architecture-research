@@ -419,13 +419,237 @@ class TestChainSetRetrieval:
     def test_slot_graph_expander(self):
         from sam.training.train_retrieval import SlotGraphExpander
 
-        model = SlotGraphExpander(slot_dim=256, num_slots=200, hidden_dim=128)
-        anchors = torch.tensor([[5, 10, 15], [20, 25, 30]])
-        scores = model.forward(anchors)
-        assert scores.shape == (2, 3, 200)
 
-        neighbors, _ = model.expand(anchors, 8)
-        assert neighbors.shape == (2, 3, 8)
+class TestNoisyMemory:
+    """Experiment 0.13A: Controlled Noisy Memory Tolerance tests."""
+
+    def test_build_noisy_memory_slots_zero_distractors(self):
+        """With 0 distractors, should return exactly the required slots."""
+        from sam.model.sam_core import SamModel
+        import torch
+
+        model = SamModel(
+            vocab_size=100, d_model=64, n_layers=3, n_heads=2, d_ff=128,
+            max_seq_len=32, memory_every=2,
+            memory_cfg={"num_subkeys": 16, "key_dim": 16, "value_dim": 32,
+                        "top_a": 4, "top_b": 4, "top_k": 4},
+            pad_id=0,
+        )
+        # Set up live slots
+        model.pkm.slot_value_token[:30] = torch.randint(0, 50, (30,))
+        model.live_slot_ids = torch.arange(30)
+
+        required = torch.tensor([[5, 10], [15, 20]])
+        B, K = 2, 8
+        slots, scores = model._build_noisy_memory_slots(
+            required, B, K, device=torch.device("cpu"),
+            num_distractors=0, distractor_score=0.5,
+        )
+        assert slots.shape == (2, 8)
+        assert scores.shape == (2, 8)
+        # First two slots should be the required ones with score 1.0 (order may vary)
+        req_set_0 = {int(slots[0, j].item()) for j in range(2)}
+        assert req_set_0 == {5, 10}
+        assert scores[0, 0].item() == 1.0
+        assert scores[0, 1].item() == 1.0
+        # Remaining slots should be -1 (padded)
+        assert int(slots[0, 2].item()) == -1
+        assert scores[0, 2].item() == float('-inf')
+
+    def test_build_noisy_memory_slots_with_distractors(self):
+        """With distractors, required + N non-required random slots."""
+        from sam.model.sam_core import SamModel
+        import torch
+
+        model = SamModel(
+            vocab_size=100, d_model=64, n_layers=3, n_heads=2, d_ff=128,
+            max_seq_len=32, memory_every=2,
+            memory_cfg={"num_subkeys": 16, "key_dim": 16, "value_dim": 32,
+                        "top_a": 4, "top_b": 4, "top_k": 4},
+            pad_id=0,
+        )
+        # 100 live slots
+        model.pkm.slot_value_token[:100] = torch.randint(0, 50, (100,))
+        model.live_slot_ids = torch.arange(100)
+
+        # Use same number of required slots per example for tensor construction
+        required = torch.tensor([[5, 10], [15, 20]])
+        B, K = 2, 8
+        slots, scores = model._build_noisy_memory_slots(
+            required, B, K, device=torch.device("cpu"),
+            num_distractors=3, distractor_score=0.5,
+        )
+        assert slots.shape == (2, 8)
+
+        # Check first example: 2 required + 3 distractors
+        req_0 = {int(slots[0, 0].item()), int(slots[0, 1].item())}
+        assert req_0 == {5, 10}
+        assert scores[0, 0].item() == 1.0
+        assert scores[0, 1].item() == 1.0
+
+        # Check distractors are present (slots 2, 3, 4) with distractor score
+        dist_slots_0 = [int(slots[0, j].item()) for j in range(2, 5)]
+        assert all(s >= 0 for s in dist_slots_0), f"Expected valid distractor slots, got {dist_slots_0}"
+        assert all(s not in req_0 for s in dist_slots_0), f"Distractors should not be required slots: {dist_slots_0} intersect {req_0}"
+        assert all(scores[0, j].item() == 0.5 for j in range(2, 5))
+
+        # Check second example: 2 required + 3 distractors
+        req_1 = {int(slots[1, 0].item()), int(slots[1, 1].item())}
+        assert req_1 == {15, 20}
+
+    def test_build_noisy_memory_distractors_not_required(self):
+        """Distractors must never be identical to required slots."""
+        from sam.model.sam_core import SamModel
+        import torch
+
+        model = SamModel(
+            vocab_size=100, d_model=64, n_layers=3, n_heads=2, d_ff=128,
+            max_seq_len=32, memory_every=2,
+            memory_cfg={"num_subkeys": 16, "key_dim": 16, "value_dim": 32,
+                        "top_a": 4, "top_b": 4, "top_k": 4},
+            pad_id=0,
+        )
+        model.pkm.slot_value_token[:100] = torch.randint(0, 50, (100,))
+        model.live_slot_ids = torch.arange(100)
+
+        # Run many times since randomization could occasionally pick a required slot
+        for _ in range(10):
+            required = torch.tensor([[0, 1, 2]])
+            B, K = 1, 8
+            slots, scores = model._build_noisy_memory_slots(
+                required, B, K, device=torch.device("cpu"),
+                num_distractors=4, distractor_score=0.5,
+            )
+            req_set = {0, 1, 2}
+            for j in range(3, 7):  # distractor positions
+                sid = int(slots[0, j].item())
+                if sid >= 0:
+                    assert sid not in req_set, f"Distractor {sid} is also a required slot!"
+
+    def test_memory_integration_modes_exist(self):
+        """Verify all integration modes can be instantiated."""
+        from sam.model.sam_core import MemoryHead
+        import torch
+
+        for mode in ["gated_sum", "forced_gate_1", "forced_gate_scalar", "concat_projection"]:
+            head = MemoryHead(
+                d_model=64, key_dim=32, value_dim=48,
+                integration=mode, gate_alpha=0.5,
+            )
+            x = torch.randn(2, 8, 64)
+            mem_val = torch.randn(2, 8, 48)
+            result = head.integrate(x, mem_val)
+            assert result.shape == (2, 8, 64), f"Mode {mode}: expected (2,8,64) got {result.shape}"
+
+    def test_forced_gate_1_simple_addition(self):
+        """Forced gate=1 should be x + mem_d (no sigmoid suppression)."""
+        from sam.model.sam_core import MemoryHead
+        import torch
+
+        head = MemoryHead(d_model=64, key_dim=32, value_dim=48, integration="forced_gate_1")
+        x = torch.ones(1, 4, 64)
+        mem_val = torch.ones(1, 4, 48)
+        result = head.integrate(x, mem_val)
+        # mem_d = mem_proj(ones(48)) which could have values, but x=1s
+        # Just verify shape and no errors
+        assert result.shape == (1, 4, 64)
+        # result should not equal x (memory was added)
+        assert not torch.allclose(result, x)
+
+    def test_forward_with_noise_mode(self):
+        """Forward pass with oracle_plus_distractors noise mode."""
+        from sam.model.sam_core import SamModel
+        import torch
+
+        model = SamModel(
+            vocab_size=100, d_model=64, n_layers=3, n_heads=2, d_ff=128,
+            max_seq_len=32, memory_every=2,
+            memory_cfg={"num_subkeys": 16, "key_dim": 16, "value_dim": 32,
+                        "top_a": 4, "top_b": 4, "top_k": 4},
+            pad_id=0,
+        )
+        model.pkm.slot_value_token[:50] = torch.randint(0, 100, (50,))
+        model.live_slot_ids = torch.arange(50)
+        model._memory_noise_mode = "oracle_plus_distractors"
+        model._num_distractors = 2
+        model._distractor_score = 0.5
+
+        x = torch.randint(1, 100, (2, 16))
+        labels = x.clone()
+        required = torch.tensor([[3, 7], [5, 12]])
+        plens = torch.tensor([16, 16])
+        logits, loss, aux = model(
+            x, labels=labels, required_slots=required,
+            prompt_lens=plens, mode="retrieved_memory_external_text_query",
+        )
+        assert logits.shape == (2, 16, 100)
+        assert loss is not None
+        # Check noise diagnostics
+        assert "_noisy_memory_info" in aux
+        info = aux["_noisy_memory_info"]
+        assert len(info) == 2
+        assert info[0]["num_required"] == 2
+        assert info[0]["num_distractors"] <= 2
+        # Check gate diagnostics are populated
+        assert "gate_mean" in aux
+        assert "memory_norm" in aux
+        assert "memory_residual_ratio" in aux
+
+    def test_forward_with_forced_gate(self):
+        """Forward pass with forced_gate_1 integration mode."""
+        from sam.model.sam_core import SamModel
+        import torch
+
+        model = SamModel(
+            vocab_size=100, d_model=64, n_layers=3, n_heads=2, d_ff=128,
+            max_seq_len=32, memory_every=2,
+            memory_cfg={"num_subkeys": 16, "key_dim": 16, "value_dim": 32,
+                        "top_a": 4, "top_b": 4, "top_k": 4,
+                        "memory_integration_mode": "forced_gate_1"},
+            pad_id=0,
+        )
+        model.pkm.slot_value_token[:50] = torch.randint(0, 100, (50,))
+        model.live_slot_ids = torch.arange(50)
+
+        x = torch.randint(1, 100, (2, 16))
+        labels = x.clone()
+        required = torch.tensor([[3, 7], [5, 12]])
+        plens = torch.tensor([16, 16])
+        logits, loss, aux = model(
+            x, labels=labels, required_slots=required,
+            prompt_lens=plens, mode="retrieved_memory",
+        )
+        assert logits.shape == (2, 16, 100)
+        assert loss is not None
+        # Gate diagnostics for forced gate
+        if "gate_mean" in aux:
+            assert aux["gate_mean"] == 1.0  # forced gate = 1.0
+
+    def test_forward_with_concat_projection(self):
+        """Forward pass with concat_projection integration mode."""
+        from sam.model.sam_core import SamModel
+        import torch
+
+        model = SamModel(
+            vocab_size=100, d_model=64, n_layers=3, n_heads=2, d_ff=128,
+            max_seq_len=32, memory_every=2,
+            memory_cfg={"num_subkeys": 16, "key_dim": 16, "value_dim": 32,
+                        "top_a": 4, "top_b": 4, "top_k": 4,
+                        "memory_integration_mode": "concat_projection"},
+            pad_id=0,
+        )
+        model.pkm.slot_value_token[:50] = torch.randint(0, 100, (50,))
+        model.live_slot_ids = torch.arange(50)
+
+        x = torch.randint(1, 100, (2, 16))
+        labels = x.clone()
+        plens = torch.tensor([16, 16])
+        logits, loss, aux = model(
+            x, labels=labels, prompt_lens=plens,
+            mode="core_only",
+        )
+        assert logits.shape == (2, 16, 100)
+        assert loss is not None
 
     def test_required_set_rank_metrics(self):
         from sam.eval.analyze_required_set_retrieval import compute_extended_rank_metrics

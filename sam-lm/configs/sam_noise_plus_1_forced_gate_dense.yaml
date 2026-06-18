@@ -1,0 +1,51 @@
+# Experiment 0.13A: +1 distractor, forced gate = 1.0
+run_name: sam_noise_1_forced_gate_dense
+seed: 42
+data_dir: data/synthetic_dense
+output_dir: experiments/exp_0_13/noise_1_forced_gate
+
+memory_noise_mode: oracle_plus_distractors
+num_distractors: 1
+distractor_score: 0.5
+memory_integration_mode: forced_gate_1
+
+model:
+  type: sam
+  d_model: 384
+  n_layers: 6
+  n_heads: 6
+  d_ff: 1536
+  dropout: 0.0
+  max_seq_len: 128
+  memory_every: 3
+  memory_query: tokenwise
+  memory_integration: gated_sum
+  memory:
+    num_subkeys: 64
+    key_dim: 64
+    value_dim: 128
+    top_a: 8
+    top_b: 8
+    top_k: 8
+    soft_candidates: false
+    aggregation_mode: uniform_mean
+
+retriever_backend: dual_encoder
+retriever_checkpoint: experiments/exp_0_6/retrieval_dual_encoder/checkpoint.pt
+topK: 32
+
+train:
+  batch_size: 64
+  lr: 3.0e-4
+  weight_decay: 0.01
+  epochs: 8
+  warmup_steps: 200
+  grad_clip: 1.0
+  device: auto
+  lambda_contrastive: 0.0
+  log_every: 50
+  eval_every: 150
+
+eval:
+  max_new_tokens: 6
+  batch_size: 128

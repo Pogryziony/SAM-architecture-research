@@ -247,7 +247,8 @@ class ProductKeyMemory(nn.Module):
                          threshold: Optional[float] = None,
                          top_n: Optional[int] = None,
                          delta: Optional[float] = None,
-                         mass_p: Optional[float] = None) -> torch.Tensor:
+                         mass_p: Optional[float] = None,
+                         hops: Optional[torch.Tensor] = None) -> torch.Tensor:
         """Read and aggregate slot values with configurable aggregation.
 
         slot_ids: [N, M] in ORIGINAL slot ID space. Maps to compact if needed.
@@ -271,11 +272,16 @@ class ProductKeyMemory(nn.Module):
             between adjacent slots exceeds threshold.
           - "fixed_topN": select top N slots by score (uniform average).
 
+          Experiment 0.12 — Hop-aware selection:
+          - "fixed_top_by_hop": select top N slots where N = hop count
+            (1-hop: top1, 2-hop: top2, 3-hop: top3). Requires hops param.
+
         Extra params for threshold modes:
           threshold: float (required for score_threshold_absolute, score_gap_cutoff)
           delta: float (required for score_threshold_relative_to_top)
           mass_p: float (required for softmax_mass_threshold)
           top_n: int (required for fixed_topN)
+          hops: [N] long tensor (required for fixed_top_by_hop)
         Returns [N, value_dim].
         """
         # Map original slot IDs to compact if in compact mode
@@ -284,7 +290,10 @@ class ProductKeyMemory(nn.Module):
         else:
             compact_ids = slot_ids
 
-        valid = (compact_ids >= 0).float()                          # [N, M]
+        # Mask out padding entries (-1) early to prevent them from
+        # being mapped to valid compact IDs (e.g. slot 0).
+        padding_mask = (slot_ids >= 0).float()                         # [N, M]
+        valid = (compact_ids >= 0).float() * padding_mask              # [N, M]
         # Use compact_ids to index into slot_value_token
         obj = self.slot_value_token[compact_ids.clamp(min=0)]       # [N, M]
         obj_valid = (obj >= 0).float() * valid
@@ -385,6 +394,20 @@ class ProductKeyMemory(nn.Module):
                         weights[i, j] = 1.0
             else:
                 weights[:, :n] = 1.0
+            weights = weights * obj_valid
+            weights = weights / weights.sum(dim=1, keepdim=True).clamp(min=1.0)
+        elif aggregation_mode == "fixed_top_by_hop":
+            assert hops is not None, "fixed_top_by_hop requires hops"
+            # hops: [N] with values 1, 2, or 3
+            weights = torch.zeros(N, M, device=vals.device)
+            for i in range(N):
+                h = int(hops[i].item())
+                n_sel = max(1, min(h, M))  # select min(hops, M) top slots
+                if scores is not None:
+                    _, top_idx = scores[i:i+1].topk(n_sel, dim=-1)  # [1, n_sel]
+                    weights[i, top_idx[0]] = 1.0
+                else:
+                    weights[i, :n_sel] = 1.0
             weights = weights * obj_valid
             weights = weights / weights.sum(dim=1, keepdim=True).clamp(min=1.0)
         elif aggregation_mode in ("score_weighted_softmax", "score_weighted_top3"):
