@@ -145,7 +145,8 @@ The advantage (or disadvantage) of SAM over a same-size dense Transformer.
 Gate 5 requires this to be positive.
 
 **Diagnoses**:
-- Positive: SAM is validated at this scale. Proceed to larger memory.
+- Positive: SAM has a measurable advantage at this scale. Proceed cautiously to
+  larger memory, but note this does not mean SAM is fully validated.
 - Zero or negative: SAM is not competitive. Inspect whether retrieval or reasoning
   is the root cause before scaling.
 

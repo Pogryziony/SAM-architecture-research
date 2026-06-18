@@ -1,4 +1,34 @@
-# SAM Architecture
+# Architecture
+
+How the current SAM implementation works, module by module.
+
+> See [thesis.md](thesis.md) for *why* SAM exists. This page covers *how* the
+> current code implements it.
+
+## High-level overview
+
+```
+Input question ─► Tokenizer ─► [Core Transformer with Memory Layers] ─► Answer
+                                   │
+                      Retriever ◄──┤ (external text query or hidden-state query)
+                          │        │
+                      Top-K slots   │
+                          │        │
+                      Aggregation ─┘ (uniform_mean, score_weighted, learned_selector, etc.)
+                          │
+                      Gate ───────── (learned scalar or forced)
+                          │
+                      Add to residual stream
+```
+
+SAM is a small transformer where certain layers have an attached **memory
+block**. At each memory-block layer:
+
+1. The transformer's hidden state is projected into a **query vector**
+2. The query is used to **retrieve** relevant slots from the memory bank
+3. Retrieved slot values are **aggregated** into a single memory vector
+4. A learned **gate** controls how much the memory vector influences the output
+5. The gated memory is **added** to the residual stream
 
 ## Thesis
 
@@ -174,21 +204,72 @@ retrieval — reasoning capacity or memory integration is the new bottleneck.
 - **Retrieval ≠ Accuracy** — Perfect retrieval doesn't improve SAM QA accuracy
 - **SAM is the new bottleneck** — Memory integration or capacity limits benefit
 
-## Current Status & On-Track Assessment
+## Memory Integration Modes (Gate Stress)
 
-The original thesis has been partially validated:
-- ✅ Core CAN use memory (oracle → 99.9%)
-- ✅ Retrieval CAN find complete chains (chain-set → 100%)
-- ❌ Retrieved memory does NOT improve accuracy over core_only
+How the retrieved memory vector is combined with the transformer's hidden state.
+Controlled by `memory_integration_mode`:
 
-We are on track for the **retrieval** dimension but off-track for the
-**memory integration** dimension. The next priority is investigating why
-SAM's gated_sum memory integration doesn't convert accurate retrieval
-into improved reasoning.
+| Mode | How it works | When used |
+|------|-------------|-----------|
+| `integrate_gated` (normal_gate) | `out = x + σ(gate) * mem` — learned scalar gate between 0 and 1 | Default mode. The core can learn to use or ignore memory. |
+| `forced_gate_1` | gate = 1.0 always — memory always forced in | Stress test: does forcing memory use help? |
+| `forced_gate_scalar` | gate = fixed value (e.g., 0.5) | Test partial gate thresholds |
+| `concat_projection` | Concatenate [hidden, memory], project back to hidden size | Alternative integration architecture |
 
-### Next Steps:
-1. Investigate memory integration — gated_sum may not be effective for external text
-2. Train SAM for more epochs / larger models to benefit from accurate retrieval
-3. Consider cross-attention memory integration instead of gated_sum
-4. Test whether the core learns to ignore external memory (loss analysis)
-5. Scale to larger datasets where core_only capacity is insufficient
+**From Experiment 0.13A:** Forced gate did not significantly change results with
+controlled random distractors — gate suppression is NOT the primary bottleneck.
+
+## Controlled Noisy Memory Path (0.13A/0.13B)
+
+Added to test noise tolerance. Controlled by `memory_noise_mode`:
+
+| Mode | What it injects |
+|------|----------------|
+| `oracle_plus_distractors` | Required slots + N random distractors from live slots |
+| `oracle_plus_realistic_distractors` | Required slots + N distractors from the retriever's top-K results |
+
+The `_build_noisy_memory_slots()` method:
+1. Takes the gold required slot IDs
+2. Samples N random live slots (excluding required ones) — or N realistic distractors
+3. Combines required + distractors
+4. Queries PKM for their value vectors
+5. Aggregates and injects **through the same memory integration code** as normal retrieval
+
+This is NOT a separate oracle shortcut. It uses the identical memory path with
+controlled slot content — making it a fair test of the integration step.
+
+## Slot Selector (`sam/model/slot_selector.py`)
+
+A small (3-layer MLP) neural network that looks at retrieved candidate slots
+and predicts which ones are actually needed for the question.
+
+**Input features per slot:**
+- Query embedding (from retriever or SAM hidden state)
+- Slot embedding (from retriever's slot table)
+- Slot value vector (from PKM)
+- Retrieval score, rank position, score margin from top
+- Optional: hop count embedding
+
+**Output:** One logit per candidate slot (probability that slot is required).
+
+**Training:** BCE (Binary Cross-Entropy) loss — each slot is a binary
+classification problem (required or not).
+
+**Results (0.12):**
+- Recall: 96.6% — finds nearly all required slots
+- Precision: 50% — selects about twice as many slots as needed
+- ~1.75 distractors injected (vs ~1.89 required)
+- But QA accuracy = core_only (68.74%) — the reason for 0.13A investigation
+
+## Current Status of Components
+
+| Component | Status | Experiment |
+|-----------|--------|-----------|
+| Product-key memory | Working, used in all experiments | Since 0.6 |
+| Dual encoder retriever | Working (99% Rec@8 on dense data) | 0.5-0.6 |
+| Chain-set retriever | Working (all_required@32 = 100%) | 0.11 |
+| Oracle memory path | Validated (99.87%) | 0.6 |
+| Controlled noise path | Implemented | 0.13A |
+| Learned selector | Partial (96.6% recall, 50% precision) | 0.12 |
+| Realistic distractor path | Implemented | 0.13B (in progress) |
+| Efficiency measurements | Not implemented | — |

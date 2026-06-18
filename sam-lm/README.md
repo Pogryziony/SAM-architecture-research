@@ -1,9 +1,10 @@
 # SAM-LM: Sparse Associative Memory Language Model
 
 Research proof-of-concept testing whether decoupling knowledge (sparse product-key memory)
-from computation (small dense core) improves multi-hop reasoning over external facts.
+from computation (small dense core) enables multi-hop reasoning on a CPU memory budget.
 
-**Status**: Experiments 0–0.4 complete. SAM architecture validated (core CAN use memory). Retrieval is the bottleneck. Not production code.
+**Status**: Through Experiment 0.13A. Oracle memory validated. Controlled noisy memory
+tolerance confirmed. Realistic retrieval end-to-end NOT yet validated. Not production code.
 
 ## Thesis
 
@@ -12,70 +13,97 @@ in a small dense core and stores knowledge in a sparse associative memory retrie
 Per-token dense compute remains small and constant, while knowledge capacity scales through
 RAM-backed memory slots.
 
-## Key Results (Experiments 0–0.4)
+SAM is **not "just a small LLM with RAG"** — memory is integrated into the model's internal
+computation via learned gating, not simply prepended to the input text.
 
-| Experiment | Finding |
-|-----------|---------|
-| **0.0 — Dense baseline** | 5.9% val accuracy (closed-book). Open-book: 100% |
-| **0.1 — SAM memory modes** | Oracle latent: 8.3% (+1.8pp over core-only). Retrieved: 6.5% (no benefit) |
-| **0.2 — Compact retrieval** | 16K PKM: 25.8% Rec@8. Oracle text: 100% overfit (core CAN use memory) |
-| **0.3 — PKM diagnostics** | Candidate gen: SOLVED (100%). Ranking: 87.5% train but 29% val (generalization gap) |
-| **0.4 — Retrieval baselines** | Linear classifier: 16.5% val Rec@8 (task IS learnable but data-starved) |
-| **0.4 — Dataset fix** | Fact pool: 15K examples, 6.4/slot. Contrastive retriever: testing now |
+## Key Experimental Results
+
+| Experiment | Finding | Key Metric |
+|-----------|---------|-----------|
+| **0.6 — Dense baseline** | SAM core ≈ dense transformer at equal params | 68.74% overall |
+| **0.6 — Oracle memory** | SAM CAN use clean memory for reasoning | 99.87% → 100% |
+| **0.10 — Required-set retrieval** | Dual encoder misses multi-hop required slots | all_required@64 = 27% |
+| **0.11 — Chain-aware retrieval** | BCE chain-set retriever finds all required slots | all_required@32 = 100% |
+| **0.12 — Slot selection** | Selector recall 96.6%, precision 50% — bottleneck | 0% improvement vs core_only |
+| **0.13A — Controlled noise** | SAM tolerates +8 random distractors | 91.58% overall |
+| **0.13A — Collapse point** | 3-hop collapses between +8 and +16 distractors | 79.3% → 39.0% |
 
 ### Core findings:
-- **SAM oracle memory works** — 8.3% vs 6.5% core-only on val (Gate 2 PASS)
-- **SAM core CAN use memory** — 100% overfit with oracle text injection
-- **PKM mechanism validated** — 100% candidate inclusion with subkey loss
-- **Retrieval is the bottleneck** — Gate 1 (Rec@8 >= 80%) not reached with any retriever
+- **SAM oracle memory works** — 100% on multi-hop QA with clean memory
+- **SAM tolerates controlled noise** — does NOT collapse with 1-2 distractors
+- **Retrieval solved** — chain-set BCE finds 100% of required slots at top32
+- **Selection is the bottleneck** — learned selector finds slots (96.6% recall) but picks distractors (50% precision)
 
-## Quick Start (Smoke Test)
+## Quick Start
 
 ```bash
 pip install -r requirements.txt
-python -m sam.data.synthetic_facts --output data/synthetic --train 20000 --val 1000 --test 1000 --seed 42
-python -m sam.training.train_dense --config configs/dense_tiny.yaml
-python -m sam.training.train_retrieval --config configs/retrieval_compact_16k_subkey_loss.yaml
-python -m sam.training.train_sam --mode oracle_memory --config configs/sam_tiny.yaml
-python -m sam.eval.evaluate --runs experiments/
+
+# Generate dataset
+python -m sam.data.synthetic_facts --output data/synthetic_dense --train 19000 --val 3800 --test 3800 --seed 42
+
+# Run tests
+pytest -q
+
+# Core-only baseline
+python -m sam.training.train_sam --mode core_only --config configs/sam_tiny_dense.yaml
+
+# Oracle memory (upper bound)
+python -m sam.training.train_sam --mode oracle_memory --config configs/sam_tiny_dense.yaml
 ```
 
-## Full Experiment Pipeline
+## Key experiments to reproduce
 
 ```bash
-# Generate data (fact-pool approach: ~15K train, 6+ examples per slot)
-python -m sam.data.synthetic_facts --output data/synthetic --train 20000 --val 1000 --test 1000 --seed 42
+# Controlled noisy memory (0.13A)
+python -m sam.training.train_sam --mode retrieved_memory_external_text_query \
+  --config configs/sam_noise_oracle_plus_1_dense.yaml
 
-# Train all baselines
-python -m sam.training.train_dense --config configs/dense_tiny.yaml
-python -m sam.training.train_dense --config configs/dense_openbook.yaml
+# Chain-set retrieval
+python -m sam.training.train_retrieval --config configs/retrieval_chain_set_bce_dense.yaml
 
-# Retrieval experiments
-python -m sam.training.train_retrieval --config configs/retrieval_compact_16k_subkey_loss.yaml
-python -m sam.training.train_retrieval --config configs/retrieval_classifier_compact_16k.yaml
-python -m sam.training.train_retrieval --config configs/retrieval_contrastive.yaml
-
-# SAM memory modes
-python -m sam.training.train_sam --mode core_only --config configs/sam_tiny.yaml
-python -m sam.training.train_sam --mode oracle_memory --config configs/sam_tiny.yaml
-python -m sam.training.train_sam --mode oracle_text_memory --config configs/sam_tiny.yaml
-python -m sam.training.train_sam --mode retrieved_memory --config configs/sam_tiny.yaml
-
-# Evaluation
-python -m sam.eval.evaluate --runs experiments/
+# Learned selector
+python -m sam.training.train_sam --mode retrieved_memory_external_text_query \
+  --config configs/sam_chain_learned_selector_dense.yaml
 ```
 
-## Diagnostic Tools
+## Diagnostics
 
 ```bash
-python -m sam.eval.inspect_dataset --data-dir data/synthetic --limit 20
-python -m sam.eval.inspect_slots --data-dir data/synthetic --limit 20
-python -m sam.eval.inspect_retrieval_split --data-dir data/synthetic
+# Inspect dataset
+python -m sam.eval.inspect_dataset --data-dir data/synthetic_dense --limit 20
+
+# Inspect memory slots
+python -m sam.eval.inspect_slots --data-dir data/synthetic_dense --limit 20
+
+# Required-set retrieval analysis
+python -m sam.eval.analyze_required_set_retrieval \
+  --retriever experiments/exp_0_11/chain_set_bce/checkpoint.pt \
+  --data-dir data/synthetic_dense
 ```
+
+## Documentation
+
+Full documentation is in `docs/`:
+- [Getting Started](docs/getting-started.md)
+- [Thesis](docs/thesis.md)
+- [Architecture](docs/architecture.md)
+- [Experiments](docs/experiments.md)
+- [Current Status](docs/current-status.md)
+- [Roadmap](docs/roadmap.md)
+- [Glossary](docs/glossary.md)
+- [Repository Map](docs/repository-map.md)
 
 ## Experiment Reports
 
 - `experiments/diagnosis_report.md` — Experiment 0 pipeline fixes
-- `experiments/experiment_0_2_report.md` — Compact retrieval + oracle text
-- `experiments/experiment_0_3_report.md` — PKM diagnostics + subkey loss
-- `experiments/experiment_0_4_report.md` — Retrieval baselines + dataset diagnosis
+- `experiments/experiment_0_5_report.md` — Retrieval solved (dense dataset)
+- `experiments/experiment_0_6_final_report.md` — Full validation: oracle works, retrieval fails
+- `experiments/experiment_0_10_report.md` — Required-set retrieval diagnostics
+- `experiments/experiment_0_11_report.md` — Chain-aware retrieval (multi-positive BCE)
+- `experiments/experiment_0_12_report.md` — Candidate selection and memory-use training
+- `experiments/experiment_0_13A_noisy_memory_report.md` — Controlled noisy memory tolerance
+
+---
+
+*Last updated: 2026-06-18*
