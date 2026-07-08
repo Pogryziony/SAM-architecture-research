@@ -604,7 +604,7 @@ def train_sam(cfg: Config, mode: str):
                             recall.get("recall_at_32", 0))
 
     # Experiment 0.13A: Detailed evaluation with gate/noise diagnostics
-    if model._memory_noise_mode == "oracle_plus_distractors" or model._integration_mode is not None:
+    if model._memory_noise_mode in ("oracle_plus_distractors", "oracle_plus_realistic_distractors") or model._integration_mode is not None:
         mlogger.logger.info("Running detailed evaluation with gate/noise diagnostics...")
         detailed_metrics, _ = _detailed_evaluate_sam(
             model, val_loader, tokenizer, forward_mode, device, output_dir,

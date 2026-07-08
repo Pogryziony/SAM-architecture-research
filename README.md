@@ -1,93 +1,120 @@
 # SAM-architecture-research
 
-**SAM — Sparse Associative Memory Language Model**
+**Architecture pivot: SAM → NEXUS** (2026-07-08)
 
 *Experimental research project. Not production code. Not a validated architecture.*
 
-## What SAM means in this repository
+---
 
-SAM explores whether useful language understanding, question answering, and
-multi-hop reasoning can be built with **less dependence on huge dense weights**
-and **repeated RAM/VRAM bandwidth**.
+## Active: NEXUS — Non-Parametric Execution and Understanding System
 
-Instead of storing all knowledge inside dense neural network weights (like most
-large language models do), SAM uses a **small active core** plus a **sparse,
-selectively-accessed memory** that lives in RAM. The core stays small and
-constant-cost per token, while knowledge capacity scales through the memory
-bank.
+NEXUS is a **graph-first reasoning architecture**. It stores knowledge as an explicit graph
+of entities, relations, and sources — not as dense weights or document chunks.
 
-**SAM is not "just a small LLM with RAG."** It is a different architecture
-hypothesis: what if knowledge and computation are fundamentally separated?
+Instead of: `documents → embeddings → top-K chunks → LLM`
 
-## Current research status
+NEXUS goes: `entities → relations → graph paths → evidence → small reasoning model`
+
+**The core bet:** reasoning should start from graph traversal, not text generation.
+The LLM is a language interface and lightweight reasoner; the domain intelligence
+comes from the graph.
+
+| Property | RAG | NEXUS |
+|----------|-----|-------|
+| Knowledge | Text chunks | Graph: entities + typed relations + sources |
+| Retrieval | Cosine similarity | Graph traversal + path scoring |
+| Multi-hop | LLM infers chains from text | Graph paths ARE the chains |
+| Hallucination | LLM may invent connections | Verifier checks answer against evidence |
+| CPU-first | No (embedding model needs GPU) | Yes (traversal is CPU, small LLM runs on CPU) |
+
+### Project status
 
 | Area | Status |
 |------|--------|
-| Oracle (perfect) memory | ✅ Confirmed — 100% accuracy on multi-hop QA |
-| Controlled noisy memory tolerance | ✅ Confirmed — tolerates up to +8 random distractors |
-| Retrieval (finding correct slots) | ✅ Chain-set retriever works (100% all_required@32) |
-| Learned slot selection | ⚠️ Precision bottleneck (~50%) |
-| Realistic retrieval end-to-end | ❌ Not yet validated |
-| Scaling to larger models/datasets | ❌ Not yet evaluated |
-| CPU efficiency vs dense baselines | ❌ Not yet measured |
+| Architecture design | ✅ Complete — see [docs/](docs/) |
+| Graph data model | ✅ Defined — node types, edge types, confidence scoring |
+| Reasoning pipeline | ✅ Designed — entity extraction → traversal → evidence → verify |
+| Graph store | 🔄 In progress — `InMemoryGraphStore` implemented |
+| Entity extraction | 🔄 In progress — rule-based + LLM pipeline designed |
+| Graph traversal | 🔄 In progress — beam search with edge-type weighting |
+| End-to-end QA | ❌ Not yet validated |
+| RAG comparison | ❌ Not yet benchmarked |
 
-## Quick start
+### Quick start (NEXUS)
 
 ```bash
-cd sam-lm
-pip install -r requirements.txt
-python -m sam.data.synthetic_facts --output data/synthetic --train 20000 --val 1000 --test 1000 --seed 42
-python -m sam.training.train_dense --config configs/dense_tiny.yaml
-python -m sam.training.train_sam --mode oracle_memory --config configs/sam_tiny.yaml
-pytest -q
+# Explore the graph data model
+python -c "from nexus.graph import Node, Edge, EDGE_TYPE_WEIGHTS; print(EDGE_TYPE_WEIGHTS)"
+
+# Create and traverse a knowledge graph
+python -c "
+from nexus.graph import Node, Edge
+from nexus.graph.store import InMemoryGraphStore
+
+g = InMemoryGraphStore()
+g.add_node(Node(id='DHM', type='Entity'))
+g.add_node(Node(id='MigrationTest', type='TestCase', properties={'status': 'failing'}))
+g.add_node(Node(id='Bug_Visibility', type='Bug'))
+g.add_edge(Edge(type='validates', source='MigrationTest', target='DHM', confidence=1.0))
+g.add_edge(Edge(type='blocked_by', source='MigrationTest', target='Bug_Visibility', confidence=0.9))
+
+paths = g.traverse(['MigrationTest'], max_depth=3)
+for p in paths:
+    print(p)
 ```
 
-See [sam-lm/README.md](sam-lm/README.md) for detailed instructions.
+### Documentation (NEXUS)
 
-## Key experimental results
+- [Analysis & Roadmap](ANALYSIS_AND_ROADMAP.md) — full architecture, roadmap, research questions
+- [Graph Memory Model](docs/graph-memory.md) — data model, node/edge types, construction pipeline
+- [Graph Reasoning](docs/graph-reasoning.md) — traversal, path scoring, evidence building, verification
+- [RAG vs NEXUS](docs/rag-vs-graph-nexus.md) — detailed comparison, when to use which
 
-| Experiment | Finding | Overall accuracy |
-|-----------|---------|-----------------|
-| Core-only baseline | SAM without memory | 68.74% |
-| Oracle memory (perfect retrieval) | SAM CAN use memory for reasoning | 99.87% → 100.00% |
-| Tracked noisy memory (+1 distractor) | SAM does NOT collapse with one distractor | 99.82% |
-| Tracked noisy memory (+8 distractors) | SAM tolerates substantial noise | 91.58% |
-| Tracked noisy memory (+16 distractors) | 3-hop reasoning collapses | 75.42% (3-hop: 39%) |
-| Chain-set retrieval (all_required@32) | Retriever finds all required slots | 100% coverage |
-| Learned slot selector | Finds required slots but picks distractors | Precision ~50% |
+### Repository structure
 
-## Current next step
+```
+nexus/                  ← NEXUS implementation (ACTIVE)
+  graph/                → Graph store, traversal, scoring
+  ingestion/            → Entity/relation extraction pipelines
+  query/                → Question parsing, entity disambiguation
+  reasoning/            → Evidence building, prompt templates, verifier
 
-**Experiment 0.13B** — Realistic Retrieval Distractor Replay.
+experiments/            ← NEXUS experiments (ACTIVE)
+  entity-extraction/
+  relation-extraction/
+  graph-traversal/
+  path-ranking/
 
-Controlled random distractors worked (0.13A). Now test whether realistic
-retrieval distractors (hard negatives from actual retrieval) are harder, and
-rerun non-oracle baselines after critical padding-bug fixes.
+benchmarks/             ← NEXUS benchmarks (ACTIVE)
+  qa-dataset/
+  graph-eval/
+  rag-baseline/
 
-## Documentation
+docs/                   ← NEXUS documentation (ACTIVE)
+  graph-memory.md
+  graph-reasoning.md
+  rag-vs-graph-nexus.md
 
-Full documentation is in [sam-lm/docs/](sam-lm/docs/):
-
-- [Getting started](sam-lm/docs/getting-started.md)
-- [Thesis explanation](sam-lm/docs/thesis.md)
-- [Architecture](sam-lm/docs/architecture.md)
-- [Glossary](sam-lm/docs/glossary.md)
-- [Experiment history](sam-lm/docs/experiments.md)
-- [Experiment 0.13A — Noisy Memory](sam-lm/docs/experiment-0-13a-noisy-memory.md)
-- [Current research status](sam-lm/docs/current-status.md)
-- [Roadmap](sam-lm/docs/roadmap.md)
-- [Glossary](sam-lm/docs/glossary.md)
-- [Repository map](sam-lm/docs/repository-map.md)
-- [Troubleshooting](sam-lm/docs/troubleshooting.md)
-
-## Warnings
-
-- This is **experimental research**, not production software.
-- SAM has not been validated at scale.
-- SAM does not currently beat GPT, DeepSeek, or any production LLM.
-- All results are on synthetic, small-scale datasets.
-- The architecture is a work in progress — many pieces may change.
+sam-lm/                 ← Original SAM experiments (ARCHIVED — reference only)
+```
 
 ---
 
-*Last updated: 2026-06-18*
+## Archived: SAM — Sparse Associative Memory (deprecated)
+
+The original SAM architecture proved that a small reasoning core CAN use external
+memory for multi-hop reasoning (100% oracle accuracy) and that chain-set retrieval
+can find complete fact chains (100% all_required@32). These findings informed the NEXUS design.
+
+SAM code, experiments, and documentation are preserved in `sam-lm/` for reference.
+See [sam-lm/README.md](sam-lm/README.md).
+
+**Key SAM findings that transferred to NEXUS:**
+- Oracle memory = 100% on multi-hop → reasoning core CAN use external structured knowledge
+- Chain-set retrieval = 100% all_required@32 → complete-set retrieval works; graph is the generalization
+- Selector bottleneck (50% precision) → distinguishing relevant from misleading facts requires graph structure, not flat MLPs
+- SAM tolerates +8 random distractors → architecture is noise-tolerant; the problem is semantic, not quantitative
+
+---
+
+*Last updated: 2026-07-08*

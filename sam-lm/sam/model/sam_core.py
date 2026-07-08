@@ -354,6 +354,8 @@ class SamModel(nn.Module):
         self._memory_noise_mode = memory_cfg.get("memory_noise_mode", None)
         self._num_distractors = int(memory_cfg.get("num_distractors", 0))
         self._distractor_score = float(memory_cfg.get("distractor_score", 0.0))
+        # Experiment 0.13B: Realistic distractor replay mode
+        self._realistic_mode_k = int(memory_cfg.get("realistic_mode_k", 32))  # topK for realistic retrieval
         # Experiment 0.13A: Memory integration mode override
         self._integration_mode = memory_cfg.get("memory_integration_mode", None)
         # Experiment 0.12: Learned slot selector
@@ -749,6 +751,56 @@ class SamModel(nn.Module):
                         "required_slots": list(req_i),
                         "all_slots_injected": all_slots,
                     }
+            # Experiment 0.13B: Realistic distractor from retriever/selector
+            elif self._memory_noise_mode == "oracle_plus_realistic_distractors" and required_slots is not None:
+                n_dist = self._num_distractors
+                realistic_k = self._realistic_mode_k
+                # Run the actual retriever to get realistic candidates
+                q_text = self._retriever.encode_text(input_ids, prompt_lens.to(device))
+                s_frozen = F.normalize(self._slot_emb_frozen.to(device), dim=-1)
+                ret_scores = q_text @ s_frozen.t()  # [B, num_live_slots]
+                ret_scores, ret_slots = ret_scores.topk(realistic_k, dim=-1)  # [B, K_ret]
+                # Build: required_slots + first N realistic distractors
+                max_req = required_slots.size(1)
+                ret_k = max(max_req + n_dist, n_dist + 1)
+                external_text_slots = torch.full((B, ret_k), -1, dtype=torch.long, device=device)
+                external_text_scores = torch.full((B, ret_k), float('-inf'), device=device)
+                _realistic_diagnostics = {}
+                for i in range(B):
+                    req_i = set(int(s) for s in required_slots[i] if int(s) >= 0)
+                    n_req = len(req_i)
+                    req_list = list(req_i)
+                    # Add required slots with score 1.0
+                    for j in range(min(n_req, ret_k)):
+                        external_text_slots[i, j] = req_list[j]
+                        external_text_scores[i, j] = 1.0
+                    # Collect realistic distractors (retrieved slots not in required set)
+                    realistic_dist = []
+                    realistic_dist_scores = []
+                    for k in range(ret_slots.size(1)):
+                        sid = int(ret_slots[i, k].item())
+                        if sid >= 0 and sid not in req_i:
+                            realistic_dist.append(sid)
+                            realistic_dist_scores.append(float(ret_scores[i, k].item()))
+                    # Add first N realistic distractors
+                    pos = n_req
+                    for d_idx in range(min(n_dist, len(realistic_dist), ret_k - pos)):
+                        external_text_slots[i, pos + d_idx] = realistic_dist[d_idx]
+                        external_text_scores[i, pos + d_idx] = self._distractor_score
+                    # Store diagnostics
+                    all_slots_injected = [int(s) for s in external_text_slots[i] if int(s) >= 0]
+                    injected_dist = [s for s in all_slots_injected if s not in req_i]
+                    _realistic_diagnostics[i] = {
+                        "num_required": n_req,
+                        "num_distractors": len(injected_dist),
+                        "distractor_slots": injected_dist,
+                        "required_slots": list(req_i),
+                        "all_slots_injected": all_slots_injected,
+                        "realistic_candidates": [int(s) for s in ret_slots[i] if int(s) >= 0],
+                        "realistic_candidate_scores": [float(ret_scores[i, k].item()) for k in range(ret_slots.size(1)) if int(ret_slots[i, k].item()) >= 0],
+                        "noise_mode": "oracle_plus_realistic_distractors",
+                    }
+                _noisy_memory_info = _realistic_diagnostics
             # Check for curriculum stage (skip if noise mode is active)
             elif self._curriculum_stage is not None and self._curriculum_stage != "chain_set_top32" and self._curriculum_stage != "chain_set_top64":
                 ret_k = getattr(self, '_retrieval_k', 32)
