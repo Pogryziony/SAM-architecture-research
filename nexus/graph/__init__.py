@@ -49,34 +49,62 @@ class Edge:
         if not self.created_at:
             self.created_at = datetime.now().isoformat()
 
+    def __hash__(self):
+        return hash((self.type, self.source, self.target))
+
+
+@dataclass
+class PathStep:
+    """A single step in a traversal path: an edge plus direction flag."""
+    edge: Edge
+    reversed: bool = False  # True if edge was traversed target→source
+
+    @property
+    def from_node(self) -> str:
+        return self.edge.target if self.reversed else self.edge.source
+
+    @property
+    def to_node(self) -> str:
+        return self.edge.source if self.reversed else self.edge.target
+
+    @property
+    def relation_type(self) -> str:
+        return self.edge.type
+
 
 @dataclass
 class Path:
-    """A path through the graph: sequence of edges from start to end."""
-    edges: list[Edge]
+    """A path through the graph: sequence of steps from start to end."""
+    steps: list[PathStep] = field(default_factory=list)
     score: float = 0.0
+
+    @property
+    def edges(self) -> list[Edge]:
+        """Raw edges in traversal order (for backward compat)."""
+        return [s.edge for s in self.steps]
 
     @property
     def nodes(self) -> list[str]:
         """List of node IDs in traversal order."""
-        if not self.edges:
+        if not self.steps:
             return []
-        ids = [self.edges[0].source]
-        for edge in self.edges:
-            ids.append(edge.target)
+        ids = [self.steps[0].from_node]
+        for step in self.steps:
+            ids.append(step.to_node)
         return ids
 
     @property
     def length(self) -> int:
-        return len(self.edges)
+        return len(self.steps)
 
     def __repr__(self) -> str:
-        if not self.edges:
+        if not self.steps:
             return "Path(empty)"
-        parts = [self.edges[0].source]
-        for edge in self.edges:
-            parts.append(f"--[{edge.type}]-->")
-            parts.append(edge.target)
+        parts = [self.steps[0].from_node]
+        for step in self.steps:
+            direction = "<--" if step.reversed else "--"
+            parts.append(f"{direction}[{step.edge.type}]-->")
+            parts.append(step.to_node)
         return f"Path(score={self.score:.3f}, {' '.join(parts)})"
 
 

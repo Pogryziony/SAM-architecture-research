@@ -14,7 +14,7 @@ from collections import defaultdict
 from difflib import get_close_matches
 from typing import Optional
 
-from . import Node, Edge, Path
+from . import Node, Edge, Path, PathStep
 
 
 class InMemoryGraphStore:
@@ -30,9 +30,11 @@ class InMemoryGraphStore:
     # ── Node operations ──
 
     def add_node(self, node: Node) -> None:
-        """Add or update a node."""
+        """Add or update a node. Updates do not duplicate type-index entries."""
+        is_new = node.id not in self._nodes
         self._nodes[node.id] = node
-        self._type_index[node.type].append(node.id)
+        if is_new:
+            self._type_index[node.type].append(node.id)
         self._name_index[self._normalize(node.id)] = node.id
 
     def get_node(self, node_id: str) -> Optional[Node]:
@@ -51,11 +53,16 @@ class InMemoryGraphStore:
     # ── Edge operations ──
 
     def add_edge(self, edge: Edge) -> None:
-        """Add a directed edge. Both source and target nodes must exist."""
+        """Add a directed edge. Both source and target nodes must exist.
+        Duplicate edges (same type, source, target) are silently ignored."""
         if edge.source not in self._nodes:
             raise KeyError(f"Source node '{edge.source}' not found")
         if edge.target not in self._nodes:
             raise KeyError(f"Target node '{edge.target}' not found")
+        # Dedup: check if identical edge already exists
+        for existing in self._edges_out.get(edge.source, []):
+            if existing.type == edge.type and existing.target == edge.target:
+                return  # Duplicate — skip
         self._edges_out[edge.source].append(edge)
         self._edges_in[edge.target].append(edge)
 
@@ -111,7 +118,7 @@ class InMemoryGraphStore:
         direction: str = "both",
     ) -> list[Path]:
         """
-        BFS traversal from start nodes.
+        BFS traversal from start nodes with cycle protection.
 
         Args:
             start_nodes: Entry node IDs
@@ -120,22 +127,25 @@ class InMemoryGraphStore:
             direction: 'out', 'in', or 'both'
 
         Returns:
-            List of Paths found during traversal
+            List of Paths found during traversal. Each PathStep records
+            whether the edge was traversed in reverse.
         """
         paths: list[Path] = []
 
         for start in start_nodes:
             if start not in self._nodes:
                 continue
-            # BFS queue: (current_node, path_edges_so_far)
-            queue: list[tuple[str, list[Edge]]] = [(start, [])]
+            # BFS queue: (current_node, steps_so_far, visited_set)
+            queue: list[tuple[str, list[PathStep], set[str]]] = [
+                (start, [], {start})
+            ]
 
             while queue:
-                current, path_edges = queue.pop(0)
+                current, steps, visited = queue.pop(0)
 
-                if len(path_edges) >= max_depth:
-                    if path_edges:
-                        paths.append(Path(edges=list(path_edges)))
+                if len(steps) >= max_depth:
+                    if steps:
+                        paths.append(Path(steps=list(steps)))
                     continue
 
                 edges = self.get_edges(current, direction)
@@ -144,18 +154,39 @@ class InMemoryGraphStore:
                 for edge in edges:
                     if edge_types and edge.type not in edge_types:
                         continue
-                    # Determine next node based on direction relative to edge
-                    if direction == "out" or (direction == "both" and edge.source == current):
+                    # Determine next node and whether edge is reversed
+                    if direction == "out":
+                        # Only follow edges where current is the source
+                        if edge.source != current:
+                            continue
                         next_node = edge.target
-                    elif direction == "in" or (direction == "both" and edge.target == current):
+                        reversed_flag = False
+                    elif direction == "in":
+                        # Only follow edges where current is the target
+                        if edge.target != current:
+                            continue
                         next_node = edge.source
-                    else:
+                        reversed_flag = True
+                    else:  # both
+                        if edge.source == current:
+                            next_node = edge.target
+                            reversed_flag = False
+                        elif edge.target == current:
+                            next_node = edge.source
+                            reversed_flag = True
+                        else:
+                            continue
+
+                    # Cycle protection
+                    if next_node in visited:
                         continue
-                    queue.append((next_node, path_edges + [edge]))
+
+                    step = PathStep(edge=edge, reversed=reversed_flag)
+                    queue.append((next_node, steps + [step], visited | {next_node}))
                     expanded = True
 
-                if not expanded and path_edges:
-                    paths.append(Path(edges=list(path_edges)))
+                if not expanded and steps:
+                    paths.append(Path(steps=list(steps)))
 
         return paths
 

@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 # Add sam-lm to path to access its data
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from nexus.graph import Node, Edge
 from nexus.graph.store import InMemoryGraphStore

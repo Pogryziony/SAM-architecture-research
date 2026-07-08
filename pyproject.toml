@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "nexus-graph"
+version = "0.1.0"
+description = "NEXUS — Non-Parametric Execution and Understanding System. Graph-first reasoning architecture."
+requires-python = ">=3.11"
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.setuptools.packages.find]
+include = ["nexus*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

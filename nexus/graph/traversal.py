@@ -3,68 +3,17 @@ Graph traversal and path scoring for NEXUS.
 
 Implements beam search traversal with:
 - Edge type weighting
-- Path scoring (confidence, relevance, coverage, recency)
+- Path scoring (delegates to scoring.py)
 - Path deduplication and selection
 """
 
 from __future__ import annotations
 
-import math
-from datetime import datetime, timezone
 from typing import Optional
 
-from . import Edge, Path, EDGE_TYPE_WEIGHTS
+from . import Edge, Path, PathStep, EDGE_TYPE_WEIGHTS
 from .store import InMemoryGraphStore
-
-
-def score_path(
-    path: Path,
-    query_entities: set[str],
-    edge_type_weights: dict[str, float] | None = None,
-) -> float:
-    """
-    Score a path for relevance to the query.
-
-    Composite score from:
-    - Edge confidence (product)
-    - Edge type relevance (product of type weights)
-    - Entity coverage (fraction of query entities covered)
-    - Path length penalty (mild — shorter paths preferred)
-    - Recency bonus (prefer recently-updated sources)
-    """
-    if not path.edges:
-        return 0.0
-
-    weights = edge_type_weights or EDGE_TYPE_WEIGHTS
-
-    # Edge confidence product
-    edge_conf = math.prod(e.confidence for e in path.edges)
-
-    # Edge type relevance product
-    type_score = math.prod(weights.get(e.type, 0.5) for e in path.edges)
-
-    # Entity coverage: how many query entities appear in the path
-    path_entities = {path.edges[0].source}
-    for e in path.edges:
-        path_entities.add(e.target)
-    coverage = len(path_entities & query_entities) / max(len(query_entities), 1)
-
-    # Length penalty: mild decay for longer paths
-    length_penalty = 1.0 / (1.0 + 0.1 * len(path.edges))
-
-    # Recency bonus
-    now = datetime.now(timezone.utc)
-    max_age_days = 365
-    for e in path.edges:
-        if e.created_at:
-            try:
-                age = (now - datetime.fromisoformat(e.created_at)).days
-                max_age_days = min(max_age_days, age)
-            except (ValueError, TypeError):
-                pass
-    recency = max(0.5, 1.0 - max_age_days / 365)
-
-    return edge_conf * type_score * coverage * length_penalty * recency
+from .scoring import score_path, rank_paths
 
 
 def beam_search(
@@ -91,85 +40,70 @@ def beam_search(
     Returns:
         Ranked list of paths (best first)
     """
-    # Initialize: one "path" per start node (no edges yet)
-    active_paths: list[tuple[str, list[Edge]]] = [
-        (node, []) for node in start_nodes if graph.has_node(node)
+    # Initialize: one "path" per start node (no steps yet)
+    active_paths: list[tuple[str, list[PathStep], set[str]]] = [
+        (node, [], {node}) for node in start_nodes if graph.has_node(node)
     ]
 
     for _ in range(max_depth):
-        candidates: list[tuple[str, list[Edge]]] = []
+        candidates: list[tuple[str, list[PathStep], set[str]]] = []
 
-        for current, path_edges in active_paths:
+        for current, steps, visited in active_paths:
             edges = graph.get_edges(current, direction)
             for edge in edges:
                 if edge_types and edge.type not in edge_types:
                     continue
 
-                # Determine next node
+                # Determine next node and direction flag
                 if direction == "out":
-                    next_node = edge.target if edge.source == current else edge.source
+                    if edge.source != current:
+                        continue
+                    next_node = edge.target
+                    reversed_flag = False
                 elif direction == "in":
-                    next_node = edge.source if edge.target == current else edge.target
+                    if edge.target != current:
+                        continue
+                    next_node = edge.source
+                    reversed_flag = True
                 else:  # both
-                    next_node = edge.target if edge.source == current else edge.source
+                    if edge.source == current:
+                        next_node = edge.target
+                        reversed_flag = False
+                    elif edge.target == current:
+                        next_node = edge.source
+                        reversed_flag = True
+                    else:
+                        continue
 
-                # Avoid cycles
-                visited = {path_edges[0].source} if path_edges else {current}
-                for pe in path_edges:
-                    visited.add(pe.source)
-                    visited.add(pe.target)
+                # Cycle protection
                 if next_node in visited:
                     continue
 
-                candidates.append((next_node, path_edges + [edge]))
+                step = PathStep(edge=edge, reversed=reversed_flag)
+                candidates.append((next_node, steps + [step], visited | {next_node}))
 
         if not candidates:
             break
 
         # Score all candidates, keep top beam_width
         scored = []
-        for next_node, edges in candidates:
-            path = Path(edges=list(edges))
+        for next_node, steps, visited in candidates:
+            path = Path(steps=list(steps))
             path.score = score_path(path, query_entities)
-            scored.append((next_node, edges, path.score))
+            scored.append((next_node, steps, visited, path.score))
 
-        scored.sort(key=lambda x: x[2], reverse=True)
-        active_paths = [(node, edges) for node, edges, _ in scored[:beam_width]]
+        scored.sort(key=lambda x: x[3], reverse=True)
+        active_paths = [(node, steps, visited) for node, steps, visited, _ in scored[:beam_width]]
 
     # Return all completed paths, sorted by score
     results = []
-    for _, edges in active_paths:
-        if edges:
-            path = Path(edges=list(edges))
-            path.score = score_path(path, query_entities)
-            results.append(path)
+    for _, steps, _ in active_paths:
+        if steps:
+            p = Path(steps=list(steps))
+            p.score = score_path(p, query_entities)
+            results.append(p)
 
-    results.sort(key=lambda p: p.score, reverse=True)
-
-    # Deduplicate: remove paths that are subpaths of another
-    return _deduplicate_paths(results)
-
-
-def _deduplicate_paths(paths: list[Path]) -> list[Path]:
-    """Remove paths that are subsets of other paths."""
-    if len(paths) <= 1:
-        return paths
-
-    # Sort by length (longest first) and score
-    paths = sorted(paths, key=lambda p: (p.length, p.score), reverse=True)
-
-    keep = []
-    for i, path in enumerate(paths):
-        path_nodes = set(path.nodes)
-        is_subpath = False
-        for j in range(i):
-            if path_nodes.issubset(set(paths[j].nodes)):
-                is_subpath = True
-                break
-        if not is_subpath:
-            keep.append(path)
-
-    return keep
+    return rank_paths(results, query_entities)
 
 
 def traverse_with_intent(

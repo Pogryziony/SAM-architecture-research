@@ -99,27 +99,28 @@ def demo():
         print(f"  Found {len(paths)} path(s):")
         for j, path in enumerate(paths[:3], 1):
             print(f"  Path {j} (score: {path.score:.3f}):")
-            if path.edges:
-                print(f"    {path.edges[0].source}")
-                for edge in path.edges:
-                    print(f"      --[{edge.type}] (conf: {edge.confidence:.2f})--> {edge.target}")
+            if path.steps:
+                print(f"    {path.steps[0].from_node}")
+                for step in path.steps:
+                    direction = "<--" if step.reversed else "--"
+                    print(f"      {direction}[{step.edge.type}] (conf: {step.edge.confidence:.2f})--> {step.to_node}")
         
         # Step 6: Build evidence from top path
         top_path = paths[0]
-        if top_path.edges:
+        if top_path.steps:
             evidence_nodes = []
             seen = set()
-            for edge in top_path.edges:
-                if edge.source not in seen:
-                    node = graph.get_node(edge.source)
+            for step in top_path.steps:
+                if step.from_node not in seen:
+                    node = graph.get_node(step.from_node)
                     if node:
                         evidence_nodes.append(node)
-                        seen.add(edge.source)
-                if edge.target not in seen:
-                    node = graph.get_node(edge.target)
+                        seen.add(step.from_node)
+                if step.to_node not in seen:
+                    node = graph.get_node(step.to_node)
                     if node:
                         evidence_nodes.append(node)
-                        seen.add(edge.target)
+                        seen.add(step.to_node)
             
             print(f"  Evidence ({len(evidence_nodes)} nodes):")
             for node in evidence_nodes:
