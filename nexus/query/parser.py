@@ -45,6 +45,24 @@ STOP_WORDS: set[str] = {
     "what", "which", "who", "whom", "about", "also",
 }
 
+# ── Entity type priority for ranking entry nodes ──
+# Higher-priority types get preferred as beam-search entry points.
+_TYPE_PRIORITY: dict[str, int] = {
+    "Experiment":  10,
+    "Decision":    9,
+    "Concept":     8,
+    "Bug":         7,
+    "Requirement": 6,
+    "TestCase":    5,
+    "Metric":      4,
+    "Entity":      3,
+    "Document":    2,
+    "CodeFile":    1,
+    "Function":    0,
+}
+
+_MAX_ENTRY_NODES: int = 5
+
 
 @dataclass
 class ParsedQuery:
@@ -152,6 +170,9 @@ def parse_question(
     entity_ids = [node_id for _, _, _, node_id in entity_spots]
     entity_spans = [(start, end, text) for start, end, text, _ in entity_spots]
 
+    # ── Rank and cap entry nodes ──
+    entity_ids = _rank_entities(graph, entity_ids)
+
     return ParsedQuery(
         question=question,
         entity_ids=entity_ids,
@@ -159,6 +180,46 @@ def parse_question(
         direction=direction,
         entity_spans=entity_spans,
     )
+
+
+# ── Convenience: scan all node names for substring matches ──
+
+
+def _rank_entities(graph: InMemoryGraphStore, entity_ids: list[str]) -> list[str]:
+    """
+    Rank entity IDs by quality and return the top candidates (capped).
+
+    Ranking criteria (in order):
+      1. **Type priority**: Experiment > Decision > Concept > Bug > ...
+      2. **Name length**: longer-span matches beat shorter ones (e.g.
+         "Exp_0_6_Validation" beats "Exp")
+      3. **Cap at ~5 entry nodes** — beam search with 5 entries already
+         explores plenty of the graph.
+
+    Returns the top-ranked entity IDs as a list (deduplicated, order preserved
+    by rank).
+    """
+    if not entity_ids:
+        return []
+
+    # Deduplicate while preserving order
+    seen: set[str] = set()
+    unique: list[str] = []
+    for eid in entity_ids:
+        if eid not in seen:
+            seen.add(eid)
+            unique.append(eid)
+
+    # Rank each entity by (type_priority DESC, name_length DESC)
+    def _score(eid: str) -> tuple[int, int]:
+        node = graph.get_node(eid)
+        type_prio = _TYPE_PRIORITY.get(node.type, 0) if node else 0
+        # Use the node ID as the name for length scoring (canonical ID)
+        name_len = len(eid) if eid else 0
+        return (type_prio, name_len)
+
+    ranked = sorted(unique, key=_score, reverse=True)
+    return ranked[:_MAX_ENTRY_NODES]
 
 
 # ── Convenience: scan all node names for substring matches ──

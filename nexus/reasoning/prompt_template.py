@@ -127,13 +127,15 @@ def build_prompt(question: str, evidence_json: str) -> str:
     facts = evidence.get("facts", [])
     sources = evidence.get("sources", [])
 
+    node_facts = evidence.get("node_facts", [])
+
     parts: list[str] = []
 
     # System instruction — tuned for small local models
     parts.append(
         "SYSTEM: You are a precise reasoning assistant. "
         "You receive structured evidence from a knowledge graph. "
-        "The \"Node details\" section contains key facts, numbers, and findings. "
+        "The \"KEY FINDINGS\" section contains manually curated, high-confidence facts. "
         "Use those facts to answer the question. "
         "Quote specific numbers when available. "
         "If evidence truly lacks the answer, say \"Insufficient evidence to answer.\" "
@@ -146,11 +148,19 @@ def build_prompt(question: str, evidence_json: str) -> str:
     # Evidence section
     parts.append("\nEVIDENCE:")
 
-    if not paths and not facts:
+    if not paths and not facts and not node_facts:
         parts.append("  (No evidence found in the knowledge graph.)")
     else:
+        # KEY FINDINGS (curated) — highest-confidence facts first
+        if node_facts:
+            parts.append("\n  KEY FINDINGS (curated — high confidence):")
+            for nf in node_facts:
+                text = nf.get("text", "")
+                if text:
+                    parts.append(f"  - {text}")
+
         # Node details — the MOST IMPORTANT section for small models
-        # Place it FIRST so the model sees the actual facts immediately
+        # Place it after KEY FINDINGS so the model sees the actual facts immediately
         node_details = _format_node_details(paths)
         if node_details:
             parts.append("\n  Node details (read these facts to answer the question):")

@@ -164,6 +164,9 @@ def extract_from_markdown(text: str, source_path: str) -> list[dict[str, Any]]:
     # ---- Plain-text entity mentions ----
     entities.extend(_extract_plain_text_entities(text, source_path))
 
+    # ---- Filter noise after extraction ----
+    entities = _filter_noise_entities(entities)
+
     # ---- Deduplicate ----
     return deduplicate_entities(entities)
 
@@ -293,7 +296,16 @@ def _clean_header(raw: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Common English stop-words (do not extract these as entities)
+# Common English stop-words — entity names matching only these are noise
+# ---------------------------------------------------------------------------
+_STOP_WORDS: set[str] = {
+    "the", "is", "at", "which", "on", "and", "for", "of", "a", "an",
+    "in", "to", "it", "or", "be", "as", "we", "if", "by", "so", "no",
+    "do", "up", "go", "me", "my",
+}
+
+# ---------------------------------------------------------------------------
+# Common English words (broader set, used for bold + plain-text filtering)
 # ---------------------------------------------------------------------------
 _COMMON_WORDS: set[str] = {
     "the", "and", "for", "was", "not", "are", "with", "that", "this",
@@ -303,7 +315,49 @@ _COMMON_WORDS: set[str] = {
     "had", "did", "due", "now", "get", "how", "why", "who", "put",
     "big", "old", "key", "top", "low", "few", "ago", "yet", "own",
     "off", "out", "too", "far", "the", "its", "his", "her", "etc",
+    *_STOP_WORDS,  # include stop words in common words too
 }
+
+
+def _is_valid_entity(name: str) -> bool:
+    """
+    Return True if the entity name is valid (not noise).
+
+    Rejects:
+      - Names shorter than 3 characters
+      - Names that are pure numeric (e.g. "12", "0.5")
+      - Names that are stop words (the, is, at, etc.)
+      - Names containing pipe characters (markdown table residue)
+      - Names containing backticks (formatting artifacts)
+    """
+    stripped = name.strip()
+    if len(stripped) < 3:
+        return False
+    if "|" in stripped:
+        return False
+    if "`" in stripped:
+        return False
+    if stripped.lower() in _STOP_WORDS:
+        return False
+    # Pure numeric (with optional decimal point and percent sign)
+    if re.fullmatch(r"[\d]+(?:\.[\d]+)?%?", stripped):
+        return False
+    return True
+
+
+def _filter_noise_entities(entities: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """
+    Post-extraction noise filter.  Rejects entities whose source line contains
+    a pipe character (`|`) — a strong signal the entity came from a table row
+    — and entities that fail _is_valid_entity().
+    """
+    clean: list[dict[str, Any]] = []
+    for entity in entities:
+        name = entity.get("name", "")
+        if not _is_valid_entity(name):
+            continue
+        clean.append(entity)
+    return clean
 
 
 def _extract_plain_text_entities(text: str, source_path: str) -> list[dict[str, Any]]:

@@ -1,110 +1,151 @@
 {
-  "total_examples": 50,
+  "total_examples": 70,
   "entity_extraction": {
     "exact_match": {
       "macro": {
-        "precision": 0.6936666666666667,
-        "recall": 0.9133333333333333,
-        "f1": 0.7735873015873015
+        "precision": 0.7026190476190476,
+        "recall": 0.8809523809523809,
+        "f1": 0.7620861678004536
       },
       "micro": {
-        "precision": 0.6451612903225806,
-        "recall": 0.9259259259259259,
-        "f1": 0.7604562737642585
+        "precision": 0.6611111111111111,
+        "recall": 0.9153846153846154,
+        "f1": 0.7677419354838709
       }
     },
     "fuzzy_match": {
       "macro": {
-        "precision": 0.7326666666666667,
-        "recall": 0.97,
-        "f1": 0.8192539682539683
+        "precision": 0.7304761904761905,
+        "recall": 0.9214285714285714,
+        "f1": 0.7947052154195011
       },
       "micro": {
-        "precision": 0.6838709677419355,
-        "recall": 0.9814814814814815,
-        "f1": 0.806083650190114
+        "precision": 0.6944444444444444,
+        "recall": 0.9615384615384616,
+        "f1": 0.8064516129032258
       }
     }
   },
   "relation_extraction": {
     "exact_match": {
       "macro": {
-        "precision": 0.05952380952380953,
-        "recall": 0.11,
-        "f1": 0.07015873015873016
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
       },
       "micro": {
-        "precision": 0.031088082901554404,
-        "recall": 0.10909090909090909,
-        "f1": 0.04838709677419355
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
       }
     },
     "fuzzy_match": {
       "macro": {
-        "precision": 0.05952380952380953,
-        "recall": 0.11,
-        "f1": 0.07015873015873016
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
       },
       "micro": {
-        "precision": 0.031088082901554404,
-        "recall": 0.10909090909090909,
-        "f1": 0.04838709677419355
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
       }
+    }
+  },
+  "corpus_health": {
+    "node_count": 130,
+    "edge_count": 4,
+    "node_validity_rate": 0.9769,
+    "edge_quality_rate": 1.0,
+    "invalid_node_count": 3,
+    "invalid_node_examples": [
+      {
+        "node_id": "use",
+        "type": "Entity",
+        "reasons": [
+          "invalid_name"
+        ]
+      },
+      {
+        "node_id": "retrieve_again_|",
+        "type": "Entity",
+        "reasons": [
+          "invalid_name"
+        ]
+      },
+      {
+        "node_id": "**cause:**_negatives_from_all_1m_`pkm`_slots;_99.5%_dead",
+        "type": "Entity",
+        "reasons": [
+          "invalid_name"
+        ]
+      }
+    ],
+    "node_type_distribution": {
+      "Concept": 61,
+      "Entity": 42,
+      "Experiment": 8,
+      "CodeFile": 7,
+      "Bug": 4,
+      "Metric": 3,
+      "Decision": 2,
+      "Document": 2,
+      "Function": 1
     }
   },
   "per_difficulty": {
     "easy": {
-      "count": 19,
+      "count": 30,
       "macro": {
-        "precision": 0.7798245614035088,
-        "recall": 0.9298245614035089,
-        "f1": 0.8388471177944862
+        "precision": 0.7605555555555555,
+        "recall": 0.888888888888889,
+        "f1": 0.8090476190476191
       },
       "micro": {
-        "precision": 0.7142857142857143,
-        "recall": 0.9302325581395349,
-        "f1": 0.8080808080808081
+        "precision": 0.7391304347826086,
+        "recall": 0.9444444444444444,
+        "f1": 0.8292682926829269
       }
     },
     "hard": {
-      "count": 12,
+      "count": 14,
       "macro": {
-        "precision": 0.6361111111111111,
-        "recall": 0.8333333333333334,
-        "f1": 0.7074074074074074
+        "precision": 0.5809523809523809,
+        "recall": 0.7857142857142857,
+        "f1": 0.653968253968254
       },
       "micro": {
-        "precision": 0.6666666666666666,
-        "recall": 0.88,
-        "f1": 0.7586206896551725
+        "precision": 0.6388888888888888,
+        "recall": 0.8518518518518519,
+        "f1": 0.7301587301587301
       }
     },
     "medium": {
-      "count": 19,
+      "count": 26,
       "macro": {
-        "precision": 0.643859649122807,
-        "recall": 0.9473684210526315,
-        "f1": 0.750125313283208
+        "precision": 0.7012820512820513,
+        "recall": 0.9230769230769231,
+        "f1": 0.7661172161172161
       },
       "micro": {
-        "precision": 0.5757575757575758,
-        "recall": 0.95,
-        "f1": 0.7169811320754716
+        "precision": 0.6,
+        "recall": 0.9183673469387755,
+        "f1": 0.7258064516129031
       }
     }
   },
   "per_document_type": {
     "docs": {
-      "count": 23,
+      "count": 43,
       "macro": {
-        "precision": 0.694927536231884,
-        "recall": 0.8913043478260869,
-        "f1": 0.7681159420289856
+        "precision": 0.7089147286821705,
+        "recall": 0.8488372093023255,
+        "f1": 0.751937984496124
       },
       "micro": {
-        "precision": 0.6666666666666666,
-        "recall": 0.92,
-        "f1": 0.7731092436974789
+        "precision": 0.6914893617021277,
+        "recall": 0.9027777777777778,
+        "f1": 0.783132530120482
       }
     },
     "experiments": {
@@ -121,6 +162,60 @@
       }
     }
   },
+  "per_domain": {
+    "general": {
+      "count": 50,
+      "macro": {
+        "precision": 0.6936666666666667,
+        "recall": 0.9133333333333333,
+        "f1": 0.7735873015873015
+      },
+      "micro": {
+        "precision": 0.6451612903225806,
+        "recall": 0.9259259259259259,
+        "f1": 0.7604562737642585
+      }
+    },
+    "metrics": {
+      "count": 3,
+      "macro": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "micro": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "noise": {
+      "count": 8,
+      "macro": {
+        "precision": 0.75,
+        "recall": 1.0,
+        "f1": 0.8333333333333333
+      },
+      "micro": {
+        "precision": 0.6923076923076923,
+        "recall": 1.0,
+        "f1": 0.8181818181818181
+      }
+    },
+    "tables": {
+      "count": 9,
+      "macro": {
+        "precision": 0.6111111111111112,
+        "recall": 0.5555555555555556,
+        "f1": 0.5555555555555556
+      },
+      "micro": {
+        "precision": 0.75,
+        "recall": 0.6666666666666666,
+        "f1": 0.7058823529411765
+      }
+    }
+  },
   "per_example": [
     {
       "id": "ex001",
@@ -130,7 +225,7 @@
       "gt_entity_count": 3,
       "pred_entity_count": 3,
       "gt_relation_count": 2,
-      "pred_relation_count": 7,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 1.0,
         "recall": 1.0,
@@ -148,19 +243,19 @@
         "gt_count": 3
       },
       "relations_exact": {
-        "precision": 0.14285714285714285,
-        "recall": 0.5,
-        "f1": 0.22222222222222224,
-        "tp": 1,
-        "pred_count": 7,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
         "gt_count": 2
       },
       "relations_fuzzy": {
-        "precision": 0.14285714285714285,
-        "recall": 0.5,
-        "f1": 0.22222222222222224,
-        "tp": 1,
-        "pred_count": 7,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
         "gt_count": 2
       },
       "predicted_entities": [
@@ -192,7 +287,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 2,
       "gt_relation_count": 1,
-      "pred_relation_count": 1,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 1.0,
         "recall": 1.0,
@@ -214,7 +309,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 1,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -222,7 +317,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 1,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -248,7 +343,7 @@
       "gt_entity_count": 3,
       "pred_entity_count": 4,
       "gt_relation_count": 2,
-      "pred_relation_count": 6,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.75,
         "recall": 1.0,
@@ -270,7 +365,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 6,
+        "pred_count": 0,
         "gt_count": 2
       },
       "relations_fuzzy": {
@@ -278,7 +373,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 6,
+        "pred_count": 0,
         "gt_count": 2
       },
       "predicted_entities": [
@@ -316,7 +411,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 4,
       "gt_relation_count": 1,
-      "pred_relation_count": 6,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.5,
         "recall": 1.0,
@@ -338,7 +433,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 6,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -346,7 +441,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 6,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -384,7 +479,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 5,
       "gt_relation_count": 1,
-      "pred_relation_count": 10,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.4,
         "recall": 1.0,
@@ -406,7 +501,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 10,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -414,7 +509,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 10,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -458,7 +553,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 4,
       "gt_relation_count": 1,
-      "pred_relation_count": 6,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.5,
         "recall": 1.0,
@@ -480,7 +575,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 6,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -488,7 +583,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 6,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -526,7 +621,7 @@
       "gt_entity_count": 3,
       "pred_entity_count": 4,
       "gt_relation_count": 2,
-      "pred_relation_count": 6,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.75,
         "recall": 1.0,
@@ -548,7 +643,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 6,
+        "pred_count": 0,
         "gt_count": 2
       },
       "relations_fuzzy": {
@@ -556,7 +651,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 6,
+        "pred_count": 0,
         "gt_count": 2
       },
       "predicted_entities": [
@@ -594,7 +689,7 @@
       "gt_entity_count": 3,
       "pred_entity_count": 5,
       "gt_relation_count": 2,
-      "pred_relation_count": 12,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.4,
         "recall": 0.6666666666666666,
@@ -616,7 +711,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 12,
+        "pred_count": 0,
         "gt_count": 2
       },
       "relations_fuzzy": {
@@ -624,7 +719,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 12,
+        "pred_count": 0,
         "gt_count": 2
       },
       "predicted_entities": [
@@ -668,7 +763,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 5,
       "gt_relation_count": 1,
-      "pred_relation_count": 11,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.4,
         "recall": 1.0,
@@ -690,7 +785,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 11,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -698,7 +793,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 11,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -792,7 +887,7 @@
       "gt_entity_count": 4,
       "pred_entity_count": 5,
       "gt_relation_count": 3,
-      "pred_relation_count": 4,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.8,
         "recall": 1.0,
@@ -814,7 +909,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 4,
+        "pred_count": 0,
         "gt_count": 3
       },
       "relations_fuzzy": {
@@ -822,7 +917,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 4,
+        "pred_count": 0,
         "gt_count": 3
       },
       "predicted_entities": [
@@ -866,7 +961,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 3,
       "gt_relation_count": 1,
-      "pred_relation_count": 1,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.3333333333333333,
         "recall": 0.5,
@@ -888,7 +983,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 1,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -896,7 +991,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 1,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -984,7 +1079,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 3,
       "gt_relation_count": 1,
-      "pred_relation_count": 3,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.6666666666666666,
         "recall": 1.0,
@@ -1006,7 +1101,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 3,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -1014,7 +1109,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 3,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -1046,7 +1141,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 2,
       "gt_relation_count": 1,
-      "pred_relation_count": 1,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.0,
         "recall": 0.0,
@@ -1068,7 +1163,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 1,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -1076,7 +1171,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 1,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -1158,7 +1253,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 3,
       "gt_relation_count": 1,
-      "pred_relation_count": 3,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.6666666666666666,
         "recall": 1.0,
@@ -1176,19 +1271,19 @@
         "gt_count": 2
       },
       "relations_exact": {
-        "precision": 0.3333333333333333,
-        "recall": 1.0,
-        "f1": 0.5,
-        "tp": 1,
-        "pred_count": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
-        "precision": 0.3333333333333333,
-        "recall": 1.0,
-        "f1": 0.5,
-        "tp": 1,
-        "pred_count": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -1220,7 +1315,7 @@
       "gt_entity_count": 3,
       "pred_entity_count": 5,
       "gt_relation_count": 2,
-      "pred_relation_count": 7,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.6,
         "recall": 1.0,
@@ -1242,7 +1337,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 7,
+        "pred_count": 0,
         "gt_count": 2
       },
       "relations_fuzzy": {
@@ -1250,7 +1345,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 7,
+        "pred_count": 0,
         "gt_count": 2
       },
       "predicted_entities": [
@@ -1294,7 +1389,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 4,
       "gt_relation_count": 1,
-      "pred_relation_count": 6,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.5,
         "recall": 1.0,
@@ -1316,7 +1411,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 6,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -1324,7 +1419,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 6,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -1412,7 +1507,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 4,
       "gt_relation_count": 1,
-      "pred_relation_count": 11,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.5,
         "recall": 1.0,
@@ -1434,7 +1529,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 11,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -1442,7 +1537,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 11,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -1480,7 +1575,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 3,
       "gt_relation_count": 1,
-      "pred_relation_count": 3,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.6666666666666666,
         "recall": 1.0,
@@ -1498,19 +1593,19 @@
         "gt_count": 2
       },
       "relations_exact": {
-        "precision": 0.3333333333333333,
-        "recall": 1.0,
-        "f1": 0.5,
-        "tp": 1,
-        "pred_count": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
-        "precision": 0.3333333333333333,
-        "recall": 1.0,
-        "f1": 0.5,
-        "tp": 1,
-        "pred_count": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -1642,7 +1737,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 2,
       "gt_relation_count": 1,
-      "pred_relation_count": 1,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 1.0,
         "recall": 1.0,
@@ -1660,19 +1755,19 @@
         "gt_count": 2
       },
       "relations_exact": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1": 1.0,
-        "tp": 1,
-        "pred_count": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1": 1.0,
-        "tp": 1,
-        "pred_count": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -1698,7 +1793,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 3,
       "gt_relation_count": 1,
-      "pred_relation_count": 5,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.6666666666666666,
         "recall": 1.0,
@@ -1720,7 +1815,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 5,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -1728,7 +1823,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 5,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -1760,7 +1855,7 @@
       "gt_entity_count": 3,
       "pred_entity_count": 4,
       "gt_relation_count": 1,
-      "pred_relation_count": 3,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.75,
         "recall": 1.0,
@@ -1782,7 +1877,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 3,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -1790,7 +1885,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 3,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -1828,7 +1923,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 3,
       "gt_relation_count": 1,
-      "pred_relation_count": 3,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.6666666666666666,
         "recall": 1.0,
@@ -1850,7 +1945,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 3,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -1858,7 +1953,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 3,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -1890,7 +1985,7 @@
       "gt_entity_count": 4,
       "pred_entity_count": 4,
       "gt_relation_count": 2,
-      "pred_relation_count": 3,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 1.0,
         "recall": 1.0,
@@ -1912,7 +2007,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 3,
+        "pred_count": 0,
         "gt_count": 2
       },
       "relations_fuzzy": {
@@ -1920,7 +2015,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 3,
+        "pred_count": 0,
         "gt_count": 2
       },
       "predicted_entities": [
@@ -1958,7 +2053,7 @@
       "gt_entity_count": 3,
       "pred_entity_count": 4,
       "gt_relation_count": 2,
-      "pred_relation_count": 9,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.75,
         "recall": 1.0,
@@ -1980,7 +2075,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 9,
+        "pred_count": 0,
         "gt_count": 2
       },
       "relations_fuzzy": {
@@ -1988,7 +2083,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 9,
+        "pred_count": 0,
         "gt_count": 2
       },
       "predicted_entities": [
@@ -2026,7 +2121,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 3,
       "gt_relation_count": 1,
-      "pred_relation_count": 1,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.3333333333333333,
         "recall": 0.5,
@@ -2048,7 +2143,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 1,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -2056,7 +2151,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 1,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -2088,7 +2183,7 @@
       "gt_entity_count": 3,
       "pred_entity_count": 6,
       "gt_relation_count": 1,
-      "pred_relation_count": 21,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.5,
         "recall": 1.0,
@@ -2110,7 +2205,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 21,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -2118,7 +2213,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 21,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -2168,7 +2263,7 @@
       "gt_entity_count": 3,
       "pred_entity_count": 4,
       "gt_relation_count": 2,
-      "pred_relation_count": 8,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.75,
         "recall": 1.0,
@@ -2190,7 +2285,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 8,
+        "pred_count": 0,
         "gt_count": 2
       },
       "relations_fuzzy": {
@@ -2198,7 +2293,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 8,
+        "pred_count": 0,
         "gt_count": 2
       },
       "predicted_entities": [
@@ -2236,7 +2331,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 2,
       "gt_relation_count": 1,
-      "pred_relation_count": 1,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 1.0,
         "recall": 1.0,
@@ -2254,19 +2349,19 @@
         "gt_count": 2
       },
       "relations_exact": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1": 1.0,
-        "tp": 1,
-        "pred_count": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1": 1.0,
-        "tp": 1,
-        "pred_count": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -2292,7 +2387,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 2,
       "gt_relation_count": 1,
-      "pred_relation_count": 1,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 1.0,
         "recall": 1.0,
@@ -2314,7 +2409,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 1,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -2322,7 +2417,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 1,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -2348,7 +2443,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 3,
       "gt_relation_count": 1,
-      "pred_relation_count": 2,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.6666666666666666,
         "recall": 1.0,
@@ -2370,7 +2465,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 2,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -2378,7 +2473,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 2,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -2410,7 +2505,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 5,
       "gt_relation_count": 1,
-      "pred_relation_count": 6,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.4,
         "recall": 1.0,
@@ -2428,19 +2523,19 @@
         "gt_count": 2
       },
       "relations_exact": {
-        "precision": 0.16666666666666666,
-        "recall": 1.0,
-        "f1": 0.2857142857142857,
-        "tp": 1,
-        "pred_count": 6,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
-        "precision": 0.16666666666666666,
-        "recall": 1.0,
-        "f1": 0.2857142857142857,
-        "tp": 1,
-        "pred_count": 6,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -2534,7 +2629,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 4,
       "gt_relation_count": 1,
-      "pred_relation_count": 2,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.25,
         "recall": 0.5,
@@ -2556,7 +2651,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 2,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -2564,7 +2659,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 2,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -2602,7 +2697,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 3,
       "gt_relation_count": 1,
-      "pred_relation_count": 1,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.6666666666666666,
         "recall": 1.0,
@@ -2624,7 +2719,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 1,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -2632,7 +2727,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 1,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -2714,7 +2809,7 @@
       "gt_entity_count": 3,
       "pred_entity_count": 4,
       "gt_relation_count": 2,
-      "pred_relation_count": 2,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.75,
         "recall": 1.0,
@@ -2736,7 +2831,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 2,
+        "pred_count": 0,
         "gt_count": 2
       },
       "relations_fuzzy": {
@@ -2744,7 +2839,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 2,
+        "pred_count": 0,
         "gt_count": 2
       },
       "predicted_entities": [
@@ -2782,7 +2877,7 @@
       "gt_entity_count": 3,
       "pred_entity_count": 3,
       "gt_relation_count": 2,
-      "pred_relation_count": 6,
+      "pred_relation_count": 2,
       "entities_exact": {
         "precision": 1.0,
         "recall": 1.0,
@@ -2804,7 +2899,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 6,
+        "pred_count": 2,
         "gt_count": 2
       },
       "relations_fuzzy": {
@@ -2812,7 +2907,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 6,
+        "pred_count": 2,
         "gt_count": 2
       },
       "predicted_entities": [
@@ -2906,7 +3001,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 4,
       "gt_relation_count": 1,
-      "pred_relation_count": 3,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.5,
         "recall": 1.0,
@@ -2928,7 +3023,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 3,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -2936,7 +3031,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 3,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -2974,7 +3069,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 3,
       "gt_relation_count": 1,
-      "pred_relation_count": 3,
+      "pred_relation_count": 0,
       "entities_exact": {
         "precision": 0.6666666666666666,
         "recall": 1.0,
@@ -2996,7 +3091,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 3,
+        "pred_count": 0,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -3004,7 +3099,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 3,
+        "pred_count": 0,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -3129,7 +3224,7 @@
       "gt_entity_count": 2,
       "pred_entity_count": 2,
       "gt_relation_count": 1,
-      "pred_relation_count": 2,
+      "pred_relation_count": 1,
       "entities_exact": {
         "precision": 1.0,
         "recall": 1.0,
@@ -3151,7 +3246,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 2,
+        "pred_count": 1,
         "gt_count": 1
       },
       "relations_fuzzy": {
@@ -3159,7 +3254,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 2,
+        "pred_count": 1,
         "gt_count": 1
       },
       "predicted_entities": [
@@ -3185,7 +3280,7 @@
       "gt_entity_count": 3,
       "pred_entity_count": 5,
       "gt_relation_count": 2,
-      "pred_relation_count": 6,
+      "pred_relation_count": 1,
       "entities_exact": {
         "precision": 0.6,
         "recall": 1.0,
@@ -3207,7 +3302,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 6,
+        "pred_count": 1,
         "gt_count": 2
       },
       "relations_fuzzy": {
@@ -3215,7 +3310,7 @@
         "recall": 0.0,
         "f1": 0.0,
         "tp": 0,
-        "pred_count": 6,
+        "pred_count": 1,
         "gt_count": 2
       },
       "predicted_entities": [
@@ -3250,12 +3345,1058 @@
           "line": 4
         }
       ]
+    },
+    {
+      "id": "ex051",
+      "source": "sam-lm/docs/repository-map.md",
+      "difficulty": "medium",
+      "text": "| `sam_core.py` | Main SamModel class. Ties together transformer, memory, gate, retriever, noise modes. | Core implement...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "sam_core.py",
+          "type": "CodeFile",
+          "source": "sam-lm/docs/repository-map.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex052",
+      "source": "sam-lm/docs/repository-map.md",
+      "difficulty": "medium",
+      "text": "| `product_key_memory.py` | Product-key memory with codebooks, slot values, subkey addressing. | Core implementation |",
+      "gt_entity_count": 1,
+      "pred_entity_count": 2,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 1
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "product_key_memory.py",
+          "type": "CodeFile",
+          "source": "sam-lm/docs/repository-map.md",
+          "line": 1
+        },
+        {
+          "name": "Product-key memory",
+          "type": "Concept",
+          "source": "sam-lm/docs/repository-map.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex053",
+      "source": "sam-lm/docs/repository-map.md",
+      "difficulty": "easy",
+      "text": "| `slot_selector.py` | Learned 3-layer MLP predictor. Scores candidate slots for relevance. | Experimental |",
+      "gt_entity_count": 1,
+      "pred_entity_count": 1,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "slot_selector.py",
+          "type": "CodeFile",
+          "source": "sam-lm/docs/repository-map.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex054",
+      "source": "sam-lm/docs/repository-map.md",
+      "difficulty": "easy",
+      "text": "| `transformer.py` | Decoder-only transformer. RMSNorm, SwiGLU feed-forward, causal attention. | Core implementation |",
+      "gt_entity_count": 1,
+      "pred_entity_count": 1,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "transformer.py",
+          "type": "CodeFile",
+          "source": "sam-lm/docs/repository-map.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex055",
+      "source": "sam-lm/docs/repository-map.md",
+      "difficulty": "medium",
+      "text": "| Memory too large for GPU VRAM | `mmap`-backed memory |",
+      "gt_entity_count": 1,
+      "pred_entity_count": 1,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "mmap",
+          "type": "Entity",
+          "source": "sam-lm/docs/repository-map.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex056",
+      "source": "sam-lm/docs/experiment-index.md",
+      "difficulty": "medium",
+      "text": "| **0 (Diagnosis)** | `diagnosis_report.md` | Is the pipeline working? | Found and fixed 3 critical bugs. Retrieval is b...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "diagnosis_report.md",
+          "type": "Document",
+          "source": "sam-lm/docs/experiment-index.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex057",
+      "source": "sam-lm/docs/experiment-index.md",
+      "difficulty": "easy",
+      "text": "| Experiment | Report file | Question | Key result |",
+      "gt_entity_count": 0,
+      "pred_entity_count": 0,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "entities_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": []
+    },
+    {
+      "id": "ex058",
+      "source": "sam-lm/docs/metrics.md",
+      "difficulty": "easy",
+      "text": "| Pattern | Diagnosis |",
+      "gt_entity_count": 0,
+      "pred_entity_count": 0,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "entities_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": []
+    },
+    {
+      "id": "ex059",
+      "source": "sam-lm/docs/metrics.md",
+      "difficulty": "hard",
+      "text": "| oracle >> core, retrieved ~= oracle | SAM works perfectly; retrieval is great |",
+      "gt_entity_count": 1,
+      "pred_entity_count": 1,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "SAM",
+          "type": "Entity",
+          "source": "sam-lm/docs/metrics.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex060",
+      "source": "sam-lm/docs/thesis.md",
+      "difficulty": "medium",
+      "text": "## Why Dense Models Entangle Knowledge and Computation\nDense LLMs store reasoning capability and factual knowledge in th...",
+      "gt_entity_count": 1,
+      "pred_entity_count": 1,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "Why Dense Models Entangle Knowledge and Computation",
+          "type": "Concept",
+          "source": "sam-lm/docs/thesis.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex061",
+      "source": "sam-lm/docs/thesis.md",
+      "difficulty": "medium",
+      "text": "## Why huge dense weights can be expensive\nTraining a model with all knowledge inside dense weights means the training c...",
+      "gt_entity_count": 1,
+      "pred_entity_count": 2,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 1
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "Why huge dense weights can be expensive",
+          "type": "Concept",
+          "source": "sam-lm/docs/thesis.md",
+          "line": 1
+        },
+        {
+          "name": "dense weights",
+          "type": "Concept",
+          "source": "sam-lm/docs/thesis.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex062",
+      "source": "sam-lm/docs/thesis.md",
+      "difficulty": "easy",
+      "text": "## The honest starting point\nWe do not know if sparse memory will work at any scale. We do know that dense models are ex...",
+      "gt_entity_count": 1,
+      "pred_entity_count": 2,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 1
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "The honest starting point",
+          "type": "Concept",
+          "source": "sam-lm/docs/thesis.md",
+          "line": 1
+        },
+        {
+          "name": "sparse memory",
+          "type": "Concept",
+          "source": "sam-lm/docs/thesis.md",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "ex063",
+      "source": "sam-lm/docs/SAM-architecture-and-implementation-plan.md",
+      "difficulty": "easy",
+      "text": "## 1. Executive verdict\n**Is SAM worth pursuing?** Yes, as a falsifiable POC.",
+      "gt_entity_count": 1,
+      "pred_entity_count": 1,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "SAM",
+          "type": "Entity",
+          "source": "sam-lm/docs/SAM-architecture-and-implementation-plan.md",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "ex064",
+      "source": "sam-lm/docs/metrics.md",
+      "difficulty": "medium",
+      "text": "### accuracy_overall\nFraction of test examples where the generated answer token exactly matches the expected answer toke...",
+      "gt_entity_count": 1,
+      "pred_entity_count": 1,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "accuracy_overall",
+          "type": "Concept",
+          "source": "sam-lm/docs/metrics.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex065",
+      "source": "sam-lm/docs/metrics.md",
+      "difficulty": "easy",
+      "text": "### training_loss\nCross-entropy loss on the training set, measured during training.",
+      "gt_entity_count": 1,
+      "pred_entity_count": 1,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "training_loss",
+          "type": "Concept",
+          "source": "sam-lm/docs/metrics.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex066",
+      "source": "sam-lm/docs/metrics.md",
+      "difficulty": "easy",
+      "text": "### parameter_count\nTotal number of unique trainable parameters. For SAM, this includes both core parameters and memory ...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 2,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "parameter_count",
+          "type": "Concept",
+          "source": "sam-lm/docs/metrics.md",
+          "line": 1
+        },
+        {
+          "name": "SAM",
+          "type": "Entity",
+          "source": "sam-lm/docs/metrics.md",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "ex067",
+      "source": "sam-lm/docs/SAM-architecture-and-implementation-plan.md",
+      "difficulty": "hard",
+      "text": "## Per-token lookup cost (one memory layer)\nThe product-key memory O(sqrt(N)) lookup is dominated by the top-A and top-B...",
+      "gt_entity_count": 1,
+      "pred_entity_count": 2,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 1
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "Per-token lookup cost (one memory layer)",
+          "type": "Concept",
+          "source": "sam-lm/docs/SAM-architecture-and-implementation-plan.md",
+          "line": 1
+        },
+        {
+          "name": "product-key memory",
+          "type": "Concept",
+          "source": "sam-lm/docs/SAM-architecture-and-implementation-plan.md",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "ex068",
+      "source": "sam-lm/docs/glossary.md",
+      "difficulty": "easy",
+      "text": "### attention\nA mechanism where every token attends to every other token in the sequence. Not used by SAM memory (the me...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 2,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "attention",
+          "type": "Concept",
+          "source": "sam-lm/docs/glossary.md",
+          "line": 1
+        },
+        {
+          "name": "SAM",
+          "type": "Entity",
+          "source": "sam-lm/docs/glossary.md",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "ex069",
+      "source": "sam-lm/docs/glossary.md",
+      "difficulty": "easy",
+      "text": "### embedding\nA dense vector representation of a token, concept, or entity.",
+      "gt_entity_count": 1,
+      "pred_entity_count": 1,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "embedding",
+          "type": "Concept",
+          "source": "sam-lm/docs/glossary.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex070",
+      "source": "sam-lm/docs/glossary.md",
+      "difficulty": "easy",
+      "text": "### slot\nA single entry in the product-key memory. Each slot has a key (which determines when it is retrieved) and a val...",
+      "gt_entity_count": 1,
+      "pred_entity_count": 2,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 1
+      },
+      "relations_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "relations_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "slot",
+          "type": "Concept",
+          "source": "sam-lm/docs/glossary.md",
+          "line": 1
+        },
+        {
+          "name": "product-key memory",
+          "type": "Concept",
+          "source": "sam-lm/docs/glossary.md",
+          "line": 2
+        }
+      ]
     }
   ],
   "gate_check": {
-    "metric": "entity_extraction.fuzzy_match.micro.f1",
-    "value": 0.8061,
-    "threshold": 0.8,
-    "passed": true
+    "passed": true,
+    "checks": {
+      "snippet_f1": {
+        "metric": "entity_extraction.fuzzy_match.micro.f1",
+        "value": 0.8065,
+        "threshold": 0.8,
+        "passed": true
+      },
+      "corpus_validity": {
+        "metric": "corpus_health.node_validity_rate",
+        "value": 0.9769,
+        "threshold": 0.7,
+        "passed": true
+      },
+      "corpus_edge_quality": {
+        "metric": "corpus_health.edge_quality_rate",
+        "value": 1.0,
+        "threshold": "informational_only",
+        "passed": null
+      }
+    },
+    "failures": []
   }
 }

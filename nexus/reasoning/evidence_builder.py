@@ -81,6 +81,47 @@ def _fact_from_step(step, graph: InMemoryGraphStore) -> str:
     return f"{from_name} {rel_text} {to_name} (confidence: {confidence:.2f})"
 
 
+def _extract_node_facts(
+    paths: list[Path],
+    graph: InMemoryGraphStore,
+) -> list[dict[str, Any]]:
+    """
+    Extract curated key_finding/description properties from unique nodes
+    across all traversal paths.
+
+    These are HIGH-CONFIDENCE facts because they were manually curated.
+    Returns a list of {text, confidence, source} dicts.
+    """
+    seen_nodes: set[str] = set()
+    node_facts: list[dict[str, Any]] = []
+
+    for path in paths:
+        for step in path.steps:
+            for node_id in (step.from_node, step.to_node):
+                if node_id in seen_nodes:
+                    continue
+                seen_nodes.add(node_id)
+                node = graph.get_node(node_id)
+                if node is None:
+                    continue
+                props = node.properties
+                # Prefer key_finding (Experiment nodes), then description (Concept nodes)
+                value = props.get("key_finding") or props.get("description")
+                if value and isinstance(value, str) and value.strip():
+                    text = f"{node_id}: {value}"
+                    # Determine source
+                    source = props.get("title") or props.get("name")
+                    label = "CURATED" if source else "CURATED"
+                    node_facts.append({
+                        "text": text,
+                        "confidence": 1.0,
+                        "source": source or node_id,
+                        "confidence_label": "HIGH (manually curated)",
+                    })
+
+    return node_facts
+
+
 def build_evidence(
     question: str,
     paths: list[Path],
@@ -104,6 +145,7 @@ def build_evidence(
     evidence: dict[str, Any] = {
         "question": question,
         "paths": [],
+        "node_facts": [],
         "facts": [],
         "sources": [],
     }
@@ -145,6 +187,10 @@ def build_evidence(
                 all_sources.add(step.edge.evidence)
 
         evidence["paths"].append(path_data)
+
+    # Extract curated node facts (key_finding/description) — placed BEFORE
+    # edge-based facts because they are more reliable (manually curated).
+    evidence["node_facts"] = _extract_node_facts(paths, graph)
 
     evidence["facts"] = all_facts
     evidence["sources"] = sorted(all_sources)

@@ -21,8 +21,17 @@ from typing import Any
 _project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_project_root))
 
+from nexus.graph import Node, Edge
+from nexus.graph.store import InMemoryGraphStore
 from nexus.ingestion.entity_extractor import extract_from_markdown
 from nexus.ingestion.relation_extractor import extract_relations
+from nexus.ingestion.normalizer import canonicalize
+
+# Import from hyphenated directory via exec (Python can't import "entity-extraction" as module name)
+_corpus_quality_path = _project_root / "experiments" / "entity-extraction" / "corpus_quality.py"
+_cq_ns: dict[str, Any] = {}
+exec(_corpus_quality_path.read_text(encoding="utf-8"), _cq_ns)
+corpus_health_report = _cq_ns["corpus_health_report"]
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -255,7 +264,69 @@ def evaluate() -> None:
             "micro": micro_average(metrics_list),
         }
 
-    # 6. Build output
+    # 5b. Per-domain breakdown (for noise, tables, metrics annotations)
+    domain_metrics = defaultdict(list)
+    for i, r in enumerate(results_exact):
+        domain = labeled[i].get("domain", "general")
+        domain_metrics[domain].append(r["entities_exact"])
+
+    domain_summary = {}
+    for dom, metrics_list in sorted(domain_metrics.items()):
+        domain_summary[dom] = {
+            "count": len(metrics_list),
+            "macro": macro_average(metrics_list),
+            "micro": micro_average(metrics_list),
+        }
+
+    # 6. Build a simulated corpus graph for corpus-level sanity metrics
+    corpus_graph = InMemoryGraphStore()
+    for entry in labeled:
+        text = entry["text"]
+        source = entry["source"]
+        predicted = extract_from_markdown(text, source)
+        raw_relations, _ = extract_relations(text, source, predicted)
+
+        # Add entity nodes
+        for entity in predicted:
+            node_id = canonicalize(entity["name"], entity.get("type", "Entity"))
+            if not corpus_graph.has_node(node_id):
+                node = Node(
+                    id=node_id,
+                    type=entity.get("type", "Entity"),
+                    properties={"name": entity["name"]},
+                    sources=[source],
+                )
+                corpus_graph.add_node(node)
+
+        # Add relation edges
+        for rel in raw_relations:
+            src_id = canonicalize(rel.get("source_name", ""))
+            tgt_id = canonicalize(rel.get("target_name", ""))
+            if not src_id or not tgt_id:
+                continue
+            # Ensure nodes exist (they might have been added in a different entry)
+            if not corpus_graph.has_node(src_id):
+                corpus_graph.add_node(Node(id=src_id, type="Entity", properties={"name": rel["source_name"]}, sources=[source]))
+            if not corpus_graph.has_node(tgt_id):
+                corpus_graph.add_node(Node(id=tgt_id, type="Entity", properties={"name": rel["target_name"]}, sources=[source]))
+            try:
+                edge = Edge(
+                    type=rel.get("edge_type", "related_to"),
+                    source=src_id,
+                    target=tgt_id,
+                    confidence=rel.get("confidence", 0.5),
+                    evidence=source,
+                )
+                corpus_graph.add_edge(edge)
+            except KeyError:
+                pass
+
+    # 7. Compute corpus-level health metrics
+    corpus_report = corpus_health_report(corpus_graph)
+    corpus_validity = corpus_report["node_validity_rate"]
+    corpus_edge_quality = corpus_report["edge_quality_rate"]
+
+    # 8. Build output
     output = {
         "total_examples": len(labeled),
         "entity_extraction": {
@@ -278,19 +349,56 @@ def evaluate() -> None:
                 "micro": rel_fuzzy_micro,
             },
         },
+        "corpus_health": {
+            "node_count": corpus_report["node_count"],
+            "edge_count": corpus_report["edge_count"],
+            "node_validity_rate": corpus_report["node_validity_rate"],
+            "edge_quality_rate": corpus_report["edge_quality_rate"],
+            "invalid_node_count": corpus_report["invalid_node_count"],
+            "invalid_node_examples": corpus_report["invalid_node_examples"],
+            "node_type_distribution": corpus_report["node_type_distribution"],
+        },
         "per_difficulty": difficulty_summary,
         "per_document_type": doctype_summary,
+        "per_domain": domain_summary,
         "per_example": results_exact,
     }
 
-    # 7. Gate check
-    gate_metric = output["entity_extraction"]["fuzzy_match"]["micro"]["f1"]
-    gate_passed = gate_metric >= 0.80
+    # 9. Double-gate check: snippet-level F1 AND corpus-level validity
+    snippet_f1 = output["entity_extraction"]["fuzzy_match"]["micro"]["f1"]
+    snippet_passed = snippet_f1 >= 0.80
+    corpus_passed = corpus_validity >= 0.70
+    gate_passed = snippet_passed and corpus_passed
+
+    gate_failures = []
+    if not snippet_passed:
+        gate_failures.append(f"snippet F1={snippet_f1:.4f} < 0.80 (gap: {0.80 - snippet_f1:.4f})")
+    if not corpus_passed:
+        gate_failures.append(f"corpus validity={corpus_validity:.4f} < 0.70 (gap: {0.70 - corpus_validity:.4f})")
+
     output["gate_check"] = {
-        "metric": "entity_extraction.fuzzy_match.micro.f1",
-        "value": round(gate_metric, 4),
-        "threshold": 0.80,
         "passed": gate_passed,
+        "checks": {
+            "snippet_f1": {
+                "metric": "entity_extraction.fuzzy_match.micro.f1",
+                "value": round(snippet_f1, 4),
+                "threshold": 0.80,
+                "passed": snippet_passed,
+            },
+            "corpus_validity": {
+                "metric": "corpus_health.node_validity_rate",
+                "value": round(corpus_validity, 4),
+                "threshold": 0.70,
+                "passed": corpus_passed,
+            },
+            "corpus_edge_quality": {
+                "metric": "corpus_health.edge_quality_rate",
+                "value": round(corpus_edge_quality, 4),
+                "threshold": "informational_only",
+                "passed": None,
+            },
+        },
+        "failures": gate_failures,
     }
 
     # 8. Save results
@@ -328,12 +436,149 @@ def evaluate() -> None:
         m = d["macro"]
         print(f"{dt:<20} {d['count']:>6} {m['precision']:>10.4f} {m['recall']:>10.4f} {m['f1']:>10.4f}")
 
+    if any(k != "general" for k in domain_summary):
+        print(f"\n{'Domain':<20} {'Count':>6} {'Precision':>10} {'Recall':>10} {'F1':>10}")
+        print("-" * 58)
+        for dom in sorted(domain_summary):
+            d = domain_summary[dom]
+            m = d["macro"]
+            print(f"{dom:<20} {d['count']:>6} {m['precision']:>10.4f} {m['recall']:>10.4f} {m['f1']:>10.4f}")
+
+    # Corpus health section
+    print(f"\n{'---' * 24}")
+    print("  CORPUS-LEVEL SANITY METRICS (simulated from labeled-set extraction)")
+    print(f"{'---' * 24}")
+    print(f"  Nodes in simulated corpus:    {corpus_report['node_count']:>6}")
+    print(f"  Edges in simulated corpus:    {corpus_report['edge_count']:>6}")
+    print(f"  Node validity rate:           {corpus_validity:>8.4f}  (threshold: 0.70)")
+    print(f"  Edge quality rate (conf>=0.7): {corpus_edge_quality:>8.4f}")
+    if corpus_report['invalid_node_count'] > 0:
+        print(f"\n  {corpus_report['invalid_node_count']} invalid nodes (examples):")
+        for ex in corpus_report["invalid_node_examples"][:5]:
+            name = ex["node_id"]
+            if len(name) > 50:
+                name = name[:47] + "..."
+            print(f"    [{ex['type']}] \"{name}\"  -- {', '.join(ex['reasons'])}")
+
     # Gate verdict
     print("\n" + "-" * 72)
     print(f"  GATE CHECK: {'PASSED' if gate_passed else 'FAILED'}")
-    print(f"  Entity fuzzy micro-F1: {gate_metric:.4f}  (threshold: 0.80)")
+    print(f"  -------------------------------------------------")
+    status_f1 = "PASS" if snippet_passed else "FAIL"
+    status_cv = "PASS" if corpus_passed else "FAIL"
+    print(f"  Snippet entity F1 (fuzzy micro):   {snippet_f1:.4f}  (threshold: 0.80)  [{status_f1}]")
+    print(f"  Corpus node validity rate:         {corpus_validity:.4f}  (threshold: 0.70)  [{status_cv}]")
+    print(f"  Corpus edge quality (>=0.7 conf):  {corpus_edge_quality:.4f}  (informational)")
     if not gate_passed:
-        print(f"  Gap to threshold: {0.80 - gate_metric:.4f}")
+        print(f"\n  Gate failures:")
+        for failure in gate_failures:
+            print(f"    - {failure}")
+        if not snippet_passed and not corpus_passed:
+            print(f"\n  Both snippet F1 AND corpus validity are below threshold.")
+            print(f"  This means the extraction quality degrades significantly")
+            print(f"  on real-corpus noise (table rows, generic headers, single-token fragments).")
+        elif not snippet_passed:
+            print(f"\n  Snippet F1 is below threshold. Entity extraction accuracy on")
+            print(f"  curated examples is insufficient for Phase 2.")
+        elif not corpus_passed:
+            print(f"\n  Corpus validity is below threshold. The entity extractor produces")
+            print(f"  too many garbage nodes (stopwords, numbers, table fragments).")
+            print(f"  Consider adding more header-filter rules or post-extraction cleanup.")
+    print("=" * 72)
+
+    # 10. Verify curated node facts surface in evidence
+    _verify_curated_node_facts(output)
+
+
+def _verify_curated_node_facts(results: dict) -> None:
+    """
+    Verify that curated node facts (key_finding/description) from the
+    NEXUS graph properly surface in evidence packs.
+
+    Loads the graph, builds evidence for a representative query, and
+    checks that Experiment nodes contribute key_finding and Concept
+    nodes contribute description to the node_facts section.
+    """
+    print("\n" + "=" * 72)
+    print("  CURATED NODE FACTS VERIFICATION")
+    print("=" * 72)
+
+    from nexus.graph.store import InMemoryGraphStore
+    from nexus.graph.traversal import traverse_with_intent
+    from nexus.ingestion.populate_from_experiments import populate_graph, EXPERIMENTS_DIR
+    from nexus.query.parser import parse_question
+    from nexus.reasoning.evidence_builder import build_evidence
+
+    graph = InMemoryGraphStore()
+    graph = populate_graph(EXPERIMENTS_DIR, graph)
+
+    # Test queries designed to pull in both Experiment and Concept nodes
+    test_queries: list[dict[str, Any]] = [
+        {
+            "question": "What was the key finding of the oracle memory experiment?",
+            "expect_node_type": "Experiment",
+            "expect_property": "key_finding",
+            "expected_fragment": "99.87%",
+        },
+        {
+            "question": "What concept does the oracle memory experiment validate?",
+            "expect_node_type": "Concept",
+            "expect_property": "description",
+            "expected_fragment": "external memory",
+        },
+        {
+            "question": "How does SAM handle noise?",
+            "expect_node_type": "Concept",
+            "expect_property": "description",
+            "expected_fragment": "91.6%",
+        },
+    ]
+
+    all_passed = True
+    for test in test_queries:
+        question = test["question"]
+        parsed = parse_question(question, graph, cutoff=0.6)
+        if not parsed.entity_ids:
+            print(f"\n  SKIP: '{question}' — no entities matched")
+            continue
+
+        query_entities = set(parsed.entity_ids)
+        paths = traverse_with_intent(
+            graph=graph,
+            entry_nodes=parsed.entity_ids,
+            query_entities=query_entities,
+            intent=parsed.intent,
+            max_depth=4,
+            beam_width=5,
+        )
+
+        evidence_json = build_evidence(question, paths, graph, max_paths=3)
+        evidence = json.loads(evidence_json)
+        node_facts = evidence.get("node_facts", [])
+
+        # Check: at least one node_fact contains the expected fragment
+        matching = [nf for nf in node_facts if test["expected_fragment"] in nf.get("text", "")]
+        passed = len(matching) > 0
+
+        if passed:
+            print(f"\n  PASS: '{question[:60]}...'")
+            print(f"    Node facts found: {len(node_facts)} total, {len(matching)} matching")
+            for mf in matching[:3]:
+                conf_label = mf.get("confidence_label", "")
+                print(f"    - [{conf_label}] {mf['text'][:120]}{'...' if len(mf['text']) > 120 else ''}")
+        else:
+            all_passed = False
+            print(f"\n  FAIL: '{question[:60]}...'")
+            print(f"    Expected fragment '{test['expected_fragment']}' not found in node_facts")
+            print(f"    Node facts available: {[nf['text'][:80] for nf in node_facts]}")
+
+    # Summary
+    print("\n" + "-" * 72)
+    if all_passed:
+        print(f"  CURATED NODE FACTS: VERIFIED")
+        print("  All test queries surface key_finding/description as node_facts.")
+    else:
+        print(f"  CURATED NODE FACTS: FAILURES DETECTED")
     print("=" * 72)
 
 

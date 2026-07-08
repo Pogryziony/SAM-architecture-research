@@ -21,7 +21,7 @@ if str(_project_root) not in sys.path:
 
 from nexus.graph import Node, Edge
 from nexus.graph.store import InMemoryGraphStore
-from nexus.ingestion.entity_extractor import extract_from_markdown
+from nexus.ingestion.entity_extractor import extract_from_markdown, _is_valid_entity
 from nexus.ingestion.relation_extractor import extract_relations
 from nexus.ingestion.normalizer import canonicalize
 from nexus.ingestion.deduplicator import merge_entity_lists
@@ -135,6 +135,9 @@ def _supplement_entities(text: str, source_path: str) -> list[dict]:
         if not any(w in bold.lower() for w in ('the ', 'and ', 'but ', 'that ', 'this ')):
             line = text[:m.start()].count('\n') + 1
             add(bold, "Concept", line)
+
+    # ── Noise filter: reject entities that fail _is_valid_entity ──
+    entities = [e for e in entities if _is_valid_entity(e["name"])]
 
     return entities
 

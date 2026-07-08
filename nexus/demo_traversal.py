@@ -104,6 +104,15 @@ def demo():
         # Print just the facts summary
         import json
         evidence = json.loads(evidence_json)
+        # Print curated node facts first (highest confidence)
+        node_facts = evidence.get("node_facts", [])
+        if node_facts:
+            print(f"  Node facts (curated):")
+            for nf in node_facts:
+                text = nf["text"]
+                if len(text) > 150:
+                    text = text[:147] + "..."
+                print(f"    [HIGH] {text}")
         for fact in evidence.get("facts", []):
             print(f"    - {fact}")
         print(f"  Sources: {len(evidence.get('sources', []))} unique")

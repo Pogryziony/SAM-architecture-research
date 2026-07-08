@@ -30,6 +30,7 @@ def answer_question(
     max_depth: int = 4,
     beam_width: int = 5,
     max_paths: int = 5,
+    known_entity_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     """
     Run the complete NEXUS pipeline on a natural language question.
@@ -50,6 +51,9 @@ def answer_question(
         max_depth: Maximum traversal depth
         beam_width: Beam width for search
         max_paths: Maximum paths to include in evidence
+        known_entity_ids: Optional list of known graph node IDs to use
+            as primary entry points (e.g. from a QA dataset's entities field).
+            These bypass fuzzy matching and are prepended to fuzzy-matched IDs.
 
     Returns:
         Dict with keys:
@@ -84,8 +88,24 @@ def answer_question(
         )
         return result
 
+    # ── Resolve known entity IDs (validated against graph) ──
+    resolved_known: list[str] = []
+    if known_entity_ids:
+        for eid in known_entity_ids:
+            if graph.has_node(eid):
+                resolved_known.append(eid)
+
     # ── Step 1: Parse ──
     parsed = parse_question(question, graph, cutoff=0.6)
+
+    # Prepend known entity IDs to parsed IDs (validated, deduplicated)
+    if resolved_known:
+        existing = set(parsed.entity_ids)
+        for eid in reversed(resolved_known):
+            if eid not in existing:
+                parsed.entity_ids.insert(0, eid)
+                existing.add(eid)
+
     result["parsed_query"] = parsed
 
     # Edge case: no entities found
