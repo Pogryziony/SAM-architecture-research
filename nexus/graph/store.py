@@ -27,6 +27,7 @@ class InMemoryGraphStore:
         self._edges_in: dict[str, list[Edge]] = defaultdict(list)
         self._type_index: dict[str, list[str]] = defaultdict(list)
         self._name_index: dict[str, str] = {}  # normalized_name → node_id
+        self._alias_index: dict[str, str] = {}  # normalized_alias → node_id
         self._property_index: dict[str, list[str]] = defaultdict(list)
         # token (normalized) → list of node_ids that have that token in properties
 
@@ -39,6 +40,13 @@ class InMemoryGraphStore:
         if is_new:
             self._type_index[node.type].append(node.id)
         self._name_index[self._normalize(node.id)] = node.id
+        # Index aliases for human-friendly entity resolution
+        if node.aliases:
+            for alias in node.aliases:
+                normalized_alias = self._normalize(alias)
+                # Only index if not already taken (first-come, first-served)
+                if normalized_alias not in self._alias_index:
+                    self._alias_index[normalized_alias] = node.id
         # Index property values for keyword-based entity lookup
         for value in node.properties.values():
             if isinstance(value, str):
@@ -97,16 +105,36 @@ class InMemoryGraphStore:
     # ── Entity lookup ──
 
     def find_entity(self, name: str, cutoff: float = 0.8) -> Optional[str]:
-        """Fuzzy-find a node by name. Returns node_id or None."""
-        # Exact match first
+        """Find a node by name or alias (exact/normalized, then alias, then fuzzy). Returns node_id or None."""
         normalized = self._normalize(name)
+
+        # Exact match on node ID
         if normalized in self._name_index:
             return self._name_index[normalized]
 
-        # Fuzzy match
+        # Exact alias match
+        if normalized in self._alias_index:
+            return self._alias_index[normalized]
+
+        # Fuzzy match on node IDs
         matches = get_close_matches(normalized, list(self._name_index.keys()), n=1, cutoff=cutoff)
         if matches:
             return self._name_index[matches[0]]
+
+        # Fuzzy match on aliases
+        alias_matches = get_close_matches(normalized, list(self._alias_index.keys()), n=1, cutoff=cutoff)
+        if alias_matches:
+            return self._alias_index[alias_matches[0]]
+
+        return None
+
+    def find_entity_exact(self, name: str) -> Optional[str]:
+        """Find a node by name or alias with exact matching only (no fuzzy fallback)."""
+        normalized = self._normalize(name)
+        if normalized in self._name_index:
+            return self._name_index[normalized]
+        if normalized in self._alias_index:
+            return self._alias_index[normalized]
         return None
 
     def find_entities(self, names: list[str]) -> list[Optional[str]]:

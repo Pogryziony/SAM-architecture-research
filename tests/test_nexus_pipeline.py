@@ -173,7 +173,7 @@ class TestEntitySpotting:
     """Test spot_entities() and parse_question() for entity resolution."""
 
     def test_finds_known_entity_in_question(self, populated_graph):
-        entities = spot_entities(
+        entities, _wb = spot_entities(
             "What was the key finding of the chain retrieval experiment?",
             populated_graph,
         )
@@ -194,39 +194,39 @@ class TestEntitySpotting:
         g = InMemoryGraphStore()
         g.add_node(Node(id="the_concept", type="Concept"))   # 'the' is in graph name index
         # Without any matching node, stop words alone should return nothing
-        entities = spot_entities("the is what why how", g)
+        entities, _wb = spot_entities("the is what why how", g)
         # 'the' might match via fuzzy lookup since we have 'the_concept'
         # The key test: a graph without matching names → no entities
         g2 = InMemoryGraphStore()
         g2.add_node(Node(id="alpha", type="Entity"))
-        entities = spot_entities("the is what why how", g2)
+        entities, _wb = spot_entities("the is what why how", g2)
         # 'the', 'is', 'what', 'why', 'how' are stop words — should not match 'alpha'
         assert len(entities) == 0
 
     def test_what_keyword_not_entity(self, populated_graph):
         """'what' is a stop word and should not be matched as an entity."""
-        entities = spot_entities("what is the setup?", populated_graph)
+        entities, _wb = spot_entities("what is the setup?", populated_graph)
         entity_ids = {e[3] for e in entities}
         assert "what" not in entity_ids
 
     def test_how_keyword_not_entity(self, populated_graph):
-        entities = spot_entities("how does it work?", populated_graph)
+        entities, _wb = spot_entities("how does it work?", populated_graph)
         entity_ids = {e[3] for e in entities}
         assert "how" not in entity_ids
 
     def test_fuzzy_chain_retrieval_matches_experiment_id(self, populated_graph):
         """'chain retrieval' should fuzzy-match 'Exp_0_11_ChainRetrieval'."""
-        entities = spot_entities("chain retrieval results", populated_graph)
+        entities, _wb = spot_entities("chain retrieval results", populated_graph)
         entity_ids = {e[3] for e in entities}
         assert "Exp_0_11_ChainRetrieval" in entity_ids
 
     def test_fuzzy_pivot_to_nexus_matches_concept(self, populated_graph):
-        entities = spot_entities("pivot to NEXUS decision", populated_graph)
+        entities, _wb = spot_entities("pivot to NEXUS decision", populated_graph)
         entity_ids = {e[3] for e in entities}
         assert "concept_pivottonexus" in entity_ids
 
     def test_nonexistent_entity_returns_empty(self, populated_graph):
-        entities = spot_entities("quantum blockchain synergy", populated_graph)
+        entities, _wb = spot_entities("quantum blockchain synergy", populated_graph)
         assert len(entities) == 0
 
     def test_parse_question_returns_empty_for_nonexistent_entities(self, populated_graph):

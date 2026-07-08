@@ -132,6 +132,34 @@ EXPERIMENT_DEFS = {
     },
 }
 
+# ── Alias maps for human-friendly entity resolution ──
+
+_EXPERIMENT_ALIASES: dict[str, list[str]] = {
+    "Exp_0_Diagnosis": ["pipeline diagnosis", "experiment 0", "diagnosis experiment", "initial experiment"],
+    "Exp_0_2_CompactPKM": ["compact pkm", "experiment 0.2", "pkm retrieval", "product-key memory", "product key memory"],
+    "Exp_0_3_PKM_Candidates": ["pkm candidates", "experiment 0.3", "candidate generation"],
+    "Exp_0_5_DenseDataset": ["dense dataset", "experiment 0.5", "dataset fix"],
+    "Exp_0_6_Validation": ["oracle memory", "full validation", "experiment 0.6", "validation experiment", "oracle memory experiment", "live memory", "memory slots", "sam experiments"],
+    "Exp_0_7_ExternalText": ["external text", "experiment 0.7", "text query"],
+    "Exp_0_8_Aggregation": ["aggregation", "experiment 0.8", "aggregation variants"],
+    "Exp_0_9_OracleFilter": ["oracle filter", "experiment 0.9"],
+    "Exp_0_10_RequiredSet": ["required set", "experiment 0.10", "required-set diagnostics"],
+    "Exp_0_11_ChainRetrieval": ["chain retrieval", "experiment 0.11", "chain-set", "chain bce"],
+    "Exp_0_12_Selection": ["selector", "slot selection", "experiment 0.12", "candidate selection", "learned selector"],
+    "Exp_0_13A_NoisyMemory": ["noise tolerance", "experiment 0.13a", "noisy memory", "controlled noise"],
+    "Exp_0_13B_RealisticDistractors": ["realistic distractors", "experiment 0.13b"],
+}
+
+_CONCEPT_ALIASES: dict[str, list[str]] = {
+    "Concept_OracleMemory": ["oracle memory works", "oracle memory concept"],
+    "Concept_SelectorBottleneck": ["selector bottleneck", "selection bottleneck"],
+    "Concept_ChainRetrieval": ["chain retrieval solved", "retrieval solved"],
+    "Concept_NoiseTolerance": ["noise tolerance concept", "noise handling"],
+    "Concept_ArchitectureWorks": ["architecture validated", "architecture works", "core memory architecture"],
+    "Concept_RetrievalMismatch": ["retrieval mismatch", "projection mismatch", "query projection"],
+    "Concept_PivotToNEXUS": ["pivot to nexus", "architecture pivot", "nexus pivot"],
+}
+
 # Run-specific data mapping
 RUN_MAP = {
     # Experiment 0.6 runs
@@ -204,6 +232,7 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
                 "experiment_key": exp_key,
             },
             sources=[f"sam-lm/experiments/{exp_key}_report.md"],
+            aliases=_EXPERIMENT_ALIASES.get(exp_def["id"], []),
         )
         graph.add_node(node)
     
@@ -351,6 +380,7 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
                 "description": concept_def["description"],
             },
             sources=["ANALYSIS_AND_ROADMAP.md"],
+            aliases=_CONCEPT_ALIASES.get(concept_id, []),
         )
         graph.add_node(node)
         

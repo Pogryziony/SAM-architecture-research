@@ -808,11 +808,16 @@ def main():
         # Run NEXUS pipeline (honest entity resolution — no known_entity_ids bypass)
         nexus_result = run_nexus_pipeline(qtext, graph, nexus_model, verifier)
         
-        # Entity resolution accuracy: check if parser found at least one correct entity
+        # Entity resolution accuracy: check if parser found at least one correct entity.
+        # Also accept sub-run prefixes: Exp_0_6_Validation_dense_openbook matches Exp_0_6_Validation.
         gt_entity_ids: list[str] = q.get("entities", [])
         nexus_parsed_ids: list[str] = nexus_result.get("parsed_entity_ids", [])
         entity_resolution_hit = bool(
-            gt_entity_ids and set(nexus_parsed_ids) & set(gt_entity_ids)
+            gt_entity_ids and any(
+                gid == pid or pid.startswith(gid + "_")
+                for gid in gt_entity_ids
+                for pid in nexus_parsed_ids
+            )
         )
         nexus_result["entity_resolution_hit"] = entity_resolution_hit
         nexus_result["gt_entity_ids"] = gt_entity_ids

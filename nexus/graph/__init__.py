@@ -24,6 +24,7 @@ class Node:
     type: str  # Entity, Concept, Document, CodeFile, Function, TestCase, Bug, Decision, Requirement, Experiment, Metric
     properties: dict[str, Any] = field(default_factory=dict)
     sources: list[str] = field(default_factory=list)  # Evidence pointers
+    aliases: list[str] = field(default_factory=list)  # Alternative search names
     created_at: str = ""
     updated_at: str = ""
 

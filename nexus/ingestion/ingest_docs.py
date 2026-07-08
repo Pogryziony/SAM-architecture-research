@@ -23,27 +23,89 @@ from nexus.graph import Node, Edge
 from nexus.graph.store import InMemoryGraphStore
 from nexus.ingestion.entity_extractor import extract_from_markdown, _is_valid_entity
 from nexus.ingestion.relation_extractor import extract_relations
-from nexus.ingestion.normalizer import canonicalize
+from nexus.ingestion.normalizer import canonicalize, normalize_entity_name
 from nexus.ingestion.deduplicator import merge_entity_lists
 
 
-def _slugify(name: str) -> str:
+# ── Sub-experiment variant suffix patterns ──
+# Matched case-insensitively against entity names to identify sub-run variants.
+# Stripped iteratively: numeric/metric patterns first, then concept suffixes.
+_SUB_VARIANT_PATTERNS: list[str] = [
+    # Compound variant suffixes must be listed BEFORE their simpler components
+    # so they match as a whole unit (e.g., _oracle_filter_top64 before _top64).
+    r'[_\s]weighted[_\s]t\d{3}[_\s]top\d+',   # _weighted_t005_top32
+    r'[_\s]oracle[_\s]filter[_\s]top\d+$',       # _oracle_filter_top64 (compound, must precede _topXX)
+    r'[_\s]top\d+$',                             # _top64, _top8
+    r'[_\s]external[_\s]text[_\s]query',         # _external_text_query
+    r'[_\s]sam[_\s]chain[_\s]aware',             # _sam_chain_aware
+    r'[_\s]hidden[_\s]adapter',                  # _hidden_adapter
+    r'[_\s]dual[_\s]encoder',                    # _dual_encoder
+    r'[_\s]retrieval[_\s]compact',               # _retrieval_compact
+    r'[_\s]oracle[_\s]slots',                    # _oracle_slots
+    r'[_\s]baseline$',                           # _baseline
+    r'[_\s]hardneg$',                            # _hardneg
+    r'[_\s]improved$',                           # _improved
+]
+
+
+def _clean_experiment_name(name: str) -> tuple[str, str | None]:
+    """
+    Strip sub-experiment variant suffixes from an entity name.
+
+    Returns (clean_name, original_name) if stripping occurred,
+    or (original_name, None) if no change needed.
+
+    Examples:
+        'Experiment 0.9 oracle_filter weighted_t005_top32'
+            -> ('Experiment 0.9 oracle_filter', 'Experiment 0.9 oracle_filter weighted_t005_top32')
+        'Exp_0_12_Selection_oracle_filter_top64'
+            -> ('Exp_0_12_Selection', 'Exp_0_12_Selection_oracle_filter_top64')
+    """
+    original = name
+    clean = name
+    changed = True
+    while changed:
+        changed = False
+        for pattern in _SUB_VARIANT_PATTERNS:
+            m = re.search(pattern, clean, re.IGNORECASE)
+            if m:
+                clean = clean[:m.start()] + clean[m.end():]
+                changed = True
+                break
+    clean = re.sub(r'[_\s]{2,}', '_', clean).strip('_').strip()
+    if clean and clean != original:
+        return clean, original
+    return name, None
+
+
+def _slugify(name: str, entity_type: str = "Entity") -> str:
     """Create a normalized ID from an entity name using the canonicalizer."""
-    return canonicalize(name)
+    return canonicalize(name, entity_type)
 
 
-def _make_node(entity: dict) -> Node:
+def _make_node(entity: dict, aliases: list[str] | None = None) -> Node:
     """Convert an entity dict from the extractor to a Node."""
     name = entity["name"]
-    node_id = _slugify(name)
+    etype = entity.get("type", "Entity")
+    node_id = _slugify(name, etype)
+    # Populate aliases: if the raw name normalizes differently from the node_id,
+    # add it as an alias for recall
+    raw_alias = name.lower().replace(" ", "_")
+    final_aliases = list(aliases) if aliases else []
+    if raw_alias != node_id and raw_alias not in final_aliases:
+        final_aliases.append(raw_alias)
+    props = {
+        "name": name,
+        "display_name": name,
+    }
+    if "properties" in entity:
+        props.update(entity["properties"])
     return Node(
         id=node_id,
         type=entity.get("type", "Entity"),
-        properties={
-            "name": name,
-            "display_name": name,
-        },
+        properties=props,
         sources=[entity.get("source", "")],
+        aliases=final_aliases,
     )
 
 
@@ -177,12 +239,50 @@ def ingest_directory(
         supplement = _supplement_entities(text, rel_path)
         entities = merge_entity_lists([entities, supplement])
 
+        # ── Layer 1: Clean experiment names & merge sub-run variants ──
+        exp_groups: dict[str, dict] = {}         # clean_name -> merged entity
+        exp_order: list[str] = []                 # preserve order
+        non_exp_entities: list[dict] = []
+
+        for entity in entities:
+            etype = entity.get("type", "Entity")
+            if etype == "Experiment":
+                name = entity["name"]
+                clean_name, original = _clean_experiment_name(name)
+                entity["name"] = clean_name
+                # Collect original variant name as an alias
+                if original:
+                    entity.setdefault("_aliases", []).append(original)
+
+                norm_key = normalize_entity_name(clean_name)
+                if norm_key in exp_groups:
+                    # Merge into existing parent: combine sources, aliases, properties
+                    parent = exp_groups[norm_key]
+                    if "_aliases" in entity:
+                        parent.setdefault("_aliases", []).extend(entity["_aliases"])
+                    if "properties" in entity:
+                        parent.setdefault("properties", {}).update(entity["properties"])
+                    if entity.get("source") and entity["source"] not in parent.setdefault("sources", []):
+                        parent.setdefault("sources", []).append(entity["source"])
+                else:
+                    exp_groups[norm_key] = entity
+                    exp_order.append(norm_key)
+            else:
+                non_exp_entities.append(entity)
+
+        # Rebuild entity list with merged experiments + non-experiments
+        entities = non_exp_entities + [exp_groups[k] for k in exp_order]
+
         if verbose and entities:
             print(f"  {rel_path}: {len(entities)} entities")
 
         # Add entity nodes to graph
+        # Also track name -> node_id mapping for edge creation
+        entity_node_map: dict[str, str] = {}  # normalized_name -> node_id
         for entity in entities:
-            node = _make_node(entity)
+            extra_aliases = entity.pop("_aliases", []) if "_aliases" in entity else []
+            node = _make_node(entity, aliases=extra_aliases)
+            entity_node_map[normalize_entity_name(entity["name"])] = node.id
             if not graph.has_node(node.id):
                 graph.add_node(node)
                 nodes_added += 1
@@ -190,13 +290,29 @@ def ingest_directory(
                 existing = graph.get_node(node.id)
                 if existing and rel_path not in existing.sources:
                     existing.sources.append(rel_path)
+                # Merge aliases into existing node
+                if extra_aliases:
+                    for alias in extra_aliases:
+                        if alias not in existing.aliases:
+                            existing.aliases.append(alias)
 
         # Extract relations (also returns newly discovered entities)
         relations, new_entities = extract_relations(text, rel_path, entities)
         
+        # Clean experiment names in relation-discovered entities
+        for entity in new_entities:
+            if entity.get("type") == "Experiment":
+                name = entity["name"]
+                clean_name, original = _clean_experiment_name(name)
+                entity["name"] = clean_name
+                if original:
+                    entity.setdefault("_aliases", []).append(original)
+        
         # Add any entities discovered during relation extraction
         for entity in new_entities:
-            node = _make_node(entity)
+            extra_aliases = entity.pop("_aliases", []) if "_aliases" in entity else []
+            node = _make_node(entity, aliases=extra_aliases)
+            entity_node_map[normalize_entity_name(entity["name"])] = node.id
             if not graph.has_node(node.id):
                 graph.add_node(node)
                 nodes_added += 1
@@ -209,11 +325,27 @@ def ingest_directory(
             print(f"    -> {len(relations)} relations")
 
         # Add edges to graph
-        for rel in relations:
-            source_id = _slugify(rel["source_name"])
-            target_id = _slugify(rel["target_name"])
+        def _resolve_edge_node(name: str) -> str | None:
+            """Resolve an entity name to a node ID using the local map or store lookup."""
+            # Try local map first
+            norm = normalize_entity_name(name)
+            if norm in entity_node_map:
+                return entity_node_map[norm]
+            # Fall back to store's find_entity (includes fuzzy + alias matching)
+            store_result = graph.find_entity(name)
+            if store_result:
+                return store_result
+            # Last resort: try slugify with store's node ID matching
+            slug = _slugify(name)
+            if graph.has_node(slug):
+                return slug
+            return None
 
-            if not graph.has_node(source_id) or not graph.has_node(target_id):
+        for rel in relations:
+            source_id = _resolve_edge_node(rel["source_name"])
+            target_id = _resolve_edge_node(rel["target_name"])
+
+            if source_id is None or target_id is None:
                 continue
 
             edge = Edge(

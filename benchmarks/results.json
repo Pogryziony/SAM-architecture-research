@@ -6,8 +6,8 @@
     "verification_threshold": 0.2
   },
   "graph_provenance": {
-    "node_count": 1822,
-    "edge_count": 562,
+    "node_count": 1855,
+    "edge_count": 560,
     "build_command": "python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results.json",
     "build_steps": [
       "1. populate_from_experiments(EXPERIMENTS_DIR, graph)",
@@ -20,7 +20,7 @@
       "P1: key_findings surfaced as evidence in evidence_builder",
       "P2: double-gate with corpus metric (honest hallucination measurement)"
     ],
-    "timestamp": "2026-07-08T13:26:31.950351+00:00"
+    "timestamp": "2026-07-08T14:01:11.304851+00:00"
   },
   "summary": {
     "total_questions": 30,
@@ -31,15 +31,15 @@
       "answered": 30,
       "insufficient_evidence": 0,
       "answer_rate": 1.0,
-      "verification_passed": 18,
-      "verification_pass_rate": 0.6,
-      "avg_hallucination_rate": 0.1835,
+      "verification_passed": 22,
+      "verification_pass_rate": 0.7333,
+      "avg_hallucination_rate": 0.1491,
       "min_hallucination_rate": 0.0,
       "max_hallucination_rate": 1.0,
-      "avg_latency_s": 3.3825,
-      "avg_paths_found": 4.3,
-      "avg_accuracy": 0.258,
-      "avg_exact_accuracy": 0.2133,
+      "avg_latency_s": 3.885,
+      "avg_paths_found": 4.23,
+      "avg_accuracy": 0.3173,
+      "avg_exact_accuracy": 0.2547,
       "min_accuracy": 0.0,
       "max_accuracy": 1.0
     },
@@ -51,23 +51,23 @@
     },
     "number_reproduction": {
       "total_gt_numbers": 50,
-      "total_matched_numbers": 12,
-      "number_recall_rate": 0.24,
+      "total_matched_numbers": 17,
+      "number_recall_rate": 0.34,
       "avg_numbers_in_gt": 2.17,
-      "avg_numbers_matched": 0.52
+      "avg_numbers_matched": 0.74
     },
     "accuracy_by_hops": {
       "1": {
         "count": 19,
-        "avg_accuracy": 0.2632
+        "avg_accuracy": 0.2807
       },
       "2": {
         "count": 3,
-        "avg_accuracy": 0.1667
+        "avg_accuracy": 0.25
       },
       "3": {
         "count": 2,
-        "avg_accuracy": 0.35
+        "avg_accuracy": 0.8
       },
       "4": {
         "count": 1,
@@ -81,26 +81,26 @@
       },
       "diagnostic": {
         "count": 2,
-        "avg_accuracy": 0.0
+        "avg_accuracy": 0.125
       },
       "factual": {
         "count": 18,
-        "avg_accuracy": 0.2222
+        "avg_accuracy": 0.2407
       },
       "multi-hop": {
         "count": 3,
-        "avg_accuracy": 0.3167
+        "avg_accuracy": 0.6167
       }
     },
-    "entity_resolution_rate": 0.7333,
+    "entity_resolution_rate": 1.0,
     "entity_resolution": {
-      "hits": 22,
+      "hits": 30,
       "total": 30,
-      "rate": 0.7333
+      "rate": 1.0
     },
     "conciseness": {
-      "avg_answer_tokens": 52.5,
-      "avg_conciseness_ratio": 2.59,
+      "avg_answer_tokens": 51.6,
+      "avg_conciseness_ratio": 2.57,
       "verbose_count": 6,
       "verbose_rate": 0.2
     }
@@ -114,28 +114,28 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "The overall accuracy of the SAM oracle memory experiment was 79.95%.",
+        "answer": "The overall accuracy of the SAM oracle memory experiment was 99.87%.",
         "passed": true,
         "hallucination_rate": 0.0,
         "supported_count": 1,
         "unsupported_count": 0,
-        "path_count": 5,
+        "path_count": 4,
         "is_insufficient": false,
-        "latency_s": 3.2953,
+        "latency_s": 5.5555,
         "error": null,
         "parsed_entity_ids": [
-          "oracle_memory_(the_validation_experiment)",
-          "Exp_0_9_OracleFilter_weighted_t005_top32",
-          "Exp_0_9_OracleFilter_weighted_t005_top8",
-          "Exp_0_12_Selection_oracle_filter_top64",
-          "Exp_0_12_Selection_oracle_filter_top32"
+          "Exp_0_6_Validation",
+          "Sam_Oracle_Memory",
+          "Exp_0_13A_NoisyMemory",
+          "Oracle_Memory_(the_Validation_Experiment)",
+          "Exp_0_6_Validation_oracle_text_memory"
         ],
-        "entity_resolution_hit": false,
+        "entity_resolution_hit": true,
         "gt_entity_ids": [
           "Exp_0_6_Validation"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": 0.3333,
+        "exact_accuracy": 0.3333,
         "scoring_detail": {
           "gt_numbers": [
             0.995,
@@ -143,13 +143,15 @@
             1.0
           ],
           "pred_numbers": [
-            0.7995
+            0.9987
           ],
-          "fuzzy_matches": 0,
+          "fuzzy_matches": 1,
           "total_gt": 3,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
-          "entity_overlap": []
+          "fuzzy_score": 0.3333,
+          "exact_score": 0.3333,
+          "entity_overlap": [
+            "99.87%"
+          ]
         },
         "conciseness": {
           "answer_tokens": 11,
@@ -195,14 +197,14 @@
         "unsupported_count": 0,
         "path_count": 4,
         "is_insufficient": false,
-        "latency_s": 3.0843,
+        "latency_s": 3.3648,
         "error": null,
         "parsed_entity_ids": [
           "Exp_0_11_ChainRetrieval",
-          "Exp_0_9_OracleFilter_baseline",
-          "Exp_0_6_Validation_core_only",
           "Exp_0_6_Validation",
-          "gate_2:_memory_usefulness**:_if_sam_+_oracle_memory_does_not_beat_sam_core_only,_stop"
+          "Exp_0_6_Validation_core_only",
+          "Exp_0_9_OracleFilter_baseline",
+          "Gate_2:_Memory_Usefulness**:_If_Sam_+_Oracle_Memory_Does_Not_Beat_Sam_Core_Only,_Stop"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
@@ -265,14 +267,14 @@
         "unsupported_count": 0,
         "path_count": 4,
         "is_insufficient": false,
-        "latency_s": 2.8686,
+        "latency_s": 3.2509,
         "error": null,
         "parsed_entity_ids": [
-          "chain_set_bce_retriever_(experiment_0.11)",
+          "Chain_Set_Bce",
+          "Chain_Set_Bce_Retriever_(experiment_0.11)",
           "Exp_0_11_ChainRetrieval",
-          "chain_set_bce_retriever_—_retrieval_solved_at_k=32",
-          "chain_set_bce_(multi_hop_capable_retriever)",
-          "Concept_ChainRetrieval"
+          "Concept_ChainRetrieval",
+          "Chain_Set_Bce_Retriever_—_Retrieval_Solved_At_K=32"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
@@ -338,14 +340,14 @@
         "unsupported_count": 0,
         "path_count": 3,
         "is_insufficient": false,
-        "latency_s": 3.5392,
+        "latency_s": 3.8772,
         "error": null,
         "parsed_entity_ids": [
           "Exp_0_12_Selection",
+          "Slot_Selector",
           "Concept_SelectorBottleneck",
-          "what_was_this_experiment_trying_to_learn",
-          "Exp_0_12_Selection_learned_selector",
-          "implement_learned_slot_selector_or_score_threshold_filtering"
+          "What_Was_This_Experiment_Trying_To_Learn",
+          "Exp_0_12_Selection_learned_selector"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
@@ -415,7 +417,7 @@
         "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.8255,
+        "latency_s": 4.5559,
         "error": null,
         "parsed_entity_ids": [
           "Exp_0_13A_NoisyMemory",
@@ -487,14 +489,14 @@
         "unsupported_count": 1,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.3116,
+        "latency_s": 3.6918,
         "error": null,
         "parsed_entity_ids": [
-          "Exp_0_12_Selection_fixed_top_by_hop",
+          "Hop_Reasoning",
           "Exp_0_13A_NoisyMemory",
-          "gate_4:_reasoning**:_if_sam_improves_single_hop_but_not_multi_hop,_do_not_scale",
-          "sam_does_not_collapse_with_one_distractor",
-          "one_distractor_does_not_collapse_sam"
+          "Exp_0_12_Selection_fixed_top_by_hop",
+          "Gate_4:_Reasoning**:_If_Sam_Improves_Single_Hop_But_Not_Multi_Hop,_Do_Not_Scale",
+          "Sam_Does_Not_Collapse_With_One_Distractor"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
@@ -561,14 +563,14 @@
         "unsupported_count": 0,
         "path_count": 3,
         "is_insufficient": false,
-        "latency_s": 4.1042,
+        "latency_s": 4.6082,
         "error": null,
         "parsed_entity_ids": [
           "Exp_0_12_Selection",
           "Exp_0_12_Selection_oracle_filter_top64",
           "Exp_0_12_Selection_oracle_filter_top32",
-          "Exp_0_9_OracleFilter_weighted_t005_top32",
-          "Exp_0_9_OracleFilter_weighted_t005_top8"
+          "Exp_0_6_Validation",
+          "Exp_0_11_ChainRetrieval"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
@@ -636,13 +638,13 @@
         "unsupported_count": 0,
         "path_count": 4,
         "is_insufficient": false,
-        "latency_s": 3.3654,
+        "latency_s": 3.7217,
         "error": null,
         "parsed_entity_ids": [
           "Exp_0_10_RequiredSet",
+          "Dual_Encoder",
           "Exp_0_11_ChainRetrieval",
-          "dual_encoder_(basic_retriever_for_single_hop)",
-          "baseline_recap_(experiment_0.10_—_dual_encoder)",
+          "Dual_Encoder_(basic_Retriever_For_Single_Hop)",
           "Exp_0_6_Validation_retrieval_dual_encoder"
         ],
         "entity_resolution_hit": true,
@@ -713,14 +715,14 @@
         "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.3755,
+        "latency_s": 3.8472,
         "error": null,
         "parsed_entity_ids": [
-          "Exp_0_6_Validation_retrieval_dual_encoder",
-          "Exp_0_6_Validation_retrieved_memory",
-          "Exp_0_10_RequiredSet",
           "Exp_0_5_DenseDataset",
-          "baseline_recap_(experiment_0.10_—_dual_encoder)"
+          "Dual_Encoder",
+          "Exp_0_6_Validation_retrieval_dual_encoder",
+          "Exp_0_10_RequiredSet",
+          "Exp_0_6_Validation_retrieved_memory"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
@@ -791,14 +793,14 @@
         "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 2.7694,
+        "latency_s": 3.1033,
         "error": null,
         "parsed_entity_ids": [
           "Exp_0_Diagnosis",
-          "what_was_this_experiment_trying_to_learn",
-          "experiment_0_—_pipeline_diagnosis",
           "Exp_0_3_PKM_Candidates",
-          "sam_lm_experiment_0.3_—_pkm_retrieval_diagnosis_and_repair"
+          "What_Was_This_Experiment_Trying_To_Learn",
+          "Experiment_0_—_Pipeline_Diagnosis",
+          "Exp_0_13A_NoisyMemory"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
@@ -861,14 +863,14 @@
         "unsupported_count": 6,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.1048,
+        "latency_s": 3.6353,
         "error": null,
         "parsed_entity_ids": [
-          "Exp_0_11_ChainRetrieval",
           "Exp_0_13A_NoisyMemory",
           "Exp_0_6_Validation",
-          "gate_2:_memory_usefulness**:_if_sam_+_oracle_memory_does_not_beat_sam_core_only,_stop",
-          "sam/model/_—_core_architecture"
+          "Exp_0_11_ChainRetrieval",
+          "Gate_2:_Memory_Usefulness**:_If_Sam_+_Oracle_Memory_Does_Not_Beat_Sam_Core_Only,_Stop",
+          "Sam/model/_—_Core_Architecture"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
@@ -934,13 +936,13 @@
         "unsupported_count": 9,
         "path_count": 4,
         "is_insufficient": false,
-        "latency_s": 2.9539,
+        "latency_s": 3.3209,
         "error": null,
         "parsed_entity_ids": [
           "Exp_0_11_ChainRetrieval",
           "Exp_0_13A_NoisyMemory",
           "Exp_0_6_Validation",
-          "gate_2:_memory_usefulness**:_if_sam_+_oracle_memory_does_not_beat_sam_core_only,_stop",
+          "Gate_2:_Memory_Usefulness**:_If_Sam_+_Oracle_Memory_Does_Not_Beat_Sam_Core_Only,_Stop",
           "Concept_OracleMemory"
         ],
         "entity_resolution_hit": true,
@@ -1010,18 +1012,18 @@
         "hallucination_rate": 0.0,
         "supported_count": 1,
         "unsupported_count": 0,
-        "path_count": 2,
+        "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 2.7552,
+        "latency_s": 3.1219,
         "error": null,
         "parsed_entity_ids": [
-          "dense_dataset_(data/synthetic_dense)",
-          "experiment_0.6:_validation_(dense_dataset)",
-          "what_was_this_experiment_trying_to_learn",
+          "Dense_Dataset_(data/synthetic_Dense)",
           "Exp_0_5_DenseDataset",
-          "run_the_experiment"
+          "Experiment_0.6:_Validation_(dense_Dataset)",
+          "What_Was_This_Experiment_Trying_To_Learn",
+          "Exp_0_6_Validation_dense_openbook"
         ],
-        "entity_resolution_hit": false,
+        "entity_resolution_hit": true,
         "gt_entity_ids": [
           "Exp_0_6_Validation"
         ],
@@ -1081,23 +1083,23 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "Regarding \"What accuracy did random memory injection achieve in SAM?\", the evidence reveals the following:\n\nThe evidence clearly indicates that 1-Hop Accuracy. Additionally, 3-Hop Accuracy. Additionally, sAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck. Furthermore, oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.\n\nAdditional evidence suggests the following:\n  - Experiment 0.6 — Full Validation — random_memory supports 1-Hop Accuracy.\n  - Experiment 0.6 — Full Validation — random_memory supports 3-Hop Accuracy.\n  - Experiment 0.13A — Controlled Noisy Memory Tolerance depends on Experiment 0.12 — Candidate Selection & Memory-Use Training.\n\n\nThese findings are drawn from 5 source document(s) in the knowledge graph.",
+        "answer": "Regarding \"What accuracy did random memory injection achieve in SAM?\", the evidence reveals the following:\n\nThe evidence clearly indicates that 1-Hop Accuracy. Additionally, sAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck. Additionally, oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck. Additionally, testing in progress. Code implemented. Furthermore, sAM tolerates controlled random noise (+8 distractors -> 91.6%), gate is NOT the bottleneck.\n\nAdditional evidence suggests the following:\n  - Experiment 0.6 — Full Validation — random_memory supports 1-Hop Accuracy.\n  - Experiment 0.13A — Controlled Noisy Memory Tolerance depends on Experiment 0.12 — Candidate Selection & Memory-Use Training.\n  - Experiment 0.13A — Controlled Noisy Memory Tolerance is a dependency of Experiment 0.13B — Realistic Retrieval Distractor Replay.\n\n\nThese findings are drawn from 9 source document(s) in the knowledge graph.",
         "passed": false,
-        "hallucination_rate": 0.4615,
+        "hallucination_rate": 0.5333,
         "supported_count": 7,
-        "unsupported_count": 6,
-        "path_count": 3,
+        "unsupported_count": 8,
+        "path_count": 4,
         "is_insufficient": false,
-        "latency_s": 3.0653,
+        "latency_s": 3.3151,
         "error": null,
         "parsed_entity_ids": [
-          "Exp_0_6_Validation_random_memory",
+          "Random_Memory",
           "Exp_0_13A_NoisyMemory",
+          "Exp_0_6_Validation_random_memory",
           "Concept_OracleMemory",
-          "Metric_Exp_0_6_Validation_random_memory_val_accuracy_single_hop",
-          "Metric_Exp_0_6_Validation_random_memory_val_accuracy_three_hop"
+          "Metric_Exp_0_6_Validation_random_memory_val_accuracy_single_hop"
         ],
-        "entity_resolution_hit": false,
+        "entity_resolution_hit": true,
         "gt_entity_ids": [
           "Exp_0_6_Validation"
         ],
@@ -1111,9 +1113,10 @@
             0.12,
             0.5,
             0.6,
+            0.916,
             0.966,
             1.0,
-            5.0
+            9.0
           ],
           "fuzzy_matches": 0,
           "total_gt": 1,
@@ -1122,9 +1125,9 @@
           "entity_overlap": []
         },
         "conciseness": {
-          "answer_tokens": 110,
+          "answer_tokens": 136,
           "ground_truth_tokens": 16,
-          "ratio": 6.88,
+          "ratio": 8.5,
           "too_verbose": true
         }
       },
@@ -1163,14 +1166,14 @@
         "unsupported_count": 6,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.2511,
+        "latency_s": 3.7965,
         "error": null,
         "parsed_entity_ids": [
+          "Chain_Set_Bce",
+          "Dual_Encoder",
           "Exp_0_11_ChainRetrieval",
           "Exp_0_10_RequiredSet",
-          "Concept_ChainRetrieval",
-          "dual_encoder_(basic_retriever_for_single_hop)",
-          "chain_set_bce_(multi_hop_capable_retriever)"
+          "Concept_ChainRetrieval"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
@@ -1236,21 +1239,21 @@
       "difficulty": "medium",
       "hops": 1,
       "nexus": {
-        "answer": "Experiment 0.13A proved that the SAM gate can tolerate up to +8 random distractors with a success rate of 91.6%. However, it also showed that 3-hop collapses occur at +16 random distractors, indicating that the gate is not the bottleneck in this context.",
-        "passed": false,
-        "hallucination_rate": 0.5,
+        "answer": "Experiment 0.13A proved that the SAM gate does not act as a bottleneck in handling noisy memory, as it can tolerate up to +8 random distractors with 91.6% accuracy and collapses at +16 with only 39% accuracy.",
+        "passed": true,
+        "hallucination_rate": 0.0,
         "supported_count": 1,
-        "unsupported_count": 1,
+        "unsupported_count": 0,
         "path_count": 3,
         "is_insufficient": false,
-        "latency_s": 3.3476,
+        "latency_s": 3.5988,
         "error": null,
         "parsed_entity_ids": [
           "Exp_0_13A_NoisyMemory",
-          "sam_lm_experiment_0.5_—_gate_1_passed:_retrieval_solved",
+          "Sam_Lm_Experiment_0.5_—_Gate_1_Passed:_Retrieval_Solved",
+          "Exp_0_11_ChainRetrieval",
           "Exp_0_13A_NoisyMemory_noise_+16",
-          "Exp_0_13A_NoisyMemory_noise_+8",
-          "Exp_0_13A_NoisyMemory_noise_+4"
+          "Exp_0_13A_NoisyMemory_noise_+8"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
@@ -1261,6 +1264,7 @@
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [
+            0.39,
             0.916
           ],
           "fuzzy_matches": 0,
@@ -1270,9 +1274,9 @@
           "entity_overlap": []
         },
         "conciseness": {
-          "answer_tokens": 43,
+          "answer_tokens": 37,
           "ground_truth_tokens": 22,
-          "ratio": 1.95,
+          "ratio": 1.68,
           "too_verbose": false
         }
       },
@@ -1309,16 +1313,16 @@
         "unsupported_count": 6,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.1482,
+        "latency_s": 3.5735,
         "error": null,
         "parsed_entity_ids": [
+          "Exp_0_6_Validation",
           "Exp_0_13A_NoisyMemory",
           "Exp_0_12_Selection",
           "Exp_0_12_Selection_oracle_filter_top64",
-          "Exp_0_12_Selection_oracle_filter_top32",
-          "Exp_0_12_Selection_learned_selector"
+          "Exp_0_12_Selection_oracle_filter_top32"
         ],
-        "entity_resolution_hit": false,
+        "entity_resolution_hit": true,
         "gt_entity_ids": [
           "Exp_0_6_Validation"
         ],
@@ -1385,14 +1389,14 @@
         "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.0015,
+        "latency_s": 3.5948,
         "error": null,
         "parsed_entity_ids": [
           "Exp_0_Diagnosis",
-          "experiment_0_—_pipeline_diagnosis",
           "Exp_0_3_PKM_Candidates",
-          "selectivity_is_the_critical_factor",
-          "Concept_SelectorBottleneck"
+          "Experiment_0_—_Pipeline_Diagnosis",
+          "Full_Experiment_Pipeline",
+          "Gate_Three:_Hop_Value_Construction**:_Even_With_Correct_Slots,_Three_Hop_Doesn't_Improve"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
@@ -1442,23 +1446,23 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "Regarding \"accuracy of oracle text memory compared to oracle latent memory\", the evidence reveals the following:\n\nThe evidence clearly indicates that Experiment 0.9 — Oracle-Filter & Multi-Query — weighted_t005_top32. Additionally, oracle filter achieves 79.95%. Multi-query implemented but not yet effective. Additionally, external text query bypasses hidden-state projection. Tested topK sweep. Additionally, oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified. Additionally, oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck. Furthermore, experiment 0.7 — External Text Query — external_text_query.\n\nAdditional evidence suggests the following:\n  - Experiment 0.9 — Oracle-Filter & Multi-Query — weighted_t005_top32 is derived from Experiment 0.9 — Oracle-Filter & Multi-Query.\n  - Experiment 0.9 — Oracle-Filter & Multi-Query depends on Experiment 0.8 — Aggregation & Selection Variants.\n  - Experiment 0.8 — Aggregation & Selection Variants depends on Experiment 0.7 — External Text Query.\n\n\nThese findings are drawn from 21 source document(s) in the knowledge graph.",
+        "answer": "Regarding \"accuracy of oracle text memory compared to oracle latent memory\", the evidence reveals the following:\n\n16K PKM: 25.8% Rec@8. Oracle text: 100% — core CAN use memory.\n\nOracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.\n\nExternal text query bypasses hidden-state projection. Tested topK sweep.\n\nProves SAM core CAN use external memory — 100% accuracy.\n\nDual encoder query projection mismatch prevents SAM from using retrieved memory.\n\nAdditional evidence suggests the following:\n  - Experiment 0.2 — Compact PKM Retrieval is a dependency of Experiment 0.3 — PKM Candidate Generation.\n  - Experiment 0.3 — PKM Candidate Generation is a dependency of Experiment 0.5 — Dense Dataset Fix.\n  - Experiment 0.5 — Dense Dataset Fix is a dependency of Experiment 0.6 — Full Validation.\n\n\nThese findings are drawn from 14 source document(s) in the knowledge graph.",
         "passed": false,
-        "hallucination_rate": 0.2353,
-        "supported_count": 13,
-        "unsupported_count": 4,
-        "path_count": 5,
+        "hallucination_rate": 0.2143,
+        "supported_count": 11,
+        "unsupported_count": 3,
+        "path_count": 4,
         "is_insufficient": false,
-        "latency_s": 3.3227,
+        "latency_s": 3.6879,
         "error": null,
         "parsed_entity_ids": [
-          "oracle_memory_(the_validation_experiment)",
-          "Exp_0_9_OracleFilter_weighted_t005_top32",
-          "Exp_0_9_OracleFilter_weighted_t005_top8",
-          "Exp_0_12_Selection_oracle_filter_top64",
-          "Exp_0_12_Selection_oracle_filter_top32"
+          "Oracle_Text_Memory",
+          "Latent_Memory",
+          "Exp_0_2_CompactPKM",
+          "Oracle_Memory_(the_Validation_Experiment)",
+          "Exp_0_6_Validation_oracle_text_memory"
         ],
-        "entity_resolution_hit": false,
+        "entity_resolution_hit": true,
         "gt_entity_ids": [
           "Exp_0_6_Validation"
         ],
@@ -1470,15 +1474,14 @@
             1.0
           ],
           "pred_numbers": [
+            0.2,
+            0.258,
+            0.3,
             0.5,
-            0.7,
-            0.7995,
-            0.8,
-            0.9,
-            0.966,
+            0.6,
             0.9987,
             1.0,
-            21.0
+            14.0
           ],
           "fuzzy_matches": 2,
           "total_gt": 2,
@@ -1490,9 +1493,9 @@
           ]
         },
         "conciseness": {
-          "answer_tokens": 151,
+          "answer_tokens": 137,
           "ground_truth_tokens": 18,
-          "ratio": 8.39,
+          "ratio": 7.61,
           "too_verbose": true
         }
       },
@@ -1525,23 +1528,23 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "SAM achieves an overall accuracy of 91.6% when there is exactly one distractor in controlled noisy memory.",
+        "answer": "SAM achieves an accuracy of 91.6% with exactly 8 distractors in controlled noisy memory.",
         "passed": true,
         "hallucination_rate": 0.0,
         "supported_count": 1,
         "unsupported_count": 0,
-        "path_count": 5,
+        "path_count": 3,
         "is_insufficient": false,
-        "latency_s": 3.839,
+        "latency_s": 4.3825,
         "error": null,
         "parsed_entity_ids": [
+          "Exp_0_13A_NoisyMemory",
+          "Exp_0_6_Validation",
           "Exp_0_13A_NoisyMemory_noise_+16",
           "Exp_0_13A_NoisyMemory_noise_+8",
-          "Exp_0_13A_NoisyMemory_noise_+4",
-          "Exp_0_13A_NoisyMemory_noise_+2",
-          "Exp_0_13A_NoisyMemory_noise_+1"
+          "Exp_0_13A_NoisyMemory_noise_+4"
         ],
-        "entity_resolution_hit": false,
+        "entity_resolution_hit": true,
         "gt_entity_ids": [
           "Exp_0_13A_NoisyMemory"
         ],
@@ -1553,7 +1556,8 @@
             0.9982
           ],
           "pred_numbers": [
-            0.916
+            0.916,
+            8.0
           ],
           "fuzzy_matches": 0,
           "total_gt": 2,
@@ -1562,9 +1566,9 @@
           "entity_overlap": []
         },
         "conciseness": {
-          "answer_tokens": 17,
+          "answer_tokens": 14,
           "ground_truth_tokens": 14,
-          "ratio": 1.21,
+          "ratio": 1.0,
           "too_verbose": false
         }
       },
@@ -1604,14 +1608,14 @@
         "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.8756,
+        "latency_s": 4.4533,
         "error": null,
         "parsed_entity_ids": [
-          "dual_encoder_(basic_retriever_for_single_hop)",
-          "Exp_0_11_ChainRetrieval",
+          "Dual_Encoder",
+          "Dual_Encoder_(basic_Retriever_For_Single_Hop)",
           "Exp_0_10_RequiredSet",
-          "chain_set_bce_(multi_hop_capable_retriever)",
-          "why_did_non_oracle_memory_fail_before_0.13a"
+          "Exp_0_11_ChainRetrieval",
+          "Why_Did_Non_Oracle_Memory_Fail_Before_0.13a"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
@@ -1662,28 +1666,28 @@
       "difficulty": "medium",
       "hops": 2,
       "nexus": {
-        "answer": "The dense dataset fix enabled successful retrieval by improving the performance of the retrieval system. Specifically, it increased the recall rate to 99.0% at rank 8 and passed gate 1, indicating that the dense dataset was effective in retrieving relevant documents. This improvement was achieved through various aggregation and selection variants tested during the experiments, which further supported the effectiveness of the dense dataset fix.",
+        "answer": "The dense dataset fix enabled successful retrieval by significantly improving the performance of the retrieval process. Specifically, it increased the recall@8 metric from 25.8% to 99.0%, which is a substantial improvement in terms of accuracy and efficiency. This enhancement was achieved through the use of a dense dataset with 21.8 examples per slot, which allowed for more comprehensive and relevant data retrieval compared to previous methods.",
         "passed": true,
         "hallucination_rate": 0.0,
         "supported_count": 3,
         "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.0752,
+        "latency_s": 3.613,
         "error": null,
         "parsed_entity_ids": [
           "Exp_0_5_DenseDataset",
-          "recommended_fix:_reduce_pkm_to_128_subkeys_(16,384_slots,_~29%_density)_for_the_full_experiment._or_pretrain_retrieval_separately_with_more_epochs",
-          "experiment_0.5_—_dense_dataset_fix",
-          "experiment_0.6:_validation_(dense_dataset)",
-          "Exp_0_6_Validation_retrieval_dual_encoder"
+          "Experiment_0.5_—_Dense_Dataset_Fix",
+          "Recommended_Fix:_Reduce_Pkm_To_128_Subkeys_(16,384_Slots,_~29%_Density)_For_The_Full_Experiment._Or_Pretrain_Retrieval_Separately_With_More_Epochs",
+          "Exp_0_Diagnosis",
+          "Exp_0_13A_NoisyMemory"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
           "Exp_0_5_DenseDataset"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": 0.25,
+        "exact_accuracy": 0.2,
         "scoring_detail": {
           "gt_numbers": [
             0.3,
@@ -1692,20 +1696,22 @@
             1650.0
           ],
           "pred_numbers": [
+            0.258,
             0.99,
-            1.0,
-            8.0
+            21.8
           ],
-          "fuzzy_matches": 0,
+          "fuzzy_matches": 1,
           "total_gt": 4,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
-          "entity_overlap": []
+          "fuzzy_score": 0.25,
+          "exact_score": 0.2,
+          "entity_overlap": [
+            "21.8 examples"
+          ]
         },
         "conciseness": {
-          "answer_tokens": 65,
+          "answer_tokens": 66,
           "ground_truth_tokens": 39,
-          "ratio": 1.67,
+          "ratio": 1.69,
           "too_verbose": false
         }
       },
@@ -1740,20 +1746,20 @@
       "difficulty": "medium",
       "hops": 3,
       "nexus": {
-        "answer": "The chain of experiments leading from the discovery of the retriever problem to solving it is as follows:\n\n- **Exp_0_10_RequiredSet**: This experiment focused on required-set retrieval diagnostics, which identified that dual encoder misses intermediate chain slots and is not a ranking problem.\n- **Exp_0_11_ChainRetrieval**: This experiment built upon Exp_0_10_RequiredSet by focusing on chain-aware retrieval, achieving 100% accuracy for all_required@32 with SAM still being core_only.\n\nThese experiments laid the foundation for solving the retriever problem by identifying and addressing its limitations.",
-        "passed": false,
-        "hallucination_rate": 0.25,
-        "supported_count": 3,
-        "unsupported_count": 1,
+        "answer": "The chain of experiments leading from the discovery of the retriever problem to solving it involved:\n\n- Experiment 0.10 — Required-Set Retrieval Diagnostics, which identified issues with dual encoder performance and missed intermediate chain slots.\n- Experiment 0.11 — Chain-Aware Retrieval, which addressed these issues by improving BCE loss for all_required@32 to 100% but still using core_only SAM.\n- Experiment 0.12 — Candidate Selection & Memory-Use Training, which focused on the bottleneck of the selector and achieved recall 96.6% and precision 50%.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 4,
+        "unsupported_count": 0,
         "path_count": 3,
         "is_insufficient": false,
-        "latency_s": 4.4333,
+        "latency_s": 5.1091,
         "error": null,
         "parsed_entity_ids": [
           "Exp_0_10_RequiredSet",
           "Exp_0_12_Selection",
-          "confirmed_(strong_evidence_from_controlled_experiments)",
-          "chain_set_bce_retriever_(experiment_0.11)",
+          "Chain_Set_Bce_Retriever_(experiment_0.11)",
+          "Confirmed_(strong_Evidence_From_Controlled_Experiments)",
           "Exp_0_11_ChainRetrieval"
         ],
         "entity_resolution_hit": true,
@@ -1762,7 +1768,7 @@
           "Exp_0_10_RequiredSet",
           "Exp_0_11_ChainRetrieval"
         ],
-        "accuracy": 0.2,
+        "accuracy": 0.6,
         "exact_accuracy": 0.5,
         "scoring_detail": {
           "gt_numbers": [
@@ -1773,11 +1779,16 @@
             1.0
           ],
           "pred_numbers": [
+            0.1,
+            0.11,
+            0.12,
+            0.5,
+            0.966,
             1.0
           ],
-          "fuzzy_matches": 1,
+          "fuzzy_matches": 3,
           "total_gt": 5,
-          "fuzzy_score": 0.2,
+          "fuzzy_score": 0.6,
           "exact_score": 0.5,
           "entity_overlap": [
             "100%",
@@ -1786,9 +1797,9 @@
           ]
         },
         "conciseness": {
-          "answer_tokens": 80,
+          "answer_tokens": 82,
           "ground_truth_tokens": 33,
-          "ratio": 2.42,
+          "ratio": 2.48,
           "too_verbose": false
         }
       },
@@ -1824,21 +1835,21 @@
       "difficulty": "medium",
       "hops": 2,
       "nexus": {
-        "answer": "Chain-set retrieval achieves 100% all_required@32 because it correctly identifies and retrieves all required information from the chain, while SAM still equals core_only due to issues with the selection mechanism. The selection process is identified as a bottleneck in the system, which prevents it from achieving the same level of accuracy as chain-set retrieval.",
+        "answer": "Chain-set retrieval achieves 100% all_required@32 because it correctly identifies and retrieves all required information from the chain, while SAM still equals core_only due to the bottleneck in the selector. The selector is identified as the bottleneck, which means that even though chain-set retrieval performs well, the way it selects relevant information is not optimal.",
         "passed": true,
         "hallucination_rate": 0.0,
         "supported_count": 2,
         "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.9116,
+        "latency_s": 4.6327,
         "error": null,
         "parsed_entity_ids": [
+          "Chain_Set_Retrieval",
           "Exp_0_11_ChainRetrieval",
           "Concept_ChainRetrieval",
-          "Exp_0_10_RequiredSet",
           "Exp_0_6_Validation",
-          "gate_2:_memory_usefulness**:_if_sam_+_oracle_memory_does_not_beat_sam_core_only,_stop"
+          "Exp_0_10_RequiredSet"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
@@ -1861,9 +1872,9 @@
           "entity_overlap": []
         },
         "conciseness": {
-          "answer_tokens": 53,
+          "answer_tokens": 54,
           "ground_truth_tokens": 41,
-          "ratio": 1.29,
+          "ratio": 1.32,
           "too_verbose": false
         }
       },
@@ -1895,50 +1906,51 @@
       "difficulty": "hard",
       "hops": 3,
       "nexus": {
-        "answer": "The selector bottleneck is related to the pivot to NEXUS. The evidence shows that in Experiment 0.12, the learned selector had a precision of 50%, which was identified as the critical bottleneck. This bottleneck led to the decision to pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning).",
-        "passed": false,
-        "hallucination_rate": 0.3333,
+        "answer": "The relationship between the selector bottleneck and the pivot to NEXUS is that the selector bottleneck, which affects learned selector precision at 50% with a recall of 96.6%, indicates that flat latent-vector memory cannot solve selection quality. This realization led to the decision to pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning).",
+        "passed": true,
+        "hallucination_rate": 0.0,
         "supported_count": 2,
-        "unsupported_count": 1,
+        "unsupported_count": 0,
         "path_count": 3,
         "is_insufficient": false,
-        "latency_s": 3.9409,
+        "latency_s": 4.6018,
         "error": null,
         "parsed_entity_ids": [
-          "Decision_PivotToNEXUS",
-          "Exp_0_12_Selection",
-          "Exp_0_Diagnosis",
           "Concept_SelectorBottleneck",
-          "Exp_0_11_ChainRetrieval"
+          "Concept_PivotToNEXUS",
+          "Decision_PivotToNEXUS",
+          "Exp_0_Diagnosis",
+          "Exp_0_12_Selection"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
           "Concept_SelectorBottleneck",
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.5,
-        "exact_accuracy": 0.5,
+        "accuracy": 1.0,
+        "exact_accuracy": 1.0,
         "scoring_detail": {
           "gt_numbers": [
             0.5,
             0.966
           ],
           "pred_numbers": [
-            0.12,
-            0.5
+            0.5,
+            0.966
           ],
-          "fuzzy_matches": 1,
+          "fuzzy_matches": 2,
           "total_gt": 2,
-          "fuzzy_score": 0.5,
-          "exact_score": 0.5,
+          "fuzzy_score": 1.0,
+          "exact_score": 1.0,
           "entity_overlap": [
-            "50%"
+            "50%",
+            "96.6%"
           ]
         },
         "conciseness": {
-          "answer_tokens": 49,
+          "answer_tokens": 54,
           "ground_truth_tokens": 44,
-          "ratio": 1.11,
+          "ratio": 1.23,
           "too_verbose": false
         }
       },
@@ -1971,21 +1983,21 @@
       "difficulty": "hard",
       "hops": 4,
       "nexus": {
-        "answer": "The evolution from experiment 0.6 to the architecture pivot can be traced through the following steps:\n\n1. **Experiment 0.12_Selection**: This experiment focused on candidate selection and memory-use training, which is a dependency of Experiment 0.11_ChainRetrieval.\n\n2. **Experiment 0.11_ChainRetrieval**: This experiment built upon Experiment 0.10_RequiredSet and introduced chain-aware retrieval, which is a dependency of Experiment 0.13A_NoisyMemory.\n\n3. **Experiment 0.13A_NoisyMemory**: This experiment further refined the system by tolerating noisy memory, which is a critical step towards achieving the architecture pivot.\n\n4. **Experiment 0.12_Selection** also validated Concept_SelectorBottleneck, indicating that the learned selector precision was the critical bottleneck at this stage.\n\nTherefore, the architecture pivot can be considered to have occurred in Experiment 0.13A_NoisyMemory, where the system's ability to handle noisy memory and improve the precision of the learned selector were key factors in achieving a more robust architecture.",
+        "answer": "The evolution from experiment 0.6 to the architecture pivot can be traced through the following steps:\n\n1. **Experiment 0.12_Selection**: This experiment focused on candidate selection and memory-use training, which is a dependency for Experiment 0.13A — Controlled Noisy Memory Tolerance.\n\n2. **Experiment 0.13A_NoisyMemory**: This experiment introduced controlled noisy memory tolerance, which validated the concept of pivoting to a graph-first architecture based on the findings from Experiment 0.12_Selection.\n\n3. **Concept_PivotToNEXUS**: This concept was validated by both Experiment 0.12_Selection and Experiment 0.13A_NoisyMemory, indicating that the pivot to a graph-first architecture was supported by these experiments.\n\nTherefore, the evolution from experiment 0.6 (Experiment 0.12_Selection) to the architecture pivot (Concept_PivotToNEXUS) is through Experiment 0.13A_NoisyMemory, which validated the concept of pivoting to a graph-first architecture based on the findings from Experiment 0.12_Selection.",
         "passed": true,
         "hallucination_rate": 0.0,
-        "supported_count": 6,
+        "supported_count": 5,
         "unsupported_count": 0,
-        "path_count": 4,
+        "path_count": 3,
         "is_insufficient": false,
-        "latency_s": 4.2386,
+        "latency_s": 4.556,
         "error": null,
         "parsed_entity_ids": [
+          "Exp_0_6_Validation",
+          "Concept_PivotToNEXUS",
           "Exp_0_12_Selection",
-          "how_the_poc_differs_from_the_final_architecture",
-          "\"my_results_don't_match_the_experiment_reports\"",
-          "oracle_memory_(the_validation_experiment)",
-          "Exp_0_11_ChainRetrieval"
+          "How_The_Poc_Differs_From_The_Final_Architecture",
+          "Exp_0_13A_NoisyMemory"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
@@ -2008,8 +2020,7 @@
             0.6,
             1.0,
             2.0,
-            3.0,
-            4.0
+            3.0
           ],
           "fuzzy_matches": 1,
           "total_gt": 4,
@@ -2018,9 +2029,9 @@
           "entity_overlap": []
         },
         "conciseness": {
-          "answer_tokens": 135,
+          "answer_tokens": 127,
           "ground_truth_tokens": 79,
-          "ratio": 1.71,
+          "ratio": 1.61,
           "too_verbose": false
         }
       },
@@ -2057,23 +2068,23 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "The six memory modes in SAM are controlled noisy memory tolerance, candidate selection & memory-use training, realistic retrieval distractor replay, noise tolerance, architecture validity, and pivot to NEXUS.",
+        "answer": "The six memory modes in SAM are not explicitly mentioned in the provided evidence.",
         "passed": true,
         "hallucination_rate": 0.0,
         "supported_count": 1,
         "unsupported_count": 0,
-        "path_count": 5,
+        "path_count": 4,
         "is_insufficient": false,
-        "latency_s": 2.9291,
+        "latency_s": 3.0776,
         "error": null,
         "parsed_entity_ids": [
+          "Memory_Modes",
           "Exp_0_13A_NoisyMemory",
-          "sam_lm_experiment_0.9_—_weighted_/_selective_memory_aggregation",
-          "oracle_memory_(the_validation_experiment)",
-          "Exp_0_9_OracleFilter_weighted_t005_top32",
-          "Exp_0_7_ExternalText_external_text_query"
+          "Exp_0_6_Validation",
+          "Oracle_Memory_(the_Validation_Experiment)",
+          "Exp_0_6_Validation_oracle_text_memory"
         ],
-        "entity_resolution_hit": false,
+        "entity_resolution_hit": true,
         "gt_entity_ids": [
           "Exp_0_6_Validation"
         ],
@@ -2089,9 +2100,9 @@
           "entity_overlap": []
         },
         "conciseness": {
-          "answer_tokens": 28,
+          "answer_tokens": 14,
           "ground_truth_tokens": 26,
-          "ratio": 1.08,
+          "ratio": 0.54,
           "too_verbose": false
         }
       },
@@ -2121,21 +2132,21 @@
       "difficulty": "medium",
       "hops": 1,
       "nexus": {
-        "answer": "SAM and RAG differ in their approach to handling noisy memory. SAM tolerates up to +8 random distractors before collapsing, while RAG relies on a learned selector that achieves recall of 96.6% and precision of 50%. Additionally, RAG faces retrieval mismatch issues due to dual encoder query projection mismatches, which prevents it from using retrieved memory effectively.",
+        "answer": "SAM and RAG differ in their approach to handling noisy memory. SAM can tolerate up to +8 random distractors, while RAG cannot handle more than +16 random distractors before collapsing. Additionally, SAM uses a learned selector that has a recall of 96.6% and precision of 50%, making it the bottleneck for retrieval in SAM.",
         "passed": false,
-        "hallucination_rate": 0.3333,
-        "supported_count": 2,
-        "unsupported_count": 1,
+        "hallucination_rate": 0.6667,
+        "supported_count": 1,
+        "unsupported_count": 2,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.199,
+        "latency_s": 3.5463,
         "error": null,
         "parsed_entity_ids": [
           "Exp_0_13A_NoisyMemory",
           "Exp_0_6_Validation",
-          "gate_5:_dense_baseline**:_if_sam_+_retrieved_does_not_beat_same_size_dense,_do_not_scale",
-          "gate_2:_memory_usefulness**:_if_sam_+_oracle_memory_does_not_beat_sam_core_only,_stop",
-          "Decision_PivotToNEXUS"
+          "Gate_5:_Dense_Baseline**:_If_Sam_+_Retrieved_Does_Not_Beat_Same_Size_Dense,_Do_Not_Scale",
+          "Gate_2:_Memory_Usefulness**:_If_Sam_+_Oracle_Memory_Does_Not_Beat_Sam_Core_Only,_Stop",
+          "Sam_Lm_Experiment_0.2_—_Compact_Live_Slot_Retrieval_And_Oracle_Diagnostics"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [
@@ -2153,9 +2164,9 @@
           "entity_overlap": []
         },
         "conciseness": {
-          "answer_tokens": 57,
+          "answer_tokens": 54,
           "ground_truth_tokens": 38,
-          "ratio": 1.5,
+          "ratio": 1.42,
           "too_verbose": false
         }
       },
@@ -2185,23 +2196,23 @@
       "difficulty": "medium",
       "hops": 1,
       "nexus": {
-        "answer": "Product-key memory refers to the use of a specific key or identifier that uniquely identifies a product in a system. SAM uses this feature because it allows for efficient and accurate retrieval of information about products, which is crucial for providing personalized recommendations and improving user experience. The evidence suggests that SAM employs various metrics such as Overall Accuracy, 1-Hop Accuracy, 2-Hop Accuracy, 3-Hop Accuracy, and Recall@1 to evaluate the effectiveness of its product-key memory implementation.",
-        "passed": false,
-        "hallucination_rate": 0.3333,
-        "supported_count": 2,
-        "unsupported_count": 1,
+        "answer": "Product-key memory refers to a compact pattern key-memory model used in the SAM system. It is used because it achieves high retrieval accuracy with minimal computational resources, as evidenced by Exp_0_2_CompactPKM where 16K PKM yields 25.8% Rec@8 and Oracle text recall of 100%. This memory model allows for efficient use of core CAN memory, which is crucial for the system's performance.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 3,
+        "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.4592,
+        "latency_s": 3.7753,
         "error": null,
         "parsed_entity_ids": [
-          "why_product_key_memory",
-          "experiment_0.12_report_—_candidate_selection_and_memory_use_training",
-          "experiment_0.12_—_candidate_selection_and_memory_use_training",
-          "Exp_0_12_Selection_oracle_filter_top64",
-          "Exp_0_12_Selection_oracle_filter_top32"
+          "Exp_0_2_CompactPKM",
+          "Why_Product_Key_Memory",
+          "Exp_0_6_Validation",
+          "Experiment_0.12_Report_—_Candidate_Selection_And_Memory_Use_Training",
+          "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training"
         ],
-        "entity_resolution_hit": false,
+        "entity_resolution_hit": true,
         "gt_entity_ids": [
           "Exp_0_2_CompactPKM"
         ],
@@ -2217,9 +2228,9 @@
           "entity_overlap": []
         },
         "conciseness": {
-          "answer_tokens": 76,
+          "answer_tokens": 61,
           "ground_truth_tokens": 34,
-          "ratio": 2.24,
+          "ratio": 1.79,
           "too_verbose": false
         }
       },
@@ -2256,14 +2267,14 @@
         "unsupported_count": 0,
         "path_count": 4,
         "is_insufficient": false,
-        "latency_s": 3.0831,
+        "latency_s": 3.5815,
         "error": null,
         "parsed_entity_ids": [
+          "Memory_Integration",
           "Exp_0_13A_NoisyMemory",
-          "gate_2:_memory_usefulness**:_if_sam_+_oracle_memory_does_not_beat_sam_core_only,_stop",
-          "through_the_same_memory_integration_code",
-          "memory_integration_modes_(gate_stress)",
-          "Concept_NoiseTolerance"
+          "Gate_2:_Memory_Usefulness**:_If_Sam_+_Oracle_Memory_Does_Not_Beat_Sam_Core_Only,_Stop",
+          "Concept_NoiseTolerance",
+          "Memory_Integration_Modes_(gate_Stress)"
         ],
         "entity_resolution_hit": true,
         "gt_entity_ids": [

@@ -63,6 +63,16 @@ _TYPE_PRIORITY: dict[str, int] = {
 
 _MAX_ENTRY_NODES: int = 5
 
+# ── Sub-run node marker patterns ──
+# Node IDs matching these patterns are likely sub-experiment runs
+# (top-K variants, weighted variants, baselines) rather than curated top-level nodes.
+# Numeric patterns require 2+ digits to avoid false-positives like _6 in `Exp_0_6_Validation`.
+_SUB_RUN_PATTERNS: list[re.Pattern] = [
+    re.compile(r"_(top|weighted|baseline)\d*(_|$)", re.IGNORECASE),
+    re.compile(r"_(\d{2,})(_|$)", re.IGNORECASE),       # _005, _16, _64, _128
+    re.compile(r"_(\d+k)(_|$)", re.IGNORECASE),           # _16k, _64k
+]
+
 # ── Known acronyms for entity resolution expansion ──
 
 _ACRONYMS: dict[str, str] = {
@@ -102,21 +112,30 @@ def spot_entities(
     question: str,
     graph: InMemoryGraphStore,
     cutoff: float = 0.6,
-) -> list[tuple[int, int, str, str]]:
+) -> tuple[list[tuple[int, int, str, str]], set[str]]:
     """
     Scan the question text for substrings matching known graph node names.
 
-    Uses sliding window with fuzzy matching against the graph name index.
-    Returns list of (start, end, matched_substring, node_id) tuples.
+    Uses sliding window with fuzzy matching against the graph name index,
+    plus word-boundary matching for higher precision.
+
+    Returns:
+        (entity_spots, wb_matched)
+        - entity_spots: list of (start, end, matched_substring, node_id) tuples
+        - wb_matched: set of node_ids that were matched via word-boundary (not just fuzzy)
     """
     lowered = question.lower()
     words = lowered.split()
     results: list[tuple[int, int, str, str]] = []
     matched_node_ids: set[str] = set()
+    wb_matched: set[str] = set()
 
     # Build a list of all candidate substrings (n-grams of various sizes)
     # Start with longer n-grams for greedy matching
     max_ngram = min(len(words), 8)
+
+    # Pre-filter: collect meaningful content words (not stop words, length ≥ 3)
+    content_words = [w for w in words if w not in STOP_WORDS and len(w) >= 2]
 
     for ngram_size in range(max_ngram, 0, -1):
         for i in range(len(words) - ngram_size + 1):
@@ -132,12 +151,14 @@ def spot_entities(
             node_id = graph.find_entity(chunk_stripped, cutoff=cutoff)
             if node_id and node_id not in matched_node_ids:
                 # Find character offsets in the original question
-                # We use case-insensitive search in the lowered text
                 start = lowered.find(chunk_stripped)
                 if start >= 0:
                     end = start + len(chunk_stripped)
                     results.append((start, end, chunk_stripped, node_id))
                     matched_node_ids.add(node_id)
+                    # Check if this was a word-boundary match
+                    if _word_boundary_match(chunk_stripped, node_id):
+                        wb_matched.add(node_id)
 
             # Also try individual words if ngram_size is 1
             if ngram_size == 1 and chunk_stripped not in STOP_WORDS:
@@ -148,10 +169,34 @@ def spot_entities(
                         end = start + len(chunk_stripped)
                         results.append((start, end, chunk_stripped, node_id))
                         matched_node_ids.add(node_id)
+                    if _word_boundary_match(chunk_stripped, node_id):
+                        wb_matched.add(node_id)
+
+    # ── Second pass: word-boundary search on all content words ──
+    # For each content word, check ALL node IDs in the name index for
+    # word-boundary matches. This catches nodes that fuzzy matching missed
+    # (e.g., "oracle" doesn't fuzzy-match "Exp_0_6_Validation" but it IS
+    # a word-boundary match for nodes that contain "oracle" as a segment).
+    name_index = graph._name_index  # normalized_name → node_id
+    for word in content_words:
+        word_lower = word.lower()
+        if len(word_lower) < 3:
+            continue
+        for norm_name, nid in name_index.items():
+            if nid in matched_node_ids:
+                continue
+            segments = _split_into_segments(norm_name)
+            if any(word_lower == seg for seg in segments):
+                start = lowered.find(word)
+                if start >= 0:
+                    end = start + len(word)
+                    results.append((start, end, word, nid))
+                    matched_node_ids.add(nid)
+                    wb_matched.add(nid)
 
     # Sort by start position
     results.sort(key=lambda x: x[0])
-    return results
+    return results, wb_matched
 
 
 def parse_question(
@@ -183,7 +228,7 @@ def parse_question(
             expanded_question = f"{expanded_question} ({expansion})"
 
     # Spot entities from substring matching
-    entity_spots = spot_entities(expanded_question, graph, cutoff=cutoff)
+    entity_spots, wb_matched = spot_entities(expanded_question, graph, cutoff=cutoff)
 
     entity_ids = [node_id for _, _, _, node_id in entity_spots]
     entity_spans = [(start, end, text) for start, end, text, _ in entity_spots]
@@ -199,8 +244,22 @@ def parse_question(
             entity_ids.insert(0, kid)
             existing_set.add(kid)
 
+    # ── Track alias-matched entities for ranking boost ──
+    # Alias matching is very precise: the question literally contains a phrase
+    # mapped to this entity. Give these a strong ranking boost.
+    alias_matched: set[str] = _find_alias_matches(question, graph)
+
+    # Ensure alias-matched entities are in the list (they may not be found by
+    # fuzzy substring matching if the alias is a multi-word phrase)
+    for amid in alias_matched:
+        if amid not in existing_set:
+            entity_ids.insert(0, amid)
+            existing_set.add(amid)
+
     # ── Rank and cap entry nodes ──
-    entity_ids = _rank_entities(graph, entity_ids, question=question, keyword_scores=keyword_scores)
+    entity_ids = _rank_entities(graph, entity_ids, question=question,
+                                keyword_scores=keyword_scores, wb_matched=wb_matched,
+                                alias_matched=alias_matched)
 
     return ParsedQuery(
         question=question,
@@ -247,27 +306,161 @@ def _contextual_type_boost(entity_name: str, question: str, node_type: str) -> f
     return boost
 
 
+# ── Word-boundary and entity disambiguation helpers ──
+
+
+def _split_into_segments(node_id: str) -> list[str]:
+    """Split a node ID into word-like segments on _, space, and camelCase boundaries.
+
+    Examples:
+      ThisIsCamelCase   → ["This", "Is", "Camel", "Case"]
+      Exp_0_9_OracleFilter_top32 → ["Exp", "0", "9", "Oracle", "Filter", "top", "32"]
+      oracle_memory     → ["oracle", "memory"]
+    """
+    # First split on underscore and space
+    parts = re.split(r"[_ ]+", node_id)
+    segments: list[str] = []
+    for part in parts:
+        if not part:
+            continue
+        # Split camelCase: "OracleFilter" → ["Oracle", "Filter"]
+        # Insert a space before uppercase letters that follow lowercase or digit,
+        # and between letters and digits.
+        sub = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", part)
+        sub = re.sub(r"([A-Za-z])(\d)", r"\1 \2", sub)
+        sub = re.sub(r"(\d)([A-Za-z])", r"\1 \2", sub)
+        segments.extend(sub.split())
+    return [s.lower() for s in segments if s]
+
+
+def _word_boundary_match(query_term: str, node_id: str) -> bool:
+    """Check if the query term appears as a whole word/segment in the node ID.
+
+    "oracle memory" matches a node containing both "oracle" and "memory" as
+    whole segments (e.g. "Exp_Oracle_Memory" or "oracle_memory_benchmark").
+    This is stricter than fuzzy substring matching and prevents false matches
+    like "oracle" matching "OracleFilter" (partial within a segment).
+    """
+    query_words = query_term.lower().split()
+    if not query_words:
+        return False
+    segments = _split_into_segments(node_id)
+    return all(any(qw == seg for seg in segments) for qw in query_words)
+
+
+def _is_sub_run_node(node_id: str) -> bool:
+    """Return True if the node ID matches sub-experiment run naming patterns.
+
+    Detects sub-run markers like _top32, _weighted, _baseline, _005, _16k, etc.
+    """
+    for pattern in _SUB_RUN_PATTERNS:
+        if pattern.search(node_id):
+            return True
+    return False
+
+
+def _question_has_ranking_keywords(question: str) -> bool:
+    """Check if the question explicitly mentions ranking/topK/weights concepts."""
+    lowered = question.lower()
+    return any(
+        kw in lowered
+        for kw in ("top", "topk", "top-k", "ranking", "ranked", "weighted",
+                   "weights", "best k", "top k")
+    )
+
+
+def _property_keyword_boost(node, question: str) -> float:
+    """Check if question keywords appear in node's key_finding or description.
+
+    Returns a boost value: 0.0 (no match) up to 0.25.
+    """
+    if node is None:
+        return 0.0
+    question_tokens = set(re.findall(r"[a-z]{3,}", question.lower()))
+    if not question_tokens:
+        return 0.0
+
+    # Collect searchable property values
+    searchable: list[str] = []
+    for prop_name in ("key_finding", "description"):
+        val = node.properties.get(prop_name, "")
+        if isinstance(val, str) and val:
+            searchable.append(val.lower())
+
+    if not searchable:
+        return 0.0
+
+    # Count how many question tokens appear in property text
+    combined = " ".join(searchable)
+    match_count = sum(1 for t in question_tokens if t in combined)
+    if match_count == 0:
+        return 0.0
+
+    # Scale boost: higher for Experiment nodes (they are the curated info-rich ones)
+    base = 0.25 if node.type == "Experiment" else 0.15
+    # More matching tokens = higher confidence
+    return min(base, match_count * 0.05)
+
+
+def _find_alias_matches(
+    question: str,
+    graph: InMemoryGraphStore,
+) -> set[str]:
+    """Find entity IDs that match via the alias index for any phrase in the question.
+
+    Checks all n-grams (2–8 words) against the alias index. Returns the set of
+    entity IDs that have at least one alias phrase directly present in the question.
+    """
+    lowered = question.lower()
+    words = lowered.split()
+    alias_matched: set[str] = set()
+    alias_index: dict[str, str] = getattr(graph, "_alias_index", {})
+
+    max_ngram = min(len(words), 8)
+    for ngram_size in range(max_ngram, 1, -1):  # Skip 1-word (too noisy)
+        for i in range(len(words) - ngram_size + 1):
+            chunk = " ".join(words[i:i + ngram_size])
+            chunk_stripped = chunk.strip(".,;:?!\"'()[]{}")
+            normalized = chunk_stripped.replace(" ", "_").replace("-", "_")
+            if normalized in alias_index:
+                alias_matched.add(alias_index[normalized])
+
+    return alias_matched
+
+
 def _rank_entities(
     graph: InMemoryGraphStore,
     entity_ids: list[str],
     question: str = "",
     keyword_scores: dict[str, int] | None = None,
+    wb_matched: set[str] | None = None,
+    alias_matched: set[str] | None = None,
 ) -> list[str]:
     """
     Rank entity IDs by quality and return the top candidates (capped).
 
-    Ranking criteria (in order):
-      1. **Keyword match count**: entities with more keyword token matches
-         get a higher boost (multiplied by 5.0 per match)
-      2. **Type priority**: Experiment > Decision > Concept > Bug > ...
-      3. **Contextual type boost**: keywords in question boost relevant types
-      4. **Name length**: longer-span matches beat shorter ones
-      5. **Cap at ~5 entry nodes**
+    Ranking criteria (in order of impact):
+      1. **Alias match**: question contains a phrase mapped to this entity (+10.0)
+      2. **Keyword match count** (from property token index): +5.0 per match (≥3 tokens)
+         or +0.5 per match (<3 tokens)
+      3. **Type priority**: Experiment (10) > Decision (9) > Concept (8) > ...
+      4. **Contextual type boost**: keywords in question boost relevant types (+0.10–0.15)
+      5. **Key-finding text match**: question words in key_finding/description (+0.05–0.25)
+      6. **Curated node boost**: nodes with key_finding property (+0.10)
+      7. **Word-boundary match**: exact segment match beats fuzzy (+0.10)
+      8. **Sub-run penalty**: deprioritize _top, _weighted, _baseline nodes (−0.15)
+         unless the question mentions ranking/topK/weights
+      9. **Name length**: longer-span matches beat shorter ones (tiebreaker)
+     10. **Cap at ~5 entry nodes**
 
     Returns the top-ranked entity IDs as a list (deduplicated, order preserved).
     """
     if keyword_scores is None:
         keyword_scores = {}
+    if wb_matched is None:
+        wb_matched = set()
+    if alias_matched is None:
+        alias_matched = set()
     if not entity_ids:
         return []
 
@@ -279,20 +472,46 @@ def _rank_entities(
             seen.add(eid)
             unique.append(eid)
 
-    # Rank each entity by (keyword_score + type_priority + contextual_boost DESC, name_length DESC)
+    # Pre-compute contextual flags
+    has_ranking_kw = _question_has_ranking_keywords(question) if question else False
+
     def _score(eid: str) -> tuple[float, int]:
         node = graph.get_node(eid)
-        base_type_prio = _TYPE_PRIORITY.get(node.type, 0) if node else 0
+        node_type = node.type if node else ""
+        base_type_prio = _TYPE_PRIORITY.get(node_type, 0) if node else 0
         ctx_boost = (
-            _contextual_type_boost(eid, question, node.type) if node and question
+            _contextual_type_boost(eid, question, node_type) if node and question
             else 0.0
         )
+
+        # Alias match: question literally contains a phrase mapped to this entity.
+        # This is the strongest signal — override all other scores.
+        alias_boost = 50.0 if eid in alias_matched else 0.0
+
         # Keyword match boost: proportional to token match count.
-        # Matches with 3+ tokens get a big boost to distinguish them from
-        # incidental 2-token matches on long document names.
         kw_count = keyword_scores.get(eid, 0)
         kw_boost = kw_count * 5.0 if kw_count >= 3 else kw_count * 0.5
-        type_score = kw_boost + base_type_prio + ctx_boost
+
+        # Key-finding / description text match boost
+        prop_boost = _property_keyword_boost(node, question) if node and question else 0.0
+
+        # Curated node boost: nodes from populate_from_experiments have key_finding
+        curated_boost = 0.0
+        if node and "key_finding" in node.properties:
+            curated_boost = 0.10
+
+        # Word-boundary match boost
+        wb_boost = 0.10 if eid in wb_matched else 0.0
+
+        # Sub-run penalty: push down sub-experiment noise unless question is ranking-relevant
+        sub_run_penalty = 0.0
+        if _is_sub_run_node(eid) and not has_ranking_kw:
+            sub_run_penalty = -0.15
+
+        type_score = (
+            alias_boost + kw_boost + base_type_prio + ctx_boost + prop_boost
+            + curated_boost + wb_boost + sub_run_penalty
+        )
         name_len = (len(eid) if eid else 0) * 2
         return (type_score, name_len)
 
@@ -312,7 +531,7 @@ def find_entities_by_substring(
 
     Simpler alternative: does not compute offsets, just returns node IDs.
     """
-    entity_spots = spot_entities(question, graph, cutoff=cutoff)
+    entity_spots, _wb = spot_entities(question, graph, cutoff=cutoff)
     # Deduplicate while preserving order
     seen: set[str] = set()
     result: list[str] = []
