@@ -128,7 +128,7 @@ def traverse_with_intent(
     intent_config = {
         "causal_explanation": {
             "direction": "in",
-            "edge_types": {"caused_by", "blocked_by", "depends_on"},
+            "edge_types": {"caused_by", "blocked_by", "depends_on", "derived_from"},
         },
         "impact_analysis": {
             "direction": "out",
@@ -141,11 +141,15 @@ def traverse_with_intent(
         },
         "diagnostic": {
             "direction": "in",
-            "edge_types": {"caused_by", "blocked_by", "depends_on"},
+            "edge_types": {"caused_by", "blocked_by", "depends_on", "derived_from"},
         },
         "dependency_chain": {
             "direction": "both",
             "edge_types": {"depends_on", "implements"},
+        },
+        "comparison": {
+            "direction": "both",
+            "edge_types": None,
         },
     }
 

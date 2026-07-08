@@ -1,0 +1,2429 @@
+{
+  "total_examples": 50,
+  "entity_extraction": {
+    "exact_match": {
+      "macro": {
+        "precision": 0.496,
+        "recall": 0.44333333333333336,
+        "f1": 0.4520634920634921
+      },
+      "micro": {
+        "precision": 0.6046511627906976,
+        "recall": 0.48148148148148145,
+        "f1": 0.5360824742268042
+      }
+    },
+    "fuzzy_match": {
+      "macro": {
+        "precision": 0.8059999999999999,
+        "recall": 0.6466666666666667,
+        "f1": 0.690063492063492
+      },
+      "micro": {
+        "precision": 0.8255813953488372,
+        "recall": 0.6574074074074074,
+        "f1": 0.7319587628865979
+      }
+    }
+  },
+  "relation_extraction": {
+    "macro": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "micro": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    }
+  },
+  "per_difficulty": {
+    "easy": {
+      "count": 19,
+      "macro": {
+        "precision": 0.45614035087719296,
+        "recall": 0.40350877192982454,
+        "f1": 0.41829573934837094
+      },
+      "micro": {
+        "precision": 0.6470588235294118,
+        "recall": 0.5116279069767442,
+        "f1": 0.5714285714285715
+      }
+    },
+    "hard": {
+      "count": 12,
+      "macro": {
+        "precision": 0.4694444444444445,
+        "recall": 0.4861111111111111,
+        "f1": 0.4601851851851852
+      },
+      "micro": {
+        "precision": 0.5909090909090909,
+        "recall": 0.52,
+        "f1": 0.5531914893617023
+      }
+    },
+    "medium": {
+      "count": 19,
+      "macro": {
+        "precision": 0.5526315789473685,
+        "recall": 0.45614035087719296,
+        "f1": 0.4807017543859649
+      },
+      "micro": {
+        "precision": 0.5666666666666667,
+        "recall": 0.425,
+        "f1": 0.48571428571428565
+      }
+    }
+  },
+  "per_document_type": {
+    "docs": {
+      "count": 23,
+      "macro": {
+        "precision": 0.46376811594202894,
+        "recall": 0.36231884057971014,
+        "f1": 0.38902691511387166
+      },
+      "micro": {
+        "precision": 0.5789473684210527,
+        "recall": 0.44,
+        "f1": 0.5
+      }
+    },
+    "experiments": {
+      "count": 27,
+      "macro": {
+        "precision": 0.5234567901234568,
+        "recall": 0.5123456790123457,
+        "f1": 0.505761316872428
+      },
+      "micro": {
+        "precision": 0.625,
+        "recall": 0.5172413793103449,
+        "f1": 0.5660377358490567
+      }
+    }
+  },
+  "per_example": [
+    {
+      "id": "ex001",
+      "source": "sam-lm/experiments/experiment_0_6_final_report.md",
+      "difficulty": "easy",
+      "text": "**SAM `oracle_memory` achieves 99.87% accuracy vs 68.74% `core_only` on the val set.**",
+      "gt_entity_count": 3,
+      "pred_entity_count": 2,
+      "gt_relation_count": 2,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 0.6666666666666666,
+        "f1": 0.8,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 3
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 0.6666666666666666,
+        "f1": 0.8,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 3
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "predicted_entities": [
+        {
+          "name": "oracle_memory",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_6_final_report.md",
+          "line": 1
+        },
+        {
+          "name": "core_only",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_6_final_report.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex002",
+      "source": "sam-lm/experiments/experiment_0_6_final_report.md",
+      "difficulty": "easy",
+      "text": "The dual encoder retriever achieves 99.45% `Recall@8` standalone, confirming the retrieval pipeline works.",
+      "gt_entity_count": 2,
+      "pred_entity_count": 0,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": []
+    },
+    {
+      "id": "ex003",
+      "source": "sam-lm/experiments/experiment_0_6_final_report.md",
+      "difficulty": "easy",
+      "text": "**Bug 1 (CRITICAL):** `evaluate.py` did not set `model.memory_mode` after loading SAM checkpoints.",
+      "gt_entity_count": 3,
+      "pred_entity_count": 2,
+      "gt_relation_count": 2,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 0.6666666666666666,
+        "f1": 0.8,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 3
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 0.6666666666666666,
+        "f1": 0.8,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 3
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "predicted_entities": [
+        {
+          "name": "evaluate.py",
+          "type": "CodeFile",
+          "source": "sam-lm/experiments/experiment_0_6_final_report.md",
+          "line": 1
+        },
+        {
+          "name": "model.memory_mode",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_6_final_report.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex004",
+      "source": "sam-lm/experiments/experiment_0_6_final_report.md",
+      "difficulty": "hard",
+      "text": "The `DualEncoderWrapper` tries to project hidden states through `self.dual.query_proj`, which was trained to work with d...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 2,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "DualEncoderWrapper",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_6_final_report.md",
+          "line": 1
+        },
+        {
+          "name": "self.dual.query_proj",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_6_final_report.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex005",
+      "source": "sam-lm/experiments/experiment_0_6_final_report.md",
+      "difficulty": "medium",
+      "text": "## 7.1 Core Issue: Query Projection Mismatch\nThe dual encoder retriever was trained to map **raw question text** to **sl...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 2,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "7.1 Core Issue: Query Projection Mismatch",
+          "type": "Bug",
+          "source": "sam-lm/experiments/experiment_0_6_final_report.md",
+          "line": 1
+        },
+        {
+          "name": "QueryEncoder",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_6_final_report.md",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "ex006",
+      "source": "sam-lm/experiments/experiment_0_11_report.md",
+      "difficulty": "medium",
+      "text": "The **chain-set BCE retriever** eliminates the multi-hop retrieval bottleneck -- `all_required@32` reaches 1.0000 (up fr...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 0,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": []
+    },
+    {
+      "id": "ex007",
+      "source": "sam-lm/experiments/experiment_0_11_report.md",
+      "difficulty": "easy",
+      "text": "The SAM model with chain-aware retrieved memory achieves identical accuracy to `core_only` and `random_memory` controls.",
+      "gt_entity_count": 3,
+      "pred_entity_count": 2,
+      "gt_relation_count": 2,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 0.6666666666666666,
+        "f1": 0.8,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 3
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 0.6666666666666666,
+        "f1": 0.8,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 3
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "predicted_entities": [
+        {
+          "name": "core_only",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_11_report.md",
+          "line": 1
+        },
+        {
+          "name": "random_memory",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_11_report.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex008",
+      "source": "sam-lm/experiments/experiment_0_11_report.md",
+      "difficulty": "easy",
+      "text": "### Modified files:\n- `sam/training/train_retrieval.py` -- `ChainSetRetriever`, `SlotGraphExpander`, BCE/InfoNCE losses",
+      "gt_entity_count": 3,
+      "pred_entity_count": 3,
+      "gt_relation_count": 2,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.6666666666666666,
+        "recall": 0.6666666666666666,
+        "f1": 0.6666666666666666,
+        "tp": 2,
+        "pred_count": 3,
+        "gt_count": 3
+      },
+      "entities_fuzzy": {
+        "precision": 0.6666666666666666,
+        "recall": 0.6666666666666666,
+        "f1": 0.6666666666666666,
+        "tp": 2,
+        "pred_count": 3,
+        "gt_count": 3
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "predicted_entities": [
+        {
+          "name": "Modified files:",
+          "type": "Concept",
+          "source": "sam-lm/experiments/experiment_0_11_report.md",
+          "line": 1
+        },
+        {
+          "name": "ChainSetRetriever",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_11_report.md",
+          "line": 2
+        },
+        {
+          "name": "SlotGraphExpander",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_11_report.md",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "ex009",
+      "source": "sam-lm/experiments/experiment_0_12_report.md",
+      "difficulty": "medium",
+      "text": "## 3. Chain Oracle-Filter Diagnostic\nWhen SAM is given oracle-filtered retrieval (only required slots), it achieves **1....",
+      "gt_entity_count": 2,
+      "pred_entity_count": 2,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "3. Chain Oracle-Filter Diagnostic",
+          "type": "Concept",
+          "source": "sam-lm/experiments/experiment_0_12_report.md",
+          "line": 1
+        },
+        {
+          "name": "oracle_memory",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_12_report.md",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "ex010",
+      "source": "sam-lm/experiments/experiment_0_12_report.md",
+      "difficulty": "medium",
+      "text": "The `learned_selector` achieves high recall (96.6%) but precision is only 50% -- half the selected slots are distractors...",
+      "gt_entity_count": 1,
+      "pred_entity_count": 1,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "learned_selector",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_12_report.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex011",
+      "source": "sam-lm/experiments/experiment_0_12_report.md",
+      "difficulty": "hard",
+      "text": "**Architecture:** `d_model`=384, 6 layers, 6 heads, `d_ff`=1536. Memory: `num_subkeys`=64, `key_dim`=64, `value_dim`=128...",
+      "gt_entity_count": 4,
+      "pred_entity_count": 5,
+      "gt_relation_count": 3,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.8,
+        "recall": 1.0,
+        "f1": 0.888888888888889,
+        "tp": 4,
+        "pred_count": 5,
+        "gt_count": 4
+      },
+      "entities_fuzzy": {
+        "precision": 0.8,
+        "recall": 1.0,
+        "f1": 0.888888888888889,
+        "tp": 4,
+        "pred_count": 5,
+        "gt_count": 4
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 3
+      },
+      "predicted_entities": [
+        {
+          "name": "d_model",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_12_report.md",
+          "line": 1
+        },
+        {
+          "name": "d_ff",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_12_report.md",
+          "line": 1
+        },
+        {
+          "name": "num_subkeys",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_12_report.md",
+          "line": 1
+        },
+        {
+          "name": "key_dim",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_12_report.md",
+          "line": 1
+        },
+        {
+          "name": "value_dim",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_12_report.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex012",
+      "source": "sam-lm/experiments/experiment_0_12_report.md",
+      "difficulty": "easy",
+      "text": "## Slot Selector (`sam/model/slot_selector.py`)\nA small (3-layer MLP) neural network that looks at retrieved candidate s...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 2.0,
+        "recall": 1.0,
+        "f1": 1.3333333333333333,
+        "tp": 2,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "Slot Selector (`sam/model/slot_selector.py`)",
+          "type": "Concept",
+          "source": "sam-lm/experiments/experiment_0_12_report.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex013",
+      "source": "sam-lm/experiments/experiment_0_13A_noisy_memory_report.md",
+      "difficulty": "easy",
+      "text": "**SAM tolerates mild noisy memory.** With 1 distractor slot, accuracy barely drops (99.82% vs 100.00%). The `core_only` ...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "core_only",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_13A_noisy_memory_report.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex014",
+      "source": "sam-lm/experiments/experiment_0_13A_noisy_memory_report.md",
+      "difficulty": "medium",
+      "text": "The `oracle_plus_distractors` path is equivalent to `oracle_memory` when `num_distractors`=0.",
+      "gt_entity_count": 2,
+      "pred_entity_count": 3,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "f1": 0.8,
+        "tp": 2,
+        "pred_count": 3,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "f1": 0.8,
+        "tp": 2,
+        "pred_count": 3,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "oracle_plus_distractors",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_13A_noisy_memory_report.md",
+          "line": 1
+        },
+        {
+          "name": "oracle_memory",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_13A_noisy_memory_report.md",
+          "line": 1
+        },
+        {
+          "name": "num_distractors",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_13A_noisy_memory_report.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex015",
+      "source": "sam-lm/experiments/experiment_0_13A_noisy_memory_report.md",
+      "difficulty": "hard",
+      "text": "Critical bug fix: -1 padding slots in `read_slot_values()` were being clamped to slot 0 via `slot_ids.clamp(min=0)`, con...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 0,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": []
+    },
+    {
+      "id": "ex016",
+      "source": "sam-lm/experiments/experiment_0_13A_noisy_memory_report.md",
+      "difficulty": "medium",
+      "text": "## 8. Significance for 0.12 results\nThe 0.12 selector had recall 96.6% and precision 50%, yielding ~1.75 distractors per...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "8. Significance for 0.12 results",
+          "type": "Experiment",
+          "source": "sam-lm/experiments/experiment_0_13A_noisy_memory_report.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex017",
+      "source": "sam-lm/experiments/experiment_0_10_report.md",
+      "difficulty": "medium",
+      "text": "The dual encoder retriever achieves near-perfect `any_required` retrieval but catastrophic `all_required` retrieval for ...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 2,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "any_required",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_10_report.md",
+          "line": 1
+        },
+        {
+          "name": "all_required",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_10_report.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex018",
+      "source": "sam-lm/experiments/experiment_0_10_report.md",
+      "difficulty": "medium",
+      "text": "## 3. Oracle Filter topK Sweep\n`oracle_filter` accuracy is capped by `all_required_present@K`. From Experiment 0.9: `ora...",
+      "gt_entity_count": 3,
+      "pred_entity_count": 3,
+      "gt_relation_count": 2,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.3333333333333333,
+        "recall": 0.3333333333333333,
+        "f1": 0.3333333333333333,
+        "tp": 1,
+        "pred_count": 3,
+        "gt_count": 3
+      },
+      "entities_fuzzy": {
+        "precision": 0.6666666666666666,
+        "recall": 0.6666666666666666,
+        "f1": 0.6666666666666666,
+        "tp": 2,
+        "pred_count": 3,
+        "gt_count": 3
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "predicted_entities": [
+        {
+          "name": "3. Oracle Filter topK Sweep",
+          "type": "Concept",
+          "source": "sam-lm/experiments/experiment_0_10_report.md",
+          "line": 1
+        },
+        {
+          "name": "oracle_filter",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_10_report.md",
+          "line": 2
+        },
+        {
+          "name": "oracle_filter",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_10_report.md",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "ex019",
+      "source": "sam-lm/experiments/experiment_0_9_report.md",
+      "difficulty": "hard",
+      "text": "## 4.1 Oracle Filter Proves Memory Value\n`oracle_filter_diagnostic` filters retrieved `topK` to only ground-truth requir...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 3,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.3333333333333333,
+        "recall": 0.5,
+        "f1": 0.4,
+        "tp": 1,
+        "pred_count": 3,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "f1": 0.8,
+        "tp": 2,
+        "pred_count": 3,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "4.1 Oracle Filter Proves Memory Value",
+          "type": "Concept",
+          "source": "sam-lm/experiments/experiment_0_9_report.md",
+          "line": 1
+        },
+        {
+          "name": "oracle_filter_diagnostic",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_9_report.md",
+          "line": 2
+        },
+        {
+          "name": "topK",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_9_report.md",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "ex020",
+      "source": "sam-lm/experiments/experiment_0_9_report.md",
+      "difficulty": "medium",
+      "text": "Every aggregation mode without ground-truth filtering gives **68.68%** -- identical to `core_only`.",
+      "gt_entity_count": 1,
+      "pred_entity_count": 1,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "core_only",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_9_report.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex021",
+      "source": "sam-lm/experiments/experiment_0_8_report.md",
+      "difficulty": "hard",
+      "text": "## 6. Root Cause\n**Uniform averaging over `topK` slots dilutes the retrieved memory signal.**\nThe `read_slot_values` fun...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 4,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666,
+        "tp": 2,
+        "pred_count": 4,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6666666666666666,
+        "tp": 2,
+        "pred_count": 4,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "6. Root Cause",
+          "type": "Concept",
+          "source": "sam-lm/experiments/experiment_0_8_report.md",
+          "line": 1
+        },
+        {
+          "name": "topK",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_8_report.md",
+          "line": 2
+        },
+        {
+          "name": "read_slot_values",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_8_report.md",
+          "line": 3
+        },
+        {
+          "name": "product_key_memory.py",
+          "type": "CodeFile",
+          "source": "sam-lm/experiments/experiment_0_8_report.md",
+          "line": 3
+        }
+      ]
+    },
+    {
+      "id": "ex022",
+      "source": "sam-lm/experiments/experiment_0_8_report.md",
+      "difficulty": "easy",
+      "text": "## 4. Memory Injection Statistics\n| `oracle_memory` | Avg Gate: 0.839 | Memory Norm: 0.366 |\n| retrieved (top8) | Avg Ga...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 2,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 2,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "4. Memory Injection Statistics",
+          "type": "Concept",
+          "source": "sam-lm/experiments/experiment_0_8_report.md",
+          "line": 1
+        },
+        {
+          "name": "oracle_memory",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_8_report.md",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "ex023",
+      "source": "sam-lm/experiments/experiment_0_8_report.md",
+      "difficulty": "easy",
+      "text": "**Recommendation: Use retrieval-score-weighted averaging instead of uniform averaging.**",
+      "gt_entity_count": 1,
+      "pred_entity_count": 0,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": []
+    },
+    {
+      "id": "ex024",
+      "source": "sam-lm/experiments/experiment_0_7_report.md",
+      "difficulty": "hard",
+      "text": "The `MemoryQueryAdapter` (2-layer MLP: 384->1536->256) trained with cosine alignment loss failed to learn meaningful map...",
+      "gt_entity_count": 1,
+      "pred_entity_count": 1,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "MemoryQueryAdapter",
+          "type": "Entity",
+          "source": "sam-lm/experiments/experiment_0_7_report.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex025",
+      "source": "sam-lm/experiments/experiment_0_7_report.md",
+      "difficulty": "easy",
+      "text": "## 3. Retrieval Interface Diagnosis\n| `Recall@8` | external text query: 23.32% | hidden adapter: 0.95% | standalone DE: ...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "3. Retrieval Interface Diagnosis",
+          "type": "Concept",
+          "source": "sam-lm/experiments/experiment_0_7_report.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex026",
+      "source": "sam-lm/experiments/experiment_0_5_report.md",
+      "difficulty": "easy",
+      "text": "## Gate 1: PASS\n**Retrieval `Recall@8` >= 80%: 99.0%.** The bottleneck was data coverage, not architecture.",
+      "gt_entity_count": 2,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "Gate 1: PASS",
+          "type": "Concept",
+          "source": "sam-lm/experiments/experiment_0_5_report.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex027",
+      "source": "sam-lm/docs/architecture.md",
+      "difficulty": "medium",
+      "text": "## High-level overview\nSAM is a small transformer where certain layers have an attached **memory block**. The transforme...",
+      "gt_entity_count": 3,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 0.3333333333333333,
+        "f1": 0.5,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 3
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 0.3333333333333333,
+        "f1": 0.5,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 3
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "High-level overview",
+          "type": "Concept",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex028",
+      "source": "sam-lm/docs/architecture.md",
+      "difficulty": "medium",
+      "text": "## Why Product-Key Memory\nProduct-key memory (Lample et al., 2019) addresses the core challenge: **O(sqrt(N)) lookup cos...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 2.0,
+        "recall": 1.0,
+        "f1": 1.3333333333333333,
+        "tp": 2,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "Why Product-Key Memory",
+          "type": "Concept",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex029",
+      "source": "sam-lm/docs/architecture.md",
+      "difficulty": "easy",
+      "text": "## Memory Modes\n1. **`core_only`**: No memory layers enabled.\n2. **`oracle_memory`**: Correct required slot values injec...",
+      "gt_entity_count": 4,
+      "pred_entity_count": 4,
+      "gt_relation_count": 2,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 4,
+        "pred_count": 4,
+        "gt_count": 4
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 4,
+        "pred_count": 4,
+        "gt_count": 4
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "predicted_entities": [
+        {
+          "name": "Memory Modes",
+          "type": "Concept",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 1
+        },
+        {
+          "name": "core_only",
+          "type": "Entity",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 2
+        },
+        {
+          "name": "oracle_memory",
+          "type": "Entity",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 3
+        },
+        {
+          "name": "retrieved_memory",
+          "type": "Entity",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 4
+        }
+      ]
+    },
+    {
+      "id": "ex030",
+      "source": "sam-lm/docs/architecture.md",
+      "difficulty": "easy",
+      "text": "## Memory Integration Modes\n| `integrate_gated` | `out = x + gate * mem` | learned scalar gate |\n| `forced_gate_1` | gat...",
+      "gt_entity_count": 3,
+      "pred_entity_count": 4,
+      "gt_relation_count": 2,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.75,
+        "recall": 1.0,
+        "f1": 0.8571428571428571,
+        "tp": 3,
+        "pred_count": 4,
+        "gt_count": 3
+      },
+      "entities_fuzzy": {
+        "precision": 0.75,
+        "recall": 1.0,
+        "f1": 0.8571428571428571,
+        "tp": 3,
+        "pred_count": 4,
+        "gt_count": 3
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "predicted_entities": [
+        {
+          "name": "Memory Integration Modes",
+          "type": "Concept",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 1
+        },
+        {
+          "name": "integrate_gated",
+          "type": "Entity",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 2
+        },
+        {
+          "name": "forced_gate_1",
+          "type": "Entity",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 3
+        },
+        {
+          "name": "concat_projection",
+          "type": "Entity",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 4
+        }
+      ]
+    },
+    {
+      "id": "ex031",
+      "source": "sam-lm/docs/architecture.md",
+      "difficulty": "medium",
+      "text": "## Slot Selector (`sam/model/slot_selector.py`)\n**Input features per slot:** query embedding, slot embedding, slot value...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 2.0,
+        "recall": 1.0,
+        "f1": 1.3333333333333333,
+        "tp": 2,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "Slot Selector (`sam/model/slot_selector.py`)",
+          "type": "Concept",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex032",
+      "source": "sam-lm/docs/architecture.md",
+      "difficulty": "easy",
+      "text": "## Validation Results\n### Experiment 0.6 -- Oracle Memory Validation\n**SAM `oracle_memory` achieves 99.9% accuracy vs 68...",
+      "gt_entity_count": 3,
+      "pred_entity_count": 4,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.75,
+        "recall": 1.0,
+        "f1": 0.8571428571428571,
+        "tp": 3,
+        "pred_count": 4,
+        "gt_count": 3
+      },
+      "entities_fuzzy": {
+        "precision": 0.75,
+        "recall": 1.0,
+        "f1": 0.8571428571428571,
+        "tp": 3,
+        "pred_count": 4,
+        "gt_count": 3
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "Validation Results",
+          "type": "Experiment",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 1
+        },
+        {
+          "name": "Experiment 0.6 -- Oracle Memory Validation",
+          "type": "Experiment",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 2
+        },
+        {
+          "name": "oracle_memory",
+          "type": "Entity",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 3
+        },
+        {
+          "name": "core_only",
+          "type": "Entity",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 3
+        }
+      ]
+    },
+    {
+      "id": "ex033",
+      "source": "sam-lm/docs/architecture.md",
+      "difficulty": "medium",
+      "text": "## Current Status of Components\n| `product-key_memory` | Working | Since 0.6 |\n| `chain_set_retriever` | Working (`all_r...",
+      "gt_entity_count": 3,
+      "pred_entity_count": 3,
+      "gt_relation_count": 2,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.6666666666666666,
+        "recall": 0.6666666666666666,
+        "f1": 0.6666666666666666,
+        "tp": 2,
+        "pred_count": 3,
+        "gt_count": 3
+      },
+      "entities_fuzzy": {
+        "precision": 0.6666666666666666,
+        "recall": 0.6666666666666666,
+        "f1": 0.6666666666666666,
+        "tp": 2,
+        "pred_count": 3,
+        "gt_count": 3
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "predicted_entities": [
+        {
+          "name": "Current Status of Components",
+          "type": "Concept",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 1
+        },
+        {
+          "name": "chain_set_retriever",
+          "type": "Entity",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 3
+        },
+        {
+          "name": "learned_selector",
+          "type": "Entity",
+          "source": "sam-lm/docs/architecture.md",
+          "line": 4
+        }
+      ]
+    },
+    {
+      "id": "ex034",
+      "source": "sam-lm/docs/thesis.md",
+      "difficulty": "easy",
+      "text": "## Simple version\nSAM tries a different approach: use a **small active system** that does the thinking, and a **large me...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "Simple version",
+          "type": "Concept",
+          "source": "sam-lm/docs/thesis.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex035",
+      "source": "sam-lm/docs/thesis.md",
+      "difficulty": "hard",
+      "text": "## Why SAM is not \"just RAG\"\nRAG prepends text to the input. SAM injects memory **into the model's internal computation*...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 2.0,
+        "recall": 1.0,
+        "f1": 1.3333333333333333,
+        "tp": 2,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "Why SAM is not \"just RAG\"",
+          "type": "Concept",
+          "source": "sam-lm/docs/thesis.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex036",
+      "source": "sam-lm/docs/thesis.md",
+      "difficulty": "hard",
+      "text": "## What \"CPU-first sparse-memory architecture\" means\n**Sparse memory**: Only a tiny fraction of the memory bank is touch...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 2,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "What \"CPU-first sparse-memory architecture\" means",
+          "type": "Concept",
+          "source": "sam-lm/docs/thesis.md",
+          "line": 1
+        },
+        {
+          "name": "topK",
+          "type": "Entity",
+          "source": "sam-lm/docs/thesis.md",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "ex037",
+      "source": "sam-lm/docs/glossary.md",
+      "difficulty": "medium",
+      "text": "### PKM (Product-Key Memory)\nThe specific memory addressing scheme used in SAM. A query vector is split into two parts, ...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "PKM (Product-Key Memory)",
+          "type": "Concept",
+          "source": "sam-lm/docs/glossary.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex038",
+      "source": "sam-lm/docs/glossary.md",
+      "difficulty": "easy",
+      "text": "### `all_required@K`\nThe fraction of examples where **all** required slots appear in the top-K retrieval results. A valu...",
+      "gt_entity_count": 1,
+      "pred_entity_count": 1,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "`all_required@K`",
+          "type": "Concept",
+          "source": "sam-lm/docs/glossary.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex039",
+      "source": "sam-lm/docs/glossary.md",
+      "difficulty": "medium",
+      "text": "### memory integration\nHow retrieved memory values are combined. SAM uses **gated integration**: `output = core_computat...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "memory integration",
+          "type": "Concept",
+          "source": "sam-lm/docs/glossary.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex040",
+      "source": "sam-lm/docs/glossary.md",
+      "difficulty": "hard",
+      "text": "### RAG (Retrieval-Augmented Generation)\nSearching a document database and inserting found text into a language model's ...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "RAG (Retrieval-Augmented Generation)",
+          "type": "Concept",
+          "source": "sam-lm/docs/glossary.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex041",
+      "source": "sam-lm/docs/roadmap.md",
+      "difficulty": "easy",
+      "text": "## Immediate next step: Experiment 0.13B\n**Realistic Retrieval Distractor Replay and Post-Fix Non-Oracle Revalidation**",
+      "gt_entity_count": 1,
+      "pred_entity_count": 1,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "Immediate next step: Experiment 0.13B",
+          "type": "Experiment",
+          "source": "sam-lm/docs/roadmap.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex042",
+      "source": "sam-lm/docs/roadmap.md",
+      "difficulty": "medium",
+      "text": "## Medium-term next steps\n1. **Revalidate learned selector**: retrain on fixed codebase. Goal: >95% recall AND >80% prec...",
+      "gt_entity_count": 3,
+      "pred_entity_count": 1,
+      "gt_relation_count": 2,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 3
+      },
+      "entities_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 3
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "predicted_entities": [
+        {
+          "name": "Medium-term next steps",
+          "type": "Concept",
+          "source": "sam-lm/docs/roadmap.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex043",
+      "source": "sam-lm/docs/roadmap.md",
+      "difficulty": "hard",
+      "text": "## Longer-term vision items\n| `mmap`-backed memory | Memory too large for GPU VRAM |\n| Ternary core quantization | 1.58-...",
+      "gt_entity_count": 3,
+      "pred_entity_count": 2,
+      "gt_relation_count": 2,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.5,
+        "recall": 0.3333333333333333,
+        "f1": 0.4,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 3
+      },
+      "entities_fuzzy": {
+        "precision": 0.5,
+        "recall": 0.3333333333333333,
+        "f1": 0.4,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 3
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "predicted_entities": [
+        {
+          "name": "Longer-term vision items",
+          "type": "Concept",
+          "source": "sam-lm/docs/roadmap.md",
+          "line": 1
+        },
+        {
+          "name": "mmap",
+          "type": "Entity",
+          "source": "sam-lm/docs/roadmap.md",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "id": "ex044",
+      "source": "sam-lm/docs/experiment-index.md",
+      "difficulty": "easy",
+      "text": "| **0.6** | `experiment_0_6_final_report.md` | Full validation | Oracle: 99.87%. Retrieved: = `core_only` (68.74%). |",
+      "gt_entity_count": 2,
+      "pred_entity_count": 2,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "experiment_0_6_final_report.md",
+          "type": "Document",
+          "source": "sam-lm/docs/experiment-index.md",
+          "line": 1
+        },
+        {
+          "name": "core_only",
+          "type": "Entity",
+          "source": "sam-lm/docs/experiment-index.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex045",
+      "source": "sam-lm/docs/metrics.md",
+      "difficulty": "medium",
+      "text": "### `oracle_gap`\n`oracle_gap = accuracy(oracle_memory) - accuracy(retrieved_memory)`. Gap > 20pp means Gate 3 fails.",
+      "gt_entity_count": 2,
+      "pred_entity_count": 2,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "`oracle_gap`",
+          "type": "Concept",
+          "source": "sam-lm/docs/metrics.md",
+          "line": 1
+        },
+        {
+          "name": "oracle_gap",
+          "type": "Entity",
+          "source": "sam-lm/docs/metrics.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex046",
+      "source": "sam-lm/docs/metrics.md",
+      "difficulty": "easy",
+      "text": "### `memory_gain`\n`memory_gain = accuracy(retrieved_memory) - accuracy(core_only)`. If near zero, memory is providing no...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 2,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1": 0.5,
+        "tp": 1,
+        "pred_count": 2,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "`memory_gain`",
+          "type": "Concept",
+          "source": "sam-lm/docs/metrics.md",
+          "line": 1
+        },
+        {
+          "name": "memory_gain",
+          "type": "Entity",
+          "source": "sam-lm/docs/metrics.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex047",
+      "source": "sam-lm/docs/SAM-architecture-and-implementation-plan.md",
+      "difficulty": "medium",
+      "text": "## 1. Executive verdict\n**Is SAM worth pursuing?** Yes, as a falsifiable POC. The \"decouple knowledge from computation\" ...",
+      "gt_entity_count": 1,
+      "pred_entity_count": 1,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 1
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": [
+        {
+          "name": "1. Executive verdict",
+          "type": "Concept",
+          "source": "sam-lm/docs/SAM-architecture-and-implementation-plan.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex048",
+      "source": "sam-lm/docs/SAM-architecture-and-implementation-plan.md",
+      "difficulty": "hard",
+      "text": "**Most likely failure mode (~60-70% prior):** Memory lifts factual recall sharply, but the tiny core cannot *compose* 2-...",
+      "gt_entity_count": 1,
+      "pred_entity_count": 0,
+      "gt_relation_count": 0,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "entities_fuzzy": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 0
+      },
+      "predicted_entities": []
+    },
+    {
+      "id": "ex049",
+      "source": "sam-lm/docs/SAM-architecture-and-implementation-plan.md",
+      "difficulty": "hard",
+      "text": "## 2. Architecture summary\n```\nREASONING CORE  (12-18 blocks, ~120M params)\nevery ~3:      MEMORY LAYER\n```\nPRODUCT-KEY ...",
+      "gt_entity_count": 2,
+      "pred_entity_count": 1,
+      "gt_relation_count": 1,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "entities_fuzzy": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6666666666666666,
+        "tp": 1,
+        "pred_count": 1,
+        "gt_count": 2
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 1
+      },
+      "predicted_entities": [
+        {
+          "name": "2. Architecture summary",
+          "type": "Concept",
+          "source": "sam-lm/docs/SAM-architecture-and-implementation-plan.md",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ex050",
+      "source": "sam-lm/experiments/diagnosis_report.md",
+      "difficulty": "medium",
+      "text": "## 2. Bugs Found and Fixed\n### Bug 2: Retrieval `InfoNCE` dead-slot negatives\n**Cause:** Negatives from all 1M `PKM` slo...",
+      "gt_entity_count": 3,
+      "pred_entity_count": 3,
+      "gt_relation_count": 2,
+      "pred_relation_count": 0,
+      "entities_exact": {
+        "precision": 0.3333333333333333,
+        "recall": 0.3333333333333333,
+        "f1": 0.3333333333333333,
+        "tp": 1,
+        "pred_count": 3,
+        "gt_count": 3
+      },
+      "entities_fuzzy": {
+        "precision": 0.6666666666666666,
+        "recall": 0.6666666666666666,
+        "f1": 0.6666666666666666,
+        "tp": 2,
+        "pred_count": 3,
+        "gt_count": 3
+      },
+      "relations": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "pred_count": 0,
+        "gt_count": 2
+      },
+      "predicted_entities": [
+        {
+          "name": "2. Bugs Found and Fixed",
+          "type": "Bug",
+          "source": "sam-lm/experiments/diagnosis_report.md",
+          "line": 1
+        },
+        {
+          "name": "Bug 2: Retrieval `InfoNCE` dead-slot negatives",
+          "type": "Bug",
+          "source": "sam-lm/experiments/diagnosis_report.md",
+          "line": 2
+        },
+        {
+          "name": "InfoNCE",
+          "type": "Entity",
+          "source": "sam-lm/experiments/diagnosis_report.md",
+          "line": 2
+        }
+      ]
+    }
+  ],
+  "gate_check": {
+    "metric": "entity_extraction.fuzzy_match.micro.f1",
+    "value": 0.732,
+    "threshold": 0.8,
+    "passed": false
+  }
+}

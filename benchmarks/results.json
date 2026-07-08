@@ -1,0 +1,1229 @@
+{
+  "config": {
+    "limit": 50,
+    "graph_nodes": 366,
+    "graph_edges": 371
+  },
+  "summary": {
+    "total_questions": 50,
+    "nexus_errors": 0,
+    "baseline_errors": 0,
+    "nexus": {
+      "answered": 21,
+      "insufficient_evidence": 29,
+      "answer_rate": 0.42,
+      "verification_passed": 50,
+      "verification_pass_rate": 1.0,
+      "avg_hallucination_rate": 0.0,
+      "min_hallucination_rate": 0.0,
+      "max_hallucination_rate": 0.0,
+      "avg_latency_s": 0.2614,
+      "avg_paths_found": 1.6
+    },
+    "baseline": {
+      "avg_latency_s": 0.0
+    }
+  },
+  "results": [
+    {
+      "question_id": "q001",
+      "question": "What was the overall accuracy of the SAM oracle memory experiment?",
+      "ground_truth": "99.87% overall accuracy, with 99.5% on 1-hop, 100% on 2-hop, and 100% on 3-hop.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Concept_OracleMemory is validated by Experiment 0.6 — Full Validation.\n\nSources: 3 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 1,
+        "is_insufficient": false,
+        "latency_s": 0.2475,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q002",
+      "question": "What accuracy did the SAM core-only baseline achieve?",
+      "ground_truth": "68.74% overall accuracy, identical to the dense baseline at equal parameters.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.1654,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q003",
+      "question": "What was the breakthrough result of the chain-set BCE retriever?",
+      "ground_truth": "all_required@32 = 100% — it finds ALL required slots for EVERY example at K=32.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.1401,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q004",
+      "question": "What was the precision of the learned slot selector in experiment 0.12?",
+      "ground_truth": "50% precision, with 96.6% recall — meaning it finds nearly all required slots but picks about twice as many distractors.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Experiment 0.12 — Candidate Selection & Memory-Use Training — learned_selector is derived from Experiment 0.12 — Candidate Selection & Memory-Use Training.\n- Experiment 0.12 — Candidate Selection & Memory-Use Training — learned_selector supports Overall Accuracy.\n- Experiment 0.12 — Candidate Selection & Memory-Use Training — learned_selector supports 1-Hop Accuracy.\n- Experiment 0.12 — Candidate Selection & Memory-Use Training — learned_selector supports 2-Hop Accuracy.\n- Experiment 0.12 — Candidate Selection & Memory-Use Training — learned_selector supports 3-Hop Accuracy.\n\nSources: 4 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 5,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.4379,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q005",
+      "question": "How many random distractors can SAM tolerate while maintaining over 90% accuracy?",
+      "ground_truth": "Up to 8 random distractors, achieving 91.58% overall accuracy.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.5031,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q006",
+      "question": "At what noise level does 3-hop reasoning collapse in SAM?",
+      "ground_truth": "Between 8 and 16 distractors — 3-hop accuracy drops from 79.3% at +8 to 39.0% at +16.",
+      "question_type": "factual",
+      "difficulty": "medium",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.2781,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q007",
+      "question": "What accuracy did SAM achieve with the oracle-filter from chain candidates in experiment 0.12?",
+      "ground_truth": "100% accuracy on all hop categories, matching oracle_memory and proving the chain candidates are sufficient.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Experiment 0.9 — Oracle-Filter & Multi-Query — oracle_filter is derived from Experiment 0.9 — Oracle-Filter & Multi-Query.\n- Experiment 0.9 — Oracle-Filter & Multi-Query — top1 is derived from Experiment 0.9 — Oracle-Filter & Multi-Query.\n- Experiment 0.9 — Oracle-Filter & Multi-Query supports Experiment 0.9 — Oracle-Filter & Multi-Query — baseline.\n\nSources: 7 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 3,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 0.6243,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q008",
+      "question": "What was the all_required@64 result for the dual encoder retriever in experiment 0.10?",
+      "ground_truth": "Only 27% — 73% of examples had required slots completely absent from the top-64 results.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.3985,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q009",
+      "question": "What Rec@8 did the dual encoder achieve on the dense dataset in experiment 0.5?",
+      "ground_truth": "99.0% val Rec@8, up from 6.9% on the original sparse dataset.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Experiment 0.5 — Dense Dataset Fix depends on Experiment 0.3 — PKM Candidate Generation.\n- Experiment 0.5 — Dense Dataset Fix is a dependency of Experiment 0.6 — Full Validation.\n\nSources: 5 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 2,
+        "unsupported_count": 0,
+        "path_count": 2,
+        "is_insufficient": false,
+        "latency_s": 0.3268,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q010",
+      "question": "What was the key finding of the pipeline diagnosis experiment?",
+      "ground_truth": "Three critical bugs were found and fixed — retrieval was identified as the bottleneck with only 6.9% Rec@8.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Experiment 0 — Pipeline Diagnosis is a dependency of Experiment 0.2 — Compact PKM Retrieval.\n\nSources: 3 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 1,
+        "is_insufficient": false,
+        "latency_s": 0.0908,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q011",
+      "question": "How many parameters does the SAM core model have?",
+      "ground_truth": "Approximately 15.7 million parameters total, with 15.6M in the core and 117K in memory.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.1775,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q012",
+      "question": "What is the 3-hop accuracy of SAM without memory (core_only)?",
+      "ground_truth": "22.00% — showing that multi-hop reasoning is very hard for the small core without external memory.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.1482,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q013",
+      "question": "What dataset size was used for the dense synthetic experiments?",
+      "ground_truth": "19,000 training examples, 3,800 validation, 3,800 test, with 1,650 slots and 853 vocabulary tokens.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.0994,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q014",
+      "question": "What accuracy did random memory injection achieve in SAM?",
+      "ground_truth": "68.74% — identical to core_only, confirming the placebo control works and the gate suppresses useless memory.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Experiment 0.6 — Full Validation — random_memory is derived from Experiment 0.6 — Full Validation.\n- Experiment 0.6 — Full Validation — random_memory supports Overall Accuracy.\n- Experiment 0.6 — Full Validation — random_memory supports 1-Hop Accuracy.\n- Experiment 0.6 — Full Validation — random_memory supports 2-Hop Accuracy.\n- Experiment 0.6 — Full Validation — random_memory supports 3-Hop Accuracy.\n\nSources: 4 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 5,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.1705,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q015",
+      "question": "What was the 2-hop all_required@32 for the dual encoder vs chain-set BCE retriever?",
+      "ground_truth": "Dual encoder: 0.9% — essentially zero. Chain-set BCE: 100%. The improvement was from 0.9% to 100%.",
+      "question_type": "comparative",
+      "difficulty": "medium",
+      "hops": 2,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.3706,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q016",
+      "question": "What did experiment 0.13A prove about the SAM gate?",
+      "ground_truth": "The gate is NOT the bottleneck — SAM tolerates 1-2 distractors with 99.4-99.8% accuracy. The problem is selector noise QUALITY, not quantity.",
+      "question_type": "factual",
+      "difficulty": "medium",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.254,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q017",
+      "question": "How many live memory slots did the SAM experiments use?",
+      "ground_truth": "1,650 live slots, addressed via product-key memory with 64 subkeys and key_dim=64.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.1658,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q018",
+      "question": "What were the three critical bugs found in the pipeline diagnosis?",
+      "ground_truth": "(1) best_val_loss was Infinity because validation never ran, (2) InfoNCE loss used dead slots as negatives, (3) Evaluation used wrong checkpoints for SAM modes.",
+      "question_type": "factual",
+      "difficulty": "medium",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Experiment 0 — Pipeline Diagnosis is a dependency of Experiment 0.2 — Compact PKM Retrieval.\n- Experiment 0.2 — Compact PKM Retrieval is a dependency of Experiment 0.3 — PKM Candidate Generation.\n- Experiment 0.3 — PKM Candidate Generation is a dependency of Experiment 0.5 — Dense Dataset Fix.\n- Experiment 0.5 — Dense Dataset Fix is a dependency of Experiment 0.6 — Full Validation.\n- Experiment 0 — Pipeline Diagnosis is a dependency of Experiment 0.2 — Compact PKM Retrieval.\n\nSources: 15 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 5,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.1954,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q019",
+      "question": "What was the accuracy of oracle text memory compared to oracle latent memory?",
+      "ground_truth": "Oracle text memory achieved 100% accuracy. Oracle latent memory achieved 99.87%. Both prove the core CAN use memory.",
+      "question_type": "comparative",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Concept_OracleMemory is validated by Experiment 0.6 — Full Validation.\n- Experiment 0.6 — Full Validation depends on Experiment 0.5 — Dense Dataset Fix.\n- Experiment 0.5 — Dense Dataset Fix depends on Experiment 0.3 — PKM Candidate Generation.\n- Experiment 0.3 — PKM Candidate Generation depends on Experiment 0.2 — Compact PKM Retrieval.\n- Concept_OracleMemory is validated by Experiment 0.6 — Full Validation.\n\nSources: 21 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 5,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.452,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q020",
+      "question": "What accuracy does SAM achieve with exactly 1 distractor in controlled noisy memory?",
+      "ground_truth": "99.82% overall with 99.50% on 3-hop — effectively no degradation from clean oracle memory.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Experiment 0.13B — Realistic Retrieval Distractor Replay depends on Experiment 0.13A — Controlled Noisy Memory Tolerance.\n- Experiment 0.13A — Controlled Noisy Memory Tolerance depends on Experiment 0.12 — Candidate Selection & Memory-Use Training.\n- Concept_OracleMemory is validated by Experiment 0.6 — Full Validation.\n- Experiment 0.13A — Controlled Noisy Memory Tolerance validates Concept_NoiseTolerance.\n\nSources: 9 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 4,
+        "unsupported_count": 0,
+        "path_count": 4,
+        "is_insufficient": false,
+        "latency_s": 0.5193,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q021",
+      "question": "Why did the dual encoder retriever fail to retrieve complete multi-hop chains?",
+      "ground_truth": "The dual encoder maps question text to slot similarity. For chains, question -> Slot A (similar to question) works, but question -> Slot B (similar to Slot A's content, not the question) fails. Intermediate chain slots are not similar enough to the original question text.",
+      "question_type": "diagnostic",
+      "difficulty": "medium",
+      "hops": 2,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.563,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q022",
+      "question": "How did the dense dataset fix enable successful retrieval?",
+      "ground_truth": "The original dataset had only 1.5 examples per slot with 30% unseen slots in validation. The dense dataset provided 21.8 examples per slot with all 1,650 slots shared across splits, giving the retriever enough data to learn slot embeddings.",
+      "question_type": "diagnostic",
+      "difficulty": "medium",
+      "hops": 2,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Experiment 0.5 — Dense Dataset Fix is a dependency of Experiment 0.6 — Full Validation.\n- Experiment 0.6 — Full Validation is a dependency of Experiment 0.7 — External Text Query.\n- Experiment 0.7 — External Text Query is a dependency of Experiment 0.8 — Aggregation & Selection Variants.\n- Experiment 0.8 — Aggregation & Selection Variants is a dependency of Experiment 0.9 — Oracle-Filter & Multi-Query.\n- Experiment 0.5 — Dense Dataset Fix is a dependency of Experiment 0.6 — Full Validation.\n\nSources: 16 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 5,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.1318,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q023",
+      "question": "What chain of experiments led from the discovery of the retriever problem to solving it?",
+      "ground_truth": "Exp 0.6 discovered retrieved_memory = core_only. Exp 0.10 diagnosed that multi-hop required slots were absent from dual encoder results (all_required@64 = 27%). Exp 0.11 solved it with chain-set BCE retriever (all_required@32 = 100%).",
+      "question_type": "multi-hop",
+      "difficulty": "medium",
+      "hops": 3,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.6327,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q024",
+      "question": "Why does chain-set retrieval achieve 100% all_required@32 but SAM still equals core_only?",
+      "ground_truth": "Because the chain-set retriever returns 32+ candidates with all required slots present, but SAM receives all 32 slots averaged together. Without a selector, the signal from 1-3 required slots is diluted by ~29 distractors, causing the gate to suppress memory entirely.",
+      "question_type": "diagnostic",
+      "difficulty": "medium",
+      "hops": 2,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No traversal paths found connecting the identified entities.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.5066,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q025",
+      "question": "What is the relationship between the selector bottleneck and the pivot to NEXUS?",
+      "ground_truth": "The selector achieves 96.6% recall but only 50% precision, picking semantically misleading distractors. This is a structural problem: a flat MLP cannot solve graph-structured selection. This failure directly motivated the pivot to NEXUS, where knowledge is an explicit graph and selection becomes graph traversal.",
+      "question_type": "multi-hop",
+      "difficulty": "hard",
+      "hops": 3,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Concept_SelectorBottleneck is validated by Experiment 0.12 — Candidate Selection & Memory-Use Training.\n- Experiment 0.12 — Candidate Selection & Memory-Use Training validates Concept_PivotToNEXUS.\n- Experiment 0.12 — Candidate Selection & Memory-Use Training depends on Experiment 0.11 — Chain-Aware Retrieval.\n\nSources: 6 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 3,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 0.4592,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q026",
+      "question": "Walk through the evolution from experiment 0.6 to the architecture pivot.",
+      "ground_truth": "Exp 0.6 proved oracle memory works (99.87%) but retrieved memory fails (68.74%). Exp 0.7-0.9 tried various retrieval interfaces without success. Exp 0.10 discovered multi-hop slots were missing from retrieval. Exp 0.11 solved retrieval with chain-set BCE (100%). Exp 0.12 showed the selector is the new bottleneck (50% precision). Exp 0.13A proved the architecture tolerates noise — the problem is selector quality, not integration brittleness. This chain of evidence led to the pivot: flat latent vectors cannot solve graph-structured selection.",
+      "question_type": "multi-hop",
+      "difficulty": "hard",
+      "hops": 4,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Concept_ArchitectureWorks is validated by Experiment 0.6 — Full Validation.\n- Concept_ArchitectureWorks is validated by Experiment 0.12 — Candidate Selection & Memory-Use Training.\n- Concept_ArchitectureWorks is validated by Experiment 0.13A — Controlled Noisy Memory Tolerance.\n- Concept_ArchitectureWorks supports Decision_PivotToNEXUS.\n\nSources: 8 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 4,
+        "unsupported_count": 0,
+        "path_count": 4,
+        "is_insufficient": false,
+        "latency_s": 0.4164,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q027",
+      "question": "What are the six memory modes in SAM?",
+      "ground_truth": "core_only (no memory), oracle_memory (correct slots injected directly), retrieved_memory (learned PKM lookup), random_memory (random slots as placebo), retrieved_memory_external_text_query (standalone retriever), and oracle_text_memory (facts as text tokens).",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.0606,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q028",
+      "question": "How does SAM differ from RAG?",
+      "ground_truth": "RAG prepends retrieved text to the model input. SAM injects memory into the model's internal computation via learned gating at specific layers. SAM uses latent vectors combined mathematically, not text. SAM's memory is trained together with the core.",
+      "question_type": "comparative",
+      "difficulty": "medium",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.0064,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q029",
+      "question": "What is product-key memory and why does SAM use it?",
+      "ground_truth": "PKM enables O(sqrt(N)) lookup by splitting a query into two sub-keys, scoring each against a codebook, and using the Cartesian product to find slots. This makes billion-slot memories tractable. It's differentiable, enabling end-to-end training.",
+      "question_type": "factual",
+      "difficulty": "medium",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.1191,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q030",
+      "question": "What is the role of the gate in SAM's memory integration?",
+      "ground_truth": "The gate is a learned sigmoid scalar (0-1) that controls how much retrieved memory influences the output: output = core_computation + gate * memory_vector. It learns when to use or suppress memory during training.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.1119,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q031",
+      "question": "What is the query projection mismatch problem?",
+      "ground_truth": "The dual encoder retriever was trained to map raw question text to slot embeddings. But SAM's forward pass feeds it intermediate transformer hidden states instead. The query_proj was trained for dual encoder outputs, not transformer states — making retrieval essentially random.",
+      "question_type": "diagnostic",
+      "difficulty": "medium",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.0927,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q032",
+      "question": "Why is SAM's oracle_memory accuracy 99.87% but oracle_text_memory 100%?",
+      "ground_truth": "The 0.13% difference is negligible. Both prove the core can use memory. Text memory injects facts as input tokens which may be slightly easier for the model to process than latent vector injection.",
+      "question_type": "comparative",
+      "difficulty": "medium",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Experiment 0.6 — Full Validation — oracle_text_memory supports Overall Accuracy.\n- Experiment 0.6 — Full Validation — oracle_text_memory supports 1-Hop Accuracy.\n- Experiment 0.6 — Full Validation — oracle_text_memory supports 2-Hop Accuracy.\n- Experiment 0.6 — Full Validation — oracle_text_memory supports 3-Hop Accuracy.\n- Experiment 0.6 — Full Validation — oracle_text_memory supports Best Val Loss.\n\nSources: 2 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 5,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.2142,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q033",
+      "question": "What is the controlled noisy memory path and how is it different from oracle memory?",
+      "ground_truth": "In controlled noisy memory (oracle_plus_distractors), required slots are injected alongside N randomly-selected live slots as distractors. Unlike oracle memory (only required slots), this tests the model's tolerance to imperfect memory. It uses the identical memory integration code path.",
+      "question_type": "comparative",
+      "difficulty": "medium",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Experiment 0.13A — Controlled Noisy Memory Tolerance depends on Experiment 0.12 — Candidate Selection & Memory-Use Training.\n- Experiment 0.12 — Candidate Selection & Memory-Use Training validates Concept_ArchitectureWorks.\n- Concept_ArchitectureWorks is validated by Experiment 0.6 — Full Validation.\n- Experiment 0.6 — Full Validation validates Concept_OracleMemory.\n- Experiment 0.13A — Controlled Noisy Memory Tolerance depends on Experiment 0.12 — Candidate Selection & Memory-Use Training.\n\nSources: 22 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 5,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.3846,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q034",
+      "question": "What is the difference between controlled distractors and realistic distractors?",
+      "ground_truth": "Controlled distractors are randomly selected from live memory slots. Realistic distractors are top-ranked by an actual retriever and may be semantically misleading (hard negatives). Exp 0.13A tested controlled; 0.13B tests realistic.",
+      "question_type": "comparative",
+      "difficulty": "medium",
+      "hops": 2,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Experiment 0.13B — Realistic Retrieval Distractor Replay depends on Experiment 0.13A — Controlled Noisy Memory Tolerance.\n- Experiment 0.13A — Controlled Noisy Memory Tolerance depends on Experiment 0.12 — Candidate Selection & Memory-Use Training.\n- Experiment 0.12 — Candidate Selection & Memory-Use Training depends on Experiment 0.11 — Chain-Aware Retrieval.\n- Experiment 0.11 — Chain-Aware Retrieval depends on Experiment 0.10 — Required-Set Retrieval Diagnostics.\n- Experiment 0.13B — Realistic Retrieval Distractor Replay depends on Experiment 0.13A — Controlled Noisy Memory Tolerance.\n\nSources: 19 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 5,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.3928,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q035",
+      "question": "What does NEXUS stand for?",
+      "ground_truth": "Non-Parametric Execution and Understanding System. Non-Parametric = knowledge outside model weights, Execution = graph traversal as reasoning, Understanding = query interpretation and answer generation, System = the whole architecture, not a single model.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.004,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q036",
+      "question": "What is the core architectural difference between NEXUS and RAG?",
+      "ground_truth": "RAG searches for similar text chunks via embedding similarity. NEXUS traverses explicit relationships in a knowledge graph. NEXUS finds HOW entities relate, not just THAT they are semantically similar.",
+      "question_type": "comparative",
+      "difficulty": "medium",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Concept_ArchitectureWorks is validated by Experiment 0.6 — Full Validation.\n- Experiment 0.6 — Full Validation depends on Experiment 0.5 — Dense Dataset Fix.\n- Experiment 0.5 — Dense Dataset Fix depends on Experiment 0.3 — PKM Candidate Generation.\n- Experiment 0.3 — PKM Candidate Generation depends on Experiment 0.2 — Compact PKM Retrieval.\n- Concept_ArchitectureWorks is validated by Experiment 0.6 — Full Validation.\n\nSources: 26 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 5,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.3483,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q037",
+      "question": "What are the node types in the NEXUS graph data model?",
+      "ground_truth": "Entity, Concept, Document, CodeFile, Function, TestCase, Bug, Decision, Requirement, Experiment, and Metric.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.141,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q038",
+      "question": "What are the edge types in the NEXUS graph data model?",
+      "ground_truth": "depends_on, caused_by, validates, contradicts, implements, mentioned_in, derived_from, related_to, replaces, blocked_by. Each edge has a confidence score [0.0, 1.0] and source evidence.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.1247,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q039",
+      "question": "What is the NEXUS reasoning pipeline?",
+      "ground_truth": "1. Parse question (entities + intent), 2. Locate entry nodes in graph, 3. Traverse edges, 4. Score paths, 5. Select top-K paths, 6. Build evidence pack, 7. Small LLM generates answer, 8. Verifier checks answer against evidence.",
+      "question_type": "factual",
+      "difficulty": "medium",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.0244,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q040",
+      "question": "How does NEXUS handle multi-hop reasoning differently from SAM?",
+      "ground_truth": "SAM uses chain-set retrieval (finding related slots by embedding similarity) followed by flat MLP selection. NEXUS uses explicit graph traversal — walking edges like depends_on and caused_by to find complete reasoning chains. The reasoning chain IS the graph path.",
+      "question_type": "comparative",
+      "difficulty": "medium",
+      "hops": 2,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.3437,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q041",
+      "question": "What is the role of the verifier in NEXUS?",
+      "ground_truth": "The verifier checks that all factual claims in the generated answer are supported by the evidence pack. It's rule-based (not another LLM) and flags unsupported claims. If hallucination rate exceeds a threshold, it returns 'Insufficient evidence.'",
+      "question_type": "factual",
+      "difficulty": "medium",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.0685,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q042",
+      "question": "What compute resources does NEXUS target and why?",
+      "ground_truth": "CPU for graph traversal, RAM for graph store, CPU/RAM for small reasoning model (<1B params), and disk (mmap) for source documents. The goal is to run without GPUs by keeping the dense model small and making knowledge access sparse.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.1114,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q043",
+      "question": "How does NEXUS store knowledge compared to vector databases used in RAG?",
+      "ground_truth": "Vector databases store flat embedding vectors with cosine similarity search. NEXUS stores typed nodes with properties and typed directed edges with confidence scores. Updates are O(1) node/edge insertions vs full re-indexing.",
+      "question_type": "comparative",
+      "difficulty": "medium",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.4759,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q044",
+      "question": "Which experiment first proved that retrieval is the bottleneck?",
+      "ground_truth": "Experiment 0 (Pipeline Diagnosis) — it found that retrieval Rec@8 was only 6.9%, far below the 80% gate.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Concept_RetrievalMismatch is validated by Experiment 0.6 — Full Validation.\n- Concept_ChainRetrieval is validated by Experiment 0.11 — Chain-Aware Retrieval.\n- Concept_SelectorBottleneck is validated by Experiment 0.12 — Candidate Selection & Memory-Use Training.\n- Concept_RetrievalMismatch is contradicted by Experiment 0.12 — Candidate Selection & Memory-Use Training.\n- Concept_SelectorBottleneck supports Decision_PivotToNEXUS.\n\nSources: 9 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 5,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.2281,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q045",
+      "question": "What experiment directly preceded the chain-set BCE retriever development?",
+      "ground_truth": "Experiment 0.10 (Required-Set Retrieval Diagnostics), which discovered that multi-hop required slots were completely absent from dual encoder retrieval results.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Experiment 0.11 — Chain-Aware Retrieval — chain_set_bce is derived from Experiment 0.11 — Chain-Aware Retrieval.\n- Experiment 0.11 — Chain-Aware Retrieval — chain_set_bce supports Wall Time.\n\nSources: 4 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 2,
+        "unsupported_count": 0,
+        "path_count": 2,
+        "is_insufficient": false,
+        "latency_s": 0.3262,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q046",
+      "question": "Which experiments belong to the 'Core Validation' phase?",
+      "ground_truth": "Experiments 0.6 (Full Validation), 0.7 (External Text Query), 0.8 (Aggregation Variants), and 0.9 (Oracle-Filter).",
+      "question_type": "factual",
+      "difficulty": "medium",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Experiment 0.6 — Full Validation depends on Experiment 0.5 — Dense Dataset Fix.\n- Experiment 0.6 — Full Validation is a dependency of Experiment 0.7 — External Text Query.\n- Experiment 0.6 — Full Validation validates Concept_OracleMemory.\n- Experiment 0.6 — Full Validation validates Concept_RetrievalMismatch.\n- Experiment 0.6 — Full Validation validates Concept_ArchitectureWorks.\n\nSources: 9 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 5,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.1648,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q047",
+      "question": "What was the chronological order of the four research phases?",
+      "ground_truth": "Phase 1: Pipeline Setup (Exp 0-0.5), Phase 2: Core Validation (Exp 0.6-0.9), Phase 3: Retrieval Revolution (Exp 0.10-0.11), Phase 4: Selection & Noise (Exp 0.12-0.13A), then the pivot to Phase 5: NEXUS.",
+      "question_type": "multi-hop",
+      "difficulty": "medium",
+      "hops": 2,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.1501,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q048",
+      "question": "What is the latest experiment and what does it test?",
+      "ground_truth": "Experiment 0.13B — Realistic Retrieval Distractor Replay. It tests whether realistic retrieval distractors (from actual retriever results) are harder than the random distractors tested in 0.13A.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Insufficient evidence to answer. No relevant entities found in the question.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 0,
+        "is_insufficient": true,
+        "latency_s": 0.2546,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q049",
+      "question": "What is the most important validation of the SAM architecture?",
+      "ground_truth": "Oracle memory achieves 99.87-100% accuracy, proving the small reasoning core CAN use external memory for multi-hop reasoning. This validates the core+memory separation pattern.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Experiment 0.6 — Full Validation validates Concept_ArchitectureWorks.\n- Experiment 0.6 — Full Validation depends on Experiment 0.5 — Dense Dataset Fix.\n- Experiment 0.6 — Full Validation is a dependency of Experiment 0.7 — External Text Query.\n- Experiment 0.6 — Full Validation validates Concept_OracleMemory.\n\nSources: 8 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 4,
+        "unsupported_count": 0,
+        "path_count": 4,
+        "is_insufficient": false,
+        "latency_s": 0.2624,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    },
+    {
+      "question_id": "q050",
+      "question": "What is the key insight from the noise tolerance experiment?",
+      "ground_truth": "SAM does NOT collapse with mild noise — it achieves 99.8% with 1 distractor and 91.6% with 8 distractors. The gate is NOT the bottleneck. The real problem is selector noise QUALITY (semantically misleading distractors), not quantity.",
+      "question_type": "factual",
+      "difficulty": "medium",
+      "hops": 1,
+      "nexus": {
+        "answer": "Based on the evidence:\n- Concept_NoiseTolerance is validated by Experiment 0.13A — Controlled Noisy Memory Tolerance.\n\nSources: 3 document(s) referenced in the evidence pack.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 1,
+        "is_insufficient": false,
+        "latency_s": 0.1833,
+        "error": null
+      },
+      "baseline": {
+        "answer": "I don't have enough specific information to answer this question accurately. Without access to the relevant documents, experiment reports, or knowledge sources, I cannot provide a factual answer.",
+        "latency_s": 0.0,
+        "error": null
+      }
+    }
+  ]
+}

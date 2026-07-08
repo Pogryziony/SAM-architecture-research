@@ -2230,6 +2230,8 @@ def generate_more_questions(start_qid: int) -> list[dict]:
         ("What SAM finding is still unvalidated for NEXUS?", "All — no NEXUS experiments yet. SAM findings inform design but NEXUS validation pending Phase 4."),
         ("Single most important metric for NEXUS vs RAG?", "Hallucination rate — dramatic reduction alone validates the architecture."),
         ("Where is the NEXUS graph traversal demo?", "nexus/demo_traversal.py — 5 test queries with path discovery and evidence building."),
+        ("What is the initial evaluation window for NEXUS benchmarks?", "50-100 questions from the full QA dataset to keep runtime reasonable."),
+        ("Why is deterministic verification critical for the NEXUS pipeline?", "It enables reproducible benchmarks, CI/CD gating, and eliminates recursive hallucination from LLM-based evaluators."),
     ]:
         questions.append({"id": f"q{qid}", "question": q_text, "answer": q_answer,
                           "question_type": "diagnostic", "entities": ["Decision_PivotToNEXUS"], "difficulty": "hard", "hops": 3})
@@ -2245,6 +2247,22 @@ def main():
     additional = generate_additional_questions()
     more = generate_more_questions(132 + len(additional))
     all_questions = list(DATASET) + additional + more
+
+    # ── Deduplicate by question text (case-insensitive) ──
+    seen_texts: set[str] = set()
+    deduped: list[dict] = []
+    dupes_found = 0
+    for q in all_questions:
+        key = q["question"].strip().lower()
+        if key in seen_texts:
+            dupes_found += 1
+            continue
+        seen_texts.add(key)
+        deduped.append(q)
+
+    if dupes_found > 0:
+        print(f"Removed {dupes_found} duplicate questions.")
+    all_questions = deduped
 
     with open(output_path, "w", encoding="utf-8") as f:
         for q in all_questions:
