@@ -3,12 +3,11 @@
     "limit": 30,
     "model": "FallbackModel(OllamaModel(qwen2.5-coder:3b) + SynthesizingModel)",
     "model_backend": "FallbackModel",
-    "verification_threshold": 0.2,
-    "known_entity_ids_from_dataset": true
+    "verification_threshold": 0.2
   },
   "graph_provenance": {
     "node_count": 1822,
-    "edge_count": 564,
+    "edge_count": 562,
     "build_command": "python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results.json",
     "build_steps": [
       "1. populate_from_experiments(EXPERIMENTS_DIR, graph)",
@@ -16,13 +15,12 @@
       "3. ingest_directory('sam-lm/docs/', graph)",
       "4. ingest_directory('sam-lm/experiments/', graph)"
     ],
-    "entity_resolution": "known_entity_ids from QA dataset (bypasses fuzzy matching for benchmark accuracy measurement)",
     "fixes_applied": [
       "P0: entity filter, relations constrained 10K->116 edges, entity ranking",
       "P1: key_findings surfaced as evidence in evidence_builder",
       "P2: double-gate with corpus metric (honest hallucination measurement)"
     ],
-    "timestamp": "2026-07-08T12:45:55.479852+00:00"
+    "timestamp": "2026-07-08T13:26:31.950351+00:00"
   },
   "summary": {
     "total_questions": 30,
@@ -33,44 +31,53 @@
       "answered": 30,
       "insufficient_evidence": 0,
       "answer_rate": 1.0,
-      "verification_passed": 12,
-      "verification_pass_rate": 0.4,
-      "avg_hallucination_rate": 0.2848,
+      "verification_passed": 18,
+      "verification_pass_rate": 0.6,
+      "avg_hallucination_rate": 0.1835,
       "min_hallucination_rate": 0.0,
-      "max_hallucination_rate": 0.8,
-      "avg_latency_s": 3.5376,
-      "avg_paths_found": 4.53,
-      "avg_accuracy": 0.2148,
+      "max_hallucination_rate": 1.0,
+      "avg_latency_s": 3.3825,
+      "avg_paths_found": 4.3,
+      "avg_accuracy": 0.258,
+      "avg_exact_accuracy": 0.2133,
       "min_accuracy": 0.0,
       "max_accuracy": 1.0
     },
     "baseline": {
       "avg_latency_s": 0.0,
       "insufficient_evidence": 0,
-      "avg_accuracy": 0.0
+      "avg_accuracy": 0.01,
+      "avg_exact_accuracy": 0.0
+    },
+    "number_reproduction": {
+      "total_gt_numbers": 50,
+      "total_matched_numbers": 12,
+      "number_recall_rate": 0.24,
+      "avg_numbers_in_gt": 2.17,
+      "avg_numbers_matched": 0.52
     },
     "accuracy_by_hops": {
       "1": {
         "count": 19,
-        "avg_accuracy": 0.2061
+        "avg_accuracy": 0.2632
       },
       "2": {
         "count": 3,
-        "avg_accuracy": 0.2222
+        "avg_accuracy": 0.1667
       },
       "3": {
         "count": 2,
-        "avg_accuracy": 0.3929
+        "avg_accuracy": 0.35
       },
       "4": {
         "count": 1,
-        "avg_accuracy": 0.0
+        "avg_accuracy": 0.25
       }
     },
     "accuracy_by_type": {
       "comparative": {
         "count": 2,
-        "avg_accuracy": 0.8334
+        "avg_accuracy": 0.75
       },
       "diagnostic": {
         "count": 2,
@@ -78,12 +85,24 @@
       },
       "factual": {
         "count": 18,
-        "avg_accuracy": 0.162
+        "avg_accuracy": 0.2222
       },
       "multi-hop": {
         "count": 3,
-        "avg_accuracy": 0.2619
+        "avg_accuracy": 0.3167
       }
+    },
+    "entity_resolution_rate": 0.7333,
+    "entity_resolution": {
+      "hits": 22,
+      "total": 30,
+      "rate": 0.7333
+    },
+    "conciseness": {
+      "avg_answer_tokens": 52.5,
+      "avg_conciseness_ratio": 2.59,
+      "verbose_count": 6,
+      "verbose_rate": 0.2
     }
   },
   "results": [
@@ -95,23 +114,70 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "Regarding \"overall accuracy of the SAM oracle memory experiment\", the evidence reveals the following:\n\nOracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.\n\nDense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.\n\nExternal text query bypasses hidden-state projection. Tested topK sweep.\n\nProves SAM core CAN use external memory — 100% accuracy.\n\nDual encoder query projection mismatch prevents SAM from using retrieved memory.\n\nOracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid.\n\nAdditional evidence suggests the following:\n  - Experiment 0.6 — Full Validation depends on Experiment 0.5 — Dense Dataset Fix.\n  - Experiment 0.6 — Full Validation is a dependency of Experiment 0.7 — External Text Query.\n  - Experiment 0.6 — Full Validation validates Concept_OracleMemory.\n\n\nThese findings are drawn from 9 source document(s) in the knowledge graph.",
-        "passed": false,
-        "hallucination_rate": 0.4,
-        "supported_count": 9,
-        "unsupported_count": 6,
+        "answer": "The overall accuracy of the SAM oracle memory experiment was 79.95%.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.1331,
+        "latency_s": 3.2953,
         "error": null,
-        "accuracy": 0.5
+        "parsed_entity_ids": [
+          "oracle_memory_(the_validation_experiment)",
+          "Exp_0_9_OracleFilter_weighted_t005_top32",
+          "Exp_0_9_OracleFilter_weighted_t005_top8",
+          "Exp_0_12_Selection_oracle_filter_top64",
+          "Exp_0_12_Selection_oracle_filter_top32"
+        ],
+        "entity_resolution_hit": false,
+        "gt_entity_ids": [
+          "Exp_0_6_Validation"
+        ],
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.995,
+            0.9987,
+            1.0
+          ],
+          "pred_numbers": [
+            0.7995
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 3,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 11,
+          "ground_truth_tokens": 14,
+          "ratio": 0.79,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: overall accuracy of the SAM oracle memory experiment.\n- The concept 'oracle memory' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
-        "latency_s": 0.0002,
+        "latency_s": 0.0003,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.995,
+            0.9987,
+            1.0
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 3,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -122,23 +188,66 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "Regarding \"What accuracy did the SAM core-only baseline achieve?\", the evidence reveals the following:\n\nOracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.\n\nDense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.\n\nExternal text query bypasses hidden-state projection. Tested topK sweep.\n\nProves SAM core CAN use external memory — 100% accuracy.\n\nDual encoder query projection mismatch prevents SAM from using retrieved memory.\n\nOracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid.\n\nAdditional evidence suggests the following:\n  - Experiment 0.6 — Full Validation depends on Experiment 0.5 — Dense Dataset Fix.\n  - Experiment 0.6 — Full Validation is a dependency of Experiment 0.7 — External Text Query.\n  - Experiment 0.6 — Full Validation validates Concept_OracleMemory.\n\n\nThese findings are drawn from 9 source document(s) in the knowledge graph.",
-        "passed": false,
-        "hallucination_rate": 0.4667,
-        "supported_count": 8,
-        "unsupported_count": 7,
-        "path_count": 5,
+        "answer": "The SAM core-only baseline achieved a retrieval accuracy of 98.74%.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 4,
         "is_insufficient": false,
-        "latency_s": 2.9217,
+        "latency_s": 3.0843,
         "error": null,
-        "accuracy": 0.0
+        "parsed_entity_ids": [
+          "Exp_0_11_ChainRetrieval",
+          "Exp_0_9_OracleFilter_baseline",
+          "Exp_0_6_Validation_core_only",
+          "Exp_0_6_Validation",
+          "gate_2:_memory_usefulness**:_if_sam_+_oracle_memory_does_not_beat_sam_core_only,_stop"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_6_Validation"
+        ],
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.6874
+          ],
+          "pred_numbers": [
+            0.9874
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 1,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 10,
+          "ground_truth_tokens": 11,
+          "ratio": 0.91,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.6874
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 1,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -149,23 +258,69 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "The breakthrough result of the chain-set BCE retriever was achieving 100% all_required@32, which means it solved the retrieval problem.",
+        "answer": "The breakthrough result of the chain-set BCE retriever was achieving 100% all_required@32, indicating that retrieval is solved.",
         "passed": true,
         "hallucination_rate": 0.0,
         "supported_count": 1,
         "unsupported_count": 0,
-        "path_count": 5,
+        "path_count": 4,
         "is_insufficient": false,
-        "latency_s": 3.0133,
+        "latency_s": 2.8686,
         "error": null,
-        "accuracy": 0.75
+        "parsed_entity_ids": [
+          "chain_set_bce_retriever_(experiment_0.11)",
+          "Exp_0_11_ChainRetrieval",
+          "chain_set_bce_retriever_—_retrieval_solved_at_k=32",
+          "chain_set_bce_(multi_hop_capable_retriever)",
+          "Concept_ChainRetrieval"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_11_ChainRetrieval"
+        ],
+        "accuracy": 1.0,
+        "exact_accuracy": 0.6667,
+        "scoring_detail": {
+          "gt_numbers": [
+            1.0
+          ],
+          "pred_numbers": [
+            1.0
+          ],
+          "fuzzy_matches": 1,
+          "total_gt": 1,
+          "fuzzy_score": 1.0,
+          "exact_score": 0.6667,
+          "entity_overlap": [
+            "100%",
+            "all_required@32"
+          ]
+        },
+        "conciseness": {
+          "answer_tokens": 17,
+          "ground_truth_tokens": 14,
+          "ratio": 1.21,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: breakthrough result of the chain-set BCE retriever.\n- The concept 'retriever' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            1.0
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 1,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -181,18 +336,68 @@
         "hallucination_rate": 0.0,
         "supported_count": 1,
         "unsupported_count": 0,
-        "path_count": 5,
+        "path_count": 3,
         "is_insufficient": false,
-        "latency_s": 3.6539,
+        "latency_s": 3.5392,
         "error": null,
-        "accuracy": 0.0
+        "parsed_entity_ids": [
+          "Exp_0_12_Selection",
+          "Concept_SelectorBottleneck",
+          "what_was_this_experiment_trying_to_learn",
+          "Exp_0_12_Selection_learned_selector",
+          "implement_learned_slot_selector_or_score_threshold_filtering"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_12_Selection"
+        ],
+        "accuracy": 0.5,
+        "exact_accuracy": 0.5,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.5,
+            0.966
+          ],
+          "pred_numbers": [
+            0.12,
+            0.5
+          ],
+          "fuzzy_matches": 1,
+          "total_gt": 2,
+          "fuzzy_score": 0.5,
+          "exact_score": 0.5,
+          "entity_overlap": [
+            "50%"
+          ]
+        },
+        "conciseness": {
+          "answer_tokens": 12,
+          "ground_truth_tokens": 20,
+          "ratio": 0.6,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: precision of the learned slot selector in experiment 0.12.\n- This relates to experiment experiment 0.12.\n- The concept 'selector' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.5,
+            0.966
+          ],
+          "pred_numbers": [
+            0.12
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 2,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -203,23 +408,68 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "According to the evidence provided, SAM can tolerate up to +8 random distractors while maintaining over 90% accuracy. This is explicitly stated in the \"KEY FINDINGS\" section of the knowledge graph:\n\n- Exp_0_13A_NoisyMemory: SAM tolerates +8 random distractors (91.6%).",
-        "passed": false,
-        "hallucination_rate": 0.3333,
-        "supported_count": 2,
-        "unsupported_count": 1,
+        "answer": "SAM can tolerate +8 random distractors while maintaining over 90% accuracy.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.9376,
+        "latency_s": 3.8255,
         "error": null,
-        "accuracy": 0.0
+        "parsed_entity_ids": [
+          "Exp_0_13A_NoisyMemory",
+          "Concept_NoiseTolerance",
+          "Concept_OracleMemory",
+          "Exp_0_6_Validation_random_memory",
+          "Exp_0_13B_RealisticDistractors"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_13A_NoisyMemory"
+        ],
+        "accuracy": 0.5,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.9158,
+            8.0
+          ],
+          "pred_numbers": [
+            0.9
+          ],
+          "fuzzy_matches": 1,
+          "total_gt": 2,
+          "fuzzy_score": 0.5,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 11,
+          "ground_truth_tokens": 9,
+          "ratio": 1.22,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.9158,
+            8.0
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 2,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -230,23 +480,70 @@
       "difficulty": "medium",
       "hops": 1,
       "nexus": {
-        "answer": "According to the evidence provided, 3-hop reasoning collapses in SAM at a noise level of +16 random distractors. This is stated explicitly in the \"Exp_0_13A_NoisyMemory\" experiment details:\n\n- SAM tolerates +8 random distractors (91.6%).\n- 3-hop collapses at +16 (39%).\n\nTherefore, the answer to the question \"At what noise level does 3-hop reasoning collapse in SAM?\" is +16 random distractors.",
+        "answer": "At a noise level of +16, 3-hop reasoning collapses in SAM.",
         "passed": false,
-        "hallucination_rate": 0.8,
-        "supported_count": 1,
-        "unsupported_count": 4,
+        "hallucination_rate": 1.0,
+        "supported_count": 0,
+        "unsupported_count": 1,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.6,
+        "latency_s": 3.3116,
         "error": null,
-        "accuracy": 0.0
+        "parsed_entity_ids": [
+          "Exp_0_12_Selection_fixed_top_by_hop",
+          "Exp_0_13A_NoisyMemory",
+          "gate_4:_reasoning**:_if_sam_improves_single_hop_but_not_multi_hop,_do_not_scale",
+          "sam_does_not_collapse_with_one_distractor",
+          "one_distractor_does_not_collapse_sam"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_13A_NoisyMemory"
+        ],
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.39,
+            0.793,
+            8.0,
+            16.0
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 4,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 11,
+          "ground_truth_tokens": 17,
+          "ratio": 0.65,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.39,
+            0.793,
+            8.0,
+            16.0
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 4,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -257,23 +554,71 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "According to the evidence provided, SAM achieved an accuracy of 50% with the oracle-filter from chain candidates in experiment 0.12. This is explicitly stated in the \"KEY FINDINGS\" section under Exp_0_12_Selection:\n\n- Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.\n\nTherefore, the answer to the question is 50%.",
-        "passed": false,
-        "hallucination_rate": 0.6667,
-        "supported_count": 2,
-        "unsupported_count": 4,
-        "path_count": 5,
+        "answer": "SAM achieved an accuracy of 100% with the oracle-filter from chain candidates in experiment 0.12.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 3,
         "is_insufficient": false,
-        "latency_s": 4.283,
+        "latency_s": 4.1042,
         "error": null,
-        "accuracy": 0.3333
+        "parsed_entity_ids": [
+          "Exp_0_12_Selection",
+          "Exp_0_12_Selection_oracle_filter_top64",
+          "Exp_0_12_Selection_oracle_filter_top32",
+          "Exp_0_9_OracleFilter_weighted_t005_top32",
+          "Exp_0_9_OracleFilter_weighted_t005_top8"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_12_Selection"
+        ],
+        "accuracy": 1.0,
+        "exact_accuracy": 0.5,
+        "scoring_detail": {
+          "gt_numbers": [
+            1.0
+          ],
+          "pred_numbers": [
+            0.12,
+            1.0
+          ],
+          "fuzzy_matches": 1,
+          "total_gt": 1,
+          "fuzzy_score": 1.0,
+          "exact_score": 0.5,
+          "entity_overlap": [
+            "100%"
+          ]
+        },
+        "conciseness": {
+          "answer_tokens": 15,
+          "ground_truth_tokens": 15,
+          "ratio": 1.0,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- This relates to experiment experiment 0.12.\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            1.0
+          ],
+          "pred_numbers": [
+            0.12
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 1,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -284,23 +629,73 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "According to the evidence provided, the all_required@64 result for the dual encoder retriever in experiment 0.10 was 27%.",
+        "answer": "The all_required@64 result for the dual encoder retriever in experiment 0.10 was 27%.",
         "passed": true,
         "hallucination_rate": 0.0,
         "supported_count": 1,
         "unsupported_count": 0,
-        "path_count": 3,
+        "path_count": 4,
         "is_insufficient": false,
-        "latency_s": 3.5048,
+        "latency_s": 3.3654,
         "error": null,
-        "accuracy": 0.0
+        "parsed_entity_ids": [
+          "Exp_0_10_RequiredSet",
+          "Exp_0_11_ChainRetrieval",
+          "dual_encoder_(basic_retriever_for_single_hop)",
+          "baseline_recap_(experiment_0.10_—_dual_encoder)",
+          "Exp_0_6_Validation_retrieval_dual_encoder"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_10_RequiredSet"
+        ],
+        "accuracy": 0.5,
+        "exact_accuracy": 0.5,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.27,
+            0.73
+          ],
+          "pred_numbers": [
+            0.1,
+            0.27
+          ],
+          "fuzzy_matches": 1,
+          "total_gt": 2,
+          "fuzzy_score": 0.5,
+          "exact_score": 0.5,
+          "entity_overlap": [
+            "27%"
+          ]
+        },
+        "conciseness": {
+          "answer_tokens": 13,
+          "ground_truth_tokens": 15,
+          "ratio": 0.87,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: all_required@64 result for the dual encoder retriever in experiment 0.10.\n- This relates to experiment experiment 0.10.\n- The concept 'retriever' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.27,
+            0.73
+          ],
+          "pred_numbers": [
+            0.1
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 2,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -311,23 +706,74 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "According to the evidence provided, the dual encoder achieved a Rec@8 of 99.0% on the dense dataset in experiment 0.5. This can be seen from the \"KEY FINDINGS\" section where it states:\n\n- Exp_0_5_DenseDataset: Dense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.\n\nTherefore, the answer is 99.0%.",
-        "passed": false,
-        "hallucination_rate": 0.6,
-        "supported_count": 2,
-        "unsupported_count": 3,
-        "path_count": 2,
+        "answer": "The dual encoder achieved a Rec@8 of 99.0% on the dense dataset in experiment 0.5.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.7591,
+        "latency_s": 3.3755,
         "error": null,
-        "accuracy": 0.6667
+        "parsed_entity_ids": [
+          "Exp_0_6_Validation_retrieval_dual_encoder",
+          "Exp_0_6_Validation_retrieved_memory",
+          "Exp_0_10_RequiredSet",
+          "Exp_0_5_DenseDataset",
+          "baseline_recap_(experiment_0.10_—_dual_encoder)"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_5_DenseDataset"
+        ],
+        "accuracy": 0.5,
+        "exact_accuracy": 0.6667,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.069,
+            0.99
+          ],
+          "pred_numbers": [
+            0.5,
+            0.99
+          ],
+          "fuzzy_matches": 1,
+          "total_gt": 2,
+          "fuzzy_score": 0.5,
+          "exact_score": 0.6667,
+          "entity_overlap": [
+            "99.0%",
+            "rec@8"
+          ]
+        },
+        "conciseness": {
+          "answer_tokens": 15,
+          "ground_truth_tokens": 11,
+          "ratio": 1.36,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- This relates to experiment experiment 0.5.\n- The concept 'dual encoder' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.069,
+            0.99
+          ],
+          "pred_numbers": [
+            0.5
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 2,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -343,18 +789,61 @@
         "hallucination_rate": 0.0,
         "supported_count": 1,
         "unsupported_count": 0,
-        "path_count": 1,
+        "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 2.7857,
+        "latency_s": 2.7694,
         "error": null,
-        "accuracy": 0.0
+        "parsed_entity_ids": [
+          "Exp_0_Diagnosis",
+          "what_was_this_experiment_trying_to_learn",
+          "experiment_0_—_pipeline_diagnosis",
+          "Exp_0_3_PKM_Candidates",
+          "sam_lm_experiment_0.3_—_pkm_retrieval_diagnosis_and_repair"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_Diagnosis"
+        ],
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.069
+          ],
+          "pred_numbers": [
+            3.0
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 1,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 24,
+          "ground_truth_tokens": 18,
+          "ratio": 1.33,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: key finding of the pipeline diagnosis experiment.\n- The concept 'pipeline' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.069
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 1,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -365,23 +854,69 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "Regarding \"How many parameters does the SAM core model have?\", the evidence reveals the following:\n\nOracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.\n\nExternal text query bypasses hidden-state projection. Tested topK sweep.\n\nTested weighted, threshold, softmax-mass, score-gap selection.\n\nOracle filter achieves 79.95%. Multi-query implemented but not yet effective.\n\nAll_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.\n\nExperiment 0.9 — Oracle-Filter & Multi-Query — baseline.\n\nAdditional evidence suggests the following:\n  - Experiment 0.6 — Full Validation is a dependency of Experiment 0.7 — External Text Query.\n  - Experiment 0.7 — External Text Query is a dependency of Experiment 0.8 — Aggregation & Selection Variants.\n  - Experiment 0.8 — Aggregation & Selection Variants is a dependency of Experiment 0.9 — Oracle-Filter & Multi-Query.\n\n\nThese findings are drawn from 17 source document(s) in the knowledge graph.",
+        "answer": "Regarding \"How many parameters does the SAM core model have?\", the evidence reveals the following:\n\nChain-set BCE: all_required@32 = 100%. But SAM still = core_only.\n\nSAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.\n\nAdditional evidence suggests the following:\n  - Experiment 0.11 — Chain-Aware Retrieval is a dependency of Experiment 0.12 — Candidate Selection & Memory-Use Training.\n  - Experiment 0.12 — Candidate Selection & Memory-Use Training is a dependency of Experiment 0.13A — Controlled Noisy Memory Tolerance.\n  - Experiment 0.13A — Controlled Noisy Memory Tolerance supports Experiment 0.13A — Controlled Noisy Memory Tolerance — noise_+0.\n\n\nThese findings are drawn from 8 source document(s) in the knowledge graph.",
         "passed": false,
-        "hallucination_rate": 0.3529,
-        "supported_count": 11,
+        "hallucination_rate": 0.6,
+        "supported_count": 4,
         "unsupported_count": 6,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.1446,
+        "latency_s": 3.1048,
         "error": null,
-        "accuracy": 0.0
+        "parsed_entity_ids": [
+          "Exp_0_11_ChainRetrieval",
+          "Exp_0_13A_NoisyMemory",
+          "Exp_0_6_Validation",
+          "gate_2:_memory_usefulness**:_if_sam_+_oracle_memory_does_not_beat_sam_core_only,_stop",
+          "sam/model/_—_core_architecture"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_6_Validation"
+        ],
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            15.7
+          ],
+          "pred_numbers": [
+            0.11,
+            0.12,
+            1.0,
+            8.0
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 1,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 113,
+          "ground_truth_tokens": 14,
+          "ratio": 8.07,
+          "too_verbose": true
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            15.7
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 1,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -392,23 +927,74 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "Regarding \"3-hop accuracy of SAM without memory (core_only)\", the evidence reveals the following:\n\nOracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.\n\nDense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.\n\nExternal text query bypasses hidden-state projection. Tested topK sweep.\n\nProves SAM core CAN use external memory — 100% accuracy.\n\nDual encoder query projection mismatch prevents SAM from using retrieved memory.\n\nOracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid.\n\nAdditional evidence suggests the following:\n  - Experiment 0.6 — Full Validation depends on Experiment 0.5 — Dense Dataset Fix.\n  - Experiment 0.6 — Full Validation is a dependency of Experiment 0.7 — External Text Query.\n  - Experiment 0.6 — Full Validation validates Concept_OracleMemory.\n\n\nThese findings are drawn from 9 source document(s) in the knowledge graph.",
+        "answer": "Regarding \"3-hop accuracy of SAM without memory (core_only)\", the evidence reveals the following:\n\nOracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.\n\nProves SAM core CAN use external memory — 100% accuracy.\n\nChain-set BCE: all_required@32 = 100%. But SAM still = core_only.\n\nOracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.\n\nSAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.\n\nAdditional evidence suggests the following:\n  - Experiment 0.6 — Full Validation validates Concept_OracleMemory.\n  - Experiment 0.11 — Chain-Aware Retrieval depends on Experiment 0.10 — Required-Set Retrieval Diagnostics.\n  - Experiment 0.11 — Chain-Aware Retrieval is a dependency of Experiment 0.12 — Candidate Selection & Memory-Use Training.\n\n\nThese findings are drawn from 10 source document(s) in the knowledge graph.",
         "passed": false,
-        "hallucination_rate": 0.4667,
+        "hallucination_rate": 0.5294,
         "supported_count": 8,
-        "unsupported_count": 7,
-        "path_count": 5,
+        "unsupported_count": 9,
+        "path_count": 4,
         "is_insufficient": false,
-        "latency_s": 2.8872,
+        "latency_s": 2.9539,
         "error": null,
-        "accuracy": 0.0
+        "parsed_entity_ids": [
+          "Exp_0_11_ChainRetrieval",
+          "Exp_0_13A_NoisyMemory",
+          "Exp_0_6_Validation",
+          "gate_2:_memory_usefulness**:_if_sam_+_oracle_memory_does_not_beat_sam_core_only,_stop",
+          "Concept_OracleMemory"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_6_Validation"
+        ],
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.22
+          ],
+          "pred_numbers": [
+            0.1,
+            0.11,
+            0.12,
+            0.5,
+            0.6,
+            0.966,
+            0.9987,
+            1.0,
+            10.0
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 1,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 128,
+          "ground_truth_tokens": 16,
+          "ratio": 8.0,
+          "too_verbose": true
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: 3-hop accuracy of SAM without memory (core_only).\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.22
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 1,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -419,23 +1005,72 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "Regarding \"What dataset size was used for the dense synthetic experiments?\", the evidence reveals the following:\n\nOracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.\n\nDense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.\n\nExternal text query bypasses hidden-state projection. Tested topK sweep.\n\nProves SAM core CAN use external memory — 100% accuracy.\n\nDual encoder query projection mismatch prevents SAM from using retrieved memory.\n\nOracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid.\n\nAdditional evidence suggests the following:\n  - Experiment 0.6 — Full Validation depends on Experiment 0.5 — Dense Dataset Fix.\n  - Experiment 0.6 — Full Validation is a dependency of Experiment 0.7 — External Text Query.\n  - Experiment 0.6 — Full Validation validates Concept_OracleMemory.\n\n\nThese findings are drawn from 9 source document(s) in the knowledge graph.",
-        "passed": false,
-        "hallucination_rate": 0.4,
-        "supported_count": 9,
-        "unsupported_count": 6,
-        "path_count": 5,
+        "answer": "The dense synthetic experiments used a dataset size of 21.8 ex/slot.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 2,
         "is_insufficient": false,
-        "latency_s": 2.9233,
+        "latency_s": 2.7552,
         "error": null,
-        "accuracy": 0.0
+        "parsed_entity_ids": [
+          "dense_dataset_(data/synthetic_dense)",
+          "experiment_0.6:_validation_(dense_dataset)",
+          "what_was_this_experiment_trying_to_learn",
+          "Exp_0_5_DenseDataset",
+          "run_the_experiment"
+        ],
+        "entity_resolution_hit": false,
+        "gt_entity_ids": [
+          "Exp_0_6_Validation"
+        ],
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            853.0,
+            1650.0,
+            3800.0,
+            19000.0
+          ],
+          "pred_numbers": [
+            21.8
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 4,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 11,
+          "ground_truth_tokens": 14,
+          "ratio": 0.79,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            853.0,
+            1650.0,
+            3800.0,
+            19000.0
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 4,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -446,23 +1081,71 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "Regarding \"What accuracy did random memory injection achieve in SAM?\", the evidence reveals the following:\n\nOracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.\n\nDense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.\n\nExternal text query bypasses hidden-state projection. Tested topK sweep.\n\nProves SAM core CAN use external memory — 100% accuracy.\n\nDual encoder query projection mismatch prevents SAM from using retrieved memory.\n\nOracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid.\n\nAdditional evidence suggests the following:\n  - Experiment 0.6 — Full Validation depends on Experiment 0.5 — Dense Dataset Fix.\n  - Experiment 0.6 — Full Validation is a dependency of Experiment 0.7 — External Text Query.\n  - Experiment 0.6 — Full Validation validates Concept_OracleMemory.\n\n\nThese findings are drawn from 9 source document(s) in the knowledge graph.",
+        "answer": "Regarding \"What accuracy did random memory injection achieve in SAM?\", the evidence reveals the following:\n\nThe evidence clearly indicates that 1-Hop Accuracy. Additionally, 3-Hop Accuracy. Additionally, sAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck. Furthermore, oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.\n\nAdditional evidence suggests the following:\n  - Experiment 0.6 — Full Validation — random_memory supports 1-Hop Accuracy.\n  - Experiment 0.6 — Full Validation — random_memory supports 3-Hop Accuracy.\n  - Experiment 0.13A — Controlled Noisy Memory Tolerance depends on Experiment 0.12 — Candidate Selection & Memory-Use Training.\n\n\nThese findings are drawn from 5 source document(s) in the knowledge graph.",
         "passed": false,
-        "hallucination_rate": 0.4667,
-        "supported_count": 8,
-        "unsupported_count": 7,
-        "path_count": 5,
+        "hallucination_rate": 0.4615,
+        "supported_count": 7,
+        "unsupported_count": 6,
+        "path_count": 3,
         "is_insufficient": false,
-        "latency_s": 2.9422,
+        "latency_s": 3.0653,
         "error": null,
-        "accuracy": 0.5
+        "parsed_entity_ids": [
+          "Exp_0_6_Validation_random_memory",
+          "Exp_0_13A_NoisyMemory",
+          "Concept_OracleMemory",
+          "Metric_Exp_0_6_Validation_random_memory_val_accuracy_single_hop",
+          "Metric_Exp_0_6_Validation_random_memory_val_accuracy_three_hop"
+        ],
+        "entity_resolution_hit": false,
+        "gt_entity_ids": [
+          "Exp_0_6_Validation"
+        ],
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.6874
+          ],
+          "pred_numbers": [
+            0.12,
+            0.5,
+            0.6,
+            0.966,
+            1.0,
+            5.0
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 1,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 110,
+          "ground_truth_tokens": 16,
+          "ratio": 6.88,
+          "too_verbose": true
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.6874
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 1,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -473,23 +1156,76 @@
       "difficulty": "medium",
       "hops": 2,
       "nexus": {
-        "answer": "Regarding \"2-hop all_required@32 for the dual encoder vs chain-set BCE retriever\", the evidence reveals the following:\n\nChain-set BCE: all_required@32 = 100%. But SAM still = core_only.\n\nAll_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.\n\nOracle filter achieves 79.95%. Multi-query implemented but not yet effective.\n\nTested weighted, threshold, softmax-mass, score-gap selection.\n\nExternal text query bypasses hidden-state projection. Tested topK sweep.\n\nOracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.\n\nAdditional evidence suggests the following:\n  - Experiment 0.11 — Chain-Aware Retrieval depends on Experiment 0.10 — Required-Set Retrieval Diagnostics.\n  - Experiment 0.10 — Required-Set Retrieval Diagnostics depends on Experiment 0.9 — Oracle-Filter & Multi-Query.\n  - Experiment 0.9 — Oracle-Filter & Multi-Query depends on Experiment 0.8 — Aggregation & Selection Variants.\n\n\nThese findings are drawn from 19 source document(s) in the knowledge graph.",
+        "answer": "Regarding \"2-hop all_required@32 for the dual encoder vs chain-set BCE retriever\", the evidence reveals the following:\n\nChain-set BCE retriever achieves 100% all_required@32 — retrieval is solved.\n\nChain-set BCE: all_required@32 = 100%. But SAM still = core_only.\n\nAll_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.\n\nSAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.\n\nAdditional evidence suggests the following:\n  - Concept_ChainRetrieval is validated by Experiment 0.11 — Chain-Aware Retrieval.\n  - Experiment 0.11 — Chain-Aware Retrieval depends on Experiment 0.10 — Required-Set Retrieval Diagnostics.\n  - Experiment 0.10 — Required-Set Retrieval Diagnostics depends on Experiment 0.9 — Oracle-Filter & Multi-Query.\n\n\nThese findings are drawn from 21 source document(s) in the knowledge graph.",
         "passed": false,
-        "hallucination_rate": 0.3333,
-        "supported_count": 12,
+        "hallucination_rate": 0.4286,
+        "supported_count": 8,
         "unsupported_count": 6,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.705,
+        "latency_s": 3.2511,
         "error": null,
-        "accuracy": 0.6667
+        "parsed_entity_ids": [
+          "Exp_0_11_ChainRetrieval",
+          "Exp_0_10_RequiredSet",
+          "Concept_ChainRetrieval",
+          "dual_encoder_(basic_retriever_for_single_hop)",
+          "chain_set_bce_(multi_hop_capable_retriever)"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_11_ChainRetrieval",
+          "Exp_0_10_RequiredSet"
+        ],
+        "accuracy": 0.5,
+        "exact_accuracy": 0.5,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.009,
+            1.0
+          ],
+          "pred_numbers": [
+            0.1,
+            0.11,
+            0.27,
+            0.9,
+            1.0,
+            21.0
+          ],
+          "fuzzy_matches": 1,
+          "total_gt": 2,
+          "fuzzy_score": 0.5,
+          "exact_score": 0.5,
+          "entity_overlap": [
+            "100%"
+          ]
+        },
+        "conciseness": {
+          "answer_tokens": 120,
+          "ground_truth_tokens": 16,
+          "ratio": 7.5,
+          "too_verbose": true
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: 2-hop all_required@32 for the dual encoder vs chain-set BCE retriever.\n- The concept 'retriever' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.009,
+            1.0
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 2,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -500,23 +1236,62 @@
       "difficulty": "medium",
       "hops": 1,
       "nexus": {
-        "answer": "Experiment 0.13A proved that the SAM gate is not the bottleneck in handling controlled random noise (+8 distractors) with a tolerance of 91.6%.",
-        "passed": true,
-        "hallucination_rate": 0.0,
+        "answer": "Experiment 0.13A proved that the SAM gate can tolerate up to +8 random distractors with a success rate of 91.6%. However, it also showed that 3-hop collapses occur at +16 random distractors, indicating that the gate is not the bottleneck in this context.",
+        "passed": false,
+        "hallucination_rate": 0.5,
         "supported_count": 1,
-        "unsupported_count": 0,
-        "path_count": 5,
+        "unsupported_count": 1,
+        "path_count": 3,
         "is_insufficient": false,
-        "latency_s": 3.0866,
+        "latency_s": 3.3476,
         "error": null,
-        "accuracy": 0.0
+        "parsed_entity_ids": [
+          "Exp_0_13A_NoisyMemory",
+          "sam_lm_experiment_0.5_—_gate_1_passed:_retrieval_solved",
+          "Exp_0_13A_NoisyMemory_noise_+16",
+          "Exp_0_13A_NoisyMemory_noise_+8",
+          "Exp_0_13A_NoisyMemory_noise_+4"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_13A_NoisyMemory"
+        ],
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [
+            0.916
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 43,
+          "ground_truth_tokens": 22,
+          "ratio": 1.95,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: experiment 0.13A prove about the SAM gate.\n- This relates to experiment experiment 0.13A.\n- The concept 'gate' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -527,23 +1302,72 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "Regarding \"How many live memory slots did the SAM experiments use?\", the evidence reveals the following:\n\nOracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.\n\nExternal text query bypasses hidden-state projection. Tested topK sweep.\n\nTested weighted, threshold, softmax-mass, score-gap selection.\n\nOracle filter achieves 79.95%. Multi-query implemented but not yet effective.\n\nAll_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.\n\nExperiment 0.9 — Oracle-Filter & Multi-Query — baseline.\n\nAdditional evidence suggests the following:\n  - Experiment 0.6 — Full Validation is a dependency of Experiment 0.7 — External Text Query.\n  - Experiment 0.7 — External Text Query is a dependency of Experiment 0.8 — Aggregation & Selection Variants.\n  - Experiment 0.8 — Aggregation & Selection Variants is a dependency of Experiment 0.9 — Oracle-Filter & Multi-Query.\n\n\nThese findings are drawn from 17 source document(s) in the knowledge graph.",
+        "answer": "Regarding \"How many live memory slots did the SAM experiments use?\", the evidence reveals the following:\n\nOracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.\n\nSAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.\n\nExperiment 0.13A — Controlled Noisy Memory Tolerance — noise_+0.\n\nAdditional evidence suggests the following:\n  - Experiment 0.12 — Candidate Selection & Memory-Use Training is a dependency of Experiment 0.13A — Controlled Noisy Memory Tolerance.\n  - Experiment 0.13A — Controlled Noisy Memory Tolerance supports Experiment 0.13A — Controlled Noisy Memory Tolerance — noise_+0.\n  - Experiment 0.13A — Controlled Noisy Memory Tolerance — noise_+0 supports Overall Accuracy.\n\n\nThese findings are drawn from 6 source document(s) in the knowledge graph.",
         "passed": false,
-        "hallucination_rate": 0.3529,
-        "supported_count": 11,
+        "hallucination_rate": 0.5,
+        "supported_count": 6,
         "unsupported_count": 6,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.2088,
+        "latency_s": 3.1482,
         "error": null,
-        "accuracy": 0.0
+        "parsed_entity_ids": [
+          "Exp_0_13A_NoisyMemory",
+          "Exp_0_12_Selection",
+          "Exp_0_12_Selection_oracle_filter_top64",
+          "Exp_0_12_Selection_oracle_filter_top32",
+          "Exp_0_12_Selection_learned_selector"
+        ],
+        "entity_resolution_hit": false,
+        "gt_entity_ids": [
+          "Exp_0_6_Validation"
+        ],
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            64.0,
+            1650.0
+          ],
+          "pred_numbers": [
+            0.12,
+            0.5,
+            0.966,
+            1.0,
+            6.0
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 2,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 119,
+          "ground_truth_tokens": 12,
+          "ratio": 9.92,
+          "too_verbose": true
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            64.0,
+            1650.0
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 2,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -554,23 +1378,60 @@
       "difficulty": "medium",
       "hops": 1,
       "nexus": {
-        "answer": "The three critical bugs found in the pipeline diagnosis were:\n\n- Found and fixed 3 critical bugs. Retrieval is the bottleneck.\n\nThis information can be directly extracted from the \"KEY FINDINGS\" section of the evidence provided, which states that Experiment 0 — Pipeline Diagnosis found and fixed 3 critical bugs, with retrieval being identified as the bottleneck.",
-        "passed": false,
-        "hallucination_rate": 0.25,
-        "supported_count": 3,
-        "unsupported_count": 1,
+        "answer": "The three critical bugs found in the pipeline diagnosis were identified and fixed.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.5271,
+        "latency_s": 3.0015,
         "error": null,
-        "accuracy": null
+        "parsed_entity_ids": [
+          "Exp_0_Diagnosis",
+          "experiment_0_—_pipeline_diagnosis",
+          "Exp_0_3_PKM_Candidates",
+          "selectivity_is_the_critical_factor",
+          "Concept_SelectorBottleneck"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_Diagnosis"
+        ],
+        "accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 13,
+          "ground_truth_tokens": 24,
+          "ratio": 0.54,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: three critical bugs found in the pipeline diagnosis.\n- The concept 'pipeline' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": null
+        "accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -581,23 +1442,79 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "Regarding \"accuracy of oracle text memory compared to oracle latent memory\", the evidence reveals the following:\n\nOracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.\n\nDense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.\n\nCandidate gen: SOLVED (100%). Ranking generalizes poorly (29% val).\n\n16K PKM: 25.8% Rec@8. Oracle text: 100% — core CAN use memory.\n\nFound and fixed 3 critical bugs. Retrieval is the bottleneck.\n\nExternal text query bypasses hidden-state projection. Tested topK sweep.\n\nAdditional evidence suggests the following:\n  - Experiment 0.6 — Full Validation depends on Experiment 0.5 — Dense Dataset Fix.\n  - Experiment 0.5 — Dense Dataset Fix depends on Experiment 0.3 — PKM Candidate Generation.\n  - Experiment 0.3 — PKM Candidate Generation depends on Experiment 0.2 — Compact PKM Retrieval.\n\n\nThese findings are drawn from 29 source document(s) in the knowledge graph.",
+        "answer": "Regarding \"accuracy of oracle text memory compared to oracle latent memory\", the evidence reveals the following:\n\nThe evidence clearly indicates that Experiment 0.9 — Oracle-Filter & Multi-Query — weighted_t005_top32. Additionally, oracle filter achieves 79.95%. Multi-query implemented but not yet effective. Additionally, external text query bypasses hidden-state projection. Tested topK sweep. Additionally, oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified. Additionally, oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck. Furthermore, experiment 0.7 — External Text Query — external_text_query.\n\nAdditional evidence suggests the following:\n  - Experiment 0.9 — Oracle-Filter & Multi-Query — weighted_t005_top32 is derived from Experiment 0.9 — Oracle-Filter & Multi-Query.\n  - Experiment 0.9 — Oracle-Filter & Multi-Query depends on Experiment 0.8 — Aggregation & Selection Variants.\n  - Experiment 0.8 — Aggregation & Selection Variants depends on Experiment 0.7 — External Text Query.\n\n\nThese findings are drawn from 21 source document(s) in the knowledge graph.",
         "passed": false,
-        "hallucination_rate": 0.3333,
-        "supported_count": 12,
-        "unsupported_count": 6,
+        "hallucination_rate": 0.2353,
+        "supported_count": 13,
+        "unsupported_count": 4,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.7731,
+        "latency_s": 3.3227,
         "error": null,
-        "accuracy": 1.0
+        "parsed_entity_ids": [
+          "oracle_memory_(the_validation_experiment)",
+          "Exp_0_9_OracleFilter_weighted_t005_top32",
+          "Exp_0_9_OracleFilter_weighted_t005_top8",
+          "Exp_0_12_Selection_oracle_filter_top64",
+          "Exp_0_12_Selection_oracle_filter_top32"
+        ],
+        "entity_resolution_hit": false,
+        "gt_entity_ids": [
+          "Exp_0_6_Validation"
+        ],
+        "accuracy": 1.0,
+        "exact_accuracy": 1.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.9987,
+            1.0
+          ],
+          "pred_numbers": [
+            0.5,
+            0.7,
+            0.7995,
+            0.8,
+            0.9,
+            0.966,
+            0.9987,
+            1.0,
+            21.0
+          ],
+          "fuzzy_matches": 2,
+          "total_gt": 2,
+          "fuzzy_score": 1.0,
+          "exact_score": 1.0,
+          "entity_overlap": [
+            "100%",
+            "99.87%"
+          ]
+        },
+        "conciseness": {
+          "answer_tokens": 151,
+          "ground_truth_tokens": 18,
+          "ratio": 8.39,
+          "too_verbose": true
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: accuracy of oracle text memory compared to oracle latent memory.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.9987,
+            1.0
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 2,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -608,23 +1525,68 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "Regarding \"What accuracy does SAM achieve with exactly 1 distractor in controlled noisy mem\", the evidence reveals the following:\n\nSAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.\n\nOracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.\n\nTesting in progress. Code implemented.\n\nSAM tolerates controlled random noise (+8 distractors -> 91.6%), gate is NOT the bottleneck.\n\nOracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid.\n\nFlat latent-vector memory can't solve selection quality -> pivot to graph-first architecture.\n\nAdditional evidence suggests the following:\n  - Experiment 0.13A — Controlled Noisy Memory Tolerance depends on Experiment 0.12 — Candidate Selection & Memory-Use Training.\n  - Experiment 0.13A — Controlled Noisy Memory Tolerance is a dependency of Experiment 0.13B — Realistic Retrieval Distractor Replay.\n  - Experiment 0.13A — Controlled Noisy Memory Tolerance validates Concept_NoiseTolerance.\n\n\nThese findings are drawn from 9 source document(s) in the knowledge graph.",
-        "passed": false,
-        "hallucination_rate": 0.5625,
-        "supported_count": 7,
-        "unsupported_count": 9,
+        "answer": "SAM achieves an overall accuracy of 91.6% when there is exactly one distractor in controlled noisy memory.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.7328,
+        "latency_s": 3.839,
         "error": null,
-        "accuracy": 0.0
+        "parsed_entity_ids": [
+          "Exp_0_13A_NoisyMemory_noise_+16",
+          "Exp_0_13A_NoisyMemory_noise_+8",
+          "Exp_0_13A_NoisyMemory_noise_+4",
+          "Exp_0_13A_NoisyMemory_noise_+2",
+          "Exp_0_13A_NoisyMemory_noise_+1"
+        ],
+        "entity_resolution_hit": false,
+        "gt_entity_ids": [
+          "Exp_0_13A_NoisyMemory"
+        ],
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.995,
+            0.9982
+          ],
+          "pred_numbers": [
+            0.916
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 2,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 17,
+          "ground_truth_tokens": 14,
+          "ratio": 1.21,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.995,
+            0.9982
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 2,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -635,23 +1597,61 @@
       "difficulty": "medium",
       "hops": 2,
       "nexus": {
-        "answer": "Based on the provided evidence, the dual encoder retriever failed to retrieve complete multi-hop chains due to the bottleneck in the learned selector. The key findings indicate that while the required set retrieval and chain-aware retrieval were successful (with 27% of all required slots being correctly retrieved), the candidate selection and memory-use training experiments showed a recall of only 96.6%. This low recall suggests that the learned selector was not effectively filtering out irrelevant information, leading to incomplete multi-hop chains in the final retrievals.",
-        "passed": false,
-        "hallucination_rate": 0.6667,
-        "supported_count": 1,
-        "unsupported_count": 2,
+        "answer": "The dual encoder retriever failed to retrieve complete multi-hop chains due to its inability to handle noisy memory, which caused it to collapse at +16 random distractors. This is evidenced by the fact that SAM (Selective Attention Mechanism) tolerates up to +8 random distractors but collapses at +16, indicating a bottleneck in the retrieval process related to noise tolerance.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 2,
+        "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 4.3308,
+        "latency_s": 3.8756,
         "error": null,
-        "accuracy": null
+        "parsed_entity_ids": [
+          "dual_encoder_(basic_retriever_for_single_hop)",
+          "Exp_0_11_ChainRetrieval",
+          "Exp_0_10_RequiredSet",
+          "chain_set_bce_(multi_hop_capable_retriever)",
+          "why_did_non_oracle_memory_fail_before_0.13a"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_10_RequiredSet",
+          "Exp_0_11_ChainRetrieval"
+        ],
+        "accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 59,
+          "ground_truth_tokens": 45,
+          "ratio": 1.31,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The concept 'retriever' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": null
+        "accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -662,23 +1662,74 @@
       "difficulty": "medium",
       "hops": 2,
       "nexus": {
-        "answer": "The dense dataset fix enabled successful retrieval by improving the performance of the external text query. Specifically, it bypassed the hidden-state projection and tested topK sweep, which resulted in a higher accuracy of 68.74% for core_only memory retrieval. This improvement was achieved through the aggregation & selection variants experiment (Exp_0_8_Aggregation) and the oracle slots experiment (Exp_0_8_Aggregation_oracle_slots).",
+        "answer": "The dense dataset fix enabled successful retrieval by improving the performance of the retrieval system. Specifically, it increased the recall rate to 99.0% at rank 8 and passed gate 1, indicating that the dense dataset was effective in retrieving relevant documents. This improvement was achieved through various aggregation and selection variants tested during the experiments, which further supported the effectiveness of the dense dataset fix.",
         "passed": true,
         "hallucination_rate": 0.0,
         "supported_count": 3,
         "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.1718,
+        "latency_s": 3.0752,
         "error": null,
-        "accuracy": 0.0
+        "parsed_entity_ids": [
+          "Exp_0_5_DenseDataset",
+          "recommended_fix:_reduce_pkm_to_128_subkeys_(16,384_slots,_~29%_density)_for_the_full_experiment._or_pretrain_retrieval_separately_with_more_epochs",
+          "experiment_0.5_—_dense_dataset_fix",
+          "experiment_0.6:_validation_(dense_dataset)",
+          "Exp_0_6_Validation_retrieval_dual_encoder"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_5_DenseDataset"
+        ],
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.3,
+            1.5,
+            21.8,
+            1650.0
+          ],
+          "pred_numbers": [
+            0.99,
+            1.0,
+            8.0
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 4,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 65,
+          "ground_truth_tokens": 39,
+          "ratio": 1.67,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: dense dataset fix enable successful retrieval.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.3,
+            1.5,
+            21.8,
+            1650.0
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 4,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -689,23 +1740,80 @@
       "difficulty": "medium",
       "hops": 3,
       "nexus": {
-        "answer": "The chain of experiments leading from the discovery of the retriever problem to solving it is as follows:\n\n1. **Exp_0_9_OracleFilter**: This experiment focuses on the Oracle Filter, which achieves 79.95% accuracy in retrieving relevant documents. It also mentions that multi-query implementation is being tested but not yet effective.\n\n2. **Exp_0_6_Validation**: This experiment builds upon Exp_0_9_OracleFilter and performs full validation. It identifies query projection mismatch issues and retrieves memory as core_only (68.74%).\n\n3. **Exp_0_5_DenseDataset**: This experiment focuses on the Dense Dataset, which has a retrieval accuracy of 99.0% at Rec@8 with Gate 1 PASSED.\n\n4. **Exp_0_10_RequiredSet**: This experiment builds upon Exp_0_6_Validation and performs Required-Set Retrieval Diagnostics. It finds that dual encoder misses intermediate chain slots and is not a ranking problem.\n\n5. **Exp_0_11_ChainRetrieval**: This experiment builds upon Exp_0_10_RequiredSet and performs Chain-Aware Retrieval, achieving 100% accuracy with all_required",
-        "passed": true,
-        "hallucination_rate": 0.0,
-        "supported_count": 9,
-        "unsupported_count": 0,
-        "path_count": 4,
+        "answer": "The chain of experiments leading from the discovery of the retriever problem to solving it is as follows:\n\n- **Exp_0_10_RequiredSet**: This experiment focused on required-set retrieval diagnostics, which identified that dual encoder misses intermediate chain slots and is not a ranking problem.\n- **Exp_0_11_ChainRetrieval**: This experiment built upon Exp_0_10_RequiredSet by focusing on chain-aware retrieval, achieving 100% accuracy for all_required@32 with SAM still being core_only.\n\nThese experiments laid the foundation for solving the retriever problem by identifying and addressing its limitations.",
+        "passed": false,
+        "hallucination_rate": 0.25,
+        "supported_count": 3,
+        "unsupported_count": 1,
+        "path_count": 3,
         "is_insufficient": false,
-        "latency_s": 5.2261,
+        "latency_s": 4.4333,
         "error": null,
-        "accuracy": 0.2857
+        "parsed_entity_ids": [
+          "Exp_0_10_RequiredSet",
+          "Exp_0_12_Selection",
+          "confirmed_(strong_evidence_from_controlled_experiments)",
+          "chain_set_bce_retriever_(experiment_0.11)",
+          "Exp_0_11_ChainRetrieval"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_6_Validation",
+          "Exp_0_10_RequiredSet",
+          "Exp_0_11_ChainRetrieval"
+        ],
+        "accuracy": 0.2,
+        "exact_accuracy": 0.5,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.1,
+            0.11,
+            0.27,
+            0.6,
+            1.0
+          ],
+          "pred_numbers": [
+            1.0
+          ],
+          "fuzzy_matches": 1,
+          "total_gt": 5,
+          "fuzzy_score": 0.2,
+          "exact_score": 0.5,
+          "entity_overlap": [
+            "100%",
+            "all_required@32",
+            "core_only"
+          ]
+        },
+        "conciseness": {
+          "answer_tokens": 80,
+          "ground_truth_tokens": 33,
+          "ratio": 2.42,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The concept 'retriever' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.1,
+            0.11,
+            0.27,
+            0.6,
+            1.0
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 5,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -716,23 +1824,67 @@
       "difficulty": "medium",
       "hops": 2,
       "nexus": {
-        "answer": "Chain-set retrieval achieves 100% all_required@32 because it correctly retrieves all required information at the third hop, while SAM still equals core_only. This suggests that while chain-set retrieval is highly effective in retrieving relevant information, it may not be as robust or efficient in handling noisy or irrelevant data compared to SAM.",
+        "answer": "Chain-set retrieval achieves 100% all_required@32 because it correctly identifies and retrieves all required information from the chain, while SAM still equals core_only due to issues with the selection mechanism. The selection process is identified as a bottleneck in the system, which prevents it from achieving the same level of accuracy as chain-set retrieval.",
         "passed": true,
         "hallucination_rate": 0.0,
         "supported_count": 2,
         "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.8559,
+        "latency_s": 3.9116,
         "error": null,
-        "accuracy": 0.0
+        "parsed_entity_ids": [
+          "Exp_0_11_ChainRetrieval",
+          "Concept_ChainRetrieval",
+          "Exp_0_10_RequiredSet",
+          "Exp_0_6_Validation",
+          "gate_2:_memory_usefulness**:_if_sam_+_oracle_memory_does_not_beat_sam_core_only,_stop"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_11_ChainRetrieval",
+          "Exp_0_12_Selection"
+        ],
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            32.0
+          ],
+          "pred_numbers": [
+            1.0
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 1,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 53,
+          "ground_truth_tokens": 41,
+          "ratio": 1.29,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            32.0
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 1,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -743,23 +1895,72 @@
       "difficulty": "hard",
       "hops": 3,
       "nexus": {
-        "answer": "The relationship between the selector bottleneck and the pivot to NEXUS is that the selector bottleneck, which indicates a critical precision of 50% and recall of 96.6%, necessitates the pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning). This transition is highlighted in Experiment 0.12 — Candidate Selection & Memory-Use Training, where the learned selector's performance (recall 96.6%, precision 50%) confirms that the selector is indeed a bottleneck in achieving high-quality selection.",
-        "passed": true,
-        "hallucination_rate": 0.0,
+        "answer": "The selector bottleneck is related to the pivot to NEXUS. The evidence shows that in Experiment 0.12, the learned selector had a precision of 50%, which was identified as the critical bottleneck. This bottleneck led to the decision to pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning).",
+        "passed": false,
+        "hallucination_rate": 0.3333,
         "supported_count": 2,
-        "unsupported_count": 0,
+        "unsupported_count": 1,
         "path_count": 3,
         "is_insufficient": false,
-        "latency_s": 4.024,
+        "latency_s": 3.9409,
         "error": null,
-        "accuracy": 0.5
+        "parsed_entity_ids": [
+          "Decision_PivotToNEXUS",
+          "Exp_0_12_Selection",
+          "Exp_0_Diagnosis",
+          "Concept_SelectorBottleneck",
+          "Exp_0_11_ChainRetrieval"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Concept_SelectorBottleneck",
+          "Decision_PivotToNEXUS"
+        ],
+        "accuracy": 0.5,
+        "exact_accuracy": 0.5,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.5,
+            0.966
+          ],
+          "pred_numbers": [
+            0.12,
+            0.5
+          ],
+          "fuzzy_matches": 1,
+          "total_gt": 2,
+          "fuzzy_score": 0.5,
+          "exact_score": 0.5,
+          "entity_overlap": [
+            "50%"
+          ]
+        },
+        "conciseness": {
+          "answer_tokens": 49,
+          "ground_truth_tokens": 44,
+          "ratio": 1.11,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: relationship between the selector bottleneck and the pivot to NEXUS.\n- The concept 'selector' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.5,
+            0.966
+          ],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 2,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -770,23 +1971,82 @@
       "difficulty": "hard",
       "hops": 4,
       "nexus": {
-        "answer": "Based on the provided evidence, the evolution from experiment 0.6 to the architecture pivot can be traced through the following steps:\n\n1. **Experiment 0.5 — Dense Dataset Fix**: This is the starting point as it provides a dense dataset with high recall and precision.\n2. **Experiment 0.6 — Full Validation**: This experiment builds on Experiment 0.5 by performing full validation, which likely includes additional checks and optimizations to ensure the architecture's performance meets expectations.\n\nTherefore, the architecture pivot can be considered to have occurred at Experiment 0.6.",
+        "answer": "The evolution from experiment 0.6 to the architecture pivot can be traced through the following steps:\n\n1. **Experiment 0.12_Selection**: This experiment focused on candidate selection and memory-use training, which is a dependency of Experiment 0.11_ChainRetrieval.\n\n2. **Experiment 0.11_ChainRetrieval**: This experiment built upon Experiment 0.10_RequiredSet and introduced chain-aware retrieval, which is a dependency of Experiment 0.13A_NoisyMemory.\n\n3. **Experiment 0.13A_NoisyMemory**: This experiment further refined the system by tolerating noisy memory, which is a critical step towards achieving the architecture pivot.\n\n4. **Experiment 0.12_Selection** also validated Concept_SelectorBottleneck, indicating that the learned selector precision was the critical bottleneck at this stage.\n\nTherefore, the architecture pivot can be considered to have occurred in Experiment 0.13A_NoisyMemory, where the system's ability to handle noisy memory and improve the precision of the learned selector were key factors in achieving a more robust architecture.",
         "passed": true,
         "hallucination_rate": 0.0,
-        "supported_count": 4,
+        "supported_count": 6,
         "unsupported_count": 0,
-        "path_count": 3,
+        "path_count": 4,
         "is_insufficient": false,
-        "latency_s": 3.7464,
+        "latency_s": 4.2386,
         "error": null,
-        "accuracy": 0.0
+        "parsed_entity_ids": [
+          "Exp_0_12_Selection",
+          "how_the_poc_differs_from_the_final_architecture",
+          "\"my_results_don't_match_the_experiment_reports\"",
+          "oracle_memory_(the_validation_experiment)",
+          "Exp_0_11_ChainRetrieval"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_6_Validation",
+          "Exp_0_11_ChainRetrieval",
+          "Exp_0_12_Selection",
+          "Exp_0_13A_NoisyMemory",
+          "Decision_PivotToNEXUS"
+        ],
+        "accuracy": 0.25,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.1,
+            0.11,
+            0.12,
+            0.6
+          ],
+          "pred_numbers": [
+            0.6,
+            1.0,
+            2.0,
+            3.0,
+            4.0
+          ],
+          "fuzzy_matches": 1,
+          "total_gt": 4,
+          "fuzzy_score": 0.25,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 135,
+          "ground_truth_tokens": 79,
+          "ratio": 1.71,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- This relates to experiment experiment 0.6.\n- The concept 'pivot' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.25,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.1,
+            0.11,
+            0.12,
+            0.6
+          ],
+          "pred_numbers": [
+            0.6
+          ],
+          "fuzzy_matches": 1,
+          "total_gt": 4,
+          "fuzzy_score": 0.25,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -797,23 +2057,60 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "Regarding \"six memory modes in SAM\", the evidence reveals the following:\n\nOracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.\n\nDense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.\n\nExternal text query bypasses hidden-state projection. Tested topK sweep.\n\nProves SAM core CAN use external memory — 100% accuracy.\n\nDual encoder query projection mismatch prevents SAM from using retrieved memory.\n\nOracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid.\n\nAdditional evidence suggests the following:\n  - Experiment 0.6 — Full Validation depends on Experiment 0.5 — Dense Dataset Fix.\n  - Experiment 0.6 — Full Validation is a dependency of Experiment 0.7 — External Text Query.\n  - Experiment 0.6 — Full Validation validates Concept_OracleMemory.\n\n\nThese findings are drawn from 9 source document(s) in the knowledge graph.",
-        "passed": false,
-        "hallucination_rate": 0.4667,
-        "supported_count": 8,
-        "unsupported_count": 7,
+        "answer": "The six memory modes in SAM are controlled noisy memory tolerance, candidate selection & memory-use training, realistic retrieval distractor replay, noise tolerance, architecture validity, and pivot to NEXUS.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 2.6948,
+        "latency_s": 2.9291,
         "error": null,
-        "accuracy": 0.1667
+        "parsed_entity_ids": [
+          "Exp_0_13A_NoisyMemory",
+          "sam_lm_experiment_0.9_—_weighted_/_selective_memory_aggregation",
+          "oracle_memory_(the_validation_experiment)",
+          "Exp_0_9_OracleFilter_weighted_t005_top32",
+          "Exp_0_7_ExternalText_external_text_query"
+        ],
+        "entity_resolution_hit": false,
+        "gt_entity_ids": [
+          "Exp_0_6_Validation"
+        ],
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 28,
+          "ground_truth_tokens": 26,
+          "ratio": 1.08,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: six memory modes in SAM.\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": 0.0
+        "accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -824,23 +2121,60 @@
       "difficulty": "medium",
       "hops": 1,
       "nexus": {
-        "answer": "Based on the provided evidence, SAM and RAG differ in several key aspects:\n\n1. **Oracle Memory Usage**:\n   - **SAM**: Oracle memory is reported as 99.87%.\n   - **RAG**: The specific value for RAG's oracle memory usage is not mentioned in the given evidence.\n\n2. **Retrieved Memory**:\n   - **SAM**: Retrieved memory is reported as core_only (68.74%).\n   - **RAG**: The specific value for RAG's retrieved memory is not mentioned in the given evidence.\n\n3. **Query Projection Mismatch Identified**:\n   - **SAM**: This issue was identified during validation.\n   - **RAG**: No information about query projection mismatch being identified by RAG is provided.\n\n4. **Candidate Generation and Ranking**:\n   - **SAM**: Candidate generation is solved (100%) but ranking generalizes poorly (29% val).\n   - **RAG**: The specific details about candidate generation and ranking for RAG are not mentioned in the given evidence.\n\n5. **Oracle Filter Performance**:\n   - **SAM**: Oracle filter achieves 79.95%.\n   - **RAG**: No information about RAG's oracle filter",
-        "passed": true,
-        "hallucination_rate": 0.0625,
-        "supported_count": 15,
+        "answer": "SAM and RAG differ in their approach to handling noisy memory. SAM tolerates up to +8 random distractors before collapsing, while RAG relies on a learned selector that achieves recall of 96.6% and precision of 50%. Additionally, RAG faces retrieval mismatch issues due to dual encoder query projection mismatches, which prevents it from using retrieved memory effectively.",
+        "passed": false,
+        "hallucination_rate": 0.3333,
+        "supported_count": 2,
         "unsupported_count": 1,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 4.0068,
+        "latency_s": 3.199,
         "error": null,
-        "accuracy": null
+        "parsed_entity_ids": [
+          "Exp_0_13A_NoisyMemory",
+          "Exp_0_6_Validation",
+          "gate_5:_dense_baseline**:_if_sam_+_retrieved_does_not_beat_same_size_dense,_do_not_scale",
+          "gate_2:_memory_usefulness**:_if_sam_+_oracle_memory_does_not_beat_sam_core_only,_stop",
+          "Decision_PivotToNEXUS"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_6_Validation"
+        ],
+        "accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 57,
+          "ground_truth_tokens": 38,
+          "ratio": 1.5,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: SAM differ from RAG.\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": null
+        "accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -851,23 +2185,60 @@
       "difficulty": "medium",
       "hops": 1,
       "nexus": {
-        "answer": "Product-key memory refers to the use of a compact, high-performance key-value store for storing and retrieving data efficiently. SAM uses product-key memory because it allows for faster retrieval times and reduces the need for complex indexing mechanisms, which can improve performance in large-scale applications. The evidence provided indicates that Exp_0_2_CompactPKM (16K PKM: 25.8% Rec@8) demonstrates high-performance key-value store retrieval, which supports the use of product-key memory in SAM.",
-        "passed": true,
-        "hallucination_rate": 0.0,
-        "supported_count": 3,
-        "unsupported_count": 0,
+        "answer": "Product-key memory refers to the use of a specific key or identifier that uniquely identifies a product in a system. SAM uses this feature because it allows for efficient and accurate retrieval of information about products, which is crucial for providing personalized recommendations and improving user experience. The evidence suggests that SAM employs various metrics such as Overall Accuracy, 1-Hop Accuracy, 2-Hop Accuracy, 3-Hop Accuracy, and Recall@1 to evaluate the effectiveness of its product-key memory implementation.",
+        "passed": false,
+        "hallucination_rate": 0.3333,
+        "supported_count": 2,
+        "unsupported_count": 1,
         "path_count": 5,
         "is_insufficient": false,
-        "latency_s": 3.4716,
+        "latency_s": 3.4592,
         "error": null,
-        "accuracy": null
+        "parsed_entity_ids": [
+          "why_product_key_memory",
+          "experiment_0.12_report_—_candidate_selection_and_memory_use_training",
+          "experiment_0.12_—_candidate_selection_and_memory_use_training",
+          "Exp_0_12_Selection_oracle_filter_top64",
+          "Exp_0_12_Selection_oracle_filter_top32"
+        ],
+        "entity_resolution_hit": false,
+        "gt_entity_ids": [
+          "Exp_0_2_CompactPKM"
+        ],
+        "accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 76,
+          "ground_truth_tokens": 34,
+          "ratio": 2.24,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: product-key memory and why does SAM use it.\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": null
+        "accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
       }
     },
     {
@@ -878,23 +2249,60 @@
       "difficulty": "easy",
       "hops": 1,
       "nexus": {
-        "answer": "Regarding \"role of the gate in SAM's memory integration\", the evidence reveals the following:\n\nSAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.\n\nOracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.\n\nTesting in progress. Code implemented.\n\nSAM tolerates controlled random noise (+8 distractors -> 91.6%), gate is NOT the bottleneck.\n\nOracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid.\n\nFlat latent-vector memory can't solve selection quality -> pivot to graph-first architecture.\n\nAdditional evidence suggests the following:\n  - Experiment 0.13A — Controlled Noisy Memory Tolerance depends on Experiment 0.12 — Candidate Selection & Memory-Use Training.\n  - Experiment 0.13A — Controlled Noisy Memory Tolerance is a dependency of Experiment 0.13B — Realistic Retrieval Distractor Replay.\n  - Experiment 0.13A — Controlled Noisy Memory Tolerance validates Concept_NoiseTolerance.\n\n\nThese findings are drawn from 9 source document(s) in the knowledge graph.",
-        "passed": false,
-        "hallucination_rate": 0.5625,
-        "supported_count": 7,
-        "unsupported_count": 9,
-        "path_count": 5,
+        "answer": "The gate is not the bottleneck in SAM's memory integration.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 4,
         "is_insufficient": false,
-        "latency_s": 4.0755,
+        "latency_s": 3.0831,
         "error": null,
-        "accuracy": null
+        "parsed_entity_ids": [
+          "Exp_0_13A_NoisyMemory",
+          "gate_2:_memory_usefulness**:_if_sam_+_oracle_memory_does_not_beat_sam_core_only,_stop",
+          "through_the_same_memory_integration_code",
+          "memory_integration_modes_(gate_stress)",
+          "Concept_NoiseTolerance"
+        ],
+        "entity_resolution_hit": true,
+        "gt_entity_ids": [
+          "Exp_0_13A_NoisyMemory"
+        ],
+        "accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        },
+        "conciseness": {
+          "answer_tokens": 10,
+          "ground_truth_tokens": 34,
+          "ratio": 0.29,
+          "too_verbose": false
+        }
       },
       "baseline": {
         "answer": "Based on general knowledge:\n- The question asks about: role of the gate in SAM's memory integration.\n- The concept 'gate' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
         "is_insufficient": false,
         "latency_s": 0.0,
         "error": null,
-        "accuracy": null
+        "accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
       }
     }
   ]

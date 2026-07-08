@@ -63,6 +63,15 @@ _TYPE_PRIORITY: dict[str, int] = {
 
 _MAX_ENTRY_NODES: int = 5
 
+# ── Known acronyms for entity resolution expansion ──
+
+_ACRONYMS: dict[str, str] = {
+    "sam": "sparse_associative_memory",
+    "pkm": "product_key_memory",
+    "rag": "retrieval_augmented_generation",
+    "nexus": "non_parametric_execution",
+}
+
 
 @dataclass
 class ParsedQuery:
@@ -148,7 +157,7 @@ def spot_entities(
 def parse_question(
     question: str,
     graph: InMemoryGraphStore,
-    cutoff: float = 0.6,
+    cutoff: float = 0.5,
 ) -> ParsedQuery:
     """
     Parse a natural language question into structured query intent.
@@ -156,7 +165,7 @@ def parse_question(
     Args:
         question: The natural language question
         graph: The graph store to resolve entities against
-        cutoff: Fuzzy matching cutoff for entity resolution
+        cutoff: Fuzzy matching cutoff for entity resolution (default 0.5)
 
     Returns:
         ParsedQuery with resolved entity IDs, intent, and direction
@@ -164,14 +173,34 @@ def parse_question(
     # Detect intent
     intent, direction = detect_intent(question)
 
-    # Spot entities
-    entity_spots = spot_entities(question, graph, cutoff=cutoff)
+    # Expand acronyms — add expanded forms as additional search terms
+    # that help fuzzy matching find the right entities
+    expanded_question = question
+    lowered_q = question.lower()
+    for acronym, expansion in _ACRONYMS.items():
+        if acronym in lowered_q:
+            # Append the expansion at the end so spot_entities can match it
+            expanded_question = f"{expanded_question} ({expansion})"
+
+    # Spot entities from substring matching
+    entity_spots = spot_entities(expanded_question, graph, cutoff=cutoff)
 
     entity_ids = [node_id for _, _, _, node_id in entity_spots]
     entity_spans = [(start, end, text) for start, end, text, _ in entity_spots]
 
+    # Also try keyword-based property matching — these have higher confidence
+    # than substring matches, so prepend them for ranking priority
+    keyword_matches = graph.find_entity_by_keywords(question, cutoff=cutoff)
+    keyword_scores: dict[str, int] = {}
+    existing_set = set(entity_ids)
+    for kid, score in keyword_matches:
+        keyword_scores[kid] = score
+        if kid not in existing_set:
+            entity_ids.insert(0, kid)
+            existing_set.add(kid)
+
     # ── Rank and cap entry nodes ──
-    entity_ids = _rank_entities(graph, entity_ids)
+    entity_ids = _rank_entities(graph, entity_ids, question=question, keyword_scores=keyword_scores)
 
     return ParsedQuery(
         question=question,
@@ -185,20 +214,60 @@ def parse_question(
 # ── Convenience: scan all node names for substring matches ──
 
 
-def _rank_entities(graph: InMemoryGraphStore, entity_ids: list[str]) -> list[str]:
+def _contextual_type_boost(entity_name: str, question: str, node_type: str) -> float:
+    """
+    Boost entity priority based on contextual keywords in the question.
+
+    Returns a boost (0.0-0.15) to add to the type priority score during ranking.
+    """
+    lowered = question.lower()
+    boost = 0.0
+
+    # Experiment-related questions
+    if node_type == "Experiment" and any(
+        kw in lowered for kw in (
+            "experiment", "result", "finding", "accuracy", "showed",
+            "proved", "measured", "demonstrated", "found that",
+        )
+    ):
+        boost = 0.15
+
+    # Concept-related questions
+    if node_type == "Concept" and any(
+        kw in lowered for kw in ("concept", "idea", "theory", "principle")
+    ):
+        boost = 0.10
+
+    # Causal/diagnostic questions → boost Bug and Decision
+    if node_type in ("Bug", "Decision") and any(
+        kw in lowered for kw in ("why", "caused", "reason", "led to", "pivot")
+    ):
+        boost = 0.10
+
+    return boost
+
+
+def _rank_entities(
+    graph: InMemoryGraphStore,
+    entity_ids: list[str],
+    question: str = "",
+    keyword_scores: dict[str, int] | None = None,
+) -> list[str]:
     """
     Rank entity IDs by quality and return the top candidates (capped).
 
     Ranking criteria (in order):
-      1. **Type priority**: Experiment > Decision > Concept > Bug > ...
-      2. **Name length**: longer-span matches beat shorter ones (e.g.
-         "Exp_0_6_Validation" beats "Exp")
-      3. **Cap at ~5 entry nodes** — beam search with 5 entries already
-         explores plenty of the graph.
+      1. **Keyword match count**: entities with more keyword token matches
+         get a higher boost (multiplied by 5.0 per match)
+      2. **Type priority**: Experiment > Decision > Concept > Bug > ...
+      3. **Contextual type boost**: keywords in question boost relevant types
+      4. **Name length**: longer-span matches beat shorter ones
+      5. **Cap at ~5 entry nodes**
 
-    Returns the top-ranked entity IDs as a list (deduplicated, order preserved
-    by rank).
+    Returns the top-ranked entity IDs as a list (deduplicated, order preserved).
     """
+    if keyword_scores is None:
+        keyword_scores = {}
     if not entity_ids:
         return []
 
@@ -210,13 +279,22 @@ def _rank_entities(graph: InMemoryGraphStore, entity_ids: list[str]) -> list[str
             seen.add(eid)
             unique.append(eid)
 
-    # Rank each entity by (type_priority DESC, name_length DESC)
-    def _score(eid: str) -> tuple[int, int]:
+    # Rank each entity by (keyword_score + type_priority + contextual_boost DESC, name_length DESC)
+    def _score(eid: str) -> tuple[float, int]:
         node = graph.get_node(eid)
-        type_prio = _TYPE_PRIORITY.get(node.type, 0) if node else 0
-        # Use the node ID as the name for length scoring (canonical ID)
-        name_len = len(eid) if eid else 0
-        return (type_prio, name_len)
+        base_type_prio = _TYPE_PRIORITY.get(node.type, 0) if node else 0
+        ctx_boost = (
+            _contextual_type_boost(eid, question, node.type) if node and question
+            else 0.0
+        )
+        # Keyword match boost: proportional to token match count.
+        # Matches with 3+ tokens get a big boost to distinguish them from
+        # incidental 2-token matches on long document names.
+        kw_count = keyword_scores.get(eid, 0)
+        kw_boost = kw_count * 5.0 if kw_count >= 3 else kw_count * 0.5
+        type_score = kw_boost + base_type_prio + ctx_boost
+        name_len = (len(eid) if eid else 0) * 2
+        return (type_score, name_len)
 
     ranked = sorted(unique, key=_score, reverse=True)
     return ranked[:_MAX_ENTRY_NODES]

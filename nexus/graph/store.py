@@ -10,6 +10,7 @@ Simple dict-based implementation with:
 
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 from difflib import get_close_matches
 from typing import Optional
@@ -26,6 +27,8 @@ class InMemoryGraphStore:
         self._edges_in: dict[str, list[Edge]] = defaultdict(list)
         self._type_index: dict[str, list[str]] = defaultdict(list)
         self._name_index: dict[str, str] = {}  # normalized_name → node_id
+        self._property_index: dict[str, list[str]] = defaultdict(list)
+        # token (normalized) → list of node_ids that have that token in properties
 
     # ── Node operations ──
 
@@ -36,6 +39,12 @@ class InMemoryGraphStore:
         if is_new:
             self._type_index[node.type].append(node.id)
         self._name_index[self._normalize(node.id)] = node.id
+        # Index property values for keyword-based entity lookup
+        for value in node.properties.values():
+            if isinstance(value, str):
+                for token in self._tokenize(value):
+                    if node.id not in self._property_index[token]:
+                        self._property_index[token].append(node.id)
 
     def get_node(self, node_id: str) -> Optional[Node]:
         return self._nodes.get(node_id)
@@ -107,6 +116,37 @@ class InMemoryGraphStore:
     @staticmethod
     def _normalize(name: str) -> str:
         return name.strip().lower().replace(" ", "_").replace("-", "_")
+
+    @staticmethod
+    def _tokenize(text: str) -> list[str]:
+        """Split text into normalized tokens for keyword indexing."""
+        normalized = text.lower().replace("-", " ").replace("_", " ").replace(".", " ")
+        tokens = re.findall(r'[a-z0-9]+', normalized)
+        # Filter out very short tokens and common stop words
+        return [t for t in tokens if len(t) >= 3]
+
+    def find_entity_by_keywords(self, question: str, cutoff: float = 0.5) -> list[tuple[str, int]]:
+        """
+        Find entity IDs whose property tokens match keywords in the question.
+
+        Uses token intersection: for each token in the question, find nodes
+        that have that token in their property values. Returns (node_id, match_count)
+        tuples ranked by number of matching tokens (highest first).
+        """
+        question_tokens = set(self._tokenize(question))
+        if not question_tokens:
+            return []
+
+        # Count matches per node
+        node_hits: dict[str, int] = {}
+        for token in question_tokens:
+            for nid in self._property_index.get(token, []):
+                node_hits[nid] = node_hits.get(nid, 0) + 1
+
+        # Filter: require at least 2 token matches for confidence
+        hits = [(nid, count) for nid, count in node_hits.items() if count >= 2]
+        hits.sort(key=lambda x: x[1], reverse=True)
+        return hits
 
     # ── Traversal ──
 

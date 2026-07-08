@@ -41,6 +41,13 @@ from nexus.reasoning.model_interface import (
 from nexus.reasoning.verifier import Verifier, VerificationResult
 
 
+# ---- Token counting (for conciseness) ----
+
+def _count_tokens(text: str) -> int:
+    """Simple word-count token estimation (split on whitespace)."""
+    return len(text.split())
+
+
 # ---- Question loader ----
 
 def load_questions(jsonl_path: str, limit: int | None = None) -> list[dict[str, Any]]:
@@ -60,14 +67,14 @@ def load_questions(jsonl_path: str, limit: int | None = None) -> list[dict[str, 
 
 # Regex patterns for extracting key facts from text
 _FACT_PATTERNS = [
-    # Percentages: 99.87%, 100%, 50%, 96.6% (no \b after % since % is non-word)
-    (re.compile(r'\b(\d+\.?\d*\s*%)(?:\s|$|[,.);])'), "percentage"),
+    # Percentages: 99.87%, 100%, 50%, 96.6% (lookahead avoids consuming trailing punctuation)
+    (re.compile(r'\b(\d+\.?\d*\s*%)(?=\s|$|[,.);])'), "percentage"),
     # Numbers with "million": 15.7 million, 19,000
     (re.compile(r'\b(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*million\b', re.IGNORECASE), "number+million"),
     # Numbers with common technical units: 1,650 slots, 19,000 examples, 853 vocab tokens
     (re.compile(r'\b(\d{1,3}(?:,\d{3})*(?:\.\d+)?)\s*(?:live\s+)?(slots?|examples?|tokens?|parameters?|params?|subkeys?|distractors?|vocabulary|hops?)\b', re.IGNORECASE), "number+unit"),
-    # Standalone large numbers (>=100) with context
-    (re.compile(r'\b(\d{3,}(?:,\d{3})*(?:\.\d+)?)\b'), "large_number"),
+    # Standalone large numbers (>=100) — exclude digits part of percentages
+    (re.compile(r'\b(\d{3,}(?:,\d{3})*(?:\.\d+)?)\b(?!\s*%)'), "large_number"),
     # @ notation: all_required@32, Rec@8
     (re.compile(r'\b(\w+@\d+)\b'), "at_notation"),
     # K= notation: K=32
@@ -103,29 +110,186 @@ def _extract_key_facts(text: str) -> set[str]:
     return facts
 
 
-def compute_key_fact_score(predicted_answer: str, ground_truth: str) -> float | None:
-    """Compute key-fact match score between predicted and ground truth answers.
-    
-    A "key fact" is a numeric value, entity name, or relation word extracted
-    via regex. Score = |intersection| / |ground_truth_facts|.
-    
-    If the predicted answer says "Insufficient evidence", score = 0.0.
-    If ground truth has no extractable facts, returns None (exclude from
-    aggregate accuracy — there's nothing to measure against).
+def _extract_numbers(text: str) -> set[float]:
+    """Extract all numeric values from text: integers, decimals, percentages.
+
+    Percentages are converted to decimals: "99.87%" -> 0.9987, "100%" -> 1.0.
+    Comma-separated numbers are normalized: "1,650" -> 1650.0.
+    Avoids false positives like extracting "1" from "1-hop".
+    Returns a set of floats.
+    """
+    numbers: set[float] = set()
+
+    # Tokenize on whitespace
+    tokens: list[str] = re.findall(r'[^\s]+', text)
+    percent_re = re.compile(r'^([\d,]+\.?\d*)\s*%$')
+
+    for token in tokens:
+        # Strip trailing punctuation that is not %
+        while token and token[-1] in ',.;:)!?' and token[-1] != '%':
+            token = token[:-1]
+        if not token:
+            continue
+
+        # Check for percentage (e.g., "99.87%", "100%")
+        pm = percent_re.match(token)
+        if pm:
+            try:
+                val = float(pm.group(1).replace(',', ''))
+                numbers.add(round(val / 100.0, 10))
+            except ValueError:
+                pass
+            continue
+
+        # Check if token is purely numeric (possibly with commas/decimals)
+        # Use isdigit check on the stripped string to avoid matching "1-hop" etc.
+        stripped = token.replace(',', '')
+        if stripped.replace('.', '', 1).isdigit():
+            try:
+                val = float(stripped)
+                numbers.add(val)
+            except ValueError:
+                pass
+
+    return numbers
+
+
+def _fuzzy_number_match(pred_nums: set[float], gt_nums: set[float]) -> tuple[int, int]:
+    """Match predicted numbers against ground truth with 5% relative tolerance.
+
+    Returns (matches, total_gt_nums).
+    A predicted number matches a ground truth number if:
+        abs(pred - gt) / max(abs(gt), 0.001) < 0.05  (5% relative tolerance)
+        OR abs(pred - gt) < 0.001  (near-exact match)
+    Each gt number is matched at most once (greedy best-match).
+    """
+    if not gt_nums:
+        return 0, 0
+
+    pred_list: list[float | None] = list(pred_nums)
+    gt_list = sorted(gt_nums, reverse=True)
+    matches = 0
+
+    for gt in gt_list:
+        best_idx: int = -1
+        best_err: float = float('inf')
+
+        for i, pred in enumerate(pred_list):
+            if pred is None:
+                continue
+            denom = max(abs(gt), 0.001)
+            rel_err = abs(pred - gt) / denom
+            abs_err = abs(pred - gt)
+
+            if rel_err < 0.05 or abs_err < 0.001:
+                if rel_err < best_err:
+                    best_err = rel_err
+                    best_idx = i
+
+        if best_idx >= 0:
+            matches += 1
+            pred_list[best_idx] = None  # mark as consumed
+
+    return matches, len(gt_nums)
+
+
+def compute_exact_fact_score(predicted_answer: str, ground_truth: str) -> float | None:
+    """Compute key-fact match score using exact regex-based matching (original method).
+
+    Returns None if ground truth has no extractable facts.
     """
     if "insufficient evidence" in predicted_answer.lower():
         return 0.0
-    
+
     gt_facts = _extract_key_facts(ground_truth)
     pred_facts = _extract_key_facts(predicted_answer)
-    
+
     if not gt_facts:
-        # No ground truth facts to compare against — cannot score
         return None
-    
+
     intersection = gt_facts & pred_facts
     score = len(intersection) / len(gt_facts)
     return round(score, 4)
+
+
+def compute_key_fact_score(
+    predicted_answer: str, ground_truth: str, use_fuzzy: bool = True
+) -> dict[str, Any]:
+    """Compute key-fact match score with fuzzy numeric scoring.
+
+    Returns a dict with:
+        - fuzzy_accuracy: primary score (fuzzy numeric or exact regex fallback)
+        - exact_accuracy: old exact regex score for comparison
+        - scoring_detail: breakdown of numbers, matches, and entity overlap
+
+    If the predicted answer says "Insufficient evidence", both scores = 0.0.
+    If ground truth has no extractable facts, both scores are None.
+    """
+    # Build the "no score" detail skeleton
+    empty_detail: dict[str, Any] = {
+        "gt_numbers": [],
+        "pred_numbers": [],
+        "fuzzy_matches": 0,
+        "total_gt": 0,
+        "fuzzy_score": 0.0,
+        "exact_score": 0.0,
+        "entity_overlap": [],
+    }
+
+    if "insufficient evidence" in predicted_answer.lower():
+        return {
+            "fuzzy_accuracy": 0.0,
+            "exact_accuracy": 0.0,
+            "scoring_detail": empty_detail,
+        }
+
+    gt_facts = _extract_key_facts(ground_truth)
+    pred_facts = _extract_key_facts(predicted_answer)
+
+    if not gt_facts:
+        empty_detail["fuzzy_score"] = None
+        empty_detail["exact_score"] = None
+        return {
+            "fuzzy_accuracy": None,
+            "exact_accuracy": None,
+            "scoring_detail": empty_detail,
+        }
+
+    # Exact score (old regex-based method)
+    intersection = gt_facts & pred_facts
+    exact_score: float = round(len(intersection) / len(gt_facts), 4)
+
+    # Fuzzy numeric scoring
+    gt_nums = _extract_numbers(ground_truth)
+    pred_nums = _extract_numbers(predicted_answer)
+    entity_overlap = sorted(list(intersection))
+
+    if gt_nums and use_fuzzy:
+        fuzzy_matches, total_gt = _fuzzy_number_match(pred_nums, gt_nums)
+        fuzzy_score: float | None = (
+            round(fuzzy_matches / total_gt, 4) if total_gt > 0 else None
+        )
+        primary_accuracy: float = fuzzy_score if fuzzy_score is not None else exact_score
+    else:
+        # No numeric ground truth or fuzzy disabled: fall back to exact regex
+        fuzzy_matches = 0
+        total_gt = 0
+        fuzzy_score = None
+        primary_accuracy = exact_score
+
+    return {
+        "fuzzy_accuracy": primary_accuracy,
+        "exact_accuracy": exact_score,
+        "scoring_detail": {
+            "gt_numbers": sorted(list(gt_nums)),
+            "pred_numbers": sorted(list(pred_nums)),
+            "fuzzy_matches": fuzzy_matches,
+            "total_gt": total_gt,
+            "fuzzy_score": fuzzy_score,
+            "exact_score": exact_score,
+            "entity_overlap": entity_overlap,
+        },
+    }
 
 
 # ---- Graph construction ----
@@ -173,7 +337,6 @@ def build_benchmark_graph() -> tuple[InMemoryGraphStore, dict[str, Any]]:
             "3. ingest_directory('sam-lm/docs/', graph)",
             "4. ingest_directory('sam-lm/experiments/', graph)",
         ],
-        "entity_resolution": "known_entity_ids from QA dataset (bypasses fuzzy matching for benchmark accuracy measurement)",
         "fixes_applied": [
             "P0: entity filter, relations constrained 10K->116 edges, entity ranking",
             "P1: key_findings surfaced as evidence in evidence_builder", 
@@ -192,7 +355,6 @@ def run_nexus_pipeline(
     graph: InMemoryGraphStore,
     model: ModelInterface,
     verifier: Verifier,
-    known_entity_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     """
     Run the full NEXUS pipeline and return timing + metrics.
@@ -212,7 +374,6 @@ def run_nexus_pipeline(
     try:
         result = answer_question(
             question_text, graph, model=model, verifier=verifier,
-            known_entity_ids=known_entity_ids,
         )
     except Exception as exc:
         elapsed = time.perf_counter() - t0
@@ -226,6 +387,7 @@ def run_nexus_pipeline(
             "is_insufficient": False,
             "latency_s": round(elapsed, 4),
             "error": str(exc),
+            "parsed_entity_ids": [],
         }
     elapsed = time.perf_counter() - t0
 
@@ -255,6 +417,9 @@ def run_nexus_pipeline(
         "is_insufficient": is_insufficient,
         "latency_s": round(elapsed, 4),
         "error": None,
+        "parsed_entity_ids": (
+            result["parsed_query"].entity_ids if result.get("parsed_query") else []
+        ),
     }
 
 
@@ -327,6 +492,13 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
         and "accuracy" in r["nexus"] 
         and r["nexus"]["accuracy"] is not None
     ]
+    nexus_exact_accuracies = [
+        r["nexus"]["exact_accuracy"]
+        for r in results
+        if not r["nexus"].get("error") 
+        and "exact_accuracy" in r["nexus"]
+        and r["nexus"]["exact_accuracy"] is not None
+    ]
     baseline_accuracies = [
         r["baseline"]["accuracy"]
         for r in results
@@ -334,10 +506,49 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
         and "accuracy" in r["baseline"]
         and r["baseline"]["accuracy"] is not None
     ]
+    baseline_exact_accuracies = [
+        r["baseline"]["exact_accuracy"]
+        for r in results
+        if not r["baseline"].get("error") 
+        and "exact_accuracy" in r["baseline"]
+        and r["baseline"]["exact_accuracy"] is not None
+    ]
     scorable_count = len(nexus_accuracies)  # questions with measurable ground truth
+
+    # Number reproduction stats (from scoring_detail)
+    num_gt_counts: list[int] = []
+    num_matched_counts: list[int] = []
+    for r in results:
+        detail = r["nexus"].get("scoring_detail", {})
+        if detail.get("total_gt", 0) > 0:
+            num_gt_counts.append(detail["total_gt"])
+            num_matched_counts.append(detail.get("fuzzy_matches", 0))
+    total_gt_numbers = sum(num_gt_counts)
+    total_matched_numbers = sum(num_matched_counts)
+    number_recall_rate = round(total_matched_numbers / total_gt_numbers, 4) if total_gt_numbers > 0 else 0.0
+    avg_numbers_in_gt = round(sum(num_gt_counts) / len(num_gt_counts), 2) if num_gt_counts else 0.0
+    avg_numbers_matched = round(sum(num_matched_counts) / len(num_matched_counts), 2) if num_matched_counts else 0.0
 
     def avg(lst: list[float]) -> float:
         return round(sum(lst) / len(lst), 4) if lst else 0.0
+
+    # Conciseness metrics
+    conciseness_data = [
+        r["nexus"]["conciseness"]
+        for r in results
+        if not r["nexus"].get("error") and "conciseness" in r["nexus"]
+    ]
+    avg_ans_tokens = round(avg([c["answer_tokens"] for c in conciseness_data]), 1)
+    avg_c_ratio = round(avg([c["ratio"] for c in conciseness_data]), 2)
+    verbose_count = sum(1 for c in conciseness_data if c["too_verbose"])
+    verbose_rate = round(verbose_count / len(conciseness_data), 4) if conciseness_data else 0.0
+
+    conciseness_summary = {
+        "avg_answer_tokens": avg_ans_tokens,
+        "avg_conciseness_ratio": avg_c_ratio,
+        "verbose_count": verbose_count,
+        "verbose_rate": verbose_rate,
+    }
 
     # Per-hop accuracy breakdown
     accuracy_by_hops: dict[str, dict[str, Any]] = {}
@@ -369,6 +580,17 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
         for qt, data in sorted(accuracy_by_type.items())
     }
 
+    # Entity resolution accuracy
+    er_hits = sum(
+        1 for r in results
+        if not r["nexus"].get("error") and r["nexus"].get("entity_resolution_hit")
+    )
+    er_total = sum(
+        1 for r in results
+        if not r["nexus"].get("error") and r["nexus"].get("entity_resolution_hit") is not None
+    )
+    entity_resolution_rate = round(er_hits / er_total, 4) if er_total > 0 else 0.0
+
     return {
         "total_questions": total,
         "scorable_questions": scorable_count,
@@ -386,6 +608,7 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
             "avg_latency_s": round(avg(nexus_latencies), 4),
             "avg_paths_found": round(avg(nexus_paths), 2),
             "avg_accuracy": round(avg(nexus_accuracies), 4),
+            "avg_exact_accuracy": round(avg(nexus_exact_accuracies), 4),
             "min_accuracy": round(min(nexus_accuracies), 4) if nexus_accuracies else 0.0,
             "max_accuracy": round(max(nexus_accuracies), 4) if nexus_accuracies else 0.0,
         },
@@ -393,9 +616,24 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
             "avg_latency_s": round(avg(baseline_latencies), 4),
             "insufficient_evidence": baseline_insufficient,
             "avg_accuracy": round(avg(baseline_accuracies), 4),
+            "avg_exact_accuracy": round(avg(baseline_exact_accuracies), 4),
+        },
+        "number_reproduction": {
+            "total_gt_numbers": total_gt_numbers,
+            "total_matched_numbers": total_matched_numbers,
+            "number_recall_rate": number_recall_rate,
+            "avg_numbers_in_gt": avg_numbers_in_gt,
+            "avg_numbers_matched": avg_numbers_matched,
         },
         "accuracy_by_hops": accuracy_by_hops,
         "accuracy_by_type": accuracy_by_type,
+        "entity_resolution_rate": entity_resolution_rate,
+        "entity_resolution": {
+            "hits": er_hits,
+            "total": er_total,
+            "rate": entity_resolution_rate,
+        },
+        "conciseness": conciseness_summary,
     }
 
 
@@ -431,10 +669,22 @@ def print_comparison(summary: dict[str, Any]):
     base_ins_str = f"{b['insufficient_evidence']}/{total}" if "insufficient_evidence" in b else "N/A"
     print(f"  {'Insufficient evidence':<38} {ins_str:>10} {base_ins_str:>12}")
     
-    # Accuracy score (key metric)
-    n_acc = f"{n['avg_accuracy']:.2%}" if n.get("avg_accuracy") is not None else "N/A"
-    b_acc = f"{b['avg_accuracy']:.2%}" if b.get("avg_accuracy") is not None else "N/A"
-    print(f"  {'Avg accuracy (key-fact match)':<38} {n_acc:>10} {b_acc:>12}")
+    # Fuzzy accuracy (primary metric)
+    n_fuzzy = f"{n['avg_accuracy']:.2%}" if n.get("avg_accuracy") is not None else "N/A"
+    b_fuzzy = f"{b['avg_accuracy']:.2%}" if b.get("avg_accuracy") is not None else "N/A"
+    print(f"  {'Fuzzy acc (numeric tolerant)':<38} {n_fuzzy:>10} {b_fuzzy:>12}")
+    
+    # Exact accuracy (old regex, for comparison)
+    n_exact = f"{n['avg_exact_accuracy']:.2%}" if n.get("avg_exact_accuracy") is not None else "N/A"
+    b_exact = f"{b['avg_exact_accuracy']:.2%}" if b.get("avg_exact_accuracy") is not None else "N/A"
+    print(f"  {'Exact acc (regex key-fact)':<38} {n_exact:>10} {b_exact:>12}")
+    
+    # Number reproduction stats
+    if summary.get("number_reproduction"):
+        nr = summary["number_reproduction"]
+        n_recall = f"{nr['number_recall_rate']:.0%}"
+        n_avg = f"avg {nr['avg_numbers_matched']} of {nr['avg_numbers_in_gt']} numbers ({n_recall} recall)"
+        print(f"  {'Number reproduction':<38} {n_avg:>10}")
     
     # Hallucination rate
     hall_str = f"{n['avg_hallucination_rate']:.2%}"
@@ -452,6 +702,18 @@ def print_comparison(summary: dict[str, Any]):
     # Paths
     n_paths = f"{n['avg_paths_found']:.1f}"
     print(f"  {'Avg paths found':<38} {n_paths:>10} {'N/A':>12}")
+    
+    # Entity resolution rate
+    if summary.get("entity_resolution"):
+        er = summary["entity_resolution"]
+        er_str = f"{er['rate']:.1%} ({er['hits']}/{er['total']})"
+        print(f"  {'Entity resolution rate':<38} {er_str:>10} {'N/A':>12}")
+
+    # Conciseness
+    if summary.get("conciseness"):
+        c = summary["conciseness"]
+        c_str = f"avg {c['avg_answer_tokens']:.0f} tokens, {c['avg_conciseness_ratio']}× GT, {c['verbose_rate']:.0%} too verbose"
+        print(f"  {'Conciseness':<38} {c_str:>10}")
     
     # Per-hop accuracy breakdown
     if summary.get("accuracy_by_hops"):
@@ -472,7 +734,8 @@ def print_comparison(summary: dict[str, Any]):
             print(f"  {qt:<16} {data['count']:>8} {data['avg_accuracy']:>13.2%}")
     
     print()
-    print("  Accuracy = key-fact overlap between model answer and ground truth.")
+    print("  Fuzzy acc = numeric matching with 5% relative tolerance (primary metric).")
+    print("  Exact acc = strict regex key-fact overlap (old metric, for comparison).")
     print("  NEXUS hallucination rate measures unsupported claims in generated answers.")
     print("  The evidence-blind baseline has no graph access — it can only use")
     print("  general knowledge extracted from the question text.")
@@ -542,27 +805,51 @@ def main():
         # Progress
         marker = f"[{i}/{total}]"
         
-        # Get known entity IDs from the QA dataset
-        known_entities = q.get("entities", [])
+        # Run NEXUS pipeline (honest entity resolution — no known_entity_ids bypass)
+        nexus_result = run_nexus_pipeline(qtext, graph, nexus_model, verifier)
         
-        # Run NEXUS pipeline
-        nexus_result = run_nexus_pipeline(qtext, graph, nexus_model, verifier, known_entity_ids=known_entities)
+        # Entity resolution accuracy: check if parser found at least one correct entity
+        gt_entity_ids: list[str] = q.get("entities", [])
+        nexus_parsed_ids: list[str] = nexus_result.get("parsed_entity_ids", [])
+        entity_resolution_hit = bool(
+            gt_entity_ids and set(nexus_parsed_ids) & set(gt_entity_ids)
+        )
+        nexus_result["entity_resolution_hit"] = entity_resolution_hit
+        nexus_result["gt_entity_ids"] = gt_entity_ids
         
-        # Compute accuracy for NEXUS
-        nexus_accuracy = compute_key_fact_score(
+        # Compute accuracy for NEXUS (fuzzy + exact)
+        nexus_scores = compute_key_fact_score(
             nexus_result["answer"], ground_truth
         )
-        nexus_result["accuracy"] = nexus_accuracy
+        nexus_result["accuracy"] = nexus_scores["fuzzy_accuracy"]
+        nexus_result["exact_accuracy"] = nexus_scores["exact_accuracy"]
+        nexus_result["scoring_detail"] = nexus_scores["scoring_detail"]
         
         # Run evidence-blind baseline
         baseline_result = run_baseline(qtext, baseline_model)
         
-        # Compute accuracy for baseline
-        baseline_accuracy = compute_key_fact_score(
+        # Compute accuracy for baseline (fuzzy + exact)
+        baseline_scores = compute_key_fact_score(
             baseline_result["answer"], ground_truth
         )
-        baseline_result["accuracy"] = baseline_accuracy
-        
+        baseline_result["accuracy"] = baseline_scores["fuzzy_accuracy"]
+        baseline_result["exact_accuracy"] = baseline_scores["exact_accuracy"]
+        baseline_result["scoring_detail"] = baseline_scores["scoring_detail"]
+
+        # Compute conciseness metric
+        question_type = q.get("question_type", "factual")
+        answer_tokens = _count_tokens(nexus_result["answer"])
+        gt_tokens = _count_tokens(ground_truth)
+        ratio = round(answer_tokens / gt_tokens, 2) if gt_tokens > 0 else 999.0
+        # Factual questions: too_verbose if >3x; diagnostic/multi-hop: relaxed to 5x
+        verbose_threshold = 5.0 if question_type in ("diagnostic", "multi-hop") else 3.0
+        nexus_result["conciseness"] = {
+            "answer_tokens": answer_tokens,
+            "ground_truth_tokens": gt_tokens,
+            "ratio": ratio,
+            "too_verbose": ratio > verbose_threshold,
+        }
+
         # Status indicator
         if nexus_result["error"]:
             status = "ERR"
@@ -573,8 +860,11 @@ def main():
         else:
             status = f"HALL({nexus_result['hallucination_rate']:.0%})"
         
-        print(f"  {marker} {qid}: {status} | acc={nexus_accuracy if nexus_accuracy is not None else 'N/A'} | paths={nexus_result['path_count']} | "
-              f"nexus={nexus_result['latency_s']:.3f}s | baseline={baseline_result['latency_s']:.3f}s (acc={baseline_accuracy if baseline_accuracy is not None else 'N/A'})")
+        nex_fuzzy = nexus_scores["fuzzy_accuracy"]
+        bas_fuzzy = baseline_scores["fuzzy_accuracy"]
+        er_hit = "HIT" if entity_resolution_hit else "MISS"
+        print(f"  {marker} {qid}: {status} | ER={er_hit} | fuzzy={nex_fuzzy if nex_fuzzy is not None else 'N/A'} | paths={nexus_result['path_count']} | "
+              f"nexus={nexus_result['latency_s']:.3f}s | baseline={baseline_result['latency_s']:.3f}s (fuzzy={bas_fuzzy if bas_fuzzy is not None else 'N/A'})")
         
         results.append({
             "question_id": qid,
@@ -598,7 +888,6 @@ def main():
             "model": nexus_model.name,
             "model_backend": type(nexus_model).__name__,
             "verification_threshold": 0.2,
-            "known_entity_ids_from_dataset": True,
         },
         "graph_provenance": graph_provenance,
         "summary": summary,
