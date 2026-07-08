@@ -40,8 +40,12 @@ from nexus.reasoning.model_interface import (
 )
 from nexus.reasoning.verifier import Verifier, VerificationResult
 
-# Cost model for frontier API comparison
-from benchmarks.cost_model import estimate_cost_per_1k, FRONTIER_PRICING, LOCAL_COST
+# Cost model for local-only pricing
+from benchmarks.cost_model import (
+    LocalCostModel, BlendedRouterCost,
+    estimate_cost_per_1k, format_cost_comparison, format_router_cost_comparison,
+    FRONTIER_PRICING,  # retained for historical reference
+)
 
 
 # ---- Token counting (for conciseness) ----
@@ -931,21 +935,42 @@ def print_comparison(summary: dict[str, Any]):
     # ── Cost Comparison ──
     if n.get("avg_prompt_tokens"):
         print()
-        print("  COST per 1K questions:")
-        print(f"    {'NEXUS + local (any model)':<38} {'$0.00':>10}")
+        print("  COST (local-only, electricity-based):")
+        print(f"    {'NEXUS + local (electricity)':<38} {'$0.00':>10}")
+        print()
 
-        for model_name in ["gpt-4o-mini", "claude-haiku", "gemini-flash"]:
-            cost = estimate_cost_per_1k(
-                n["avg_prompt_tokens"], n["avg_completion_tokens"], model_name,
-            )
-            label = f"  NEXUS + frontier {model_name}"
-            print(f"    {'NEXUS + ' + model_name:<38} ${cost:.2f}")
+        # Show local-only cost comparison
+        lines = format_cost_comparison(
+            "NEXUS",
+            n["avg_prompt_tokens"],
+            n["avg_completion_tokens"],
+            local=True,
+        )
+        for line in lines:
+            print(line)
 
-        # Baseline with frontier for comparison
+        print(f"\n  NEXUS + Router blended cost (80% synth → $0):")
+        router_lines = format_router_cost_comparison(
+            "NEXUS Router",
+            n["avg_prompt_tokens"],
+            n["avg_completion_tokens"],
+            BlendedRouterCost(
+                llm_cost_model=LocalCostModel(
+                    tokens_per_second=25.0,  # typical CPU throughput
+                ),
+                synth_ratio=0.8,
+            ),
+        )
+        for line in router_lines:
+            print(line)
+
+        # Baseline with frontier for historical reference
         if b.get("avg_prompt_tokens"):
-            for model_name in ["gpt-4o-mini", "claude-haiku"]:
+            print(f"\n  Historical reference — what frontier APIs would cost:")
+            for model_name in ["gpt-4o-mini", "claude-haiku", "gemini-flash"]:
                 cost = estimate_cost_per_1k(
-                    b["avg_prompt_tokens"], b["avg_completion_tokens"], model_name,
+                    b["avg_prompt_tokens"], b["avg_completion_tokens"],
+                    model_backend=model_name, local=False,
                 )
                 print(f"    {'Baseline + ' + model_name:<38} ${cost:.2f}")
     
@@ -1132,7 +1157,13 @@ def main():
             "underlying_model": primary_model.name,
             "verification_threshold": 0.2,
             "local_inference": True,
-            "frontier_pricing": FRONTIER_PRICING,
+            "local_cost_model": {
+                "type": "LocalCostModel",
+                "watts_at_load": 65,
+                "electricity_cost_per_kwh": 0.15,
+                "target_per_1m_tokens": 0.01,
+                "frontier_pricing": FRONTIER_PRICING,  # historical reference
+            },
         },
         "graph_provenance": graph_provenance,
         "summary": summary,

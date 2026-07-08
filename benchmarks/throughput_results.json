@@ -1,0 +1,133 @@
+{
+  "config": {
+    "model": "qwen2.5:latest",
+    "runs_per_length": 3
+  },
+  "ollama": {
+    "p50_tokens_per_second": 5.21,
+    "p95_tokens_per_second": 10.75,
+    "mean_tokens_per_second": 5.2444444444444445,
+    "results": [
+      {
+        "prompt_tokens": 22,
+        "completion_tokens": 8,
+        "ttft_s": 0.9581,
+        "tokens_per_second": 2.48,
+        "ram_mb": 0.0
+      },
+      {
+        "prompt_tokens": 22,
+        "completion_tokens": 8,
+        "ttft_s": 0.3777,
+        "tokens_per_second": 10.75,
+        "ram_mb": 0
+      },
+      {
+        "prompt_tokens": 22,
+        "completion_tokens": 8,
+        "ttft_s": 0.5135,
+        "tokens_per_second": 6.4,
+        "ram_mb": 0
+      },
+      {
+        "prompt_tokens": 71,
+        "completion_tokens": 103,
+        "ttft_s": 1.0937,
+        "tokens_per_second": 2.22,
+        "ram_mb": 0
+      },
+      {
+        "prompt_tokens": 71,
+        "completion_tokens": 103,
+        "ttft_s": 0.8997,
+        "tokens_per_second": 2.93,
+        "ram_mb": 0
+      },
+      {
+        "prompt_tokens": 71,
+        "completion_tokens": 103,
+        "ttft_s": 0.5007,
+        "tokens_per_second": 5.21,
+        "ram_mb": 0
+      },
+      {
+        "prompt_tokens": 185,
+        "completion_tokens": 256,
+        "ttft_s": 0.4304,
+        "tokens_per_second": 5.63,
+        "ram_mb": 0
+      },
+      {
+        "prompt_tokens": 185,
+        "completion_tokens": 256,
+        "ttft_s": 0.4021,
+        "tokens_per_second": 6.56,
+        "ram_mb": 0
+      },
+      {
+        "prompt_tokens": 185,
+        "completion_tokens": 256,
+        "ttft_s": 0.5307,
+        "tokens_per_second": 5.02,
+        "ram_mb": 0
+      }
+    ]
+  },
+  "pipeline": {
+    "cpu_overhead_ms": 826.77,
+    "breakdowns": [
+      {
+        "parse_ms": 842.01,
+        "traverse_ms": 0.31,
+        "evidence_ms": 0.52,
+        "prompt_ms": 0.8,
+        "generate_ms": 2872.98,
+        "verify_ms": 1.42,
+        "total_ms": 3718.09
+      },
+      {
+        "parse_ms": 1471.87,
+        "traverse_ms": 1.01,
+        "evidence_ms": 0.87,
+        "prompt_ms": 0.42,
+        "generate_ms": 5244.44,
+        "verify_ms": 1.21,
+        "total_ms": 6719.87
+      },
+      {
+        "parse_ms": 612.33,
+        "traverse_ms": 0.6,
+        "evidence_ms": 0.78,
+        "prompt_ms": 0.4,
+        "generate_ms": 2758.98,
+        "verify_ms": 0.03,
+        "total_ms": 3373.18
+      },
+      {
+        "parse_ms": 386.22,
+        "traverse_ms": 0.95,
+        "evidence_ms": 0.43,
+        "prompt_ms": 0.34,
+        "generate_ms": 2945.4,
+        "verify_ms": 0.34,
+        "total_ms": 3333.74
+      },
+      {
+        "parse_ms": 809.95,
+        "traverse_ms": 0.21,
+        "evidence_ms": 0.42,
+        "prompt_ms": 0.18,
+        "generate_ms": 2617.25,
+        "verify_ms": 0.23,
+        "total_ms": 3428.28
+      }
+    ]
+  },
+  "cost_analysis": {
+    "tokens_per_second": 5.21,
+    "watts_at_load": 65,
+    "electricity_per_kwh": 0.15,
+    "cost_per_1m_tokens": 0.5198336532309661,
+    "tps_needed_for_1cent_target": 270.8333333333333
+  }
+}
