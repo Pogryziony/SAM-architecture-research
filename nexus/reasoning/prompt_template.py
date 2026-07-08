@@ -65,6 +65,36 @@ def _format_nodes(paths: list[dict[str, Any]]) -> list[str]:
     return lines
 
 
+def _format_node_details(paths: list[dict[str, Any]]) -> list[str]:
+    """
+    Extract and format node descriptions in a plain, readable format.
+    This helps small models easily find facts like numbers, findings, etc.
+    """
+    seen: set[str] = set()
+    details: list[tuple[str, str]] = []
+    for path_data in paths:
+        for node in path_data.get("nodes", []):
+            nid = node.get("id", "")
+            if nid in seen:
+                continue
+            seen.add(nid)
+            # Collect all descriptive properties
+            for key in ("key_finding", "description", "title", "name"):
+                if key in node and node[key] and node[key] != nid:
+                    details.append((nid, node[key]))
+                    break
+    if not details:
+        return []
+    lines = ["  Key findings from evidence nodes:"]
+    for nid, text in details:
+        # Clean up the text a bit
+        clean = text.replace("\n", " ").strip()
+        if len(clean) > 300:
+            clean = clean[:297] + "..."
+        lines.append(f"  - {nid}: {clean}")
+    return lines
+
+
 def _format_sources(sources: list[str]) -> str:
     """Format sources as a numbered reference list."""
     if not sources:
@@ -99,13 +129,15 @@ def build_prompt(question: str, evidence_json: str) -> str:
 
     parts: list[str] = []
 
-    # System instruction
+    # System instruction — tuned for small local models
     parts.append(
         "SYSTEM: You are a precise reasoning assistant. "
         "You receive structured evidence from a knowledge graph. "
-        "Answer ONLY based on the provided evidence. "
-        "If the evidence is insufficient, say \"Insufficient evidence to answer.\" "
-        "Do not invent facts. Cite sources when possible."
+        "The \"Node details\" section contains key facts, numbers, and findings. "
+        "Use those facts to answer the question. "
+        "Quote specific numbers when available. "
+        "If evidence truly lacks the answer, say \"Insufficient evidence to answer.\" "
+        "Do not invent facts."
     )
 
     # Question
@@ -117,15 +149,22 @@ def build_prompt(question: str, evidence_json: str) -> str:
     if not paths and not facts:
         parts.append("  (No evidence found in the knowledge graph.)")
     else:
+        # Node details — the MOST IMPORTANT section for small models
+        # Place it FIRST so the model sees the actual facts immediately
+        node_details = _format_node_details(paths)
+        if node_details:
+            parts.append("\n  Node details (read these facts to answer the question):")
+            parts.extend(node_details)
+
         # Path chains
         if paths:
             parts.append("\n  Knowledge graph paths:")
             path_lines = _format_path_steps(paths)
             parts.extend(path_lines)
 
-        # Facts (human-readable)
+        # Facts (human-readable relations)
         if facts:
-            parts.append("\n  Extracted facts:")
+            parts.append("\n  Relation facts:")
             for fact in facts:
                 parts.append(f"  - {fact}")
 

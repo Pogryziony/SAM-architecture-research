@@ -16,7 +16,9 @@ from nexus.graph.traversal import traverse_with_intent
 from nexus.query.parser import parse_question
 from nexus.reasoning.evidence_builder import build_evidence, build_evidence_pack
 from nexus.reasoning.prompt_template import build_prompt
-from nexus.reasoning.model_interface import DummyModel, ModelInterface
+from nexus.reasoning.model_interface import (
+    DummyModel, ModelInterface, get_available_model,
+)
 from nexus.reasoning.verifier import Verifier, VerificationResult
 
 
@@ -43,7 +45,7 @@ def answer_question(
     Args:
         question: Natural language question
         graph: Populated graph store
-        model: ModelInterface instance (defaults to DummyModel)
+       model: ModelInterface instance (defaults to auto-detected best model)
         verifier: Verifier instance (defaults to Verifier with 0.2 threshold)
         max_depth: Maximum traversal depth
         beam_width: Beam width for search
@@ -59,7 +61,7 @@ def answer_question(
             - path_count: number of traversal paths found
     """
     if model is None:
-        model = DummyModel()
+       model = get_available_model()
     if verifier is None:
         verifier = Verifier(hallucination_threshold=0.2)
 
