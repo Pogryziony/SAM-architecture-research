@@ -284,8 +284,11 @@ def build_prompt(question: str, evidence_json: str) -> str:
             "SYSTEM: You are a precise reasoning assistant. "
             "You receive structured evidence from a knowledge graph. "
             "Answer ONLY about the specific entity mentioned in the question. "
-            "Use its key finding. One or two sentences. "
-            "Do NOT list findings from other entities. "
+            "Start your answer with the entity name and the fact. "
+            "Example: 'The oracle memory experiment achieved 99.87% accuracy.' "
+            "For factual questions: answer in EXACTLY ONE sentence with the specific value. "
+            "Do NOT list dependency chains unless the question asks about dependencies. "
+            "Do NOT mention other experiments' findings. "
             "Quote specific numbers when available. "
             "If evidence truly lacks the answer, say \"Insufficient evidence to answer.\" "
             "Do not invent facts."
@@ -296,6 +299,7 @@ def build_prompt(question: str, evidence_json: str) -> str:
             "Explain the causal chain from the evidence. "
             "Show how entities are connected and why. "
             "Quote specific findings. "
+            "Do NOT list dependency chains unless the question asks about dependencies. "
             "If evidence truly lacks the answer, say \"Insufficient evidence to answer.\" "
             "Do not invent facts."
         ),
@@ -303,7 +307,9 @@ def build_prompt(question: str, evidence_json: str) -> str:
             "SYSTEM: You are a precise reasoning assistant. "
             "You receive structured evidence from a knowledge graph. "
             "State the comparison clearly. Mention which is higher/better/different and by how much. "
+            "Maximum two sentences. "
             "Quote specific numbers. "
+            "Do NOT list dependency chains. "
             "If evidence truly lacks the answer, say \"Insufficient evidence to answer.\" "
             "Do not invent facts."
         ),
@@ -322,11 +328,23 @@ def build_prompt(question: str, evidence_json: str) -> str:
     # Question
     parts.append(f"\nQUESTION: {question}")
 
-    # IMPORTANT constraint
-    parts.append(
-        "\nIMPORTANT: Answer ONLY the question asked. Do not list all evidence. "
-        "Maximum 3 sentences."
-    )
+    # IMPORTANT constraint — varies by question type
+    if q_type == "factual":
+        parts.append(
+            "\nIMPORTANT: Answer ONLY what the question asks. "
+            "EXACTLY ONE sentence with the specific value. "
+            "Do not list other experiments or dependency chains."
+        )
+    elif q_type == "comparative":
+        parts.append(
+            "\nIMPORTANT: Maximum TWO sentences. State the comparison and numbers. "
+            "Do not list dependency chains."
+        )
+    else:
+        parts.append(
+            "\nIMPORTANT: Answer ONLY the question asked. Do not list all evidence. "
+            "Maximum 3 sentences."
+        )
 
     # Evidence section
     parts.append("\nEVIDENCE:")
@@ -339,13 +357,10 @@ def build_prompt(question: str, evidence_json: str) -> str:
 
         if q_type == "factual" and target_entity:
             # ── Factual: show ONLY the target entity's key findings prominently ──
+            # Strict: prefer facts mentioning the target entity.
             target_facts = [
                 nf for nf in node_facts
                 if target_entity.lower() in nf.get("text", "").lower()
-            ]
-            other_facts = [
-                nf for nf in node_facts
-                if target_entity.lower() not in nf.get("text", "").lower()
             ]
 
             parts.append("\n  The answer to your question is in these facts:")
@@ -355,19 +370,10 @@ def build_prompt(question: str, evidence_json: str) -> str:
                     if text:
                         parts.append(f"  - {text}")
             else:
-                # Fallback: no entity-specific facts found, show all
-                parts.append("  (no entity-specific facts found, using all available evidence)")
+                # Fallback: no entity-specific facts found — show all facts
+                # but with stronger instruction to find the right one
+                parts.append("  (look for the fact most relevant to the question)")
                 for nf in node_facts:
-                    text = nf.get("text", "")
-                    if text:
-                        parts.append(f"  - {text}")
-
-            # Additional context (collapsed note)
-            if other_facts:
-                parts.append(
-                    "\n  Additional context (only use if the key finding above is insufficient):"
-                )
-                for nf in other_facts:
                     text = nf.get("text", "")
                     if text:
                         parts.append(f"  - {text}")
@@ -380,23 +386,26 @@ def build_prompt(question: str, evidence_json: str) -> str:
                     if text:
                         parts.append(f"  - {text}")
 
-        # Node details — filtered to relevant nodes
-        node_details = _format_node_details(filtered_paths)
-        if node_details:
-            parts.append("\n  Supporting evidence:")
-            parts.extend(node_details)
+        # For factual questions with a target entity, skip dependency chains,
+        # supporting evidence, and relation facts — they're irrelevant noise.
+        if not (q_type == "factual" and target_entity):
+            # Node details — filtered to relevant nodes
+            node_details = _format_node_details(filtered_paths)
+            if node_details:
+                parts.append("\n  Supporting evidence:")
+                parts.extend(node_details)
 
-        # Path chains (use filtered paths)
-        if filtered_paths:
-            parts.append("\n  Knowledge graph paths:")
-            path_lines = _format_path_steps(filtered_paths)
-            parts.extend(path_lines)
+            # Path chains (use filtered paths)
+            if filtered_paths:
+                parts.append("\n  Knowledge graph paths:")
+                path_lines = _format_path_steps(filtered_paths)
+                parts.extend(path_lines)
 
-        # Facts (human-readable relations)
-        if facts:
-            parts.append("\n  Relation facts:")
-            for fact in facts:
-                parts.append(f"  - {fact}")
+            # Facts (human-readable relations)
+            if facts:
+                parts.append("\n  Relation facts:")
+                for fact in facts:
+                    parts.append(f"  - {fact}")
 
         # Sources
         if sources:

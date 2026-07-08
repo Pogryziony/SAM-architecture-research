@@ -9,6 +9,7 @@ Handles edge cases: empty graph, no entities found, no paths, etc.
 
 from __future__ import annotations
 
+import re
 import time
 from typing import Any
 
@@ -16,7 +17,7 @@ from nexus.graph.store import InMemoryGraphStore
 from nexus.graph.traversal import traverse_with_intent
 from nexus.query.parser import parse_question
 from nexus.reasoning.evidence_builder import build_evidence, build_evidence_pack
-from nexus.reasoning.prompt_template import build_prompt
+from nexus.reasoning.prompt_template import build_prompt, _find_question_entity
 from nexus.reasoning.model_interface import (
     DummyModel, ModelInterface, get_available_model,
 )
@@ -144,8 +145,33 @@ def answer_question(
 
     # ── Step 3: Build evidence ──
     t0 = time.perf_counter()
-    evidence_json = build_evidence(question, paths, graph, max_paths=max_paths, question_intent=parsed.intent)
-    evidence_pack = build_evidence_pack(question, paths, graph, question_intent=parsed.intent)
+    # Determine target entity for factual questions to filter evidence.
+    # Use _find_question_entity from prompt_template which handles compound
+    # node IDs (e.g., "chainretrieval" matching "chain" + "retriever").
+    target_entity = None
+    if parsed.intent == "factual_lookup":
+        # Build minimal node dicts from paths for _find_question_entity
+        node_dicts: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        for p in paths:
+            nodes: list[dict[str, Any]] = []
+            for step in p.steps:
+                for nid in (step.from_node, step.to_node):
+                    if nid not in seen:
+                        seen.add(nid)
+                        nodes.append({"id": nid})
+            if nodes:
+                node_dicts.append({"nodes": nodes})
+        target_entity = _find_question_entity(question, node_dicts)
+
+    evidence_json = build_evidence(
+        question, paths, graph, max_paths=max_paths,
+        question_intent=parsed.intent, target_entity=target_entity,
+    )
+    evidence_pack = build_evidence_pack(
+        question, paths, graph,
+        question_intent=parsed.intent, target_entity=target_entity,
+    )
     timing["evidence_time"] = round(time.perf_counter() - t0, 6)
     result["evidence_pack"] = evidence_pack
 

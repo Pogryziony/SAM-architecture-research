@@ -133,6 +133,7 @@ def _extract_node_facts(
     paths: list[Path],
     graph: InMemoryGraphStore,
     question_intent: str = "factual_lookup",
+    target_entity: str | None = None,
 ) -> list[dict[str, Any]]:
     """
     Extract curated key_finding/description properties from unique nodes
@@ -221,9 +222,13 @@ def _extract_node_facts(
 
     # ── Pass 4: include validates-linked Concept descriptions even if the
     #            Concept didn't appear in any path step (proactive discovery) ──
+    #            BUT only if no target_entity filter or the concept matches it.
     for concept_id in sorted(validates_concepts):
         if concept_id in seen_nodes:
             continue  # Already included
+        # If target_entity is set, skip concepts not matching it
+        if target_entity and target_entity.lower() not in concept_id.lower():
+            continue
         node = graph.get_node(concept_id)
         if node is None:
             continue
@@ -240,6 +245,19 @@ def _extract_node_facts(
                 "confidence_label": "HIGH (manually curated)",
                 "_priority": priority,
             })
+
+    # If target_entity is specified, filter to only facts mentioning it.
+    # If filtering removes everything, fall back to all facts — the prompt
+    # template will handle second-level filtering.
+    if target_entity:
+        target_lower = target_entity.lower()
+        filtered = [
+            f for f in raw_facts
+            if target_lower in f.get("text", "").lower()
+        ]
+        if filtered:
+            raw_facts = filtered
+        # else: keep all facts as fallback
 
     # Sort by priority descending, then by source for stability
     raw_facts.sort(key=lambda f: (-f["_priority"], f["source"]))
@@ -258,6 +276,7 @@ def build_evidence(
     max_paths: int = 5,
     max_facts_per_path: int = 10,
     question_intent: str = "factual_lookup",
+    target_entity: str | None = None,
 ) -> str:
     """
     Build a structured JSON evidence pack from traversal paths.
@@ -269,6 +288,8 @@ def build_evidence(
         max_paths: Maximum number of paths to include
         max_facts_per_path: Max facts per path
         question_intent: Detected intent (causal_explanation, factual_lookup, etc.)
+        target_entity: If provided, filters node_facts to only those
+                       mentioning this entity (used for factual questions)
 
     Returns:
         JSON string with evidence pack
@@ -321,7 +342,9 @@ def build_evidence(
 
     # Extract curated node facts (key_finding/description) — placed BEFORE
     # edge-based facts because they are more reliable (manually curated).
-    evidence["node_facts"] = _extract_node_facts(paths, graph, question_intent)
+    evidence["node_facts"] = _extract_node_facts(
+        paths, graph, question_intent, target_entity
+    )
 
     evidence["facts"] = all_facts
     evidence["sources"] = sorted(all_sources)
@@ -334,11 +357,15 @@ def build_evidence_pack(
     paths: list[Path],
     graph: InMemoryGraphStore,
     question_intent: str = "factual_lookup",
+    target_entity: str | None = None,
 ) -> dict[str, Any]:
     """
     Build and return the evidence pack as a Python dict (no JSON serialization).
 
     Useful for programmatic access or further processing.
     """
-    raw = build_evidence(question, paths, graph, question_intent=question_intent)
+    raw = build_evidence(
+        question, paths, graph,
+        question_intent=question_intent, target_entity=target_entity,
+    )
     return json.loads(raw)

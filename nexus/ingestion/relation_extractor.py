@@ -16,8 +16,66 @@ from pathlib import Path
 from typing import Any
 
 
-def _normalize_name(name: str) -> str:
-    return name.strip().lower().replace(" ", "_").replace("-", "_")
+def _add_cooccurrence_edges(
+    text: str,
+    source_path: str,
+    entities: list[dict[str, Any]],
+    add_edge_fn,
+    entity_names: set[str],
+) -> None:
+    """
+    Add co-occurrence edges between entities that appear close together
+    (same or adjacent lines) in the same document.
+
+    Limit: max 3 outgoing edges per entity (prevents n^2 explosion).
+    Confidence: 0.50 — moderate, signals shared context without strong claims.
+    """
+    if len(entities) < 2:
+        return
+
+    # Build line → entity names mapping
+    line_entities: dict[int, list[str]] = {}
+    for e in entities:
+        line = e.get("line", 0)
+        name = e.get("name", "")
+        if name and line > 0:
+            line_entities.setdefault(line, []).append(name)
+
+    # Connect entities on the same line or adjacent lines
+    lines = sorted(line_entities.keys())
+    edge_count_per_entity: dict[str, int] = {}
+    max_edges_per_entity = 3
+
+    for i, line in enumerate(lines):
+        entities_here = line_entities[line]
+        # Same line: connect entities to each other
+        for j in range(len(entities_here)):
+            for k in range(j + 1, len(entities_here)):
+                src, tgt = entities_here[j], entities_here[k]
+                if edge_count_per_entity.get(src, 0) >= max_edges_per_entity:
+                    continue
+                if edge_count_per_entity.get(tgt, 0) >= max_edges_per_entity:
+                    continue
+                if src != tgt:
+                    add_edge_fn(src, tgt, "related_to", 0.50,
+                                f"Co-occurrence (same line) in {source_path} (line {line})")
+                    edge_count_per_entity[src] = edge_count_per_entity.get(src, 0) + 1
+                    edge_count_per_entity[tgt] = edge_count_per_entity.get(tgt, 0) + 1
+
+        # Adjacent lines: connect first entity from each adjacent line
+        if i + 1 < len(lines) and lines[i + 1] - line <= 3:
+            next_line = lines[i + 1]
+            next_entities = line_entities[next_line]
+            if entities_here and next_entities:
+                src = entities_here[0]
+                tgt = next_entities[0]
+                if edge_count_per_entity.get(src, 0) < max_edges_per_entity and \
+                   edge_count_per_entity.get(tgt, 0) < max_edges_per_entity:
+                    if src != tgt:
+                        add_edge_fn(src, tgt, "related_to", 0.50,
+                                    f"Co-occurrence (adjacent lines) in {source_path}")
+                        edge_count_per_entity[src] = edge_count_per_entity.get(src, 0) + 1
+                        edge_count_per_entity[tgt] = edge_count_per_entity.get(tgt, 0) + 1
 
 
 def extract_relations(
@@ -145,9 +203,10 @@ def extract_relations(
     # DROPPED: low precision — bold verb patterns generate ~40% noise edges
     # bold_verb_configs = [ ... ] — all dropped; confidence < 0.85
 
-    # ── Pattern 5: Section header X mentions backtick ref Y ──
-    # DROPPED: generic co-occurrence — produces massive noise edge volume
-    # header_blocks = re.finditer( ... ) — confidence 0.50, too noisy
+    # ── Pattern 5: Co-occurrence in same document section ──
+    # Entities appearing close together (same/adjacent lines) likely relate.
+    # Confidence 0.50 — moderate, enables traversal without overwhelming noise.
+    _add_cooccurrence_edges(text, source_path, entities, add_edge, entity_names)
 
     # ── Pattern 6: Cross-document markdown references ──
     # DROPPED: low precision — generic cross-reference noise

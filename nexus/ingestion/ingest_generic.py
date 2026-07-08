@@ -28,7 +28,7 @@ if str(_project_root) not in sys.path:
 
 from nexus.graph import Node, Edge
 from nexus.graph.store import InMemoryGraphStore
-from nexus.ingestion.entity_extractor import extract_from_markdown, _is_valid_entity
+from nexus.ingestion.entity_extractor import extract_from_markdown, _is_valid_entity, _COMMON_WORDS
 from nexus.ingestion.relation_extractor import extract_relations
 from nexus.ingestion.normalizer import canonicalize, normalize_entity_name
 from nexus.ingestion.deduplicator import merge_entity_lists
@@ -70,10 +70,10 @@ def _supplement_entities(text: str, source_path: str) -> list[dict]:
     Extract additional entities that the base entity_extractor misses.
     
     Domain-agnostic patterns:
-      - Bold-emphasized concepts (**X**)
-      - Numeric references (versions, IDs)
-      - Long CamelCase identifiers
-      - Mentioned technologies / proper nouns
+      - Technology mentions (broad list of common frameworks/tools)
+      - CamelCase identifiers (3+ words)
+      - Table cell extraction from markdown tables
+      - Container/service names from docker-compose
     """
     entities = []
     seen = set()
@@ -87,47 +87,74 @@ def _supplement_entities(text: str, source_path: str) -> list[dict]:
                 "source": source_path, "line": line,
             })
 
-    # Bold concepts **X** — skip very short or sentence-like patterns
-    for m in re.finditer(r'\*\*([^*\n]{5,60})\*\*', text):
-        bold = m.group(1).strip()
-        bold = bold.strip('`').strip()
-        if re.search(r'[.?!]$', bold):
-            continue
-        if bold.rstrip().endswith(':'):
-            continue
-        if re.match(r'^[\d.,%+\-=]', bold):
-            continue
-        # Skip obvious sentence fragments
-        if re.match(r'^(the|and|but|that|this|these|those|for|with|from|it|is|are|was|were|be|a|an|if|when|how|use|no|not|into|small|large|every|each|can|has|have|also|only|very|any|our|per|may|via)\b',
-                     bold, re.IGNORECASE):
-            continue
-        line = text[:m.start()].count('\n') + 1
-        add(bold, "Concept", line)
-
-    # Version numbers: v1.2.3, 2.0, 10.x
-    for m in re.finditer(r'\bv?(\d+\.\d+(?:\.\d+)?(?:[a-z]\w*)?)\b', text):
-        ver = m.group(1)
-        if "." in ver and len(ver) >= 3:
+    # ── Technology mentions: broad patterns for common frameworks/tools ──
+    tech_patterns = [
+        # Frontend
+        (r'\b(Next\.?js|Next\.?JS|React|Preact|Vue\.?js|Angular|Svelte|TypeScript|JavaScript|Tailwind\s*CSS|Bootstrap|Material\s*UI|Chakra\s*UI|shadcn|Radix)\b', "Technology"),
+        # Backend
+        (r'\b(ASP\.NET\s*Core|\.NET\s*\d+|Spring\s*Boot|Django|FastAPI|Flask|Express\.?js|Nest\.?JS|Laravel|Ruby\s*on\s*Rails|Gin|Fiber)\b', "Technology"),
+        # Database
+        (r'\b(PostgreSQL|MySQL|MariaDB|SQLite|MongoDB|Redis|Cassandra|Elasticsearch|Neo4j|CockroachDB|SQL\s*Server)\b', "Technology"),
+        # Auth
+        (r'\b(JWT|OAuth|OAuth2|OpenID\s*Connect|SAML|LDAP|Argon2|BCrypt|SCrypt|PBKDF2)\b', "Technology"),
+        # DevOps
+        (r'\b(Docker|Docker\s*Compose|Kubernetes|nginx|Apache|Caddy|Traefik|GitHub\s*Actions|GitLab\s*CI|Jenkins|Terraform|Ansible|Helm)\b', "Technology"),
+        # Real-time / messaging
+        (r'\b(SignalR|WebSocket|Socket\.IO|RabbitMQ|Kafka|Redis\s*Pub/Sub|Azure\s*Service\s*Bus)\b', "Technology"),
+        # Testing
+        (r'\b(xUnit|NUnit|Jest|Vitest|Playwright|Cypress|Selenium|Mocha|Jasmine|Pytest)\b', "Technology"),
+        # Cloud / services
+        (r'\b(AWS|Azure|GCP|Google\s*Cloud|Cloudflare|Vercel|Netlify|Heroku|DigitalOcean|GHCR)\b', "Technology"),
+        # Payments
+        (r'\b(Stripe|PayPal|PayU|Przelewy24|Square|Braintree|Adyen)\b', "Technology"),
+        # Concepts / acronyms
+        (r'\b(REST\s*API|GraphQL|SPA|SSR|SSG|SEO|CI/CD|CSRF|CORS|XSS|HMAC|TLS|SSL|gRPC|SOAP)\b', "Concept"),
+        # EF / ORM
+        (r'\b(EF\s*Core|Dapper|Prisma|Hibernate|Sequelize|TypeORM|SQLAlchemy)\b', "Technology"),
+    ]
+    for pattern, etype in tech_patterns:
+        for m in re.finditer(pattern, text, re.IGNORECASE):
             line = text[:m.start()].count('\n') + 1
-            add(f"v{ver}", "Concept", line)
+            add(m.group(1), etype, line)
 
-    # CamelCase identifiers (3+ words, at least 8 chars): NextJsAppRouter, ServiceListingDto
+    # ── CamelCase identifiers (3+ words, at least 8 chars) ──
     for m in re.finditer(r'\b([A-Z][a-z]+(?:[A-Z][a-z]+){2,})\b', text):
         ident = m.group(1)
         if len(ident) >= 8:
             line = text[:m.start()].count('\n') + 1
             add(ident, "Concept", line)
 
-    # Technology mentions: common frameworks/tools
-    tech_patterns = [
-        (r'\b(Next\.?js|React|TypeScript|Tailwind CSS|PostgreSQL|Docker|nginx|SignalR|EF Core|ASP\.NET Core|JWT|OAuth|Playwright|Vitest|xUnit|GitHub Actions|Docker Compose)\b', "Technology"),
-        (r'\b(Stripe|PayU|Przelewy24|SMSAPI|Sundream|BCrypt|Argon2)\b', "Technology"),
-        (r'\b(REST API|SPA|SSR|SEO|CI/CD|CSRF|CORS|HMAC|TLS|SSL)\b', "Concept"),
-    ]
-    for pattern, etype in tech_patterns:
-        for m in re.finditer(pattern, text, re.IGNORECASE):
-            line = text[:m.start()].count('\n') + 1
-            add(m.group(1), etype, line)
+    # ── Markdown table cell extraction ──
+    # Tables often contain technology names in cells like | Next.js 16 |
+    # Extract from table rows: | cell1 | cell2 | ... |
+    for m in re.finditer(r'^\|(.+)\|$', text, re.MULTILINE):
+        row = m.group(1)
+        cells = [c.strip() for c in row.split('|')]
+        for cell in cells:
+            # Skip header/separator rows (---, ===, :--:)
+            if re.match(r'^[-:=\s]+$', cell):
+                continue
+            # Skip cells that are just punctuation or numbers
+            if re.fullmatch(r'[\d.,%+\-`\s]+', cell):
+                continue
+            # Skip cells with backtick-wrapped code (handled by core extractor)
+            if '`' in cell:
+                continue
+            # Skip cells that are too long (likely sentences, not entity names)
+            if len(cell) > 50:
+                continue
+            # Skip cells with 5+ words (likely descriptions)
+            if len(cell.split()) > 4:
+                continue
+            # Skip single common words
+            if cell.lower() in _COMMON_WORDS:
+                continue
+            # Skip checkbox patterns
+            if re.match(r'^\[[ x✓☐☑]\]', cell):
+                continue
+            if len(cell) >= 3:
+                line = text[:m.start()].count('\n') + 1
+                add(cell, "Entity", line)
 
     # ── Noise filter ──
     entities = [e for e in entities if _is_valid_entity(e["name"])]

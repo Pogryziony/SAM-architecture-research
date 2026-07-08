@@ -7,6 +7,11 @@ Sources supported:
 - JSON/YAML config files
 - Experiment result files
 - GitHub issues (API)
+
+The markdown extractor is designed to be corpus-agnostic:
+- Section headers are filtered aggressively (only ProperName/Experiment patterns pass)
+- Domain-agnostic patterns: backticks, file paths, CONFIG_KEYS, proper names
+- Quality filter: stopwords, noise patterns, minimum letter content
 """
 
 from __future__ import annotations
@@ -105,23 +110,17 @@ def extract_from_markdown(text: str, source_path: str) -> list[dict[str, Any]]:
     """
     entities: list[dict[str, Any]] = []
 
-    # ---- Section headers (## Title) ----
+    # ---- Section headers (## Title) — only extract significant ones ---- 
     for match in re.finditer(r'^#{1,3}\s+(.+)$', text, re.MULTILINE):
         raw_title = match.group(1).strip()
         title = _clean_header(raw_title)
         if not title:
             continue
-        # Skip generic / noise headers (exact or prefix match)
-        title_lower = title.lower()
-        skip = False
-        for gh in _GENERIC_HEADERS:
-            if title_lower == gh or title_lower.startswith(gh + ":") or title_lower.startswith(gh + " --"):
-                skip = True
-                break
-        if skip:
+        # Skip generic / noise headers
+        if _is_generic_heading(title):
             continue
-        # Skip purely numeric / single-letter headers
-        if re.fullmatch(r'[\d.]+\s*([a-zA-Z]?)?', title):
+        # Only extract if header looks significant (ProperName, CodeRef, Experiment)
+        if not _is_significant_header(title):
             continue
         entities.append({
             "name": title,
@@ -249,6 +248,8 @@ def _infer_type_from_header(header: str) -> str:
         return "Requirement"
     if any(w in header_lower for w in ("document", "readme", "guide")):
         return "Document"
+    if any(w in header_lower for w in ("tech", "stack", "architecture", "component", "service")):
+        return "Technology"
     return "Concept"
 
 
@@ -256,10 +257,14 @@ def _infer_type_from_name(name: str) -> str:
     name_lower = name.lower()
     if "test" in name_lower:
         return "TestCase"
-    if name.endswith(".py") or name.endswith(".js") or name.endswith(".ts"):
+    if name.endswith(".py") or name.endswith(".js") or name.endswith(".ts") or name.endswith(".cs"):
         return "CodeFile"
-    if name.endswith(".md"):
+    if name.endswith(".jsx") or name.endswith(".tsx") or name.endswith(".java") or name.endswith(".go"):
+        return "CodeFile"
+    if name.endswith(".md") or name.endswith(".txt") or name.endswith(".rst"):
         return "Document"
+    if name.endswith(".yaml") or name.endswith(".yml") or name.endswith(".json"):
+        return "CodeFile"
     if name.endswith("()"):
         return "Function"
     if "." in name:
@@ -267,9 +272,82 @@ def _infer_type_from_name(name: str) -> str:
     return "Entity"
 
 
-# ---------------------------------------------------------------------------
-# Header cleaning
-# ---------------------------------------------------------------------------
+def _is_generic_heading(name: str) -> bool:
+    """
+    Return True if the name looks like a generic section heading that should
+    NOT be extracted as an entity.
+
+    Checks:
+      - Exact match against generic header list
+      - Starts with generic prefix + colon/dash
+      - Is a single common word
+      - Looks like a sentence (>6 words, ends with punctuation)
+    """
+    name_lower = name.lower().strip()
+    # Exact match against generic headers
+    if name_lower in _GENERIC_HEADERS:
+        return True
+    # Starts with generic prefix (e.g., "introduction: ...", "setup -- ...")
+    for gh in _GENERIC_HEADERS:
+        if name_lower == gh or name_lower.startswith(gh + ":") or name_lower.startswith(gh + " --"):
+            return True
+    # Single common word
+    word_count = len(name_lower.split())
+    if word_count == 1 and name_lower in _COMMON_WORDS:
+        return True
+    # Looks like a sentence (too long, natural language)
+    if word_count > 6 and re.search(r'[.?!]$', name.strip()):
+        return True
+    # Pure question headers
+    if re.match(r'^(what|how|why|when|where|who|is|are|can|do|does|should|will)\b', name_lower):
+        return True
+    return False
+
+
+def _is_significant_header(title: str) -> bool:
+    """
+    Return True if the header title is significant enough to extract as an entity.
+
+    Significant patterns:
+      - Contains a CamelCase identifier (2+ capital letters)
+      - Contains experiment/version references (Experiment X.Y, v2.0)
+      - Contains code references (backtick patterns)
+      - Contains CONFIG_KEY patterns
+      - Is a proper name (2-4 consecutive capitalized words)
+
+    Also rejects task-description headers (starting with verbs like Check, Update, Fix, etc.)
+    """
+    # Reject task-description headers
+    task_verbs = {
+        "check", "update", "edit", "fix", "implement", "add", "remove",
+        "delete", "migrate", "deploy", "create", "configure", "set up",
+        "install", "upgrade", "downgrade", "refactor", "rewrite", "replace",
+        "move", "rename", "restructure", "clean", "cleanup", "optimize",
+        "improve", "change", "modify", "review", "test", "verify", "validate",
+        "build", "run", "start", "stop", "restart", "enable", "disable",
+    }
+    first_word = title.strip().split()[0].lower() if title.strip() else ""
+    if first_word in task_verbs:
+        return False
+    # Contains CamelCase (two or more capital letters in a single word)
+    if re.search(r'[A-Z][a-z]+[A-Z]', title):
+        return True
+    # Contains code references (function_name, ClassName)
+    if re.search(r'[a-z_]+\(\)', title):
+        return True
+    # Contains experiment references
+    if re.search(r'(?:Experiment|Exp|Bug|Gate)\s*[\d]+(?:\.[\d]+)?', title, re.IGNORECASE):
+        return True
+    # Contains version references
+    if re.search(r'\bv?\d+\.\d+', title):
+        return True
+    # Contains proper names (2-4 consecutive capitalized words)
+    if re.search(r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3}\b', title):
+        return True
+    # Contains CONFIG_KEY patterns
+    if re.search(r'[A-Z][A-Z_]{2,}[A-Z]', title):
+        return True
+    return False
 
 def _clean_header(raw: str) -> str:
     """
@@ -296,27 +374,41 @@ def _clean_header(raw: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Common English stop-words — entity names matching only these are noise
-# ---------------------------------------------------------------------------
-_STOP_WORDS: set[str] = {
-    "the", "is", "at", "which", "on", "and", "for", "of", "a", "an",
-    "in", "to", "it", "or", "be", "as", "we", "if", "by", "so", "no",
-    "do", "up", "go", "me", "my",
-}
-
-# ---------------------------------------------------------------------------
-# Common English words (broader set, used for bold + plain-text filtering)
+# Common English words (broad stoplist: ~200 most frequent words)
+# Entity names matching these are noise and are filtered out.
 # ---------------------------------------------------------------------------
 _COMMON_WORDS: set[str] = {
-    "the", "and", "for", "was", "not", "are", "with", "that", "this",
-    "from", "has", "been", "its", "but", "all", "can", "had", "have",
-    "use", "new", "one", "two", "way", "each", "set", "run", "see",
-    "end", "may", "via", "also", "only", "very", "any", "our", "per",
-    "had", "did", "due", "now", "get", "how", "why", "who", "put",
-    "big", "old", "key", "top", "low", "few", "ago", "yet", "own",
-    "off", "out", "too", "far", "the", "its", "his", "her", "etc",
-    *_STOP_WORDS,  # include stop words in common words too
+    # Top 50 most common English words
+    "the", "be", "to", "of", "and", "a", "in", "that", "have", "i",
+    "it", "for", "not", "on", "with", "he", "as", "you", "do", "at",
+    "this", "but", "his", "by", "from", "they", "we", "say", "her", "she",
+    "or", "an", "will", "my", "one", "all", "would", "there", "their", "what",
+    "so", "up", "out", "if", "about", "who", "get", "which", "go", "me",
+    # Next 50
+    "when", "make", "can", "like", "time", "no", "just", "him", "know", "take",
+    "people", "into", "year", "your", "good", "some", "could", "them", "see", "other",
+    "than", "then", "now", "look", "only", "come", "its", "over", "think", "also",
+    "back", "after", "use", "two", "how", "our", "work", "first", "well", "way",
+    "even", "new", "want", "because", "any", "these", "give", "day", "most", "us",
+    # Next 50
+    "great", "must", "such", "here", "high", "own", "old", "right", "still",
+    "off", "need", "try", "each", "found", "long", "ask", "last", "same", "may",
+    "between", "called", "keep", "very", "left", "few", "while", "along", "might",
+    "close", "seem", "next", "open", "begin", "got", "run", "walk", "help", "turn",
+    "start", "show", "hear", "play", "move", "live", "mean", "pull", "push", "end",
+    # More common noise words
+    "put", "due", "per", "via", "yet", "ago", "far", "big", "top", "low",
+    "set", "cut", "let", "add", "had", "did", "has", "was", "were", "been",
+    "are", "itself", "himself", "herself", "themselves", "something", "anything",
+    "nothing", "everything", "someone", "anyone", "everyone", "much", "many",
+    "more", "less", "really", "quite", "almost", "rather", "enough", "too",
+    "perhaps", "maybe", "often", "always", "never", "ever", "already",
+    "above", "below", "through", "around", "throughout", "within", "without",
+    "during", "before", "after", "until", "since", "upon", "across",
+    "etc", "eg", "ie", "vs", "aka", "note", "yes", "no", "ok", "okay",
+    "please", "thanks", "welcome", "done", "using", "based",
 }
+_STOP_WORDS: set[str] = _COMMON_WORDS  # alias for backward compatibility
 
 
 def _is_valid_entity(name: str) -> bool:
@@ -326,9 +418,15 @@ def _is_valid_entity(name: str) -> bool:
     Rejects:
       - Names shorter than 3 characters
       - Names that are pure numeric (e.g. "12", "0.5")
-      - Names that are stop words (the, is, at, etc.)
+      - Names that contain no letters (pure punctuation/numbers)
+      - Names that are stop words / common English words
       - Names containing pipe characters (markdown table residue)
       - Names containing backticks (formatting artifacts)
+      - Names that look like URLs (http://, https://, www.)
+      - Names that look like email addresses (@)
+      - Names that are version numbers (v1.2.3, 10.x)
+      - Names that are dates (YYYY-MM-DD, DD/MM/YYYY)
+      - Names that look like generic section headings
     """
     stripped = name.strip()
     if len(stripped) < 3:
@@ -337,10 +435,40 @@ def _is_valid_entity(name: str) -> bool:
         return False
     if "`" in stripped:
         return False
-    if stripped.lower() in _STOP_WORDS:
-        return False
     # Pure numeric (with optional decimal point and percent sign)
     if re.fullmatch(r"[\d]+(?:\.[\d]+)?%?", stripped):
+        return False
+    # Must contain at least one letter
+    if not re.search(r"[a-zA-Z]", stripped):
+        return False
+    # Checkbox patterns: [x], [ ], ✓, ☐, ☑
+    if re.match(r'^\[[ x✓☐☑]\]', stripped):
+        return False
+    # Boolean literals
+    if stripped.lower() in {"true", "false", "null", "none", "undefined"}:
+        return False
+    # Very long names (> 80 chars) are likely sentences or table residue
+    if len(stripped) > 80:
+        return False
+    # URL patterns
+    if re.match(r'https?://', stripped, re.IGNORECASE):
+        return False
+    if re.match(r'www\.', stripped, re.IGNORECASE):
+        return False
+    # Email addresses
+    if '@' in stripped and ('.' in stripped.split('@')[-1] if '@' in stripped else False):
+        return False
+    # Version numbers: v1.2.3, v10, 2.0.1
+    if re.fullmatch(r'v?\d+\.\d+(?:\.\d+)?(?:[a-z]\w*)?', stripped, re.IGNORECASE):
+        return False
+    # Dates: 2024-03-15, 2024/03/15, 15.03.2024
+    if re.fullmatch(r'\d{2,4}[-/.]\d{1,2}[-/.]\d{1,4}', stripped):
+        return False
+    # Common English word (check lowercase)
+    if stripped.lower() in _COMMON_WORDS:
+        return False
+    # Filter generic headings (even after cleaning)
+    if _is_generic_heading(stripped):
         return False
     return True
 
@@ -428,10 +556,66 @@ def _extract_plain_text_entities(text: str, source_path: str) -> list[dict[str, 
             continue
         if _is_inside_backtick(text, m.start(), m.end()):
             continue
-        if re.match(r'^(the|and|but|that|this|these|those|for|with|from|it|is|are|was|were|be|a|an|if|when|how|use|no|not|into|small|large|every|each)\b',
+        if re.match(r'^(the|and|but|that|this|these|those|for|with|from|it|is|are|was|were|be|a|an|if|when|how|use|no|not|into|small|large|every|each|can|has|have|also|only|very|any|our|per|may|via)\b',
                      bold, re.IGNORECASE):
             continue
         _add(bold, "Concept", m.start())
+
+    # --- DOMAIN-AGNOSTIC PATTERNS ---
+
+    # CONFIG_KEY patterns: UPPER_CASE_WITH_UNDERSCORES (min 2 parts)
+    # e.g. AZURE_SUBSCRIPTION_ID, JWT_ACCESS_TOKEN, SMS_API_KEY
+    for m in re.finditer(r'\b([A-Z][A-Z0-9]*(?:_[A-Z][A-Z0-9]*){1,})\b', text):
+        key = m.group(1)
+        if len(key) >= 6 and not key.startswith("HTTP"):
+            start, end = m.span()
+            if _is_inside_backtick(text, start, end):
+                continue
+            _add(key, "Entity", m.start())
+
+    # Generic file paths: dir/file.ext, src/main.py, docs/guide.md
+    for m in re.finditer(r'\b([\w][\w./_-]*\.(?:py|js|ts|jsx|tsx|yaml|yml|json|md|cs|css|html|xml|sh|ps1|sql|env|cfg|ini|toml|dockerfile|txt))\b', text, re.IGNORECASE):
+        fpath = m.group(1)
+        if len(fpath) >= 5 and "/" in fpath:
+            start, end = m.span()
+            if _is_inside_backtick(text, start, end):
+                continue
+            etype = "Document" if fpath.endswith(".md") else "CodeFile"
+            _add(fpath, etype, m.start())
+
+    # Proper names: 2-4 consecutive capitalized words (not at start of sentence)
+    # e.g. "App Router", "Docker Compose", "GitHub Actions"
+    # Must not be preceded by sentence-start markers
+    for m in re.finditer(r'(?<![.!?\n]\s)(?<![.!?\n])(?<!\A)\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})\b', text):
+        name = m.group(1)
+        if len(name) >= 6:
+            # Skip if it's a common English phrase
+            if name.lower() in _COMMON_WORDS:
+                continue
+            start, end = m.span()
+            if _is_inside_backtick(text, start, end):
+                continue
+            _add(name, "Entity", m.start())
+
+    # Technology/version combos: "React 19", "PostgreSQL 16", ".NET 10"
+    # Matches capitalized word followed by a number (version)
+    for m in re.finditer(r'\b([A-Z][a-zA-Z.]*(?:\s+[A-Z][a-zA-Z.]*){0,2})\s+(\d+(?:\.\d+)?)\b', text):
+        tech = m.group(1).strip()
+        ver = m.group(2)
+        if len(tech) >= 3 and tech.lower() not in _COMMON_WORDS:
+            # Skip months and other noise
+            if tech.lower() in {"january", "february", "march", "april", "may", "june",
+                                 "july", "august", "september", "october", "november", 
+                                 "december", "chapter", "section", "step", "part", "phase",
+                                 "level", "stage", "type", "case", "option"}:
+                continue
+            start, end = m.span()
+            if _is_inside_backtick(text, start, end):
+                continue
+            name = f"{tech} {ver}"
+            _add(name, "Technology", m.start())
+            # Also add just the tech name without version
+            _add(tech, "Technology", m.start())
 
     # --- Domain terms (outside backticks only) ---
     for pattern, etype in _DOMAIN_TERMS:

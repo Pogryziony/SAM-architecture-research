@@ -1,14 +1,13 @@
 """
 NEXUS External Corpus Benchmark — generalization test.
 
-Runs the full NEXUS pipeline on an external corpus (Azanto documentation)
+Runs the full NEXUS pipeline on an external corpus
 with zero hand-curated aliases. Measures whether rule-based entity/relation
 extraction generalizes to unfamiliar domains.
 
 Usage:
-    python benchmarks/run_external_benchmark.py
-    python benchmarks/run_external_benchmark.py --corpus C:\\Users\\Pogry\\Projects\\azanto\\docs
-    python benchmarks/run_external_benchmark.py --limit 5 --verbose
+    python benchmarks/run_external_benchmark.py --corpus <path/to/docs>
+    python benchmarks/run_external_benchmark.py --corpus <path/to/docs> --limit 5 --verbose
 """
 
 from __future__ import annotations
@@ -212,9 +211,8 @@ def main():
         description="NEXUS External Corpus Benchmark — generalization test"
     )
     parser.add_argument(
-        "--corpus", nargs="+",
-        default=["C:\\Users\\Pogry\\Projects\\azanto"],
-        help="Path(s) to external corpus directory (default: azanto/)"
+        "--corpus", nargs="+", required=True,
+        help="Path(s) to external corpus directory"
     )
     parser.add_argument(
         "--qa",
@@ -242,9 +240,9 @@ def main():
             print(f"Error: corpus directory not found: {d}")
             sys.exit(1)
 
-    qa_path = Path(args.qa) if args.qa else _project_root / "benchmarks" / "external_qa" / "azanto_questions.jsonl"
-    if not qa_path.exists():
-        print(f"Error: QA file not found: {qa_path}")
+    qa_path = Path(args.qa) if args.qa else None
+    if not qa_path or not qa_path.exists():
+        print(f"Error: QA file required. Use --qa <path/to/questions.jsonl>")
         sys.exit(1)
 
     print("=" * 72)

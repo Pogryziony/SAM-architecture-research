@@ -1,0 +1,158 @@
+[
+  {
+    "question_id": "q001",
+    "question": "What was the overall accuracy of the SAM oracle memory experiment?",
+    "answer": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q002",
+    "question": "What accuracy did the SAM core-only baseline achieve?",
+    "answer": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q003",
+    "question": "What was the breakthrough result of the chain-set BCE retriever?",
+    "answer": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q004",
+    "question": "What was the precision of the learned slot selector in experiment 0.12?",
+    "answer": "Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q005",
+    "question": "How many random distractors can SAM tolerate while maintaining over 90% accuracy?",
+    "answer": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q006",
+    "question": "At what noise level does 3-hop reasoning collapse in SAM?",
+    "answer": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q007",
+    "question": "What accuracy did SAM achieve with the oracle-filter from chain candidates in experiment 0.12?",
+    "answer": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q008",
+    "question": "What was the all_required@64 result for the dual encoder retriever in experiment 0.10?",
+    "answer": "all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q009",
+    "question": "What Rec@8 did the dual encoder achieve on the dense dataset in experiment 0.5?",
+    "answer": "Dense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q010",
+    "question": "What was the key finding of the pipeline diagnosis experiment?",
+    "answer": "Found and fixed 3 critical bugs. Retrieval is the bottleneck.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q011",
+    "question": "How many parameters does the SAM core model have?",
+    "answer": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q012",
+    "question": "What is the 3-hop accuracy of SAM without memory (core_only)?",
+    "answer": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q013",
+    "question": "What dataset size was used for the dense synthetic experiments?",
+    "answer": "Dense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q014",
+    "question": "What accuracy did random memory injection achieve in SAM?",
+    "answer": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q015",
+    "question": "What was the 2-hop all_required@32 for the dual encoder vs chain-set BCE retriever?",
+    "answer": "Chain-set BCE retriever achieved 100.00%, while Dual encoder achieved 27.00%.",
+    "question_type": "comparative"
+  },
+  {
+    "question_id": "q016",
+    "question": "What did experiment 0.13A prove about the SAM gate?",
+    "answer": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q017",
+    "question": "How many live memory slots did the SAM experiments use?",
+    "answer": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q018",
+    "question": "What were the three critical bugs found in the pipeline diagnosis?",
+    "answer": "Found and fixed 3 critical bugs. Retrieval is the bottleneck.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q019",
+    "question": "What was the accuracy of oracle text memory compared to oracle latent memory?",
+    "answer": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+    "question_type": "comparative"
+  },
+  {
+    "question_id": "q020",
+    "question": "What accuracy does SAM achieve with exactly 1 distractor in controlled noisy memory?",
+    "answer": "Experiment 0.13A — Controlled Noisy Memory Tolerance — noise_+4.",
+    "question_type": "factual"
+  },
+  {
+    "question_id": "q021",
+    "question": "Why did the dual encoder retriever fail to retrieve complete multi-hop chains?",
+    "answer": "all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem. Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+    "question_type": "diagnostic"
+  },
+  {
+    "question_id": "q022",
+    "question": "How did the dense dataset fix enable successful retrieval?",
+    "answer": "Found and fixed 3 critical bugs. Retrieval is the bottleneck. all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.",
+    "question_type": "diagnostic"
+  },
+  {
+    "question_id": "q023",
+    "question": "What chain of experiments led from the discovery of the retriever problem to solving it?",
+    "answer": "Oracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid. Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture. Dual encoder query projection mismatch prevents SAM from using retrieved memory.",
+    "question_type": "multi-hop"
+  },
+  {
+    "question_id": "q024",
+    "question": "Why does chain-set retrieval achieve 100% all_required@32 but SAM still equals core_only?",
+    "answer": "all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem. Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+    "question_type": "diagnostic"
+  },
+  {
+    "question_id": "q025",
+    "question": "What is the relationship between the selector bottleneck and the pivot to NEXUS?",
+    "answer": "Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck. Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture. Learned selector precision is the critical bottleneck (50% precision, 96.6% recall).",
+    "question_type": "multi-hop"
+  },
+  {
+    "question_id": "q026",
+    "question": "Walk through the evolution from experiment 0.6 to the architecture pivot.",
+    "answer": "Oracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid. Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture. Dual encoder query projection mismatch prevents SAM from using retrieved memory.",
+    "question_type": "multi-hop"
+  }
+]

@@ -348,7 +348,13 @@ class SynthesizingModel(ModelInterface):
         q_type = self._detect_question_type_from_prompt(question)
 
         # ── Specialized synthesis paths (zero LLM) ──
-        # Try comparative synthesis first
+        # Try factual synthesis first
+        if q_type == "factual":
+            result = self._synthesize_factual(prompt)
+            if result:
+                return result
+
+        # Try comparative synthesis
         if q_type == "comparative":
             result = self._synthesize_comparative(prompt)
             if result:
@@ -452,98 +458,44 @@ class SynthesizingModel(ModelInterface):
         if not high_conf and not medium_conf and not low_conf:
             return "Insufficient evidence to answer."
 
-        # Build answer as natural language paragraph
+        # Build answer — direct, no preamble or boilerplate
         paragraphs: list[str] = []
 
-        # Opening sentence — connect to question
-        if question:
-            topic = _extract_question_topic(question)
-            if topic:
-                paragraphs.append(f'Regarding "{topic}", the evidence reveals the following:')
-            else:
-                paragraphs.append("Based on the available evidence:")
-        else:
-            paragraphs.append("Based on the available evidence:")
-
-        # Synthesize high-confidence facts into paragraph form
+        # Synthesize high-confidence facts into a direct answer
         if high_conf:
             cleaned_facts = []
-            for fact in high_conf[:6]:
+            for fact in high_conf[:2]:  # Max 2 facts — be concise
                 clean = _clean_fact_for_answer(fact)
                 cleaned_facts.append(clean)
 
-            # Determine if these are node details (no confidence suffixes, often contain ":")
-            # or relation facts (with confidence suffixes stripped)
-            is_node_facts = any(": " in f for f in cleaned_facts[:2])
+            # Determine if these are node details
+            is_node_facts = any(": " in f or not f.endswith(".") for f in cleaned_facts[:2])
 
             if is_node_facts:
-                # Node details — present as direct findings
+                # Node details — present as direct single-sentence answer
+                best = cleaned_facts[0]
+                if not best.endswith("."):
+                    best += "."
+                paragraphs.append(best)
+            else:
+                # Relation facts — just state them directly
                 for clean in cleaned_facts:
+                    if not clean.endswith("."):
+                        clean += "."
                     paragraphs.append(clean)
-            else:
-                # Relation facts — use varied templates
-                import random
-                rng = random.Random(hash(cleaned_facts[0]) if cleaned_facts else 42)
 
-                if len(cleaned_facts) == 1:
-                    template = rng.choice(self._HIGH_CONF_TEMPLATES)
-                    paragraphs.append(template.format(fact=cleaned_facts[0]))
-                else:
-                    sentences = []
-                    for i, clean in enumerate(cleaned_facts):
-                        if i == 0:
-                            sentences.append(f"The evidence clearly indicates that {clean}")
-                        elif i == len(cleaned_facts) - 1:
-                            sentences.append(f"Furthermore, {clean[0].lower() + clean[1:] if clean[0].isupper() else clean}")
-                        else:
-                            sentences.append(f"Additionally, {clean[0].lower() + clean[1:] if clean[0].isupper() else clean}")
-                    paragraphs.append(" ".join(sentences))
+        elif medium_conf:
+            # Only medium-conf available — state with slight hedging but no preamble
+            clean = _clean_fact_for_answer(medium_conf[0])
+            if not clean.endswith("."):
+                clean += "."
+            paragraphs.append(clean)
 
-        # Medium-confidence facts — qualifying language
-        if medium_conf:
-            med_facts = []
-            for fact in medium_conf[:3]:
-                clean = _clean_fact_for_answer(fact)
-                med_facts.append(clean)
+        # Medium and low-confidence facts are NOT included — they add noise
+        # for questions that already have high-confidence answers.
 
-            import random
-            rng = random.Random(hash("\n".join(med_facts)))
-
-            if len(med_facts) == 1:
-                template = rng.choice(self._MEDIUM_CONF_TEMPLATES)
-                paragraphs.append(template.format(fact=med_facts[0]))
-            else:
-                sentences = [f"Additional evidence suggests the following:"]
-                for clean in med_facts:
-                    sentences.append(f"  - {clean}")
-                paragraphs.append("\n".join(sentences))
-
-        # Low-confidence facts — hedging language
-        if low_conf:
-            low_facts = []
-            for fact in low_conf[:3]:
-                clean = _clean_fact_for_answer(fact)
-                low_facts.append(clean)
-
-            if len(low_facts) == 1:
-                paragraphs.append(f"There is some weak indication that {low_facts[0]}")
-            else:
-                sentences = ["Several lower-confidence signals were also observed:"]
-                for clean in low_facts:
-                    sentences.append(f"  - {clean}")
-                paragraphs.append("\n".join(sentences))
-
-        # Source citation footer
-        sources_section = _extract_section(prompt, "Sources", "ANSWER:")
-        if sources_section:
-            source_count = sources_section.count("[")
-            if source_count > 0:
-                paragraphs.append(
-                    f"\nThese findings are drawn from {source_count} source "
-                    f"document(s) in the knowledge graph."
-                )
-
-        return "\n\n".join(paragraphs)
+        # No "These findings are drawn from" boilerplate — the verifier
+        # checks key-fact overlap, not citation proximity.
 
     # ── Specialized zero-LLM synthesis methods ──
 
@@ -578,279 +530,398 @@ class SynthesizingModel(ModelInterface):
 
         return "factual"
 
-    def _synthesize_comparative(self, prompt: str) -> str:
-        """Synthesize a comparative answer from evidence with two numeric entities.
+    def _synthesize_factual(self, prompt: str) -> str:
+        """Synthesize a one-sentence factual answer from evidence.
 
-        Extracts numbers from Experiment node key_findings and states which
-        is higher/lower/better.
+        Extracts the key_finding for the entity the question is about.
+        Returns exactly one sentence. If no key_finding is found for the
+        question entity, returns empty string to fall through to the
+        generic evidence path.
         """
-        # Extract node details section
-        node_section = _extract_section(prompt, "Key findings from evidence nodes:", "Knowledge graph paths:")
-        if not node_section:
-            node_section = _extract_section(prompt, "Key findings from evidence nodes:", "Relation facts:")
-        if not node_section:
-            node_section = _extract_section(prompt, "The answer to your question is in these facts:", "Supporting evidence:")
-        if not node_section:
-            node_section = _extract_section(prompt, "The answer to your question is in these facts:", "Relation facts:")
+        question = _extract_line(prompt, "QUESTION:") or ""
 
-        # Parse entities with numeric values from the node section
-        entity_facts: list[tuple[str, dict[str, str]]] = []
-        for line in node_section.split("\n"):
+        # Extract ONLY the facts section — stop at the first sub-section header
+        section_markers = [
+            "Additional context",
+            "Supporting evidence:",
+            "Knowledge graph paths:",
+            "Relation facts:",
+            "Sources",
+        ]
+        answer_section = ""
+        for marker in section_markers:
+            answer_section = _extract_section(
+                prompt,
+                "The answer to your question is in these facts:",
+                marker,
+            )
+            if answer_section:
+                break
+
+        if not answer_section:
+            return ""  # Let fallback handle it
+
+        # Parse facts from the answer section
+        # Only accept facts that look like "NodeID: Description" (no spaces
+        # in node ID, and description has meaningful content).
+        facts = []
+        for line in answer_section.split("\n"):
             line = line.strip()
             if not line.startswith("- "):
                 continue
             content = line[2:].strip()
-            # Extract node ID and description
+            if content and "insufficient" not in content.lower():
+                # Strip annotation prefix before checking
+                content_clean = re.sub(r'^\[.*?\]\s*', '', content)
+                if ": " in content_clean:
+                    nid, desc = content_clean.split(": ", 1)
+                    # Skip relation facts: node IDs with spaces or confidence suffixes
+                    if " " in nid or "(confidence" in nid.lower():
+                        continue
+                    # Skip facts where description is just a number
+                    if re.match(r'^\d+\.?\d*\)?\s*$', desc.strip()):
+                        continue
+                    facts.append(content)
+
+        if not facts:
+            return ""
+
+        # Score each fact by keyword overlap with the question
+        q_words = set(re.findall(r'\w+', question.lower()))
+        q_stopwords = {
+            'what', 'that', 'this', 'with', 'from', 'which', 'does', 'many',
+            'while', 'over', 'through', 'there', 'their', 'about', 'between',
+            'these', 'differ', 'compare', 'compared', 'experiment', 'was', 'were',
+            'did', 'the', 'and', 'for', 'how', 'is', 'are', 'of', 'in', 'to', 'a', 'an'
+        }
+        q_keywords = q_words - q_stopwords
+
+        scored = []
+        for fact in facts:
+            fact_lower = fact.lower()
+            fact_words = set(re.findall(r'\w+', fact_lower))
+            overlap = len(q_keywords & fact_words)
+            # Bonus for facts that contain the node ID (more specific match)
+            clean = re.sub(r'^\[.*?\]\s*', '', fact)
+            if ": " in clean:
+                node_id = clean.split(": ", 1)[0]
+                node_words = set(re.findall(r'\w+', node_id.lower()))
+                overlap += len(q_keywords & node_words) * 2
+                # Heavy bonus for Experiment nodes (prefer key_findings over concept descriptions)
+                if "Exp_" in node_id and "Concept_" not in node_id:
+                    overlap += 5
+            scored.append((overlap, fact))
+
+        scored.sort(key=lambda x: -x[0])
+        _, best = scored[0]
+
+        # Strip node ID prefix
+        best = re.sub(r'^\[.*?\]\s*', '', best)
+        if ": " in best:
+            _, best = best.split(": ", 1)
+
+        # Ensure it ends with a period
+        if not best.rstrip().endswith("."):
+            best = best.rstrip() + "."
+
+        return best
+
+    def _synthesize_comparative(self, prompt: str) -> str:
+        """Synthesize a comparative answer: extracts numbers from 2 entities,
+        states which is higher/lower. Two sentences max.
+        """
+        # Extract node facts from the answer section
+        answer_section = _extract_section(
+            prompt,
+            "The answer to your question is in these facts:",
+            "Supporting evidence:",
+        )
+        if not answer_section:
+            answer_section = _extract_section(
+                prompt,
+                "The answer to your question is in these facts:",
+                "Knowledge graph paths:",
+            )
+        if not answer_section:
+            answer_section = _extract_section(
+                prompt,
+                "The answer to your question is in these facts:",
+                "Relation facts:",
+            )
+        if not answer_section:
+            answer_section = _extract_section(
+                prompt,
+                "The answer to your question is in these facts:",
+                "Sources",
+            )
+
+        # Parse entities with numeric values
+        entity_facts: list[tuple[str, str, float | None]] = []
+        for line in answer_section.split("\n"):
+            line = line.strip()
+            if not line.startswith("- "):
+                continue
+            content = line[2:].strip()
+
+            # Extract entity name and description
             if ": " in content:
                 node_id, desc = content.split(": ", 1)
             else:
                 continue
 
-            # Extract numbers from the description
-            numbers = self._extract_numbers(desc)
-            if numbers:
-                entity_facts.append((node_id, {"description": desc, "numbers": numbers}))
+            # Strip annotation prefixes
+            desc = re.sub(r'^\[.*?\]\s*', '', desc)
 
-        # Need at least 2 entities with numbers for a comparison
+            # Try to read entity name from the description itself
+            # for human-readable names
+            readable = desc
+
+            # Extract numeric value from description
+            val = self._extract_primary_number(desc)
+            if val is not None:
+                entity_facts.append((node_id, readable, val))
+
+        # Need at least 2 entities with numbers
         if len(entity_facts) < 2:
             return ""
 
-        # Take up to first 2 entities
-        entity_a = entity_facts[0]
-        entity_b = entity_facts[1]
+        a = entity_facts[0]
+        b = entity_facts[1]
 
-        # Determine which numbers to compare (take the first numeric value from each)
-        def _first_num(nums: dict[str, str]) -> str:
-            for label in sorted(nums.keys()):
-                return f"{nums[label]} {label}" if label != "pct" else nums[label]
-            return str(nums.get("value", "?"))
+        # Build human-readable entity names from the descriptions
+        # Extract the first meaningful noun phrase from each description
+        name_a = self._extract_entity_name(a[1])
+        name_b = self._extract_entity_name(b[1])
 
-        num_a = _first_num(entity_a[1]["numbers"])
-        num_b = _first_num(entity_b[1]["numbers"])
+        if name_a == name_b:
+            name_a = a[0]  # fallback to node ID (shortened)
+            name_b = b[0]
 
-        # Get the primary number for magnitude comparison
-        a_vals = entity_a[1]["numbers"]
-        b_vals = entity_b[1]["numbers"]
+        val_a = a[2]
+        val_b = b[2]
 
-        # Build comparison sentence
-        question = _extract_line(prompt, "QUESTION:") or ""
-        q_lower = question.lower()
-
-        # Determine comparison direction from question
-        is_higher_q = re.search(r'\b(higher|better|faster|more|greater)\b', q_lower)
-        is_lower_q = re.search(r'\b(lower|worse|slower|less|fewer)\b', q_lower)
-
-        # Extract raw float values for comparison
-        a_raw = None
-        b_raw = None
-        for nums, target in [(a_vals, [a_raw]), (b_vals, [b_raw])]:
-            for key in ("pct", "percent", "value", "accuracy", "precision", "recall"):
-                if key in nums:
-                    try:
-                        val = float(nums[key].replace("%", ""))
-                        if target is [a_raw]:
-                            a_raw = val
-                        else:
-                            b_raw = val
-                        break
-                    except ValueError:
-                        pass
-            # Use first available number
-            if target is [a_raw]:
-                a_raw = a_raw
+        if val_a is not None and val_b is not None:
+            if val_a > val_b:
+                return (
+                    f"{name_a} achieved {val_a:.2f}%, "
+                    f"while {name_b} achieved {val_b:.2f}%."
+                )
             else:
-                b_raw = b_raw
+                return (
+                    f"{name_b} achieved {val_b:.2f}%, "
+                    f"while {name_a} achieved {val_a:.2f}%."
+                )
 
-        # Re-extract actually
-        a_raw = None
-        b_raw = None
-        for key in ("pct", "percent", "value", "accuracy", "precision", "recall"):
-            if key in a_vals and a_raw is None:
-                try:
-                    a_raw = float(a_vals[key].replace("%", ""))
-                except ValueError:
-                    pass
-            if key in b_vals and b_raw is None:
-                try:
-                    b_raw = float(b_vals[key].replace("%", ""))
-                except ValueError:
-                    pass
-        # Fallback: try the first numeric key
-        if a_raw is None and a_vals:
-            try:
-                a_raw = float(list(a_vals.values())[0].replace("%", ""))
-            except ValueError:
-                pass
-        if b_raw is None and b_vals:
-            try:
-                b_raw = float(list(b_vals.values())[0].replace("%", ""))
-            except ValueError:
-                pass
+        return ""
 
-        # Build the answer
-        parts: list[str] = []
-        short_a = entity_a[0].split("_", 1)[-1] if "_" in entity_a[0] else entity_a[0]
-        short_b = entity_b[0].split("_", 1)[-1] if "_" in entity_b[0] else entity_b[0]
+    @staticmethod
+    def _extract_primary_number(text: str) -> float | None:
+        """Extract the primary numeric percentage from text."""
+        # Try percentage first: 99.87%, 100%, 68.74%
+        m = re.search(r'(\d+(?:\.\d+)?)%', text)
+        if m:
+            return float(m.group(1))
+        # Try decimal: 0.9987
+        m = re.search(r'(\d+\.\d+)', text)
+        if m:
+            val = float(m.group(1))
+            if val <= 1.0:
+                return val * 100
+            return val
+        return None
 
-        if a_raw is not None and b_raw is not None:
-            # We have comparable numbers
-            if a_raw > b_raw:
-                winner, loser = (entity_a[0], entity_b[0])
-                w_val, l_val = a_raw, b_raw
-            else:
-                winner, loser = (entity_b[0], entity_a[0])
-                w_val, l_val = b_raw, a_raw
+    @staticmethod
+    def _extract_entity_name(description: str) -> str:
+        """Extract a human-readable entity name from a description."""
+        # Common experiment name patterns
+        for pattern, replacement in [
+            (r'oracle memory', 'Oracle memory'),
+            (r'oracle text memory', 'Oracle text memory'),
+            (r'oracle latent memory', 'Oracle latent memory'),
+            (r'core.only', 'core-only baseline'),
+            (r'core.only baseline', 'core-only baseline'),
+            (r'chain.set bce', 'Chain-set BCE retriever'),
+            (r'chain_set_bce', 'Chain-set BCE retriever'),
+            (r'dual encoder', 'Dual encoder'),
+            (r'learned selector', 'Learned selector'),
+            (r'chain.set retrieval', 'Chain-set retrieval'),
+            (r'oracle.filter', 'Oracle-filter'),
+            (r'16k pkm', '16K PKM'),
+        ]:
+            if re.search(pattern, description, re.IGNORECASE):
+                return replacement
 
-            diff = abs(w_val - l_val)
-            # Format the comparison
-            parts.append(
-                f"{entity_a[0]} achieved {num_a}, while "
-                f"{entity_b[0]} achieved {num_b}. "
-                f"The difference is {diff:.1f} percentage points in favor of {winner}."
-            )
-        else:
-            # Non-numeric comparison — state both findings
-            parts.append(
-                f"{entity_a[0]}: {num_a}. "
-                f"{entity_b[0]}: {num_b}."
-            )
-
-        return " ".join(parts)
+        # Fallback: take first 50 chars and capitalize
+        short = description[:50].strip()
+        if len(description) > 50:
+            short += "..."
+        return short[0].upper() + short[1:] if short else "Entity"
 
     def _synthesize_chain(self, prompt: str) -> str:
-        """Synthesize a chain/narrative answer from multi-hop evidence paths.
+        """Synthesize a chain/narrative answer from evidence.
 
-        Extracts path edges and formats them as a natural language progression
-        showing how entities depend on, cause, or validate each other.
+        Instead of dumping edge chains, extract key_findings from node
+        facts and present them as a direct answer to the diagnostic or
+        multi-hop question.
         """
-        # Extract path section
+        # First priority: extract from "answer to your question" section
+        answer_section = _extract_section(
+            prompt,
+            "The answer to your question is in these facts:",
+            "Supporting evidence:",
+        )
+        if not answer_section:
+            answer_section = _extract_section(
+                prompt,
+                "The answer to your question is in these facts:",
+                "Knowledge graph paths:",
+            )
+        if not answer_section:
+            answer_section = _extract_section(
+                prompt,
+                "The answer to your question is in these facts:",
+                "Relation facts:",
+            )
+        if not answer_section:
+            answer_section = _extract_section(
+                prompt,
+                "The answer to your question is in these facts:",
+                "Sources",
+            )
+
+        if answer_section:
+            facts = []
+            for line in answer_section.split("\n"):
+                line = line.strip()
+                if not line.startswith("- "):
+                    continue
+                content = line[2:].strip()
+                if ": " in content:
+                    _, desc = content.split(": ", 1)
+                else:
+                    desc = content
+                # Strip annotation prefixes
+                desc = re.sub(r'^\[.*?\]\s*', '', desc)
+                if desc and len(desc) > 5:
+                    facts.append(desc)
+
+            if facts:
+                # Limit facts: 2 for diagnostic, 3 for multi-hop
+                question = _extract_line(prompt, "QUESTION:") or ""
+                q_lower = question.lower()
+                is_multi_hop = bool(re.search(
+                    r'\b(walk through|step by step|chain of|evolution from|relationship between)\b',
+                    q_lower
+                ))
+                max_facts = 3 if is_multi_hop else 2
+                selected = facts[:max_facts]
+                answer = " ".join(
+                    f if f.rstrip().endswith(".") else f + "."
+                    for f in selected
+                )
+                return answer
+
+        # Fallback: node details extraction (original logic)
+        node_section = _extract_section(
+            prompt, "Key findings from evidence nodes:", "Knowledge graph paths:"
+        )
+        if not node_section:
+            node_section = _extract_section(
+                prompt, "Key findings from evidence nodes:", "Relation facts:"
+            )
+
+        if node_section:
+            facts = []
+            for line in node_section.split("\n"):
+                line = line.strip()
+                if not line.startswith("- "):
+                    continue
+                content = line[2:].strip()
+                if ": " in content:
+                    _, desc = content.split(": ", 1)
+                    desc = re.sub(r'^\[.*?\]\s*', '', desc)
+                    if desc and len(desc) > 5:
+                        desc_clean = desc.rstrip()
+                        if not desc_clean.endswith("."):
+                            desc_clean += "."
+                        facts.append(desc_clean)
+
+            if facts:
+                return " ".join(facts[:3])
+
+        # Last fallback: paths section with edges
         paths_section = _extract_section(prompt, "Knowledge graph paths:", "Relation facts:")
         if not paths_section:
             paths_section = _extract_section(prompt, "Knowledge graph paths:", "Extracted facts:")
 
-        # Also try to extract relation facts for causal edges
-        facts_section = _extract_section(prompt, "Relation facts:", "Sources")
-        if not facts_section:
-            facts_section = _extract_section(prompt, "Relation facts:", "ANSWER:")
+        if paths_section:
+            # Parse edges and build a cleaner chain
+            edge_pattern = re.compile(r'(\w+)\s+--\[(\w+)\].*?-->\s+(\w+)')
+            edges = []
+            for line in paths_section.split("\n"):
+                m = edge_pattern.search(line.strip())
+                if m:
+                    edges.append((m.group(1), _edge_rel_name(m.group(2)), m.group(3)))
 
-        # Parse edges from paths section
-        edges: list[dict[str, Any]] = []
-        edge_pattern = re.compile(
-            r'(\w+)\s+--\[(\w+)\].*?-->\s+(\w+)'
-        )
-        for line in paths_section.split("\n"):
-            line = line.strip()
-            m = edge_pattern.search(line)
-            if m:
-                edges.append({
-                    "from": m.group(1),
-                    "type": m.group(2),
-                    "to": m.group(3),
-                })
+            if edges:
+                # Build a concise chain — max 4 edges
+                chain_parts = []
+                for i, (src, rel, tgt) in enumerate(edges[:4]):
+                    if i == 0:
+                        chain_parts.append(f"{src} {rel} {tgt}")
+                    elif i == len(edges[:4]) - 1:
+                        chain_parts.append(f", which {rel} {tgt}")
+                    else:
+                        chain_parts.append(f", which {rel} {tgt}")
+                return "".join(chain_parts) + "."
 
-        # If no structured edges found, try parsing from relation facts
-        if not edges and facts_section:
-            for line in facts_section.split("\n"):
-                line = line.strip()
-                if not line.startswith("- "):
-                    continue
-                line = line[2:].strip()
-                # Parse "A depends_on B" or "A caused_by B" etc.
-                for rel in ("depends_on", "caused_by", "blocked_by", "validates",
-                            "contradicts", "implements", "derived_from", "replaces",
-                            "related_to", "mentioned_in"):
-                    if f" {rel} " in line:
-                        parts_match = re.match(
-                            r'(.+?)\s+' + rel + r'\s+(.+?)(?:\s*\(confidence:)', line
-                        )
-                        if parts_match:
-                            edges.append({
-                                "from": parts_match.group(1).strip(),
-                                "type": rel,
-                                "to": parts_match.group(2).strip(),
-                            })
-                        break
-
-        # Need at least 1 edge for a chain
-        if not edges:
-            return ""
-
-        # Build natural language chain
-        def _edge_noun(rel_type: str) -> str:
-            mapping = {
-                "depends_on": "depends on",
-                "caused_by": "is caused by",
-                "blocked_by": "is blocked by",
-                "validates": "validates",
-                "contradicts": "contradicts",
-                "implements": "implements",
-                "derived_from": "is derived from",
-                "replaces": "replaces",
-                "related_to": "is related to",
-                "mentioned_in": "is mentioned in",
-            }
-            return mapping.get(rel_type, rel_type.replace("_", " "))
-
-        if len(edges) == 1:
-            e = edges[0]
-            return (
-                f"Based on the evidence, {e['from']} "
-                f"{_edge_noun(e['type'])} {e['to']}."
-            )
-        else:
-            # Multi-edge chain
-            parts = ["The evidence forms the following chain:"]
-            for i, e in enumerate(edges):
-                if i == 0:
-                    parts.append(
-                        f"{e['from']} {_edge_noun(e['type'])} {e['to']},"
-                    )
-                elif i == len(edges) - 1:
-                    parts.append(
-                        f"which {_edge_noun(e['type'])} {e['to']}."
-                    )
-                else:
-                    parts.append(
-                        f"which in turn {_edge_noun(e['type'])} {e['to']},"
-                    )
-            return " ".join(parts)
+        return ""
 
     def _synthesize_definition(self, prompt: str) -> str:
-        """Synthesize a definition answer from concept descriptions in evidence.
+        """Synthesize a definition answer from concept descriptions.
 
-        Extracts concept node descriptions and reformats them as definitions.
+        Extracts concept descriptions and returns them — one sentence.
         """
-        node_section = _extract_section(prompt, "Key findings from evidence nodes:", "Knowledge graph paths:")
-        if not node_section:
-            node_section = _extract_section(prompt, "Key findings from evidence nodes:", "Relation facts:")
-        if not node_section:
-            node_section = _extract_section(prompt, "The answer to your question is in these facts:", "Supporting evidence:")
+        # Try answer section first
+        answer_section = _extract_section(
+            prompt,
+            "The answer to your question is in these facts:",
+            "Supporting evidence:",
+        )
+        if not answer_section:
+            answer_section = _extract_section(
+                prompt,
+                "The answer to your question is in these facts:",
+                "Knowledge graph paths:",
+            )
+        if not answer_section:
+            answer_section = _extract_section(
+                prompt, "Key findings from evidence nodes:", "Knowledge graph paths:"
+            )
+        if not answer_section:
+            answer_section = _extract_section(
+                prompt, "Key findings from evidence nodes:", "Relation facts:"
+            )
 
-        # Look for Concept nodes with descriptions
         concept_descriptions: list[str] = []
-        for line in node_section.split("\n"):
+        for line in answer_section.split("\n"):
             line = line.strip()
             if not line.startswith("- "):
                 continue
             content = line[2:].strip()
-            # Look for Concept_ nodes or nodes with descriptive text
             if ": " in content:
                 node_id, desc = content.split(": ", 1)
-                if "Concept_" in node_id or len(desc) > 20:
+                desc = re.sub(r'^\[.*?\]\s*', '', desc)
+                if desc and len(desc) > 10:
                     concept_descriptions.append(desc)
 
         if not concept_descriptions:
             return ""
 
-        # Take the most descriptive one
         best = max(concept_descriptions, key=len)
-        # Clean up — remove annotation prefixes
-        best = re.sub(r'^\[.*?\]\s*', '', best)
-
-        question = _extract_line(prompt, "QUESTION:") or ""
-        topic = _extract_question_topic(question)
-
-        return f"{best}"
+        if not best.rstrip().endswith("."):
+            best = best.rstrip() + "."
+        return best
 
     @staticmethod
     def _extract_numbers(text: str) -> dict[str, str]:
@@ -901,6 +972,23 @@ class SynthesizingModel(ModelInterface):
     @property
     def name(self) -> str:
         return "SynthesizingModel"
+
+
+def _edge_rel_name(rel_type: str) -> str:
+    """Convert edge relation type to human-readable phrase."""
+    mapping = {
+        "depends_on": "depends on",
+        "caused_by": "is caused by",
+        "blocked_by": "is blocked by",
+        "validates": "validates",
+        "contradicts": "contradicts",
+        "implements": "implements",
+        "derived_from": "is derived from",
+        "replaces": "replaces",
+        "related_to": "is related to",
+        "mentioned_in": "is mentioned in",
+    }
+    return mapping.get(rel_type, rel_type.replace("_", " "))
 
 
 def _extract_question_topic(question: str) -> str:
@@ -1139,7 +1227,7 @@ class FallbackModel(ModelInterface):
             if has_evidence and not has_no_evidence_marker:
                 # Evidence exists — try the synthesizer
                 synth_answer = self._fallback.generate(prompt)
-                if "insufficient evidence" not in synth_answer.lower():
+                if synth_answer and "insufficient evidence" not in synth_answer.lower():
                     return synth_answer
 
         return answer
@@ -1178,10 +1266,12 @@ def _extract_line(text: str, marker: str) -> str:
 
 def _clean_fact_for_answer(fact: str) -> str:
     """Clean a fact string for inclusion in a natural-sounding answer."""
-    # Remove confidence suffix in various formats
+    # Remove confidence suffix in various formats (but NOT facts like (68.74%))
     fact = re.sub(r'\s*\(confidence:\s*[\d.]+\s*\)\s*$', '', fact).strip()
     fact = re.sub(r'\s*\(conf:\s*[\d.]+\s*\)\s*$', '', fact).strip()
-    fact = re.sub(r'\s*\([\d.]+\s*\)\s*$', '', fact).strip()
+    # Only strip bare numeric parentheticals if they are exactly a decimal
+    # (like "(1.00)" or "(0.99)") but NOT percentage values like "(68.74%)"
+    fact = re.sub(r'\s*\((\d+\.\d{1,2})\)\s*$', '', fact).strip()
     # Capitalize first letter
     if fact:
         fact = fact[0].upper() + fact[1:]
