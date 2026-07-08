@@ -20,6 +20,7 @@ from nexus.reasoning.model_interface import (
     DummyModel, ModelInterface, get_available_model,
 )
 from nexus.reasoning.verifier import Verifier, VerificationResult
+from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
 
 def answer_question(
@@ -27,9 +28,10 @@ def answer_question(
     graph: InMemoryGraphStore,
     model: ModelInterface | None = None,
     verifier: Verifier | None = None,
-    max_depth: int = 4,
-    beam_width: int = 5,
+    max_depth: int | None = None,
+    beam_width: int | None = None,
     max_paths: int = 5,
+    config: NEXUSConfig = DEFAULT_CONFIG,
 ) -> dict[str, Any]:
     """
     Run the complete NEXUS pipeline on a natural language question.
@@ -43,27 +45,33 @@ def answer_question(
       6. Verify answer → check against evidence for hallucinations
 
     Args:
-        question: Natural language question
-        graph: Populated graph store
+       question: Natural language question
+       graph: Populated graph store
        model: ModelInterface instance (defaults to auto-detected best model)
-        verifier: Verifier instance (defaults to Verifier with 0.2 threshold)
-        max_depth: Maximum traversal depth
-        beam_width: Beam width for search
-        max_paths: Maximum paths to include in evidence
+       verifier: Verifier instance (defaults to Verifier with threshold from config)
+       max_depth: Maximum traversal depth (default from config)
+       beam_width: Beam width for search (default from config)
+       max_paths: Maximum paths to include in evidence
+       config: NEXUSConfig with tunable parameters
 
     Returns:
-        Dict with keys:
-            - question: original question
-            - answer: model-generated answer text
-            - evidence_pack: dict with paths, facts, sources
-            - verification: VerificationResult
-            - parsed_query: ParsedQuery from the parser
-            - path_count: number of traversal paths found
+       Dict with keys:
+           - question: original question
+           - answer: model-generated answer text
+           - evidence_pack: dict with paths, facts, sources
+           - verification: VerificationResult
+           - parsed_query: ParsedQuery from the parser
+           - path_count: number of traversal paths found
     """
+    if max_depth is None:
+       max_depth = config.max_depth
+    if beam_width is None:
+       beam_width = config.beam_width
+
     if model is None:
        model = get_available_model()
     if verifier is None:
-        verifier = Verifier(hallucination_threshold=0.2)
+       verifier = Verifier(hallucination_threshold=config.hallucination_threshold)
 
     result: dict[str, Any] = {
         "question": question,
@@ -85,9 +93,10 @@ def answer_question(
         return result
 
     # ── Step 1: Parse ──
-    parsed = parse_question(question, graph, cutoff=0.6)
+    parsed = parse_question(question, graph, cutoff=0.6, config=config)
 
     result["parsed_query"] = parsed
+    result["entity_resolution_method"] = parsed.resolution_method
 
     # Edge case: no entities found
     if not parsed.entity_ids:
@@ -108,6 +117,7 @@ def answer_question(
         intent=parsed.intent,
         max_depth=max_depth,
         beam_width=beam_width,
+        config=config,
     )
     result["path_count"] = len(paths)
 
@@ -122,8 +132,8 @@ def answer_question(
         return result
 
     # ── Step 3: Build evidence ──
-    evidence_json = build_evidence(question, paths, graph, max_paths=max_paths)
-    evidence_pack = build_evidence_pack(question, paths, graph)
+    evidence_json = build_evidence(question, paths, graph, max_paths=max_paths, question_intent=parsed.intent)
+    evidence_pack = build_evidence_pack(question, paths, graph, question_intent=parsed.intent)
     result["evidence_pack"] = evidence_pack
 
     # ── Step 4: Build prompt ──
@@ -149,6 +159,9 @@ def run_smoke_test():
 
     from nexus.graph.store import InMemoryGraphStore
     from nexus.ingestion.populate_from_experiments import populate_graph, EXPERIMENTS_DIR
+    from nexus.utils.config import DEFAULT_CONFIG
+
+    config = DEFAULT_CONFIG
 
     print("=" * 70)
     print("NEXUS Pipeline Smoke Test -- answer_question()")
@@ -166,7 +179,7 @@ def run_smoke_test():
     ]
 
     model = DummyModel()
-    verifier = Verifier(hallucination_threshold=0.2)
+    verifier = Verifier(hallucination_threshold=config.hallucination_threshold)
 
     for i, q in enumerate(questions, 1):
         print(f"--- Question {i} ---")

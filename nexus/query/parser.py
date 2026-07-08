@@ -13,6 +13,7 @@ from difflib import get_close_matches
 from typing import Optional
 
 from nexus.graph.store import InMemoryGraphStore
+from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
 
 # ── Intent keyword mapping ──
@@ -45,23 +46,6 @@ STOP_WORDS: set[str] = {
     "what", "which", "who", "whom", "about", "also",
 }
 
-# ── Entity type priority for ranking entry nodes ──
-# Higher-priority types get preferred as beam-search entry points.
-_TYPE_PRIORITY: dict[str, int] = {
-    "Experiment":  10,
-    "Decision":    9,
-    "Concept":     8,
-    "Bug":         7,
-    "Requirement": 6,
-    "TestCase":    5,
-    "Metric":      4,
-    "Entity":      3,
-    "Document":    2,
-    "CodeFile":    1,
-    "Function":    0,
-}
-
-_MAX_ENTRY_NODES: int = 5
 
 # ── Sub-run node marker patterns ──
 # Node IDs matching these patterns are likely sub-experiment runs
@@ -92,6 +76,10 @@ class ParsedQuery:
     direction: str = "both"
     entity_spans: list[tuple[int, int, str]] = field(default_factory=list)
     # (start, end, matched_text) — character offsets of matched entities
+    alias_matched_ids: set[str] = field(default_factory=set)
+    # entity IDs that were resolved via exact alias match (high-confidence)
+    # "alias" | "fuzzy" | "none" — primary resolution method for this query
+    resolution_method: str = "none"
 
 
 def detect_intent(question: str) -> tuple[str, str]:
@@ -112,6 +100,7 @@ def spot_entities(
     question: str,
     graph: InMemoryGraphStore,
     cutoff: float = 0.6,
+    config: NEXUSConfig = DEFAULT_CONFIG,
 ) -> tuple[list[tuple[int, int, str, str]], set[str]]:
     """
     Scan the question text for substrings matching known graph node names.
@@ -202,7 +191,8 @@ def spot_entities(
 def parse_question(
     question: str,
     graph: InMemoryGraphStore,
-    cutoff: float = 0.5,
+    cutoff: float | None = None,
+    config: NEXUSConfig = DEFAULT_CONFIG,
 ) -> ParsedQuery:
     """
     Parse a natural language question into structured query intent.
@@ -210,11 +200,14 @@ def parse_question(
     Args:
         question: The natural language question
         graph: The graph store to resolve entities against
-        cutoff: Fuzzy matching cutoff for entity resolution (default 0.5)
+        cutoff: Fuzzy matching cutoff for entity resolution (default from config)
+        config: NEXUSConfig with tunable parameters
 
     Returns:
         ParsedQuery with resolved entity IDs, intent, and direction
     """
+    if cutoff is None:
+        cutoff = config.fuzzy_cutoff
     # Detect intent
     intent, direction = detect_intent(question)
 
@@ -259,7 +252,15 @@ def parse_question(
     # ── Rank and cap entry nodes ──
     entity_ids = _rank_entities(graph, entity_ids, question=question,
                                 keyword_scores=keyword_scores, wb_matched=wb_matched,
-                                alias_matched=alias_matched)
+                                alias_matched=alias_matched, config=config)
+
+    # ── Determine resolution method ──
+    if not entity_ids:
+        resolution_method = "none"
+    elif alias_matched:
+        resolution_method = "alias"
+    else:
+        resolution_method = "fuzzy"
 
     return ParsedQuery(
         question=question,
@@ -267,6 +268,8 @@ def parse_question(
         intent=intent,
         direction=direction,
         entity_spans=entity_spans,
+        alias_matched_ids=alias_matched,
+        resolution_method=resolution_method,
     )
 
 
@@ -369,10 +372,10 @@ def _question_has_ranking_keywords(question: str) -> bool:
     )
 
 
-def _property_keyword_boost(node, question: str) -> float:
+def _property_keyword_boost(node, question: str, config: NEXUSConfig) -> float:
     """Check if question keywords appear in node's key_finding or description.
 
-    Returns a boost value: 0.0 (no match) up to 0.25.
+    Returns a boost value: 0.0 (no match) up to property_keyword_boost.
     """
     if node is None:
         return 0.0
@@ -397,9 +400,10 @@ def _property_keyword_boost(node, question: str) -> float:
         return 0.0
 
     # Scale boost: higher for Experiment nodes (they are the curated info-rich ones)
-    base = 0.25 if node.type == "Experiment" else 0.15
+    boost = config.property_keyword_boost
+    base = boost if node.type == "Experiment" else boost * 0.6
     # More matching tokens = higher confidence
-    return min(base, match_count * 0.05)
+    return min(base, match_count * (boost / 5.0))
 
 
 def _find_alias_matches(
@@ -435,23 +439,24 @@ def _rank_entities(
     keyword_scores: dict[str, int] | None = None,
     wb_matched: set[str] | None = None,
     alias_matched: set[str] | None = None,
+    config: NEXUSConfig = DEFAULT_CONFIG,
 ) -> list[str]:
     """
     Rank entity IDs by quality and return the top candidates (capped).
 
     Ranking criteria (in order of impact):
-      1. **Alias match**: question contains a phrase mapped to this entity (+10.0)
+      1. **Alias match**: question contains a phrase mapped to this entity (+config.alias_match_boost)
       2. **Keyword match count** (from property token index): +5.0 per match (≥3 tokens)
          or +0.5 per match (<3 tokens)
-      3. **Type priority**: Experiment (10) > Decision (9) > Concept (8) > ...
+      3. **Type priority**: from config.type_priority (lower = higher priority)
       4. **Contextual type boost**: keywords in question boost relevant types (+0.10–0.15)
-      5. **Key-finding text match**: question words in key_finding/description (+0.05–0.25)
-      6. **Curated node boost**: nodes with key_finding property (+0.10)
-      7. **Word-boundary match**: exact segment match beats fuzzy (+0.10)
-      8. **Sub-run penalty**: deprioritize _top, _weighted, _baseline nodes (−0.15)
+      5. **Key-finding text match**: question words in key_finding/description (+config.property_keyword_boost)
+      6. **Curated node boost**: nodes with key_finding property (+config.curated_node_boost)
+      7. **Word-boundary match**: exact segment match beats fuzzy (+config.word_boundary_boost)
+      8. **Sub-run penalty**: deprioritize _top, _weighted, _baseline nodes (config.sub_run_penalty)
          unless the question mentions ranking/topK/weights
       9. **Name length**: longer-span matches beat shorter ones (tiebreaker)
-     10. **Cap at ~5 entry nodes**
+     10. **Cap at config.max_entry_nodes entry nodes**
 
     Returns the top-ranked entity IDs as a list (deduplicated, order preserved).
     """
@@ -478,7 +483,13 @@ def _rank_entities(
     def _score(eid: str) -> tuple[float, int]:
         node = graph.get_node(eid)
         node_type = node.type if node else ""
-        base_type_prio = _TYPE_PRIORITY.get(node_type, 0) if node else 0
+
+        # Compute type priority: config uses lower=higher priority,
+        # invert so that higher score = higher priority.
+        _type_prio_map = config.type_priority
+        _max_prio = max(_type_prio_map.values()) if _type_prio_map else 10
+        base_type_prio = float(_max_prio - _type_prio_map.get(node_type, _max_prio))
+
         ctx_boost = (
             _contextual_type_boost(eid, question, node_type) if node and question
             else 0.0
@@ -486,27 +497,25 @@ def _rank_entities(
 
         # Alias match: question literally contains a phrase mapped to this entity.
         # This is the strongest signal — override all other scores.
-        alias_boost = 50.0 if eid in alias_matched else 0.0
+        alias_boost = config.alias_match_boost if eid in alias_matched else 0.0
 
         # Keyword match boost: proportional to token match count.
         kw_count = keyword_scores.get(eid, 0)
         kw_boost = kw_count * 5.0 if kw_count >= 3 else kw_count * 0.5
 
         # Key-finding / description text match boost
-        prop_boost = _property_keyword_boost(node, question) if node and question else 0.0
+        prop_boost = _property_keyword_boost(node, question, config) if node and question else 0.0
 
         # Curated node boost: nodes from populate_from_experiments have key_finding
-        curated_boost = 0.0
-        if node and "key_finding" in node.properties:
-            curated_boost = 0.10
+        curated_boost = config.curated_node_boost if node and "key_finding" in node.properties else 0.0
 
         # Word-boundary match boost
-        wb_boost = 0.10 if eid in wb_matched else 0.0
+        wb_boost = config.word_boundary_boost if eid in wb_matched else 0.0
 
         # Sub-run penalty: push down sub-experiment noise unless question is ranking-relevant
         sub_run_penalty = 0.0
         if _is_sub_run_node(eid) and not has_ranking_kw:
-            sub_run_penalty = -0.15
+            sub_run_penalty = config.sub_run_penalty
 
         type_score = (
             alias_boost + kw_boost + base_type_prio + ctx_boost + prop_boost
@@ -516,7 +525,7 @@ def _rank_entities(
         return (type_score, name_len)
 
     ranked = sorted(unique, key=_score, reverse=True)
-    return ranked[:_MAX_ENTRY_NODES]
+    return ranked[:config.max_entry_nodes]
 
 
 # ── Convenience: scan all node names for substring matches ──
@@ -525,13 +534,14 @@ def find_entities_by_substring(
     question: str,
     graph: InMemoryGraphStore,
     cutoff: float = 0.6,
+    config: NEXUSConfig = DEFAULT_CONFIG,
 ) -> list[str]:
     """
     Scan the question for any substring that fuzzy-matches a graph node name.
 
     Simpler alternative: does not compute offsets, just returns node IDs.
     """
-    entity_spots, _wb = spot_entities(question, graph, cutoff=cutoff)
+    entity_spots, _wb = spot_entities(question, graph, cutoff=cutoff, config=config)
     # Deduplicate while preserving order
     seen: set[str] = set()
     result: list[str] = []

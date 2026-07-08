@@ -133,6 +133,11 @@ EXPERIMENT_DEFS = {
 }
 
 # ── Alias maps for human-friendly entity resolution ──
+# ALIASES ARE FROZEN. Do not add more without updating the held-out split.
+# The first 30 benchmark questions (q001-q030) have good alias coverage;
+# the remaining 170 are held-out. Adding aliases to improve held-out
+# scores would be overfitting. See benchmarks/run_benchmark.py for the
+# alias-hit vs non-alias split analysis.
 
 _EXPERIMENT_ALIASES: dict[str, list[str]] = {
     "Exp_0_Diagnosis": ["pipeline diagnosis", "experiment 0", "diagnosis experiment", "initial experiment"],

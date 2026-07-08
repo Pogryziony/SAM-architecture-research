@@ -19,6 +19,8 @@ from nexus.reasoning.verifier import (
     VerificationResult,
     Verifier,
     extract_claims,
+    extract_factual_claims,
+    _is_factual_claim,
 )
 from nexus.reasoning.answer import answer_question
 
@@ -32,5 +34,7 @@ __all__ = [
     "VerificationResult",
     "Verifier",
     "extract_claims",
+    "extract_factual_claims",
+    "_is_factual_claim",
     "answer_question",
 ]

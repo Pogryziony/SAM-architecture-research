@@ -99,7 +99,7 @@ def demo():
                     print(f"      {arrow}[{step.edge.type}] (conf: {step.edge.confidence:.2f})--> {step.to_node}")
         
         # Step 5: Build structured evidence
-        evidence_json = build_evidence(question, paths, graph, max_paths=3)
+        evidence_json = build_evidence(question, paths, graph, max_paths=3, question_intent=parsed.intent)
         print(f"\n  Evidence pack ({len(evidence_json)} chars, {len(paths)} paths):")
         # Print just the facts summary
         import json

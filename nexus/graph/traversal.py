@@ -14,16 +14,18 @@ from typing import Optional
 from . import Edge, Path, PathStep, EDGE_TYPE_WEIGHTS
 from .store import InMemoryGraphStore
 from .scoring import score_path, rank_paths
+from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
 
 def beam_search(
     graph: InMemoryGraphStore,
     start_nodes: list[str],
     query_entities: set[str],
-    max_depth: int = 4,
-    beam_width: int = 5,
+    max_depth: int | None = None,
+    beam_width: int | None = None,
     edge_types: Optional[set[str]] = None,
     direction: str = "both",
+    config: NEXUSConfig = DEFAULT_CONFIG,
 ) -> list[Path]:
     """
     Beam search traversal: at each depth, expand all paths, score, keep top beam_width.
@@ -32,14 +34,19 @@ def beam_search(
         graph: The graph store
         start_nodes: Entry node IDs
         query_entities: Set of entity names from the query (for scoring)
-        max_depth: Maximum path length
-        beam_width: Number of paths to keep at each depth
+        max_depth: Maximum path length (default from config)
+        beam_width: Number of paths to keep at each depth (default from config)
         edge_types: Allowed edge types (None = all)
         direction: Traversal direction ('out', 'in', 'both')
+        config: NEXUSConfig with tunable parameters
 
     Returns:
         Ranked list of paths (best first)
     """
+    if max_depth is None:
+        max_depth = config.max_depth
+    if beam_width is None:
+        beam_width = config.beam_width
     # Initialize: one "path" per start node (no steps yet)
     active_paths: list[tuple[str, list[PathStep], set[str]]] = [
         (node, [], {node}) for node in start_nodes if graph.has_node(node)
@@ -111,8 +118,9 @@ def traverse_with_intent(
     entry_nodes: list[str],
     query_entities: set[str],
     intent: str = "causal_explanation",
-    max_depth: int = 4,
-    beam_width: int = 5,
+    max_depth: int | None = None,
+    beam_width: int | None = None,
+    config: NEXUSConfig = DEFAULT_CONFIG,
 ) -> list[Path]:
     """
     High-level traversal that adapts parameters based on query intent.
@@ -122,9 +130,15 @@ def traverse_with_intent(
         entry_nodes: Resolved node IDs for entities in query
         query_entities: Normalized entity name set from query
         intent: Query intent type
-        max_depth: Maximum traversal depth
-        beam_width: Beam width for search
+        max_depth: Maximum traversal depth (default from config)
+        beam_width: Beam width for search (default from config)
+        config: NEXUSConfig with tunable parameters
     """
+    if max_depth is None:
+        max_depth = config.max_depth
+    if beam_width is None:
+        beam_width = config.beam_width
+
     intent_config = {
         "causal_explanation": {
             "direction": "in",
@@ -153,14 +167,15 @@ def traverse_with_intent(
         },
     }
 
-    config = intent_config.get(intent, intent_config["causal_explanation"])
+    intent_params = intent_config.get(intent, intent_config["causal_explanation"])
 
     return beam_search(
         graph=graph,
         start_nodes=entry_nodes,
         query_entities=query_entities,
-        max_depth=config.get("max_depth", max_depth),
+        max_depth=intent_params.get("max_depth", max_depth),
         beam_width=beam_width,
-        edge_types=config.get("edge_types"),
-        direction=config.get("direction", "both"),
+        edge_types=intent_params.get("edge_types"),
+        direction=intent_params.get("direction", "both"),
+        config=config,
     )

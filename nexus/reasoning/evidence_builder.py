@@ -81,19 +81,113 @@ def _fact_from_step(step, graph: InMemoryGraphStore) -> str:
     return f"{from_name} {rel_text} {to_name} (confidence: {confidence:.2f})"
 
 
+# ── Type-aware fact priority ──
+# Priority scores for node types given a question intent.
+# Higher score = more relevant to the question, surfaced first.
+# Maps (node_type, intent_group) -> priority.
+_NODE_FACT_PRIORITY: dict[tuple[str, str], int] = {
+    # causal_explanation / diagnostic → explain WHY
+    ("Concept", "causal_explanation"): 20,
+    ("Bug", "causal_explanation"): 15,
+    ("Decision", "causal_explanation"): 12,
+    ("Concept", "diagnostic"): 20,
+    ("Bug", "diagnostic"): 18,
+    ("Decision", "diagnostic"): 12,
+    # factual_lookup → key findings and concepts are most relevant
+    ("Experiment", "factual_lookup"): 20,
+    ("Concept", "factual_lookup"): 18,
+    ("Metric", "factual_lookup"): 14,
+    # comparison → all typed nodes equal
+    ("Experiment", "comparison"): 15,
+    ("Concept", "comparison"): 15,
+    ("Bug", "comparison"): 15,
+    ("Decision", "comparison"): 15,
+    ("Metric", "comparison"): 15,
+}
+
+# Extra priority boost for Concept nodes directly linked via validates/contradicts edges.
+_VALIDATES_CONCEPT_BOOST = 10
+
+
+def _get_node_fact_priority(node_type: str, question_intent: str) -> int:
+    """Return a priority score for a node type given the question intent.
+
+    Higher = more relevant, surfaced first in KEY FINDINGS.
+    Falls back to 5 for unlisted type/intent combinations.
+    """
+    # Map intent aliases
+    intent = question_intent
+    if intent in ("causal_explanation", "dependency_chain", "impact_analysis"):
+        intent = "causal_explanation"
+    elif intent == "comparison":
+        intent = "comparison"
+    elif intent == "factual_lookup":
+        intent = "factual_lookup"
+    elif intent == "diagnostic":
+        intent = "diagnostic"
+
+    return _NODE_FACT_PRIORITY.get((node_type, intent), 5)
+
+
 def _extract_node_facts(
     paths: list[Path],
     graph: InMemoryGraphStore,
+    question_intent: str = "factual_lookup",
 ) -> list[dict[str, Any]]:
     """
     Extract curated key_finding/description properties from unique nodes
     across all traversal paths.
 
     These are HIGH-CONFIDENCE facts because they were manually curated.
+
+    Type-aware: prioritizes nodes based on their role in the question intent.
+    Concept nodes linked via validates/contradicts edges get extra priority
+    and a special annotation.
+
+    Additionally, for nodes that appear in the path steps, we proactively
+    look up their outgoing validates/contradicts edges and include the
+    target Concept node facts — even if the validates-edge path was pruned
+    by beam search. This ensures questions like "What concept does X validate?"
+    always surface the relevant Concept descriptions.
+
     Returns a list of {text, confidence, source} dicts.
     """
     seen_nodes: set[str] = set()
-    node_facts: list[dict[str, Any]] = []
+    # Track which Concept nodes are directly linked by validates/contradicts edges
+    validates_concepts: set[str] = set()
+
+    # ── Pass 1: discover validates/contradicts → Concept across ALL path edges ──
+    for path in paths:
+        for step in path.steps:
+            edge_type = step.edge.type
+            # Detect validates/contradicts edges → mark target Concept nodes
+            if edge_type in ("validates", "contradicts"):
+                target_id = step.to_node
+                target_node = graph.get_node(target_id)
+                if target_node and target_node.type == "Concept":
+                    validates_concepts.add(target_id)
+
+    # ── Pass 2: proactively discover validates/contradicts edges from
+    #            entry-point nodes (first nodes of each path) to Concept
+    #            nodes. This handles beam-search pruning: even when the
+    #            validates-edge path doesn't make the top-N cut, we still
+    #            surface the Concept that the experiment was designed to
+    #            validate. ──
+    entry_node_ids: set[str] = set()
+    for path in paths:
+        if path.steps:
+            entry_node_ids.add(path.steps[0].from_node)
+
+    for node_id in entry_node_ids:
+        # Look at outgoing validates/contradicts edges from this entry node
+        for edge in graph.get_edges(node_id, "out"):
+            if edge.type in ("validates", "contradicts") and edge.source == node_id:
+                target_node = graph.get_node(edge.target)
+                if target_node and target_node.type == "Concept":
+                    validates_concepts.add(edge.target)
+
+    # ── Pass 3: build priority-ranked fact list ──
+    raw_facts: list[dict[str, Any]] = []
 
     for path in paths:
         for step in path.steps:
@@ -111,15 +205,50 @@ def _extract_node_facts(
                     text = f"{node_id}: {value}"
                     # Determine source
                     source = props.get("title") or props.get("name")
-                    label = "CURATED" if source else "CURATED"
-                    node_facts.append({
+                    # Calculate priority
+                    priority = _get_node_fact_priority(node.type, question_intent)
+                    # Boost validates-linked Concept nodes
+                    if node_id in validates_concepts and node.type == "Concept":
+                        priority += _VALIDATES_CONCEPT_BOOST
+                        text = f"[This concept is directly validated by the experiment] {text}"
+                    raw_facts.append({
                         "text": text,
                         "confidence": 1.0,
                         "source": source or node_id,
                         "confidence_label": "HIGH (manually curated)",
+                        "_priority": priority,
                     })
 
-    return node_facts
+    # ── Pass 4: include validates-linked Concept descriptions even if the
+    #            Concept didn't appear in any path step (proactive discovery) ──
+    for concept_id in sorted(validates_concepts):
+        if concept_id in seen_nodes:
+            continue  # Already included
+        node = graph.get_node(concept_id)
+        if node is None:
+            continue
+        props = node.properties
+        value = props.get("description")
+        if value and isinstance(value, str) and value.strip():
+            priority = _get_node_fact_priority("Concept", question_intent) + _VALIDATES_CONCEPT_BOOST
+            text = f"[This concept is directly validated by the experiment] {concept_id}: {value}"
+            source = props.get("title") or props.get("name")
+            raw_facts.append({
+                "text": text,
+                "confidence": 1.0,
+                "source": source or concept_id,
+                "confidence_label": "HIGH (manually curated)",
+                "_priority": priority,
+            })
+
+    # Sort by priority descending, then by source for stability
+    raw_facts.sort(key=lambda f: (-f["_priority"], f["source"]))
+
+    # Strip internal _priority key before returning
+    for f in raw_facts:
+        del f["_priority"]
+
+    return raw_facts
 
 
 def build_evidence(
@@ -128,6 +257,7 @@ def build_evidence(
     graph: InMemoryGraphStore,
     max_paths: int = 5,
     max_facts_per_path: int = 10,
+    question_intent: str = "factual_lookup",
 ) -> str:
     """
     Build a structured JSON evidence pack from traversal paths.
@@ -138,6 +268,7 @@ def build_evidence(
         graph: The graph store for node lookups
         max_paths: Maximum number of paths to include
         max_facts_per_path: Max facts per path
+        question_intent: Detected intent (causal_explanation, factual_lookup, etc.)
 
     Returns:
         JSON string with evidence pack
@@ -190,7 +321,7 @@ def build_evidence(
 
     # Extract curated node facts (key_finding/description) — placed BEFORE
     # edge-based facts because they are more reliable (manually curated).
-    evidence["node_facts"] = _extract_node_facts(paths, graph)
+    evidence["node_facts"] = _extract_node_facts(paths, graph, question_intent)
 
     evidence["facts"] = all_facts
     evidence["sources"] = sorted(all_sources)
@@ -202,11 +333,12 @@ def build_evidence_pack(
     question: str,
     paths: list[Path],
     graph: InMemoryGraphStore,
+    question_intent: str = "factual_lookup",
 ) -> dict[str, Any]:
     """
     Build and return the evidence pack as a Python dict (no JSON serialization).
 
     Useful for programmatic access or further processing.
     """
-    raw = build_evidence(question, paths, graph)
+    raw = build_evidence(question, paths, graph, question_intent=question_intent)
     return json.loads(raw)

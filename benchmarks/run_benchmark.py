@@ -417,6 +417,7 @@ def run_nexus_pipeline(
         "is_insufficient": is_insufficient,
         "latency_s": round(elapsed, 4),
         "error": None,
+        "entity_resolution_method": result.get("entity_resolution_method", "none"),
         "parsed_entity_ids": (
             result["parsed_query"].entity_ids if result.get("parsed_query") else []
         ),
@@ -591,6 +592,60 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
     )
     entity_resolution_rate = round(er_hits / er_total, 4) if er_total > 0 else 0.0
 
+    # ── Entity resolution by split: first-30 vs remaining (held-out) ──
+    # The first 30 questions have good alias coverage (manually aliased in
+    # populate_from_experiments.py); the remaining 170 are held-out.
+    first_30 = [r for r in results if r.get("question_id", "") in 
+                [f"q{str(n).zfill(3)}" for n in range(1, 31)]]
+    remaining = [r for r in results if r.get("question_id", "") not in
+                 [f"q{str(n).zfill(3)}" for n in range(1, 31)]]
+
+    def _er_rate(subset: list[dict]) -> dict[str, Any]:
+        hits = sum(1 for r in subset if not r["nexus"].get("error") and r["nexus"].get("entity_resolution_hit"))
+        total_er = sum(1 for r in subset if not r["nexus"].get("error") and r["nexus"].get("entity_resolution_hit") is not None)
+        return {
+            "hits": hits, "total": total_er,
+            "rate": round(hits / total_er, 4) if total_er > 0 else 0.0,
+        }
+
+    entity_resolution_by_split = {
+        "first_30": _er_rate(first_30),
+        "remaining": _er_rate(remaining),
+    }
+
+    # ── Entity resolution method breakdown: alias vs fuzzy ──
+    alias_results = [r for r in results if not r["nexus"].get("error")
+                     and r["nexus"].get("entity_resolution_method") == "alias"]
+    fuzzy_results = [r for r in results if not r["nexus"].get("error")
+                     and r["nexus"].get("entity_resolution_method") == "fuzzy"]
+    none_results = [r for r in results if not r["nexus"].get("error")
+                    and r["nexus"].get("entity_resolution_method") == "none"]
+
+    n_alias = len(alias_results)
+    n_fuzzy = len(fuzzy_results)
+    n_none = len(none_results)
+    n_total_with_method = n_alias + n_fuzzy + n_none
+
+    alias_hit_rate = round(n_alias / n_total_with_method, 4) if n_total_with_method > 0 else 0.0
+    fuzzy_hit_rate = round(n_fuzzy / n_total_with_method, 4) if n_total_with_method > 0 else 0.0
+
+    # Accuracy by resolution method
+    def _acc_for(subset: list[dict], key: str = "accuracy") -> dict[str, Any]:
+        accs = [r["nexus"][key] for r in subset
+                if not r["nexus"].get("error")
+                and key in r["nexus"]
+                and r["nexus"][key] is not None]
+        return {
+            "count": len(accs),
+            "avg_accuracy": round(avg(accs), 4),
+        }
+
+    accuracy_by_resolution_method = {
+        "alias": _acc_for(alias_results),
+        "fuzzy": _acc_for(fuzzy_results),
+        "none": _acc_for(none_results),
+    }
+
     return {
         "total_questions": total,
         "scorable_questions": scorable_count,
@@ -633,6 +688,15 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
             "total": er_total,
             "rate": entity_resolution_rate,
         },
+        "entity_resolution_by_split": entity_resolution_by_split,
+        "resolution_method_breakdown": {
+            "alias_count": n_alias,
+            "fuzzy_count": n_fuzzy,
+            "none_count": n_none,
+            "alias_hit_rate": alias_hit_rate,
+            "fuzzy_hit_rate": fuzzy_hit_rate,
+        },
+        "accuracy_by_resolution_method": accuracy_by_resolution_method,
         "conciseness": conciseness_summary,
     }
 
@@ -708,6 +772,68 @@ def print_comparison(summary: dict[str, Any]):
         er = summary["entity_resolution"]
         er_str = f"{er['rate']:.1%} ({er['hits']}/{er['total']})"
         print(f"  {'Entity resolution rate':<38} {er_str:>10} {'N/A':>12}")
+
+    # Entity resolution by split (first-30 vs remaining)
+    if summary.get("entity_resolution_by_split"):
+        er_split = summary["entity_resolution_by_split"]
+        print()
+        print("  -- Entity Resolution by Split (overfitting check) --")
+        if "first_30" in er_split:
+            f30 = er_split["first_30"]
+            f30_str = f"{f30['rate']:.1%} ({f30['hits']}/{f30['total']})"
+            print(f"  {'First 30 (alias-covered)':<38} {f30_str:>10}")
+        if "remaining" in er_split:
+            rem = er_split["remaining"]
+            rem_str = f"{rem['rate']:.1%} ({rem['hits']}/{rem['total']})"
+            print(f"  {'Remaining (held-out)':<38} {rem_str:>10}")
+        # Gap analysis
+        if "first_30" in er_split and "remaining" in er_split:
+            gap = er_split["first_30"]["rate"] - er_split["remaining"]["rate"]
+            gap_str = f"{gap:.1%}"
+            print(f"  {'Overfitting gap':<38} {gap_str:>10}")
+
+    # Resolution method breakdown
+    if summary.get("resolution_method_breakdown"):
+        rmb = summary["resolution_method_breakdown"]
+        print()
+        print("  -- Resolution Method: Alias vs Fuzzy --")
+        alias_str = f"{rmb['alias_hit_rate']:.1%} (n={rmb['alias_count']})"
+        fuzzy_str = f"{rmb['fuzzy_hit_rate']:.1%} (n={rmb['fuzzy_count']})"
+        none_str = f"n={rmb['none_count']}"
+        print(f"  {'Alias-resolved questions':<38} {alias_str:>10}")
+        print(f"  {'Fuzzy-resolved questions':<38} {fuzzy_str:>10}")
+        print(f"  {'No resolution':<38} {none_str:>10}")
+
+    # Accuracy by resolution method
+    if summary.get("accuracy_by_resolution_method"):
+        acc_by_method = summary["accuracy_by_resolution_method"]
+        print()
+        print("  -- Accuracy by Resolution Method --")
+        print(f"  {'Method':<16} {'Count':>8} {'Avg Accuracy':>14}")
+        print(f"  {'-'*16} {'-'*8} {'-'*14}")
+        for method, data in acc_by_method.items():
+            if data["count"] > 0:
+                print(f"  {method:<16} {data['count']:>8} {data['avg_accuracy']:>13.2%}")
+            else:
+                print(f"  {method:<16} {data['count']:>8} {'N/A':>14}")
+
+        # Overfitting assessment
+        alias_acc = acc_by_method.get("alias", {}).get("avg_accuracy", 0) or 0
+        fuzzy_acc = acc_by_method.get("fuzzy", {}).get("avg_accuracy", 0) or 0
+        alias_n = acc_by_method.get("alias", {}).get("count", 0)
+        fuzzy_n = acc_by_method.get("fuzzy", {}).get("count", 0)
+        if alias_n > 0 and fuzzy_n > 0:
+            acc_gap = alias_acc - fuzzy_acc
+            print()
+            if acc_gap > 0.15:
+                print(f"  !! OVERFITTING: Alias-resolved questions score {acc_gap:.0%} higher --")
+                print(f"    aliases are doing real work but on a specific question set.")
+            elif acc_gap > 0.05:
+                print(f"  !! MILD OVERFITTING: Alias advantage of {acc_gap:.0%} suggests")
+                print(f"    aliases help but fuzzy matching works partially.")
+            else:
+                print(f"  OK: NO OVERFITTING: Accuracy similar regardless of resolution method.")
+                print(f"    Fuzzy matching is working well enough; aliases are a speed optimization.")
 
     # Conciseness
     if summary.get("conciseness"):
@@ -868,7 +994,8 @@ def main():
         nex_fuzzy = nexus_scores["fuzzy_accuracy"]
         bas_fuzzy = baseline_scores["fuzzy_accuracy"]
         er_hit = "HIT" if entity_resolution_hit else "MISS"
-        print(f"  {marker} {qid}: {status} | ER={er_hit} | fuzzy={nex_fuzzy if nex_fuzzy is not None else 'N/A'} | paths={nexus_result['path_count']} | "
+        er_method = nexus_result.get("entity_resolution_method", "?")
+        print(f"  {marker} {qid}: {status} | ER={er_hit}({er_method}) | fuzzy={nex_fuzzy if nex_fuzzy is not None else 'N/A'} | paths={nexus_result['path_count']} | "
               f"nexus={nexus_result['latency_s']:.3f}s | baseline={baseline_result['latency_s']:.3f}s (fuzzy={bas_fuzzy if bas_fuzzy is not None else 'N/A'})")
         
         results.append({

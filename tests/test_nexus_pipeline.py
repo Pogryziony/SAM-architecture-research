@@ -17,6 +17,7 @@ from nexus.query.parser import detect_intent, spot_entities, parse_question
 from nexus.reasoning.verifier import Verifier, VerificationResult, extract_claims
 from nexus.reasoning.evidence_builder import build_evidence_pack, _fact_from_step
 from nexus.reasoning.answer import answer_question
+from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -517,3 +518,138 @@ class TestAnswerQuestionEdgeCases:
         assert result["path_count"] > 0
         assert len(result["answer"]) > 0
         assert "Insufficient evidence" not in result["answer"]
+
+
+# ═══════════════════════════════════════════════════════════════════
+# 6. Sensitivity — config perturbation should not break entity resolution
+# ═══════════════════════════════════════════════════════════════════
+
+class TestConfigSensitivity:
+    """Test that entity resolution is robust to small config perturbations."""
+
+    def test_entity_resolution_not_overly_sensitive(self):
+        """Entity resolution should not change by >5% when boosts vary by +-0.05.
+
+        Builds a test graph with the problematic oracle-like case where
+        subtle ranking changes could flip the top entity.  Verifies that
+        both the default config and a perturbed config find the same top
+        entity for a realistic question.
+        """
+        base_config = NEXUSConfig()
+        perturbed = NEXUSConfig(
+            property_keyword_boost=0.30,
+            curated_node_boost=0.15,
+            sub_run_penalty=-0.10,
+        )
+
+        # Build a realistic graph with curated and sub-run nodes.
+        g = InMemoryGraphStore()
+        g.add_node(Node(
+            id="Exp_0_6_Validation",
+            type="Experiment",
+            properties={
+                "name": "Validation Experiment",
+                "key_finding": "The oracle filter improves accuracy by 12%",
+            },
+        ))
+        g.add_node(Node(
+            id="concept_oracle_filter",
+            type="Concept",
+            properties={
+                "name": "Oracle Filter Concept",
+                "description": "A filtering mechanism for retrieval results",
+            },
+        ))
+        g.add_node(Node(
+            id="Exp_0_6_Validation_top32",
+            type="Experiment",
+            properties={
+                "name": "Validation top-32 sub-run",
+                "description": "Sub-experiment variant with top-32",
+            },
+        ))
+        g.add_node(Node(
+            id="Exp_0_6_Validation_baseline",
+            type="Experiment",
+            properties={
+                "name": "Validation baseline sub-run",
+                "description": "Sub-experiment baseline",
+            },
+        ))
+        g.add_node(Node(
+            id="Exp_0_9_OracleFilter",
+            type="Experiment",
+            properties={
+                "name": "Oracle Filter Experiment",
+                "key_finding": "OracleFilter achieves state-of-the-art retrieval",
+            },
+        ))
+        g.add_edge(Edge(type="derived_from", source="Exp_0_9_OracleFilter",
+                        target="concept_oracle_filter", confidence=0.9))
+        g.add_edge(Edge(type="sub_experiment", source="Exp_0_6_Validation_top32",
+                        target="Exp_0_6_Validation", confidence=0.8))
+        g.add_edge(Edge(type="sub_experiment", source="Exp_0_6_Validation_baseline",
+                        target="Exp_0_6_Validation", confidence=0.8))
+
+        # Parse with both configs
+        base_parsed = parse_question(
+            "What was the key finding of the oracle filter experiment?",
+            g, config=base_config,
+        )
+        pert_parsed = parse_question(
+            "What was the key finding of the oracle filter experiment?",
+            g, config=perturbed,
+        )
+
+        # Both should find at least one entity
+        assert len(base_parsed.entity_ids) > 0, "Base config found no entities"
+        assert len(pert_parsed.entity_ids) > 0, "Perturbed config found no entities"
+
+        # The curated node (Exp_0_9_OracleFilter) should be top-ranked in both
+        assert "Exp_0_9_OracleFilter" in base_parsed.entity_ids, (
+            f"Base config missing curated oracle node: {base_parsed.entity_ids}"
+        )
+        assert "Exp_0_9_OracleFilter" in pert_parsed.entity_ids, (
+            f"Perturbed config missing curated oracle node: {pert_parsed.entity_ids}"
+        )
+
+        # Top-ranked entity should agree
+        assert base_parsed.entity_ids[0] == pert_parsed.entity_ids[0], (
+            f"Config perturbation flipped top entity: "
+            f"base={base_parsed.entity_ids[0]} vs perturbed={pert_parsed.entity_ids[0]}"
+        )
+
+    def test_sub_run_penalty_sensitivity(self):
+        """Sub-run penalty perturbation should not promote sub-runs above curated nodes."""
+        base_config = NEXUSConfig()
+        relaxed_penalty = NEXUSConfig(sub_run_penalty=-0.05)
+
+        # A graph with a curated node and its noisy sub-run siblings.
+        g = InMemoryGraphStore()
+        g.add_node(Node(
+            id="Exp_Main",
+            type="Experiment",
+            properties={"name": "Main Experiment", "key_finding": "Core result"},
+        ))
+        g.add_node(Node(
+            id="Exp_Main_top64",
+            type="Experiment",
+            properties={"name": "Main top-64 sub-run"},
+        ))
+        g.add_node(Node(
+            id="Exp_Main_weighted",
+            type="Experiment",
+            properties={"name": "Main weighted sub-run"},
+        ))
+
+        question = "What is the main experiment finding?"
+        base_parsed = parse_question(question, g, config=base_config)
+        relaxed_parsed = parse_question(question, g, config=relaxed_penalty)
+
+        # The curated "Exp_Main" should be the top entity, never a sub-run.
+        assert base_parsed.entity_ids[0] == "Exp_Main", (
+            f"Base config promoted sub-run over curated: {base_parsed.entity_ids}"
+        )
+        assert relaxed_parsed.entity_ids[0] == "Exp_Main", (
+            f"Relaxed penalty promoted sub-run over curated: {relaxed_parsed.entity_ids}"
+        )
