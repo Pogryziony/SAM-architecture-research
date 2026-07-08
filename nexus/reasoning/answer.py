@@ -9,6 +9,7 @@ Handles edge cases: empty graph, no entities found, no paths, etc.
 
 from __future__ import annotations
 
+import time
 from typing import Any
 
 from nexus.graph.store import InMemoryGraphStore
@@ -82,6 +83,9 @@ def answer_question(
         "path_count": 0,
     }
 
+    # Per-step timing breakdown
+    timing: dict[str, float] = {}
+
     # ── Edge case: empty graph ──
     if graph.node_count == 0:
         result["answer"] = "Insufficient evidence to answer. The knowledge graph is empty."
@@ -90,10 +94,13 @@ def answer_question(
             hallucination_rate=0.0,
             passed=True,
         )
+        result["timing"] = timing
         return result
 
     # ── Step 1: Parse ──
+    t0 = time.perf_counter()
     parsed = parse_question(question, graph, cutoff=0.6, config=config)
+    timing["parse_time"] = round(time.perf_counter() - t0, 6)
 
     result["parsed_query"] = parsed
     result["entity_resolution_method"] = parsed.resolution_method
@@ -106,9 +113,11 @@ def answer_question(
             hallucination_rate=0.0,
             passed=True,
         )
+        result["timing"] = timing
         return result
 
     # ── Step 2: Traverse ──
+    t0 = time.perf_counter()
     query_entities = set(parsed.entity_ids)
     paths = traverse_with_intent(
         graph=graph,
@@ -119,6 +128,7 @@ def answer_question(
         beam_width=beam_width,
         config=config,
     )
+    timing["traverse_time"] = round(time.perf_counter() - t0, 6)
     result["path_count"] = len(paths)
 
     # Edge case: no paths found
@@ -129,23 +139,36 @@ def answer_question(
             hallucination_rate=0.0,
             passed=True,
         )
+        result["timing"] = timing
         return result
 
     # ── Step 3: Build evidence ──
+    t0 = time.perf_counter()
     evidence_json = build_evidence(question, paths, graph, max_paths=max_paths, question_intent=parsed.intent)
     evidence_pack = build_evidence_pack(question, paths, graph, question_intent=parsed.intent)
+    timing["evidence_time"] = round(time.perf_counter() - t0, 6)
     result["evidence_pack"] = evidence_pack
 
     # ── Step 4: Build prompt ──
+    t0 = time.perf_counter()
     prompt = build_prompt(question, evidence_json)
+    timing["prompt_time"] = round(time.perf_counter() - t0, 6)
 
     # ── Step 5: Generate answer ──
+    t0 = time.perf_counter()
     answer = model.generate(prompt)
+    timing["generate_time"] = round(time.perf_counter() - t0, 6)
     result["answer"] = answer
 
     # ── Step 6: Verify ──
+    t0 = time.perf_counter()
     verification = verifier.verify(answer, evidence_pack)
+    timing["verify_time"] = round(time.perf_counter() - t0, 6)
     result["verification"] = verification
+
+    # Store timing breakdown and prompt tokens for cost estimation
+    result["timing"] = timing
+    result["prompt_text"] = prompt
 
     return result
 
@@ -191,6 +214,15 @@ def run_smoke_test():
         if parsed:
             print(f"Intent: {parsed.intent}, Entities: {parsed.entity_ids}")
         print(f"Paths found: {result['path_count']}")
+
+        timing = result.get("timing", {})
+        if timing:
+            print(f"Timing: parse={timing.get('parse_time', 0)*1000:.0f}ms, "
+                  f"traverse={timing.get('traverse_time', 0)*1000:.0f}ms, "
+                  f"evidence={timing.get('evidence_time', 0)*1000:.0f}ms, "
+                  f"prompt={timing.get('prompt_time', 0)*1000:.0f}ms, "
+                  f"generate={timing.get('generate_time', 0)*1000:.0f}ms, "
+                  f"verify={timing.get('verify_time', 0)*1000:.0f}ms")
 
         print(f"\nAnswer:")
         print(result["answer"])

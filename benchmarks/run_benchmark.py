@@ -40,6 +40,9 @@ from nexus.reasoning.model_interface import (
 )
 from nexus.reasoning.verifier import Verifier, VerificationResult
 
+# Cost model for frontier API comparison
+from benchmarks.cost_model import estimate_cost_per_1k, FRONTIER_PRICING, LOCAL_COST
+
 
 # ---- Token counting (for conciseness) ----
 
@@ -368,6 +371,9 @@ def run_nexus_pipeline(
         - path_count: number of traversal paths found
         - is_insufficient: whether the answer says "Insufficient evidence"
         - latency_s: total wall-clock seconds
+        - latency_breakdown: per-step timing dict
+        - prompt_tokens: estimated prompt tokens
+        - completion_tokens: estimated completion (answer) tokens
         - error: error message if pipeline crashed (None otherwise)
     """
     t0 = time.perf_counter()
@@ -386,6 +392,9 @@ def run_nexus_pipeline(
             "path_count": 0,
             "is_insufficient": False,
             "latency_s": round(elapsed, 4),
+            "latency_breakdown": {},
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
             "error": str(exc),
             "parsed_entity_ids": [],
         }
@@ -407,6 +416,14 @@ def run_nexus_pipeline(
         supported = 0
         unsupported = 0
 
+    # Per-step timing breakdown
+    latency_breakdown = result.get("timing", {})
+
+    # Token counting for cost estimation
+    prompt_text = result.get("prompt_text", "")
+    prompt_tokens = _count_tokens(prompt_text)
+    completion_tokens = _count_tokens(answer)
+
     return {
         "answer": answer,
         "passed": passed,
@@ -416,6 +433,9 @@ def run_nexus_pipeline(
         "path_count": result.get("path_count", 0),
         "is_insufficient": is_insufficient,
         "latency_s": round(elapsed, 4),
+        "latency_breakdown": latency_breakdown,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
         "error": None,
         "entity_resolution_method": result.get("entity_resolution_method", "none"),
         "parsed_entity_ids": (
@@ -437,21 +457,23 @@ def run_baseline(
     evidence stripped out.
     """
     t0 = time.perf_counter()
+    prompt = (
+        "SYSTEM: You are a precise reasoning assistant. "
+        "Answer based on your general knowledge. "
+        "If you truly don't know, say so honestly.\n\n"
+        f"QUESTION: {question_text}\n\n"
+        "EVIDENCE:\n  (No evidence found in the knowledge graph.)\n\n"
+        "ANSWER:"
+    )
     try:
-        prompt = (
-            "SYSTEM: You are a precise reasoning assistant. "
-            "Answer based on your general knowledge. "
-            "If you truly don't know, say so honestly.\n\n"
-            f"QUESTION: {question_text}\n\n"
-            "EVIDENCE:\n  (No evidence found in the knowledge graph.)\n\n"
-            "ANSWER:"
-        )
         answer = model.generate(prompt)
     except Exception as exc:
         elapsed = time.perf_counter() - t0
         return {
             "answer": f"[ERROR] {exc}",
             "latency_s": round(elapsed, 4),
+            "prompt_tokens": _count_tokens(prompt),
+            "completion_tokens": 0,
             "error": str(exc),
         }
     elapsed = time.perf_counter() - t0
@@ -463,6 +485,8 @@ def run_baseline(
         "answer": answer,
         "is_insufficient": is_insufficient,
         "latency_s": round(elapsed, 4),
+        "prompt_tokens": _count_tokens(prompt),
+        "completion_tokens": _count_tokens(answer),
         "error": None,
     }
 
@@ -484,6 +508,25 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
 
     baseline_latencies = [r["baseline"]["latency_s"] for r in results if not r["baseline"].get("error")]
     baseline_insufficient = sum(1 for r in results if r["baseline"]["is_insufficient"])
+
+    # Token metrics
+    nexus_prompt_tokens = [r["nexus"]["prompt_tokens"] for r in results if not r["nexus"].get("error")]
+    nexus_completion_tokens = [r["nexus"]["completion_tokens"] for r in results if not r["nexus"].get("error")]
+    baseline_prompt_tokens = [r["baseline"]["prompt_tokens"] for r in results if not r["baseline"].get("error")]
+    baseline_completion_tokens = [r["baseline"]["completion_tokens"] for r in results if not r["baseline"].get("error")]
+
+    # Latency breakdown aggregation
+    latency_breakdowns = [
+        r["nexus"]["latency_breakdown"]
+        for r in results
+        if not r["nexus"].get("error") and r["nexus"].get("latency_breakdown")
+    ]
+    avg_latency_breakdown: dict[str, float] = {}
+    if latency_breakdowns:
+        for key in latency_breakdowns[0]:
+            vals = [lb[key] for lb in latency_breakdowns if key in lb]
+            if vals:
+                avg_latency_breakdown[key] = round(sum(vals) / len(vals), 6)
 
     # Accuracy scores (exclude None values — questions without extractable GT facts)
     nexus_accuracies = [
@@ -661,7 +704,10 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
             "min_hallucination_rate": round(min(nexus_hall_rates), 4) if nexus_hall_rates else 0.0,
             "max_hallucination_rate": round(max(nexus_hall_rates), 4) if nexus_hall_rates else 0.0,
             "avg_latency_s": round(avg(nexus_latencies), 4),
+            "avg_latency_breakdown": avg_latency_breakdown,
             "avg_paths_found": round(avg(nexus_paths), 2),
+            "avg_prompt_tokens": round(avg(nexus_prompt_tokens), 1),
+            "avg_completion_tokens": round(avg(nexus_completion_tokens), 1),
             "avg_accuracy": round(avg(nexus_accuracies), 4),
             "avg_exact_accuracy": round(avg(nexus_exact_accuracies), 4),
             "min_accuracy": round(min(nexus_accuracies), 4) if nexus_accuracies else 0.0,
@@ -670,6 +716,8 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
         "baseline": {
             "avg_latency_s": round(avg(baseline_latencies), 4),
             "insufficient_evidence": baseline_insufficient,
+            "avg_prompt_tokens": round(avg(baseline_prompt_tokens), 1),
+            "avg_completion_tokens": round(avg(baseline_completion_tokens), 1),
             "avg_accuracy": round(avg(baseline_accuracies), 4),
             "avg_exact_accuracy": round(avg(baseline_exact_accuracies), 4),
         },
@@ -838,8 +886,68 @@ def print_comparison(summary: dict[str, Any]):
     # Conciseness
     if summary.get("conciseness"):
         c = summary["conciseness"]
-        c_str = f"avg {c['avg_answer_tokens']:.0f} tokens, {c['avg_conciseness_ratio']}× GT, {c['verbose_rate']:.0%} too verbose"
+        c_str = f"avg {c['avg_answer_tokens']:.0f} tokens, {c['avg_conciseness_ratio']}x GT, {c['verbose_rate']:.0%} too verbose"
         print(f"  {'Conciseness':<38} {c_str:>10}")
+    
+    # ── Latency Breakdown (NEXUS) ──
+    n_breakdown = n.get("avg_latency_breakdown", {})
+    if n_breakdown:
+        print()
+        print("  LATENCY (NEXUS):")
+        total_lat = n["avg_latency_s"]
+        step_labels = [
+            ("parse_time", "parse"),
+            ("traverse_time", "traverse"),
+            ("evidence_time", "evidence"),
+            ("prompt_time", "prompt"),
+            ("generate_time", "generate"),
+            ("verify_time", "verify"),
+        ]
+        for key, label in step_labels:
+            val_s = n_breakdown.get(key, 0.0)
+            pct = (val_s / total_lat * 100) if total_lat > 0 else 0.0
+            if val_s < 0.001:
+                formatted = "<1ms"
+            elif val_s < 1.0:
+                formatted = f"{val_s*1000:.0f}ms"
+            else:
+                formatted = f"{val_s:.2f}s"
+            is_dominant = pct > 50
+            marker = "  <-- dominant" if is_dominant else ""
+            print(f"    {label + ':':<14} {formatted:>8} ({pct:.1f}%){marker}")
+        print(f"    {'TOTAL:':<14} {total_lat:.2f}s")
+
+    # ── Token Metrics ──
+    if n.get("avg_prompt_tokens") or b.get("avg_prompt_tokens"):
+        print()
+        print("  TOKEN USAGE (avg per question):")
+        n_prompt = f"{n['avg_prompt_tokens']:.0f}" if n.get("avg_prompt_tokens") else "N/A"
+        n_compl = f"{n['avg_completion_tokens']:.0f}" if n.get("avg_completion_tokens") else "N/A"
+        b_prompt = f"{b['avg_prompt_tokens']:.0f}" if b.get("avg_prompt_tokens") else "N/A"
+        b_compl = f"{b['avg_completion_tokens']:.0f}" if b.get("avg_completion_tokens") else "N/A"
+        print(f"    {'NEXUS:':<14} {n_prompt:>8} prompt, {n_compl:>8} completion")
+        print(f"    {'Baseline:':<14} {b_prompt:>8} prompt, {b_compl:>8} completion")
+
+    # ── Cost Comparison ──
+    if n.get("avg_prompt_tokens"):
+        print()
+        print("  COST per 1K questions:")
+        print(f"    {'NEXUS + local (any model)':<38} {'$0.00':>10}")
+
+        for model_name in ["gpt-4o-mini", "claude-haiku", "gemini-flash"]:
+            cost = estimate_cost_per_1k(
+                n["avg_prompt_tokens"], n["avg_completion_tokens"], model_name,
+            )
+            label = f"  NEXUS + frontier {model_name}"
+            print(f"    {'NEXUS + ' + model_name:<38} ${cost:.2f}")
+
+        # Baseline with frontier for comparison
+        if b.get("avg_prompt_tokens"):
+            for model_name in ["gpt-4o-mini", "claude-haiku"]:
+                cost = estimate_cost_per_1k(
+                    b["avg_prompt_tokens"], b["avg_completion_tokens"], model_name,
+                )
+                print(f"    {'Baseline + ' + model_name:<38} ${cost:.2f}")
     
     # Per-hop accuracy breakdown
     if summary.get("accuracy_by_hops"):
@@ -863,7 +971,7 @@ def print_comparison(summary: dict[str, Any]):
     print("  Fuzzy acc = numeric matching with 5% relative tolerance (primary metric).")
     print("  Exact acc = strict regex key-fact overlap (old metric, for comparison).")
     print("  NEXUS hallucination rate measures unsupported claims in generated answers.")
-    print("  The evidence-blind baseline has no graph access — it can only use")
+    print("  The evidence-blind baseline has no graph access - it can only use")
     print("  general knowledge extracted from the question text.")
     print("=" * 72)
     print()
@@ -995,8 +1103,10 @@ def main():
         bas_fuzzy = baseline_scores["fuzzy_accuracy"]
         er_hit = "HIT" if entity_resolution_hit else "MISS"
         er_method = nexus_result.get("entity_resolution_method", "?")
+        gen_time = nexus_result.get("latency_breakdown", {}).get("generate_time", 0)
         print(f"  {marker} {qid}: {status} | ER={er_hit}({er_method}) | fuzzy={nex_fuzzy if nex_fuzzy is not None else 'N/A'} | paths={nexus_result['path_count']} | "
-              f"nexus={nexus_result['latency_s']:.3f}s | baseline={baseline_result['latency_s']:.3f}s (fuzzy={bas_fuzzy if bas_fuzzy is not None else 'N/A'})")
+              f"nexus={nexus_result['latency_s']:.3f}s (gen={gen_time:.3f}s, {nexus_result['prompt_tokens']}->{nexus_result['completion_tokens']}tok) | "
+              f"baseline={baseline_result['latency_s']:.3f}s (fuzzy={bas_fuzzy if bas_fuzzy is not None else 'N/A'})")
         
         results.append({
             "question_id": qid,
@@ -1019,7 +1129,10 @@ def main():
             "limit": args.limit,
             "model": nexus_model.name,
             "model_backend": type(nexus_model).__name__,
+            "underlying_model": primary_model.name,
             "verification_threshold": 0.2,
+            "local_inference": True,
+            "frontier_pricing": FRONTIER_PRICING,
         },
         "graph_provenance": graph_provenance,
         "summary": summary,
