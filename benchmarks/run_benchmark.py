@@ -950,17 +950,23 @@ def print_comparison(summary: dict[str, Any]):
             print(line)
 
         print(f"\n  NEXUS + Router blended cost (80% synth → $0):")
-        router_lines = format_router_cost_comparison(
-            "NEXUS Router",
-            n["avg_prompt_tokens"],
-            n["avg_completion_tokens"],
-            BlendedRouterCost(
-                llm_cost_model=LocalCostModel(
-                    tokens_per_second=25.0,  # typical CPU throughput
-                ),
-                synth_ratio=0.8,
-            ),
-        )
+        # Auto-load from newest throughput results — no hardcoded throughput
+        router_model = BlendedRouterCost.from_latest_throughput(synth_ratio=0.8)
+        if router_model is not None:
+            router_lines = format_router_cost_comparison(
+                "NEXUS Router",
+                n["avg_prompt_tokens"],
+                n["avg_completion_tokens"],
+                router_model,
+            )
+        else:
+            router_lines = [
+                "  WARNING: No throughput results found. Run",
+                "  `python benchmarks/throughput_bench.py` first.",
+            ]
+            print(f"    {router_lines[0]}")
+            print(f"    {router_lines[1]}")
+            router_lines = []
         for line in router_lines:
             print(line)
 

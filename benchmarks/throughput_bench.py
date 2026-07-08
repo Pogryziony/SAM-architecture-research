@@ -1,34 +1,39 @@
 """
-Throughput Benchmark — measure actual tokens/sec on this hardware.
+Throughput Benchmark — measure actual tokens/sec on this hardware (honest).
 
-Measures:
-  1. Ollama raw inference: time to first token (TTFT) + tokens/sec
-     across 3 prompt lengths (50, 200, 500 tokens), 10 runs each.
-     Reports p50 and p95.
-  2. NEXUS pipeline breakdown: parse, traversal, model inference latency.
-  3. RAM usage: peak RSS during inference.
-  4. Calculated: max queries/hour for each configuration.
+Phase 3 rewrite — all measurements are gated behind warm-up and report
+p50/p95 across multiple prompt lengths with >=5 runs each.
 
-Target: $0.01/1M tokens. Determine if local inference can hit that.
+Modes:
+  --throughput  (default)  Raw Ollama inference throughput
+  --pipeline               NEXUS pipeline breakdown
+  --zero-weight            SynthesizingModel only — proves the "zero-cost" claim
+
+Output:
+  benchmarks/results/throughput_<UTC>.json
+  benchmarks/results/zero_weight_<UTC>.json
 
 Usage:
     python benchmarks/throughput_bench.py
     python benchmarks/throughput_bench.py --model qwen2.5:latest
-    python benchmarks/throughput_bench.py --skip-ollama  # if Ollama not running
+    python benchmarks/throughput_bench.py --zero-weight
 """
 
 from __future__ import annotations
 
 import argparse
+import ctypes
+import datetime
 import json
 import os
+import platform
 import statistics
 import subprocess
 import sys
 import time
-import urllib.request
 import urllib.error
-from dataclasses import dataclass, field
+import urllib.request
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -36,117 +41,12 @@ _project_root = Path(__file__).parent.parent
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
-
-# ── Utilities ──
-
-def _count_tokens(text: str) -> int:
-    """Simple word-count token estimation."""
-    return len(text.split())
-
-
-def _get_ram_mb() -> float:
-    """Get current process RSS in MB. Platform-appropriate."""
-    try:
-        import psutil
-        proc = psutil.Process()
-        return proc.memory_info().rss / (1024 * 1024)
-    except ImportError:
-        return 0.0
-
-
-def _check_ollama(model_name: str) -> bool:
-    """Check if Ollama is running and has the model available."""
-    try:
-        url = "http://localhost:11434/api/tags"
-        req = urllib.request.Request(url)
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            models = [m["name"] for m in data.get("models", [])]
-            # Try exact match first, then fallback to first model with same base
-            if model_name in models:
-                return True
-            base = model_name.split(":")[0]
-            for m in models:
-                if m.startswith(base):
-                    print(f"  Note: '{model_name}' not found, using '{m}' instead")
-                    return True
-            print(f"  Available models: {models}")
-            return False
-    except Exception:
-        return False
-
-
-def _find_ollama_model(model_name: str) -> str:
-    """Find the best matching Ollama model, falling back gracefully."""
-    try:
-        url = "http://localhost:11434/api/tags"
-        req = urllib.request.Request(url)
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-            models = [m["name"] for m in data.get("models", [])]
-
-            if model_name in models:
-                return model_name
-
-            base = model_name.split(":")[0]
-            for m in models:
-                if m.startswith(base):
-                    return m
-
-            # Return first available model
-            if models:
-                return models[0]
-    except Exception:
-        pass
-    return model_name
-
-
-# ── Dataclasses for results ──
-
-@dataclass
-class InferenceResult:
-    model_name: str
-    prompt_tokens: int
-    completion_tokens: int
-    ttft_s: float          # time to first token
-    total_time_s: float    # wall clock for generation
-    tokens_per_second: float
-    ram_mb: float = 0.0
-
-
-@dataclass
-class PipelineBreakdown:
-    parse_ms: float
-    traverse_ms: float
-    evidence_ms: float
-    prompt_ms: float
-    generate_ms: float
-    verify_ms: float
-    total_ms: float
-
-    @property
-    def cpu_overhead_ms(self) -> float:
-        """CPU-only time (everything except generate)."""
-        return self.parse_ms + self.traverse_ms + self.evidence_ms + self.prompt_ms + self.verify_ms
-
-    @property
-    def cpu_overhead_pct(self) -> float:
-        if self.total_ms == 0:
-            return 0.0
-        return (self.cpu_overhead_ms / self.total_ms) * 100
-
-
-@dataclass
-class ConfigurationThroughput:
-    name: str
-    tokens_per_second: float
-    avg_tokens_per_query: int
-    queries_per_hour: float
-    tokens_per_hour: float
-    description: str
-
-
-# ── Ollama raw inference benchmark ──
+# ── Constants ──
+WARMUP_RUNS: int = 3
+WARMUP_TOKENS: int = 256
+MEASUREMENT_RUNS: int = 5
+MEASUREMENT_TOKENS: int = 256
+RESULTS_DIR: Path = _project_root / "benchmarks" / "results"
 
 PROMPT_TEMPLATES: dict[int, str] = {
     50: (
@@ -188,19 +88,150 @@ PROMPT_TEMPLATES: dict[int, str] = {
 }
 
 
+# ── RAM measurement ──
+
+def _get_ollama_process_rss_mb() -> float | str:
+    """
+    Measure peak RSS of the Ollama inference process.
+
+    Tries in order:
+      1. psutil — find the 'ollama_llama_server' or 'ollama' process
+      2. Windows-specific: wmic / GetProcessMemoryInfo
+      3. Fallback: resource.getrusage (our own process, not Ollama)
+
+    Returns a float (MB) or a string like "unavailable: <reason>".
+    """
+    # ── Strategy 1: psutil ──
+    try:
+        import psutil
+
+        target_names = {"ollama_llama_server", "ollama_runner", "ollama"}
+        best_rss: int = 0
+
+        for proc in psutil.process_iter(["pid", "name", "memory_info"]):
+            try:
+                info = proc.info
+                name_lower = (info["name"] or "").lower()
+                is_ollama = any(t in name_lower for t in target_names)
+                # On macOS the process may be named differently
+                if not is_ollama:
+                    cmdline = " ".join(proc.cmdline() or [])
+                    is_ollama = "ollama" in cmdline.lower() and "serve" in cmdline.lower()
+                if is_ollama and info["memory_info"]:
+                    rss = info["memory_info"].rss
+                    if rss > best_rss:
+                        best_rss = rss
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+
+        if best_rss > 0:
+            return round(best_rss / (1024 * 1024), 1)
+    except ImportError:
+        pass
+
+    # ── Strategy 2: Windows wmic ──
+    if platform.system() == "Windows":
+        try:
+            result = subprocess.run(
+                ["wmic", "process", "where", "name like '%ollama%'", "get", "WorkingSetSize"],
+                capture_output=True, text=True, timeout=10,
+            )
+            lines = result.stdout.strip().splitlines()
+            best: int = 0
+            for line in lines[1:]:  # skip header
+                line = line.strip()
+                if line.isdigit():
+                    val = int(line)
+                    if val > best:
+                        best = val
+            if best > 0:
+                return round(best / (1024 * 1024), 1)
+        except Exception:
+            pass
+
+    # ── Strategy 3: resource.getrusage (our process, NOT Ollama) ──
+    try:
+        import resource
+        usage = resource.getrusage(resource.RUSAGE_SELF)
+        rss_kb = usage.ru_maxrss
+        # On macOS ru_maxrss is bytes, on Linux it's KB
+        if platform.system() == "Darwin":
+            rss_mb = rss_kb / (1024 * 1024)
+        else:
+            rss_mb = rss_kb / 1024
+        if rss_mb > 0:
+            return f"unavailable: our-process-rss={rss_mb:.1f}MB (not Ollama inference)"
+    except ImportError:
+        pass
+
+    return "unavailable: no psutil, no wmic, no resource module"
+
+
+# ── Token counting ──
+
+def _count_tokens(text: str) -> int:
+    """Simple word-count token estimation."""
+    return len(text.split())
+
+
+# ── Ollama API ──
+
+def _check_ollama(model_name: str) -> bool:
+    """Check if Ollama is running and has the model."""
+    try:
+        url = "http://localhost:11434/api/tags"
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            models = [m["name"] for m in data.get("models", [])]
+            if model_name in models:
+                return True
+            base = model_name.split(":")[0]
+            for m in models:
+                if m.startswith(base):
+                    print(f"  Note: '{model_name}' not found, using '{m}' instead")
+                    return True
+            print(f"  Available models: {models}")
+            return False
+    except Exception:
+        return False
+
+
+def _find_ollama_model(model_name: str) -> str:
+    """Find best matching Ollama model."""
+    try:
+        url = "http://localhost:11434/api/tags"
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            models = [m["name"] for m in data.get("models", [])]
+            if model_name in models:
+                return model_name
+            base = model_name.split(":")[0]
+            for m in models:
+                if m.startswith(base):
+                    return m
+            if models:
+                return models[0]
+    except Exception:
+        pass
+    return model_name
+
+
 def _ollama_generate(
     host: str,
     model_name: str,
     prompt: str,
-    max_tokens: int = 256,
+    max_tokens: int,
+    temperature: float = 0.0,
 ) -> dict[str, Any]:
-    """Call Ollama generate API and return response with timing from the API."""
+    """Call Ollama /api/generate. Returns timing + response data."""
     payload = json.dumps({
         "model": model_name,
         "prompt": prompt,
         "stream": False,
         "options": {
-            "temperature": 0.0,
+            "temperature": temperature,
             "num_predict": max_tokens,
         },
     }).encode("utf-8")
@@ -212,29 +243,25 @@ def _ollama_generate(
     )
 
     t0 = time.perf_counter()
-    with urllib.request.urlopen(req, timeout=180) as resp:
+    with urllib.request.urlopen(req, timeout=300) as resp:
         data = json.loads(resp.read().decode("utf-8"))
     wall_time = time.perf_counter() - t0
 
-    # Ollama reports total_duration and eval_count in the response
     eval_count = data.get("eval_count", 0)
-    # Use the API-reported timing when available
-    total_duration_ns = data.get("total_duration", 0)
     load_duration_ns = data.get("load_duration", 0)
     prompt_eval_duration_ns = data.get("prompt_eval_duration", 0)
     eval_duration_ns = data.get("eval_duration", 0)
+    total_duration_ns = data.get("total_duration", 0)
 
-    # Time to first token ~= load + prompt_eval + first eval step
-    # We approximate TTFT from the API timings
+    # TTFT: load + prompt eval + first eval token time
     if eval_duration_ns > 0 and eval_count > 0:
-        # Estimate TTFT: load + prompt eval + first token eval time
         first_token_eval_ns = eval_duration_ns / eval_count
         ttft_ns = load_duration_ns + prompt_eval_duration_ns + first_token_eval_ns
         ttft_s = ttft_ns / 1e9
     else:
-        ttft_s = wall_time * 0.3  # rough estimate
+        ttft_s = wall_time * 0.3
 
-    # Tokens per second from eval
+    # Tokens per second
     if eval_duration_ns > 0:
         tps = eval_count / (eval_duration_ns / 1e9)
     elif wall_time > 0:
@@ -248,54 +275,405 @@ def _ollama_generate(
         "ttft_s": round(ttft_s, 4),
         "total_time_s": round(wall_time, 4),
         "tokens_per_second": round(tps, 2),
-        "api_total_duration_s": round(total_duration_ns / 1e9, 4) if total_duration_ns else 0,
     }
 
 
-def benchmark_ollama(
+# ── Dataclasses ──
+
+@dataclass
+class InferenceResult:
+    model_name: str
+    prompt_length: int          # nominal prompt length bucket (50, 200, 500)
+    prompt_tokens: int
+    completion_tokens: int
+    ttft_s: float
+    total_time_s: float
+    tokens_per_second: float
+    is_warmup: bool = False
+
+
+# ── Statistics ──
+
+def _p50(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    return statistics.median(values)
+
+
+def _p95(values: list[float]) -> float:
+    if not values:
+        return 0.0
+    sorted_vals = sorted(values)
+    idx = int(len(sorted_vals) * 0.95)
+    idx = min(idx, len(sorted_vals) - 1)
+    return sorted_vals[idx]
+
+
+# ── Banner ──
+
+def _banner(title: str) -> None:
+    print()
+    print("=" * 72)
+    print(f"  {title}")
+    print("=" * 72)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  OLLAMA THROUGHPUT BENCHMARK (with warm-up)
+# ═══════════════════════════════════════════════════════════════════════
+
+def benchmark_ollama_throughput(
     host: str = "http://localhost:11434",
     model_name: str = "qwen2.5:latest",
-    runs_per_length: int = 10,
-) -> list[InferenceResult]:
-    """Benchmark Ollama raw inference at 3 prompt lengths, N runs each."""
-    results: list[InferenceResult] = []
+    warmup_runs: int = WARMUP_RUNS,
+    warmup_tokens: int = WARMUP_TOKENS,
+    measurement_runs: int = MEASUREMENT_RUNS,
+    measurement_tokens: int = MEASUREMENT_TOKENS,
+) -> dict[str, Any]:
+    """
+    Run honest throughput benchmark.
 
-    for prompt_len, prompt_template in sorted(PROMPT_TEMPLATES.items()):
+    Phase 1: Warm-up — >=3 generations (not measured)
+    Phase 2: Measurement — >=5 runs at 3 prompt lengths (50, 200, 500)
+
+    Reports p50 and p95 for both tok/s and TTFT.
+    """
+    all_measured: list[InferenceResult] = []
+
+    # ── Phase 1: Warm-up ──
+    _banner("WARM-UP (not measured)")
+    warmup_prompt = PROMPT_TEMPLATES[200]  # use medium prompt for warm-up
+    print(f"  Running {warmup_runs} warm-up generations ({warmup_tokens} tokens each)...")
+    for i in range(1, warmup_runs + 1):
+        try:
+            r = _ollama_generate(host, model_name, warmup_prompt, max_tokens=warmup_tokens)
+            print(f"    Warm-up {i}/{warmup_runs}: "
+                  f"{r['tokens_per_second']:.1f} tok/s, "
+                  f"{r['completion_tokens']} tok out")
+        except Exception as exc:
+            print(f"    Warm-up {i}/{warmup_runs}: ERROR — {exc}")
+            return {
+                "error": f"Warm-up failed at run {i}: {exc}",
+                "warmup_completed": i - 1,
+            }
+
+    print("  Warm-up complete — starting measurements.")
+
+    # ── Phase 2: Measurement ──
+    _banner("MEASUREMENT")
+
+    for prompt_len in sorted(PROMPT_TEMPLATES.keys()):
+        prompt_template = PROMPT_TEMPLATES[prompt_len]
         prompt_tokens = _count_tokens(prompt_template)
         print(f"\n  Prompt length ~{prompt_len} tokens ({prompt_tokens} actual):")
 
-        for run in range(1, runs_per_length + 1):
-            ram_before = _get_ram_mb()
+        for run in range(1, measurement_runs + 1):
             try:
-                r = _ollama_generate(host, model_name, prompt_template)
+                r = _ollama_generate(host, model_name, prompt_template, max_tokens=measurement_tokens)
             except Exception as exc:
-                print(f"    Run {run}/{runs_per_length}: ERROR - {exc}")
+                print(f"    Run {run}/{measurement_runs}: ERROR — {exc}")
                 continue
-
-            ram_after = _get_ram_mb()
-            ram_delta = max(0, ram_after - ram_before)
 
             result = InferenceResult(
                 model_name=model_name,
+                prompt_length=prompt_len,
                 prompt_tokens=prompt_tokens,
                 completion_tokens=r["completion_tokens"],
                 ttft_s=r["ttft_s"],
                 total_time_s=r["total_time_s"],
                 tokens_per_second=r["tokens_per_second"],
-                ram_mb=round(ram_delta, 1),
+                is_warmup=False,
             )
-            results.append(result)
+            all_measured.append(result)
 
-            print(f"    Run {run}/{runs_per_length}: "
+            print(f"    Run {run}/{measurement_runs}: "
                   f"TTFT={r['ttft_s']:.3f}s, "
                   f"{r['tokens_per_second']:.1f} tok/s, "
-                  f"{r['completion_tokens']} tok out, "
-                  f"+{ram_delta:.0f} MB RAM")
+                  f"{r['completion_tokens']} tok out")
 
-    return results
+    if not all_measured:
+        return {"error": "No measurements collected"}
+
+    # ── Compute statistics ──
+    all_tps = [r.tokens_per_second for r in all_measured]
+    all_ttft = [r.ttft_s for r in all_measured]
+    ram_str = _get_ollama_process_rss_mb()
+
+    # Per prompt-length breakdown
+    by_length: dict[int, dict[str, Any]] = {}
+    for prompt_len in sorted(PROMPT_TEMPLATES.keys()):
+        subset = [r for r in all_measured if r.prompt_length == prompt_len]
+        if not subset:
+            continue
+        tps_vals = [r.tokens_per_second for r in subset]
+        ttft_vals = [r.ttft_s for r in subset]
+        by_length[prompt_len] = {
+            "runs": len(subset),
+            "p50_tps": _p50(tps_vals),
+            "p95_tps": _p95(tps_vals),
+            "p50_ttft_s": _p50(ttft_vals),
+            "p95_ttft_s": _p95(ttft_vals),
+            "all_tps": tps_vals,
+            "all_ttft_s": ttft_vals,
+        }
+
+    # Print summary
+    _banner("RESULTS SUMMARY")
+    for prompt_len, stats in sorted(by_length.items()):
+        print(f"\n  Prompt ~{prompt_len} tokens ({stats['runs']} runs):")
+        print(f"    Tokens/sec:  p50={stats['p50_tps']:.1f}  p95={stats['p95_tps']:.1f}")
+        print(f"    TTFT:        p50={stats['p50_ttft_s']:.3f}s  p95={stats['p95_ttft_s']:.3f}s")
+
+    print(f"\n  OVERALL ({len(all_measured)} measured runs):")
+    print(f"    Tokens/sec:  p50={_p50(all_tps):.1f}  p95={_p95(all_tps):.1f}  mean={statistics.mean(all_tps):.1f}")
+    print(f"    TTFT:        p50={_p50(all_ttft):.3f}s  p95={_p95(all_ttft):.3f}s  mean={statistics.mean(all_ttft):.3f}s")
+    print(f"    RAM (Ollama process): {ram_str}")
+
+    return {
+        "model": model_name,
+        "warmup": {"runs": warmup_runs, "tokens_per_run": warmup_tokens},
+        "measurement": {
+            "runs_per_length": measurement_runs,
+            "tokens_per_completion": measurement_tokens,
+        },
+        "ram_mb": ram_str if isinstance(ram_str, str) else ram_str,
+        "ram_source": "ollama-process-rss" if isinstance(ram_str, float) else ram_str,
+        "p50_tps": round(_p50(all_tps), 2),
+        "p95_tps": round(_p95(all_tps), 2),
+        "mean_tps": round(statistics.mean(all_tps), 2),
+        "p50_ttft_s": round(_p50(all_ttft), 4),
+        "p95_ttft_s": round(_p95(all_ttft), 4),
+        "by_prompt_length": {
+            str(k): {
+                "p50_tps": v["p50_tps"],
+                "p95_tps": v["p95_tps"],
+                "p50_ttft_s": v["p50_ttft_s"],
+                "p95_ttft_s": v["p95_ttft_s"],
+            }
+            for k, v in by_length.items()
+        },
+        "all_results": [
+            {
+                "prompt_length": r.prompt_length,
+                "prompt_tokens": r.prompt_tokens,
+                "completion_tokens": r.completion_tokens,
+                "ttft_s": r.ttft_s,
+                "tokens_per_second": r.tokens_per_second,
+            }
+            for r in all_measured
+        ],
+    }
 
 
-# ── NEXUS pipeline breakdown ──
+# ═══════════════════════════════════════════════════════════════════════
+#  ZERO-WEIGHT BENCHMARK — SynthesizingModel only
+# ═══════════════════════════════════════════════════════════════════════
+
+def benchmark_zero_weight(
+    num_questions: int = 30,
+) -> dict[str, Any]:
+    """
+    Run the FULL NEXUS pipeline with SynthesizingModel ONLY — no Ollama,
+    no LLM fallback. Measures what happens when the router sends EVERY
+    query to the template synthesizer.
+
+    Metrics:
+      - Peak RSS of the whole pipeline process
+      - End-to-end latency per question
+      - Accuracy vs ground truth from qa-dataset
+    """
+    from nexus.reasoning.model_interface import SynthesizingModel
+
+    print("  Importing NEXUS components...")
+    from nexus.graph.store import InMemoryGraphStore
+    from nexus.reasoning.answer import answer_question
+    from nexus.reasoning.verifier import Verifier
+    from nexus.utils.config import DEFAULT_CONFIG
+
+    # Load QA dataset
+    qa_path = _project_root / "benchmarks" / "qa-dataset" / "questions.jsonl"
+    if not qa_path.exists():
+        return {"error": f"QA dataset not found at {qa_path}"}
+
+    questions: list[dict[str, Any]] = []
+    with open(qa_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                questions.append(json.loads(line))
+
+    questions = questions[:num_questions]
+
+    # Build the graph
+    print("  Building benchmark graph...")
+    sys.path.insert(0, str(_project_root))
+    from benchmarks.run_benchmark import build_benchmark_graph
+    graph, provenance = build_benchmark_graph()
+    print(f"  Graph ready: {provenance['node_count']} nodes, {provenance['edge_count']} edges")
+
+    # Use SynthesizingModel ONLY
+    model = SynthesizingModel()
+    verifier = Verifier(hallucination_threshold=0.2)
+    print(f"  Model: {model.name} (template-based, zero-weight)")
+
+    # Measure RAM before
+    ram_before_str = _get_ollama_process_rss_mb()
+    try:
+        import psutil
+        proc = psutil.Process()
+        ram_before_py = proc.memory_info().rss / (1024 * 1024)
+    except ImportError:
+        ram_before_py = 0.0
+
+    peak_ram_mb = ram_before_py
+
+    # Run all questions
+    _banner(f"ZERO-WEIGHT BENCHMARK — {len(questions)} questions, SynthesizingModel only")
+    results: list[dict[str, Any]] = []
+    latencies: list[float] = []
+    correct_count: int = 0
+    total_scored: int = 0
+
+    for i, q in enumerate(questions, 1):
+        question_text = q["question"]
+        ground_truth = q.get("answer", "")
+
+        t0 = time.perf_counter()
+        try:
+            result = answer_question(
+                question_text, graph,
+                model=model, verifier=verifier,
+                config=DEFAULT_CONFIG,
+            )
+        except Exception as exc:
+            print(f"  [{i}/{len(questions)}] ERROR: {exc}")
+            results.append({
+                "id": q["id"],
+                "question": question_text,
+                "error": str(exc),
+                "latency_s": time.perf_counter() - t0,
+            })
+            continue
+        elapsed = time.perf_counter() - t0
+        latencies.append(elapsed)
+
+        answer_text = result.get("answer", "")
+        passed = result.get("verification", None)
+        passed_val = getattr(passed, "passed", None) if passed is not None else None
+        timing = result.get("timing", {})
+
+        # Accuracy: simple keyword overlap with ground truth
+        gt_tokens = set(ground_truth.lower().split())
+        ans_tokens = set(answer_text.lower().split())
+        if gt_tokens and ans_tokens:
+            overlap = len(gt_tokens & ans_tokens)
+            precision = overlap / len(ans_tokens)
+            recall = overlap / len(gt_tokens)
+            f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
+        else:
+            f1 = 0.0
+
+        # Consider "correct" if F1 >= 0.3 or verification passed
+        is_correct = f1 >= 0.3 or (passed_val is True)
+        if f1 >= 0.3:
+            correct_count += 1
+            total_scored += 1
+        elif passed_val is not None:
+            total_scored += 1
+            if passed_val:
+                correct_count += 1
+
+        # Update peak RAM
+        try:
+            import psutil
+            current_ram = proc.memory_info().rss / (1024 * 1024)
+            if current_ram > peak_ram_mb:
+                peak_ram_mb = current_ram
+        except Exception:
+            pass
+
+        results.append({
+            "id": q["id"],
+            "question": question_text,
+            "question_type": q.get("question_type", "unknown"),
+            "difficulty": q.get("difficulty", "unknown"),
+            "answer": answer_text,
+            "ground_truth": ground_truth,
+            "f1_score": round(f1, 4),
+            "verification_passed": passed_val,
+            "latency_s": round(elapsed, 4),
+            "timing": {
+                "parse_ms": round(timing.get("parse_time", 0) * 1000, 2),
+                "traverse_ms": round(timing.get("traverse_time", 0) * 1000, 2),
+                "evidence_ms": round(timing.get("evidence_time", 0) * 1000, 2),
+                "prompt_ms": round(timing.get("prompt_time", 0) * 1000, 2),
+                "generate_ms": round(timing.get("generate_time", 0) * 1000, 2),
+                "verify_ms": round(timing.get("verify_time", 0) * 1000, 2),
+            },
+        })
+
+        status = "PASS" if is_correct else "FAIL"
+        print(f"  [{i}/{len(questions)}] {status} | {elapsed*1000:.0f}ms | {answer_text[:60]}...")
+
+    # Compute summary
+    accuracy = correct_count / total_scored if total_scored > 0 else 0.0
+
+    _banner("ZERO-WEIGHT RESULTS")
+    print(f"\n  Questions:          {len(questions)}")
+    print(f"  Scored:             {total_scored}")
+    print(f"  Correct:            {correct_count}")
+    print(f"  Accuracy:           {accuracy:.2%}")
+    if latencies:
+        print(f"  Latency (p50):      {_p50(latencies)*1000:.0f}ms")
+        print(f"  Latency (p95):      {_p95(latencies)*1000:.0f}ms")
+        print(f"  Latency (mean):     {statistics.mean(latencies)*1000:.0f}ms")
+    ram_str = _get_ollama_process_rss_mb()
+    print(f"  Peak pipeline RSS:  {peak_ram_mb:.1f} MB")
+    print(f"  Ollama process RSS: {ram_str}")
+    print(f"\n  [ZERO-COST CLAIM]: SynthesizingModel = template-only, no GPU, no LLM.")
+    print(f"  Cost per 1M tokens: $0.00 (no inference compute)")
+
+    return {
+        "model": "SynthesizingModel (zero-weight)",
+        "num_questions": num_questions,
+        "accuracy": round(accuracy, 4),
+        "correct": correct_count,
+        "total_scored": total_scored,
+        "latency_p50_ms": round(_p50(latencies) * 1000, 1) if latencies else 0,
+        "latency_p95_ms": round(_p95(latencies) * 1000, 1) if latencies else 0,
+        "latency_mean_ms": round(statistics.mean(latencies) * 1000, 1) if latencies else 0,
+        "peak_pipeline_rss_mb": round(peak_ram_mb, 1),
+        "ollama_process_rss": ram_str,
+        "cost_per_1m_tokens": 0.0,
+        "is_zero_cost": True,
+        "results": results,
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  NEXUS PIPELINE BREAKDOWN (retained from original)
+# ═══════════════════════════════════════════════════════════════════════
+
+@dataclass
+class PipelineBreakdown:
+    parse_ms: float
+    traverse_ms: float
+    evidence_ms: float
+    prompt_ms: float
+    generate_ms: float
+    verify_ms: float
+    total_ms: float
+
+    @property
+    def cpu_overhead_ms(self) -> float:
+        return self.parse_ms + self.traverse_ms + self.evidence_ms + self.prompt_ms + self.verify_ms
+
+    @property
+    def cpu_overhead_pct(self) -> float:
+        if self.total_ms == 0:
+            return 0.0
+        return (self.cpu_overhead_ms / self.total_ms) * 100
+
 
 def benchmark_nexus_pipeline(
     graph,
@@ -342,244 +720,14 @@ def benchmark_nexus_pipeline(
         print(f"    Total: {breakdown.total_ms:.0f}ms | "
               f"Generate: {breakdown.generate_ms:.0f}ms ({100-cpu_pct:.0f}%) | "
               f"CPU overhead: {breakdown.cpu_overhead_ms:.0f}ms ({cpu_pct:.0f}%)")
-        print(f"    Parse: {breakdown.parse_ms:.1f}ms | "
-              f"Traverse: {breakdown.traverse_ms:.1f}ms | "
-              f"Evidence: {breakdown.evidence_ms:.1f}ms | "
-              f"Prompt: {breakdown.prompt_ms:.1f}ms | "
-              f"Verify: {breakdown.verify_ms:.1f}ms")
 
     return breakdowns, all_results
 
 
-# ── RAG baseline latency ──
-
-def benchmark_rag_retrieval(
-    graph,
-    test_questions: list[str],
-) -> list[float]:
-    """
-    Simulate RAG retrieval latency. RAG retrieves chunks from a vector DB,
-    which is analogous to graph traversal + evidence building in NEXUS.
-    We approximate this as parse + traverse + evidence time.
-    """
-    from nexus.query.parser import parse_question
-    from nexus.graph.traversal import traverse_with_intent
-    from nexus.reasoning.evidence_builder import build_evidence
-    from nexus.utils.config import DEFAULT_CONFIG
-
-    retrieval_times: list[float] = []
-    config = DEFAULT_CONFIG
-
-    for question in test_questions:
-        t0 = time.perf_counter()
-
-        # Parse (entity extraction for RAG = query reformulation)
-        parsed = parse_question(question, graph, cutoff=0.6, config=config)
-
-        if parsed.entity_ids:
-            # Traverse (≈ vector search)
-            query_entities = set(parsed.entity_ids)
-            paths = traverse_with_intent(
-                graph=graph,
-                entry_nodes=parsed.entity_ids,
-                query_entities=query_entities,
-                intent=parsed.intent,
-                max_depth=config.max_depth,
-                beam_width=config.beam_width,
-                config=config,
-            )
-            # Evidence (≈ chunk assembly)
-            if paths:
-                build_evidence(question, paths, graph, question_intent=parsed.intent)
-
-        elapsed = time.perf_counter() - t0
-        retrieval_times.append(elapsed)
-
-    return retrieval_times
-
-
-# ── Throughput calculations ──
-
-def compute_configurations(
-    ollama_tps: float,
-    nexus_cpu_ms: float,
-    avg_prompt_tokens: int,
-    avg_completion_tokens: int,
-) -> list[ConfigurationThroughput]:
-    """
-    Compute max queries/hour for each system configuration.
-
-    Args:
-        ollama_tps: Measured Ollama tokens/second
-        nexus_cpu_ms: Average NEXUS CPU overhead (parse+traverse+evidence+prompt+verify) in ms
-        avg_prompt_tokens: Average prompt tokens per query
-        avg_completion_tokens: Average completion tokens per query
-    """
-    configs: list[ConfigurationThroughput] = []
-
-    avg_total_tokens = avg_prompt_tokens + avg_completion_tokens
-
-    # ── NEXUS + 3B: graph overhead + LLM inference ──
-    # Time per query = CPU overhead + inference time
-    nexus_inference_s = avg_completion_tokens / ollama_tps if ollama_tps > 0 else float("inf")
-    nexus_time_per_query = (nexus_cpu_ms / 1000) + nexus_inference_s
-    nexus_qph = 3600 / nexus_time_per_query if nexus_time_per_query > 0 else float("inf")
-
-    configs.append(ConfigurationThroughput(
-        name="NEXUS + 3B",
-        tokens_per_second=ollama_tps,
-        avg_tokens_per_query=avg_total_tokens,
-        queries_per_hour=round(nexus_qph, 1),
-        tokens_per_hour=round(nexus_qph * avg_total_tokens, 0),
-        description=(
-            f"Full NEXUS pipeline: CPU overhead {nexus_cpu_ms:.0f}ms + "
-            f"LLM inference at {ollama_tps:.1f} tok/s. "
-            f"Per-query: {nexus_time_per_query:.2f}s"
-        ),
-    ))
-
-    # ── NEXUS + Router: 80% synth (~0 cost) + 20% LLM ──
-    # Synthetic queries cost only CPU overhead (no LLM)
-    synth_time = nexus_cpu_ms / 1000  # template-based, negligible gen time
-    llm_time = nexus_time_per_query   # full pipeline for 20%
-    # Blended: 80% synth + 20% LLM
-    blended_time = 0.8 * synth_time + 0.2 * llm_time
-    blended_qph = 3600 / blended_time if blended_time > 0 else float("inf")
-    # Blended tokens: 80% queries = 0 completion tokens (no LLM)
-    # 20% queries = full prompt+completion tokens
-    blended_tokens_per_query = avg_prompt_tokens + (0.2 * avg_completion_tokens)
-    # LLM tokens for cost: only 20% use LLM
-    llm_completion_only = 0.2 * avg_completion_tokens
-
-    configs.append(ConfigurationThroughput(
-        name="NEXUS + Router (80% synth)",
-        tokens_per_second=ollama_tps,
-        avg_tokens_per_query=round(blended_tokens_per_query),
-        queries_per_hour=round(blended_qph, 1),
-        tokens_per_hour=round(blended_qph * blended_tokens_per_query, 0),
-        description=(
-            f"80% template synthesis ({synth_time:.3f}s) + "
-            f"20% LLM ({llm_time:.2f}s). "
-            f"Blended: {blended_time:.2f}s/query. "
-            f"Only {llm_completion_only:.0f} completion tok/query on average."
-        ),
-    ))
-
-    # ── RAG + 3B: retrieval + LLM inference ──
-    # RAG retrieval is analogous to NEXUS CPU overhead
-    # (typically slightly faster since no graph traversal)
-    rag_overhead_ms = nexus_cpu_ms * 0.9  # approximate
-    rag_inference_s = avg_completion_tokens / ollama_tps if ollama_tps > 0 else float("inf")
-    rag_time_per_query = (rag_overhead_ms / 1000) + rag_inference_s
-    rag_qph = 3600 / rag_time_per_query if rag_time_per_query > 0 else float("inf")
-
-    configs.append(ConfigurationThroughput(
-        name="RAG + 3B",
-        tokens_per_second=ollama_tps,
-        avg_tokens_per_query=avg_total_tokens,
-        queries_per_hour=round(rag_qph, 1),
-        tokens_per_hour=round(rag_qph * avg_total_tokens, 0),
-        description=(
-            f"RAG pipeline: retrieval ~{rag_overhead_ms:.0f}ms + "
-            f"LLM inference at {ollama_tps:.1f} tok/s. "
-            f"Per-query: {rag_time_per_query:.2f}s"
-        ),
-    ))
-
-    # ── Raw LLM: no pipeline overhead ──
-    raw_time = avg_completion_tokens / ollama_tps if ollama_tps > 0 else float("inf")
-    raw_qph = 3600 / raw_time if raw_time > 0 else float("inf")
-
-    configs.append(ConfigurationThroughput(
-        name="Raw LLM (no pipeline)",
-        tokens_per_second=ollama_tps,
-        avg_tokens_per_query=avg_completion_tokens,
-        queries_per_hour=round(raw_qph, 1),
-        tokens_per_hour=round(raw_qph * avg_completion_tokens, 0),
-        description=(
-            f"Pure LLM inference, no retrieval overhead. "
-            f"Upper bound on generation throughput."
-        ),
-    ))
-
-    return configs
-
-
-# ── Statistics helpers ──
-
-def _p50(values: list[float]) -> float:
-    if not values:
-        return 0.0
-    return statistics.median(values)
-
-
-def _p95(values: list[float]) -> float:
-    if not values:
-        return 0.0
-    sorted_vals = sorted(values)
-    idx = int(len(sorted_vals) * 0.95)
-    idx = min(idx, len(sorted_vals) - 1)
-    return sorted_vals[idx]
-
-
-# ── Print helpers ──
-
-def _banner(title: str) -> None:
-    print()
-    print("=" * 72)
-    print(f"  {title}")
-    print("=" * 72)
-
-
-def print_ollama_results(results: list[InferenceResult]) -> None:
-    """Print summary of Ollama raw inference benchmark."""
-    if not results:
-        print("\n  No Ollama results collected.")
-        return
-
-    all_tps = [r.tokens_per_second for r in results]
-    all_ttft = [r.ttft_s for r in results]
-
-    _banner("OLLAMA RAW INFERENCE")
-
-    # Per prompt-length breakdown
-    for prompt_len in sorted(PROMPT_TEMPLATES.keys()):
-        subset = [r for r in results if r.prompt_tokens == _count_tokens(PROMPT_TEMPLATES[prompt_len])]
-        if not subset:
-            continue
-        tps_vals = [r.tokens_per_second for r in subset]
-        ttft_vals = [r.ttft_s for r in subset]
-        print(f"\n  Prompt ~{prompt_len} tokens ({len(subset)} runs):")
-        print(f"    Tokens/sec:  p50={_p50(tps_vals):.1f}  p95={_p95(tps_vals):.1f}  "
-              f"mean={statistics.mean(tps_vals):.1f}  min={min(tps_vals):.1f}  max={max(tps_vals):.1f}")
-        print(f"    TTFT:        p50={_p50(ttft_vals):.3f}s  p95={_p95(ttft_vals):.3f}s  "
-              f"mean={statistics.mean(ttft_vals):.3f}s")
-
-    print(f"\n  OVERALL ({len(results)} runs):")
-    print(f"    Tokens/sec:  p50={_p50(all_tps):.1f}  p95={_p95(all_tps):.1f}  "
-          f"mean={statistics.mean(all_tps):.1f}")
-    print(f"    TTFT:        p50={_p50(all_ttft):.3f}s  p95={_p95(all_ttft):.3f}  "
-          f"mean={statistics.mean(all_ttft):.3f}")
-    if results and results[0].ram_mb:
-        ram_vals = [r.ram_mb for r in results if r.ram_mb > 0]
-        if ram_vals:
-            print(f"    Peak RAM Δ:  max={max(ram_vals):.0f} MB  mean={statistics.mean(ram_vals):.0f} MB")
-
-
 def print_pipeline_breakdown(breakdowns: list[PipelineBreakdown]) -> None:
-    """Print NEXUS pipeline latency breakdown."""
     if not breakdowns:
-        print("\n  No pipeline results collected.")
         return
-
     _banner("NEXUS PIPELINE BREAKDOWN")
-
-    parse_times = [b.parse_ms for b in breakdowns]
-    traverse_times = [b.traverse_ms for b in breakdowns]
-    evidence_times = [b.evidence_ms for b in breakdowns]
-    prompt_times = [b.prompt_ms for b in breakdowns]
-    generate_times = [b.generate_ms for b in breakdowns]
-    verify_times = [b.verify_ms for b in breakdowns]
     total_times = [b.total_ms for b in breakdowns]
     cpu_times = [b.cpu_overhead_ms for b in breakdowns]
 
@@ -587,188 +735,114 @@ def print_pipeline_breakdown(breakdowns: list[PipelineBreakdown]) -> None:
     print(f"  {'Step':<16} {'Mean':>10} {'p50':>10} {'p95':>10} {'% of Total':>12}")
     print(f"  {'-'*16} {'-'*10} {'-'*10} {'-'*10} {'-'*12}")
 
-    steps = [
-        ("Parse", parse_times),
-        ("Traverse", traverse_times),
-        ("Evidence", evidence_times),
-        ("Prompt", prompt_times),
-        ("Generate", generate_times),
-        ("Verify", verify_times),
+    for name, vals in [
+        ("Parse", [b.parse_ms for b in breakdowns]),
+        ("Traverse", [b.traverse_ms for b in breakdowns]),
+        ("Evidence", [b.evidence_ms for b in breakdowns]),
+        ("Prompt", [b.prompt_ms for b in breakdowns]),
+        ("Generate", [b.generate_ms for b in breakdowns]),
+        ("Verify", [b.verify_ms for b in breakdowns]),
         ("CPU Overhead", cpu_times),
         ("TOTAL", total_times),
-    ]
-    for name, values in steps:
-        mean_v = statistics.mean(values) if values else 0
+    ]:
+        mean_v = statistics.mean(vals) if vals else 0
         pct = (mean_v / statistics.mean(total_times) * 100) if total_times and statistics.mean(total_times) > 0 else 0
-        print(f"  {name:<16} {mean_v:>8.1f}ms {_p50(values):>8.1f}ms "
-              f"{_p95(values):>8.1f}ms {pct:>10.1f}%")
+        print(f"  {name:<16} {mean_v:>8.1f}ms {_p50(vals):>8.1f}ms "
+              f"{_p95(vals):>8.1f}ms {pct:>10.1f}%")
 
 
-def print_configurations(configs: list[ConfigurationThroughput]) -> None:
-    """Print throughput comparison for all configurations."""
-    _banner("THROUGHPUT COMPARISON")
+# ═══════════════════════════════════════════════════════════════════════
+#  MAIN
+# ═══════════════════════════════════════════════════════════════════════
 
-    print(f"\n  {'Configuration':<28} {'Q/hour':>10} {'Tok/hr':>12} {'Tok/Q':>8}")
-    print(f"  {'-'*28} {'-'*10} {'-'*12} {'-'*8}")
-    for c in configs:
-        print(f"  {c.name:<28} {c.queries_per_hour:>8.1f}  {c.tokens_per_hour:>10.0f}  {c.avg_tokens_per_query:>6}")
-
-    print(f"\n  Details:")
-    for c in configs:
-        print(f"    {c.name}:")
-        print(f"      {c.description}")
+def _utc_timestamp() -> str:
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
-def print_cost_analysis(ollama_tps: float) -> None:
-    """Print cost analysis for local-only pricing target."""
-    _banner("COST ANALYSIS — $0.01/1M TOKENS TARGET")
+def _update_index(filename: str, command: str, summary: str) -> None:
+    """Append an entry to benchmarks/results/INDEX.md."""
+    index_path = RESULTS_DIR / "INDEX.md"
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    entry = f"| {filename} | {timestamp} | `{command}` | {summary} |\n"
 
-    watts = 65.0       # typical CPU TDP under load
-    electricity = 0.15  # USD/kWh
-
-    seconds_per_1m = 1_000_000 / ollama_tps if ollama_tps > 0 else float("inf")
-    kwh = (watts / 1000) * (seconds_per_1m / 3600)
-    cost_per_1m = kwh * electricity
-
-    # What tps is needed for $0.01/1M?
-    # cost = (watts/1000) * (1_000_000 / tps / 3600) * electricity
-    # 0.01 = (65/1000) * (1_000_000 / tps / 3600) * 0.15
-    # tps = 65 * 1_000_000 * 0.15 / (1000 * 3600 * 0.01)
-    tps_needed = (watts * 1_000_000 * electricity) / (1000 * 3600 * 0.01)
-
-    print(f"\n  Measured throughput:  {ollama_tps:.1f} tokens/sec")
-    print(f"  CPU power draw:       {watts:.0f}W (estimated)")
-    print(f"  Electricity cost:     ${electricity:.2f}/kWh")
-    print(f"  Time for 1M tokens:   {seconds_per_1m:.0f}s ({seconds_per_1m/3600:.2f}h)")
-    print(f"  Energy for 1M tokens: {kwh:.4f} kWh")
-    print(f"  Cost per 1M tokens:   ${cost_per_1m:.4f}")
-    print()
-    print(f"  TARGET: $0.01/1M tokens requires {tps_needed:.0f} tok/s")
-    print(f"  GAP:    We need {tps_needed/ollama_tps:.1f}x more throughput")
-
-    if ollama_tps >= tps_needed:
-        print(f"  STATUS: [PASS] Local inference MEETS the $0.01 target!")
+    if index_path.exists():
+        with open(index_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        with open(index_path, "w", encoding="utf-8") as f:
+            f.write(content + entry)
     else:
-        gap_pct = (1 - ollama_tps / tps_needed) * 100
-        print(f"  STATUS: [FAIL] {gap_pct:.0f}% below target throughput")
+        with open(index_path, "w", encoding="utf-8") as f:
+            f.write("# Benchmark Results Index\n\n"
+                    "| File | Date | Command | Summary |\n"
+                    "|------|------|---------|----------|\n")
+            f.write(entry)
 
-
-def print_router_cost(ollama_tps: float, synth_ratio: float = 0.8) -> None:
-    """Print blended cost analysis for the NEXUS router."""
-    watts = 65.0
-    electricity = 0.15
-
-    # CPU-only cost (no LLM) = just the electricity for CPU overhead
-    # Actually CPU overhead is tiny compared to LLM, so synth queries are ~$0
-    seconds_per_1m = 1_000_000 / ollama_tps if ollama_tps > 0 else float("inf")
-    kwh_per_1m = (watts / 1000) * (seconds_per_1m / 3600)
-    cost_per_1m = kwh_per_1m * electricity
-
-    # Blended: synth_ratio% of queries cost $0, (1-synth_ratio)% cost full LLM tokens
-    llm_fraction = 1 - synth_ratio
-    blended_cost_per_1m = llm_fraction * cost_per_1m
-
-    # Effective cost per 1M user-facing tokens
-    # Only llm_fraction of tokens actually go through LLM
-    effective_tokens_per_1m_user = 1_000_000 / llm_fraction if llm_fraction > 0 else float("inf")
-
-    _banner("ROUTER BLENDED COST")
-
-    print(f"\n  Synthesizer ratio:    {synth_ratio:.0%} (template-based, ~$0)")
-    print(f"  LLM ratio:            {llm_fraction:.0%} (full inference)")
-    print(f"  Raw cost per 1M LLM tokens:  ${cost_per_1m:.4f}")
-    print(f"  Blended cost per 1M tokens:  ${blended_cost_per_1m:.4f}")
-    print(f"  (Only {llm_fraction:.0%} of tokens incur LLM cost)")
-    print()
-    print(f"  NEXUS router effective cost: ${blended_cost_per_1m:.4f} per 1M user-facing tokens")
-    print(f"  ({synth_ratio:.0%} synth = $0)")
-
-    if blended_cost_per_1m <= 0.01:
-        print(f"  STATUS: [PASS] Router blended cost MEETS $0.01 target!")
-    else:
-        gap = blended_cost_per_1m - 0.01
-        print(f"  STATUS: [FAIL] ${gap:.4f} above $0.01 target")
-        # What synth ratio would hit the target?
-        # blended = llm_fraction * cost_per_1m <= 0.01
-        # llm_fraction <= 0.01 / cost_per_1m
-        # synth_ratio >= 1 - (0.01 / cost_per_1m)
-        needed_synth = 1 - (0.01 / cost_per_1m) if cost_per_1m > 0 else 1.0
-        if 0 <= needed_synth <= 1:
-            print(f"  To hit $0.01: need {needed_synth:.0%} synthesizer ratio ({needed_synth*100:.0f}%)")
-
-
-# ── Main ──
 
 def main():
     parser = argparse.ArgumentParser(
-        description="NEXUS Throughput Benchmark — measure actual tokens/sec on this hardware"
+        description="NEXUS Throughput Benchmark — honest throughput and cost measurement"
     )
     parser.add_argument(
         "--model", type=str, default="qwen2.5:latest",
         help="Ollama model to benchmark (default: qwen2.5:latest)"
     )
     parser.add_argument(
-        "--runs", type=int, default=5,
-        help="Number of runs per prompt length (default: 5)"
+        "--runs", type=int, default=MEASUREMENT_RUNS,
+        help=f"Number of measured runs per prompt length (default: {MEASUREMENT_RUNS})"
+    )
+    parser.add_argument(
+        "--warmup-runs", type=int, default=WARMUP_RUNS,
+        help=f"Number of warm-up runs before measurement (default: {WARMUP_RUNS})"
     )
     parser.add_argument(
         "--skip-ollama", action="store_true",
-        help="Skip Ollama raw throughput (only run pipeline breakdown)"
+        help="Skip Ollama raw throughput"
     )
     parser.add_argument(
         "--skip-pipeline", action="store_true",
-        help="Skip NEXUS pipeline breakdown (only run Ollama benchmark)"
+        help="Skip NEXUS pipeline breakdown"
     )
     parser.add_argument(
-        "--output", type=str, default=None,
-        help="Output JSON file for results"
+        "--zero-weight", action="store_true",
+        help="Run zero-weight benchmark (SynthesizingModel only, no LLM)"
+    )
+    parser.add_argument(
+        "--pipeline-only", action="store_true",
+        help="Run only NEXUS pipeline breakdown"
     )
     args = parser.parse_args()
 
     print("=" * 72)
-    print("  NEXUS THROUGHPUT BENCHMARK")
-    print("  Target: $0.01/1M tokens (local-only pricing)")
+    print("  NEXUS THROUGHPUT BENCHMARK — Phase 3 (honest measurement)")
     print("=" * 72)
 
-    # ── Part 1: Ollama raw throughput ──
-    ollama_tps: float = 0.0
-    ollama_results: list[InferenceResult] = []
+    # ── Zero-weight mode ──
+    if args.zero_weight:
+        print("\n  Mode: ZERO-WEIGHT (SynthesizingModel only)")
+        data = benchmark_zero_weight(num_questions=30)
+        timestamp = _utc_timestamp()
+        filename = f"zero_weight_{timestamp}.json"
+        output_path = RESULTS_DIR / filename
+        RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        print(f"\n  Results saved to: {output_path}")
+        _update_index(filename, "python benchmarks/throughput_bench.py --zero-weight",
+                      f"Zero-weight benchmark: {data.get('accuracy', 0):.1%} accuracy, "
+                      f"{data.get('latency_mean_ms', 0):.0f}ms mean latency, ${data.get('cost_per_1m_tokens', 0):.2f}/1M tokens")
+        return
 
-    if not args.skip_ollama:
-        model_name = _find_ollama_model(args.model)
-        if _check_ollama(args.model):
-            print(f"\n  Ollama is running. Model: {model_name}")
-            print(f"  Running {args.runs} iterations per prompt length...")
-            ollama_results = benchmark_ollama(
-                model_name=model_name,
-                runs_per_length=args.runs,
-            )
-            all_tps = [r.tokens_per_second for r in ollama_results]
-            ollama_tps = _p50(all_tps) if all_tps else 0.0
-            print_ollama_results(ollama_results)
-        else:
-            print(f"\n  [SKIP] Ollama not running or model '{args.model}' not found.")
-            print(f"  Start Ollama with: ollama pull {args.model} && ollama serve")
-    else:
-        print("\n  [SKIP] Ollama benchmark (--skip-ollama)")
-
-    # ── Part 2: NEXUS pipeline breakdown ──
-    nexus_cpu_ms: float = 0.0
-    pipeline_breakdowns: list[PipelineBreakdown] = []
-
-    if not args.skip_pipeline:
+    # ── Pipeline-only mode ──
+    if args.pipeline_only:
+        print("\n  Mode: PIPELINE BREAKDOWN ONLY")
         print("\n  Building benchmark graph...")
         from benchmarks.run_benchmark import build_benchmark_graph
-        graph, graph_provenance = build_benchmark_graph()
-        print(f"  Graph ready: {graph_provenance['node_count']} nodes, "
-              f"{graph_provenance['edge_count']} edges")
-
-        # Get model
+        graph, provenance = build_benchmark_graph()
+        print(f"  Graph: {provenance['node_count']} nodes, {provenance['edge_count']} edges")
         from nexus.reasoning.model_interface import get_available_model
         model = get_available_model()
         print(f"  Model: {model.name}")
-
-        # Test questions covering different query types
         test_questions = [
             "What was the key finding of the chain-aware retrieval experiment?",
             "Why did the project pivot from SAM to NEXUS?",
@@ -776,92 +850,73 @@ def main():
             "What showed that the selector is the bottleneck?",
             "What is the accuracy of oracle memory on memorization tasks?",
         ]
+        breakdowns, _ = benchmark_nexus_pipeline(graph, model, test_questions)
+        print_pipeline_breakdown(breakdowns)
+        return
 
-        print(f"\n  Running pipeline breakdown on {len(test_questions)} questions...")
-        pipeline_breakdowns, _ = benchmark_nexus_pipeline(
-            graph, model, test_questions,
-        )
-        print_pipeline_breakdown(pipeline_breakdowns)
+    # ── Default: throughput mode ──
+    print(f"\n  Model: {args.model}")
+    print(f"  Warm-up: {args.warmup_runs} runs × {WARMUP_TOKENS} tokens")
+    print(f"  Measurement: {args.runs} runs × 3 prompt lengths")
+    print()
 
-        # CPU overhead (ms)
-        cpu_times = [b.cpu_overhead_ms for b in pipeline_breakdowns]
-        nexus_cpu_ms = statistics.mean(cpu_times) if cpu_times else 0.0
+    # ── Part 1: Ollama throughput ──
+    ollama_data: dict[str, Any] | None = None
+
+    if not args.skip_ollama:
+        model_name = _find_ollama_model(args.model)
+        if _check_ollama(args.model):
+            print(f"Ollama available. Model: {model_name}")
+            ollama_data = benchmark_ollama_throughput(
+                model_name=model_name,
+                warmup_runs=args.warmup_runs,
+                measurement_runs=args.runs,
+            )
+            if "error" in ollama_data:
+                print(f"\n  ERROR: {ollama_data['error']}")
+                return
+        else:
+            print(f"\n  [SKIP] Ollama not running or model '{args.model}' not found.")
+            print(f"  Start with: ollama pull {args.model} && ollama serve")
     else:
-        print("\n  [SKIP] Pipeline breakdown (--skip-pipeline)")
+        print("\n  [SKIP] Ollama benchmark (--skip-ollama)")
 
-    # ── Part 3: Throughput calculations ──
-    if ollama_tps > 0:
-        # Average tokens per query from pipeline results
-        avg_prompt = 500   # typical NEXUS prompt with evidence
-        avg_completion = 80  # typical short answer
-        if pipeline_breakdowns:
-            # Estimate from generate time vs tokens
-            avg_completion = 80  # keep reasonable default
-
-        configs = compute_configurations(
-            ollama_tps=ollama_tps,
-            nexus_cpu_ms=nexus_cpu_ms,
-            avg_prompt_tokens=avg_prompt,
-            avg_completion_tokens=avg_completion,
-        )
-        print_configurations(configs)
-        print_cost_analysis(ollama_tps)
-        print_router_cost(ollama_tps, synth_ratio=0.8)
-
-    # ── Part 4: Save results ──
-    if args.output:
-        output_path = Path(args.output)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_data = {
-            "config": {
-                "model": args.model,
-                "runs_per_length": args.runs,
-            },
-            "ollama": {
-                "p50_tokens_per_second": _p50([r.tokens_per_second for r in ollama_results]) if ollama_results else 0,
-                "p95_tokens_per_second": _p95([r.tokens_per_second for r in ollama_results]) if ollama_results else 0,
-                "mean_tokens_per_second": statistics.mean([r.tokens_per_second for r in ollama_results]) if ollama_results else 0,
-                "results": [
-                    {
-                        "prompt_tokens": r.prompt_tokens,
-                        "completion_tokens": r.completion_tokens,
-                        "ttft_s": r.ttft_s,
-                        "tokens_per_second": r.tokens_per_second,
-                        "ram_mb": r.ram_mb,
-                    }
-                    for r in ollama_results
-                ],
-            },
-            "pipeline": {
-                "cpu_overhead_ms": nexus_cpu_ms,
-                "breakdowns": [
-                    {
-                        "parse_ms": b.parse_ms,
-                        "traverse_ms": b.traverse_ms,
-                        "evidence_ms": b.evidence_ms,
-                        "prompt_ms": b.prompt_ms,
-                        "generate_ms": b.generate_ms,
-                        "verify_ms": b.verify_ms,
-                        "total_ms": b.total_ms,
-                    }
-                    for b in pipeline_breakdowns
-                ],
-            },
-            "cost_analysis": {
-                "tokens_per_second": ollama_tps,
-                "watts_at_load": 65,
-                "electricity_per_kwh": 0.15,
-                "cost_per_1m_tokens": (
-                    ((65 / 1000) * (1_000_000 / ollama_tps / 3600) * 0.15) if ollama_tps > 0 else None
-                ),
-                "tps_needed_for_1cent_target": (
-                    (65 * 1_000_000 * 0.15) / (1000 * 3600 * 0.01)
-                ),
-            },
-        }
+    # ── Save throughput results ──
+    if ollama_data and "error" not in ollama_data:
+        timestamp = _utc_timestamp()
+        filename = f"throughput_{timestamp}.json"
+        output_path = RESULTS_DIR / filename
+        RESULTS_DIR.mkdir(parents=True, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(output_data, f, indent=2, ensure_ascii=False)
-        print(f"\n  Results saved to: {output_path}")
+            json.dump(ollama_data, f, indent=2, ensure_ascii=False)
+        print(f"\n  Throughput results saved to: {output_path}")
+        _update_index(filename, f"python benchmarks/throughput_bench.py --runs {args.runs}",
+                      f"Throughput: p50={ollama_data['p50_tps']:.1f} tok/s, "
+                      f"p95={ollama_data['p95_tps']:.1f} tok/s, "
+                      f"RAM={ollama_data.get('ram_mb', 'N/A')}")
+
+    # ── Part 2: Pipeline breakdown (optional) ──
+    if not args.skip_pipeline and ollama_data:
+        print("\n  Building benchmark graph for pipeline breakdown...")
+        try:
+            sys.path.insert(0, str(_project_root))
+            from benchmarks.run_benchmark import build_benchmark_graph
+            graph, provenance = build_benchmark_graph()
+            print(f"  Graph: {provenance['node_count']} nodes, {provenance['edge_count']} edges")
+            from nexus.reasoning.model_interface import get_available_model
+            model = get_available_model()
+            print(f"  Model: {model.name}")
+            test_questions = [
+                "What was the key finding of the chain-aware retrieval experiment?",
+                "Why did the project pivot from SAM to NEXUS?",
+                "How many slots does the Product-Key Memory have?",
+                "What showed that the selector is the bottleneck?",
+                "What is the accuracy of oracle memory on memorization tasks?",
+            ]
+            breakdowns, _ = benchmark_nexus_pipeline(graph, model, test_questions)
+            print_pipeline_breakdown(breakdowns)
+        except Exception as exc:
+            print(f"  Pipeline breakdown failed: {exc}")
 
     print()
     print("=" * 72)

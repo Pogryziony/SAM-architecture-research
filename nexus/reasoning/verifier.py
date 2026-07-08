@@ -18,8 +18,17 @@ No ML — pure regex and string matching. Fast and deterministic.
 from __future__ import annotations
 
 import re
+import sys
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
+
+# Import scoring utils for 5%-tolerance numeric matching
+_project_root = Path(__file__).resolve().parent.parent.parent
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+
+from benchmarks.scoring import _extract_numbers, _fuzzy_number_match  # noqa: E402
 
 
 # ── Transitional / filler sentence patterns ─────────────────────────
@@ -427,6 +436,116 @@ def _collect_evidence_relations(evidence_pack: dict[str, Any]) -> set[str]:
     return relations
 
 
+def _collect_evidence_numbers(evidence_pack: dict[str, Any]) -> set[float]:
+    """Collect all numeric values from evidence facts and node metadata.
+
+    Extracts numbers from fact strings, node IDs, names, and titles
+    using the SAME _extract_numbers function as the benchmark scorer,
+    ensuring consistent 5%-tolerance verification.
+    """
+    numbers: set[float] = set()
+
+    for fact in evidence_pack.get("facts", []):
+        numbers.update(_extract_numbers(fact))
+
+    # Also extract numbers from node metadata (IDs often contain numbers)
+    for path_data in evidence_pack.get("paths", []):
+        for node in path_data.get("nodes", []):
+            for key in ("id", "name", "display_name", "title", "key_finding", "description"):
+                val = node.get(key, "")
+                if isinstance(val, str) and val:
+                    numbers.update(_extract_numbers(val))
+
+    return numbers
+
+
+def _collect_evidence_edges(evidence_pack: dict[str, Any]) -> set[tuple[str, str, str]]:
+    """Collect all edge triples (from, to, type) for relation-direction checking.
+
+    Each triple represents a directed edge in the evidence graph.
+    The type is the canonical relation type (e.g., 'validates', 'depends_on').
+    """
+    edges: set[tuple[str, str, str]] = set()
+
+    for path_data in evidence_pack.get("paths", []):
+        for edge in path_data.get("edges", []):
+            from_id = edge.get("from", "").lower()
+            to_id = edge.get("to", "").lower()
+            etype = edge.get("type", "").lower()
+            if from_id and to_id and etype:
+                edges.add((from_id, to_id, etype))
+
+    return edges
+
+
+def _extract_claim_numeric_entities(claim: str) -> set[str]:
+    """Extract ID-pattern entities from a claim — entities that look like
+    structured identifiers (underscore_separated, Experiment IDs, etc.).
+
+    These are the entities whose presence or absence is most diagnostic
+    for hallucination detection.
+    """
+    id_entities: set[str] = set()
+
+    # Pattern for underscore-separated IDs: Exp_0_6, Concept_Alpha, Bug_42
+    for m in re.finditer(r'\b([A-Z][a-z]*_\w+(?:_\w+)*)\b', claim):
+        id_entities.add(m.group(1).lower())
+
+    # Fallback: any word with underscore and >= 8 chars
+    for m in re.finditer(r'\b(\w*_[A-Za-z]+\w*)\b', claim):
+        full = m.group(1).lower()
+        if len(full) >= 5:
+            id_entities.add(full)
+
+    return id_entities
+
+
+def _claim_entities_and_direction(
+    claim: str,
+) -> tuple[list[str], str | None, str | None]:
+    """Extract entity mentions and a potential directional relation from a claim.
+
+    Returns (entity_mentions, rel_type, direction_hint) where:
+        entity_mentions: list of two entity strings found in the claim
+        rel_type: the canonical relation type if detected (e.g., 'validates')
+        direction_hint: 'forward' or 'reverse' based on linguistic cues
+    Returns ([], None, None) if no directional relation is detected.
+    """
+    claim_lower = claim.lower()
+
+    # Directional relation patterns: SUBJECT RELATION OBJECT (forward)
+    _FORWARD_PATTERNS: list[tuple[str, str]] = [
+        ("validates", r"(\w+(?:_\w+)*)\s+validates\s+(\w+(?:_\w+)*)"),
+        ("causes", r"(\w+(?:_\w+)*)\s+causes\s+(\w+(?:_\w+)*)"),
+        ("depends_on", r"(\w+(?:_\w+)*)\s+depends\s+on\s+(\w+(?:_\w+)*)"),
+        ("blocks", r"(\w+(?:_\w+)*)\s+blocks\s+(\w+(?:_\w+)*)"),
+        ("implements", r"(\w+(?:_\w+)*)\s+implements\s+(\w+(?:_\w+)*)"),
+        ("replaces", r"(\w+(?:_\w+)*)\s+replaces\s+(\w+(?:_\w+)*)"),
+        ("supports", r"(\w+(?:_\w+)*)\s+supports\s+(\w+(?:_\w+)*)"),
+    ]
+    # Reverse patterns: OBJECT is RELATION by SUBJECT
+    _REVERSE_PATTERNS: list[tuple[str, str]] = [
+        ("validated_by", r"(\w+(?:_\w+)*)\s+(?:is|are|was|were)\s+validated\s+by\s+(\w+(?:_\w+)*)"),
+        ("caused_by", r"(\w+(?:_\w+)*)\s+(?:is|are|was|were)\s+caused\s+by\s+(\w+(?:_\w+)*)"),
+        ("blocked_by", r"(\w+(?:_\w+)*)\s+(?:is|are|was|were)\s+blocked\s+by\s+(\w+(?:_\w+)*)"),
+        ("implemented_by", r"(\w+(?:_\w+)*)\s+(?:is|are|was|were)\s+implemented\s+by\s+(\w+(?:_\w+)*)"),
+        ("replaced_by", r"(\w+(?:_\w+)*)\s+(?:is|are|was|were)\s+replaced\s+by\s+(\w+(?:_\w+)*)"),
+        ("supported_by", r"(\w+(?:_\w+)*)\s+(?:is|are|was|were)\s+supported\s+by\s+(\w+(?:_\w+)*)"),
+    ]
+
+    for canon_rel, pattern in _FORWARD_PATTERNS:
+        m = re.search(pattern, claim_lower)
+        if m:
+            return [m.group(1), m.group(2)], canon_rel, "forward"
+
+    for canon_rel, pattern in _REVERSE_PATTERNS:
+        m = re.search(pattern, claim_lower)
+        if m:
+            return [m.group(1), m.group(2)], canon_rel, "reverse"
+
+    return [], None, None
+
+
 def _entity_present(entities: set[str], entity: str) -> bool:
     """
     Check if an entity (or its parts) appears in the evidence entity set.
@@ -561,11 +680,15 @@ class Verifier:
         # Collect evidence features
         entities = _collect_evidence_entities(evidence_pack)
         relations = _collect_evidence_relations(evidence_pack)
+        evidence_numbers = _collect_evidence_numbers(evidence_pack)
+        evidence_edges = _collect_evidence_edges(evidence_pack)
 
         # Check each factual claim
         unsupported: list[str] = []
         for claim in claims:
-            if not self._claim_supported(claim, entities, relations):
+            if not self._claim_supported(
+                claim, entities, relations, evidence_numbers, evidence_edges,
+            ):
                 unsupported.append(claim)
 
         supported = len(claims) - len(unsupported)
@@ -584,28 +707,35 @@ class Verifier:
         claim: str,
         entities: set[str],
         relations: set[str],
+        evidence_numbers: set[float],
+        evidence_edges: set[tuple[str, str, str]],
     ) -> bool:
         """
         Check if a single claim is supported by the evidence.
 
-        A claim is considered supported if it references entities and/or
-        relations found in the evidence pack. Uses fuzzy entity matching
-        and normalized relation matching for lenient, semantic checking.
+        A claim must pass THREE gates:
+        1. ENTITY grounding: at least one entity or relation match
+        2. NUMERIC grounding: any numbers asserted must match evidence
+           (within 5% tolerance, same as the benchmark scorer)
+        3. ID-ENTITY fidelity: if the claim contains structured ID-level
+           entities (e.g., 'Concept_Gamma', 'Exp_0_6'), all such entities
+           must exist in evidence
+        4. RELATION DIRECTION: if a directional relation is asserted,
+           the direction must match evidence edges
 
-        This is a lenient check: we look for at least one entity match
-        OR one relation match.
+        This is stricter than the original single-gate check while still
+        allowing honest verbose answers (filler is filtered before this call).
         """
         claim_lower = claim.lower()
 
-        # Extract potential entity mentions from the claim
-        # Look for capitalized words, underscore identifiers, and technical terms
+        # ── Extract potential entity mentions from the claim ──────────
         potential_entities: set[str] = set()
 
         # Capitalized multi-word phrases (e.g., "Chain Aware Retrieval")
         for m in re.finditer(r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b', claim):
             potential_entities.add(m.group(1).lower())
 
-        # Single capitalized words at word boundaries (handles leading Caps in snake_case)
+        # Single capitalized words at word boundaries
         for m in re.finditer(r'(?:^|[_\s])([A-Z][a-z]{3,})(?:$|[_\s])', claim):
             potential_entities.add(m.group(1).lower())
 
@@ -613,25 +743,102 @@ class Verifier:
         for m in re.finditer(r'\b([A-Za-z][A-Za-z0-9]*(?:_[A-Za-z][A-Za-z0-9]*)+)\b', claim):
             full = m.group(1).lower()
             potential_entities.add(full)
-            # Also add individual snake_case parts
             for part in full.split("_"):
                 if len(part) >= 3:
                     potential_entities.add(part)
 
-        # Simple words >= 4 chars (only from non-snake_case spans)
-        # Replace underscores with spaces so we get word boundaries at snake_case breaks
+        # Simple words >= 4 chars
         spaced = claim_lower.replace("_", " ")
         for word in re.findall(r'\b([a-z]{4,})\b', spaced):
             potential_entities.add(word)
 
-        # Check if any entity from the claim exists in evidence (fuzzy)
+        # ── GATE 1: Entity and relation grounding ─────────────────────
         entity_found = any(
             _entity_present(entities, ent)
             for ent in potential_entities
         )
-
-        # Check if claim mentions any relation from evidence (normalized)
         relation_found = _claim_mentions_relation(claim_lower, relations)
 
-        # A claim needs at least some grounding — either an entity or a relation match
+        # ── GATE 2: Numeric grounding ────────────────────────────────
+        claim_numbers = _extract_numbers(claim)
+        if claim_numbers:
+            if evidence_numbers:
+                matches, _total = _fuzzy_number_match(claim_numbers, evidence_numbers)
+                if matches == 0:
+                    # Claim asserts numbers but none match evidence numbers
+                    return False
+            else:
+                # Evidence has NO numbers at all — but the claim makes
+                # numeric assertions. These numbers have zero evidence
+                # grounding, so the claim is unsupported.
+                return False
+
+        # ── GATE 3: ID-level entity fidelity ─────────────────────────
+        # Structured identifiers like "Concept_Gamma" or "Exp_0_6"
+        # If the claim mentions such IDs, they should all exist in evidence.
+        # Use EXACT matching (not fuzzy) to avoid false positives from
+        # common prefixes like "concept_" being shared by all Concept_* nodes.
+        id_entities = _extract_claim_numeric_entities(claim)
+        if id_entities:
+            for id_ent in id_entities:
+                # Check exact match first, then part match with entity_underscore check
+                if id_ent in entities:
+                    continue
+                # Also check if any single part (>=5 chars) uniquely matches
+                # This handles "concept_alpha" but NOT "concept_gamma" when
+                # only "concept_beta" exists
+                parts = id_ent.split("_")
+                # Build all evidence underscore entities for comparison
+                ev_underscore = {e for e in entities if "_" in e}
+                found = False
+                for ev_ent in ev_underscore:
+                    ev_parts = ev_ent.split("_")
+                    # At least 2 parts must match exactly (e.g., "concept" + "alpha")
+                    match_count = sum(1 for p in parts if p in ev_parts)
+                    if match_count >= 2 and len(ev_parts) >= 2:
+                        found = True
+                        break
+                if not found:
+                    return False
+
+        # ── GATE 4: Relation direction ───────────────────────────────
+        if evidence_edges:
+            dir_entities, dir_rel, dir_hint = _claim_entities_and_direction(
+                claim
+            )
+            if dir_entities and dir_rel:
+                e1, e2 = dir_entities[0], dir_entities[1]
+
+                # Only trigger when BOTH extracted entities are ID-level
+                # (contain underscores or are structured identifiers).
+                # This avoids false positives from generic words like "the"
+                # or "experiment" matching evidence edge endpoints.
+                id_re = re.compile(r'[a-z]+_[a-z]+', re.IGNORECASE)
+                if id_re.search(e1) or id_re.search(e2):
+
+                    # Map canonical relation to edge types.
+                    # Forward: "A validates B" → check (A, B, validates)
+                    # Reverse: "B is validated by A" → check (A, B, validates)
+                    if dir_hint == "forward":
+                        # Evidence should have (e1, e2, dir_rel)
+                        edge_match = any(
+                            (_entity_present({e1}, ef))
+                            and (_entity_present({e2}, et))
+                            and et_rel == dir_rel
+                            for ef, et, et_rel in evidence_edges
+                        )
+                        if not edge_match:
+                            return False
+                    elif dir_hint == "reverse":
+                        # "B is validated by A" → evidence should have (A, B, validates)
+                        edge_match = any(
+                            (_entity_present({e2}, ef))
+                            and (_entity_present({e1}, et))
+                            and et_rel in (dir_rel.replace("_by", ""), dir_rel)
+                            for ef, et, et_rel in evidence_edges
+                        )
+                        if not edge_match:
+                            return False
+
+        # A claim needs at least some grounding — entity or relation
         return entity_found or relation_found

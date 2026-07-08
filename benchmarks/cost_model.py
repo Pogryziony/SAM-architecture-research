@@ -5,15 +5,22 @@ The target is $0.01/1M tokens. Frontier APIs are dead at this price point;
 everything runs locally. Cost is computed from electricity consumption:
 CPU TDP (watts) × time × electricity rate.
 
+All throughput numbers are read EXCLUSIVELY from the newest benchmark results
+JSON. No hardcoded throughput values exist anywhere in this file.
+
 Provides:
-  - LocalCostModel: dataclass for local inference cost estimation
+  - LocalCostModel: dataclass for local inference cost estimation,
+    with classmethods to auto-load from throughput results
   - BlendedRouterCost: computes effective cost for NEXUS router (80% synth = $0)
   - Utility functions for cost comparison and formatting
 """
 
 from __future__ import annotations
 
+import json
+import os
 from dataclasses import dataclass
+from pathlib import Path
 
 # ── Frontier pricing retained for historical reference only ──
 # These are NOT used in the local-only cost model.
@@ -29,6 +36,53 @@ FRONTIER_PRICING: dict[str, dict[str, float]] = {
 # Marginal cost for local inference when electricity is not modeled
 LOCAL_COST: float = 0.0
 
+# Default path for throughput results
+_DEFAULT_RESULTS_DIR = Path(__file__).parent / "results"
+
+# ── Throughput results loader ──
+
+def _find_newest_throughput_json(results_dir: Path | None = None) -> Path | None:
+    """
+    Find the newest throughput_<timestamp>.json in the results directory.
+
+    Returns the Path, or None if no results found.
+    """
+    if results_dir is None:
+        results_dir = _DEFAULT_RESULTS_DIR
+    if not results_dir.exists():
+        return None
+
+    candidates: list[Path] = []
+    for f in results_dir.iterdir():
+        if f.is_file() and f.name.startswith("throughput_") and f.name.endswith(".json"):
+            candidates.append(f)
+
+    if not candidates:
+        return None
+
+    # Sort by modification time — newest last
+    candidates.sort(key=lambda p: p.stat().st_mtime)
+    return candidates[-1]
+
+
+def _find_newest_zero_weight_json(results_dir: Path | None = None) -> Path | None:
+    """Find the newest zero_weight_<timestamp>.json."""
+    if results_dir is None:
+        results_dir = _DEFAULT_RESULTS_DIR
+    if not results_dir.exists():
+        return None
+
+    candidates: list[Path] = []
+    for f in results_dir.iterdir():
+        if f.is_file() and f.name.startswith("zero_weight_") and f.name.endswith(".json"):
+            candidates.append(f)
+
+    if not candidates:
+        return None
+
+    candidates.sort(key=lambda p: p.stat().st_mtime)
+    return candidates[-1]
+
 
 # ── Local Cost Model ──
 
@@ -41,13 +95,102 @@ class LocalCostModel:
     during inference. No API markup, no per-token pricing — just watts × time.
 
     Attributes:
-        tokens_per_second: Measured throughput from throughput_bench.py
+        tokens_per_second: Measured throughput (loaded from benchmark results)
+        ram_mb: Peak RAM usage in MB (loaded from benchmark results)
         watts_at_load: CPU power draw during inference (default: 65W)
         electricity_cost_per_kwh: Local electricity rate (default: $0.15/kWh)
+        source_file: Path to the throughput JSON this was loaded from
     """
     tokens_per_second: float
+    ram_mb: float = 0.0
     watts_at_load: float = 65.0
     electricity_cost_per_kwh: float = 0.15
+    source_file: str = ""
+
+    @classmethod
+    def from_latest_throughput(
+        cls,
+        results_dir: Path | str | None = None,
+        metric: str = "p50_tps",
+    ) -> "LocalCostModel | None":
+        """
+        Auto-load parameters from the newest throughput results JSON.
+
+        Args:
+            results_dir: Directory containing throughput_*.json files.
+                         Defaults to benchmarks/results/.
+            metric: Which throughput metric to use — 'p50_tps' (default)
+                    or 'p95_tps' or 'mean_tps'.
+
+        Returns:
+            LocalCostModel instance or None if no results found.
+        """
+        if results_dir is None:
+            results_dir = _DEFAULT_RESULTS_DIR
+        elif isinstance(results_dir, str):
+            results_dir = Path(results_dir)
+
+        newest = _find_newest_throughput_json(results_dir)
+        if newest is None:
+            return None
+
+        with open(newest, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        tps = data.get(metric, 0.0)
+        if tps is None or tps <= 0:
+            # Try fallback metrics
+            for fallback in ["p50_tps", "mean_tps", "p95_tps"]:
+                tps = data.get(fallback, 0.0)
+                if tps and tps > 0:
+                    break
+
+        # Get RAM — could be a number or a string like "unavailable: ..."
+        ram_raw = data.get("ram_mb", 0.0)
+        if isinstance(ram_raw, (int, float)):
+            ram_mb = float(ram_raw)
+        else:
+            ram_mb = 0.0
+
+        return cls(
+            tokens_per_second=float(tps),
+            ram_mb=ram_mb,
+            source_file=str(newest),
+        )
+
+    @classmethod
+    def from_file(cls, filepath: Path | str, metric: str = "p50_tps") -> "LocalCostModel":
+        """
+        Load parameters from a specific throughput results JSON.
+
+        Args:
+            filepath: Path to the throughput results JSON.
+            metric: Which throughput metric to use.
+
+        Returns:
+            LocalCostModel instance.
+        """
+        with open(filepath, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        tps = data.get(metric, 0.0)
+        if tps is None or tps <= 0:
+            for fallback in ["p50_tps", "mean_tps", "p95_tps"]:
+                tps = data.get(fallback, 0.0)
+                if tps and tps > 0:
+                    break
+
+        ram_raw = data.get("ram_mb", 0.0)
+        if isinstance(ram_raw, (int, float)):
+            ram_mb = float(ram_raw)
+        else:
+            ram_mb = 0.0
+
+        return cls(
+            tokens_per_second=float(tps),
+            ram_mb=ram_mb,
+            source_file=str(filepath),
+        )
 
     def cost_per_1m_tokens(self) -> float:
         """
@@ -125,7 +268,12 @@ class LocalCostModel:
 
         lines = [
             f"LocalCostModel(tps={self.tokens_per_second:.1f}, "
+            f"ram={self.ram_mb:.0f}MB, "
             f"watts={self.watts_at_load:.0f}W, elec=${self.electricity_cost_per_kwh:.2f}/kWh)",
+        ]
+        if self.source_file:
+            lines.append(f"  Source: {self.source_file}")
+        lines += [
             f"  Cost per 1M tokens: ${cost:.4f}",
             f"  Queries/hour (500 tok/q): {qph_500:.0f}",
             f"  To hit $0.01/1M: need {needed:.0f} tok/s "
@@ -155,6 +303,31 @@ class BlendedRouterCost:
     """
     llm_cost_model: LocalCostModel
     synth_ratio: float = 0.8
+
+    @classmethod
+    def from_latest_throughput(
+        cls,
+        results_dir: Path | str | None = None,
+        synth_ratio: float = 0.8,
+        metric: str = "p50_tps",
+    ) -> "BlendedRouterCost | None":
+        """
+        Auto-load from the newest throughput results JSON.
+
+        Args:
+            results_dir: Directory containing throughput_*.json files.
+            synth_ratio: Fraction of queries routed to synthesizer.
+            metric: Which throughput metric to use.
+
+        Returns:
+            BlendedRouterCost instance or None if no results found.
+        """
+        llm_model = LocalCostModel.from_latest_throughput(
+            results_dir=results_dir, metric=metric,
+        )
+        if llm_model is None:
+            return None
+        return cls(llm_cost_model=llm_model, synth_ratio=synth_ratio)
 
     def effective_cost_per_1m_tokens(self) -> float:
         """
@@ -215,6 +388,10 @@ class BlendedRouterCost:
 
         lines = [
             f"BlendedRouterCost(synth={self.synth_ratio:.0%}, llm_tps={self.llm_cost_model.tokens_per_second:.1f})",
+        ]
+        if self.llm_cost_model.source_file:
+            lines.append(f"  Source: {self.llm_cost_model.source_file}")
+        lines += [
             f"  Raw LLM cost per 1M tokens:  ${llm_cost:.4f}",
             f"  Blended cost per 1M tokens:  ${eff_cost:.4f} "
             f"({self.synth_ratio:.0%} synth = $0)",
@@ -384,7 +561,7 @@ def format_router_cost_comparison(
 
 
 def make_cost_model(tokens_per_second: float, **kwargs) -> LocalCostModel:
-    """Convenience factory for LocalCostModel."""
+    """Convenience factory for LocalCostModel (explicit tps)."""
     return LocalCostModel(tokens_per_second=tokens_per_second, **kwargs)
 
 
@@ -393,6 +570,48 @@ def make_blended_router(
     synth_ratio: float = 0.8,
     **kwargs,
 ) -> BlendedRouterCost:
-    """Convenience factory for BlendedRouterCost."""
+    """Convenience factory for BlendedRouterCost (explicit tps)."""
     llm_model = LocalCostModel(tokens_per_second=tokens_per_second, **kwargs)
     return BlendedRouterCost(llm_cost_model=llm_model, synth_ratio=synth_ratio)
+
+
+def load_cost_model_from_results(
+    results_dir: Path | str | None = None,
+    metric: str = "p50_tps",
+) -> LocalCostModel | None:
+    """
+    Preferred entry point: auto-load cost model from the newest throughput JSON.
+
+    Prints the source file path so users know exactly which benchmark
+    produced the numbers.
+    """
+    model = LocalCostModel.from_latest_throughput(results_dir=results_dir, metric=metric)
+    if model is not None:
+        print(f"[cost_model] Loaded from: {model.source_file}")
+        print(f"[cost_model] p50={model.tokens_per_second:.1f} tok/s, "
+              f"ram={model.ram_mb:.0f}MB, "
+              f"${model.cost_per_1m_tokens():.4f}/1M tokens (raw LLM)")
+    else:
+        print("[cost_model] WARNING: No throughput results found. Run "
+              "`python benchmarks/throughput_bench.py` first.")
+    return model
+
+
+def load_router_cost_from_results(
+    results_dir: Path | str | None = None,
+    synth_ratio: float = 0.8,
+    metric: str = "p50_tps",
+) -> BlendedRouterCost | None:
+    """
+    Preferred entry point: auto-load router cost from newest throughput JSON.
+    """
+    router = BlendedRouterCost.from_latest_throughput(
+        results_dir=results_dir, synth_ratio=synth_ratio, metric=metric,
+    )
+    if router is not None:
+        print(f"[cost_model] Router loaded from: {router.llm_cost_model.source_file}")
+        print(f"[cost_model] Raw LLM: ${router.llm_cost_model.cost_per_1m_tokens():.4f}/1M, "
+              f"Blended: ${router.effective_cost_per_1m_tokens():.4f}/1M")
+    else:
+        print("[cost_model] WARNING: No throughput results found.")
+    return router
