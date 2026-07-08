@@ -299,6 +299,50 @@ def extract_relations(
             add_edge(exp_entity, desc, "implements", 0.60,
                      f"Experiment header in {source_path}")
 
+    # ── Pattern 16: Sentence-level entity co-occurrence ──
+    # If two or more extracted entities appear in the same sentence, create
+    # low-confidence "related_to" edges between them.
+    sentences = re.split(r'(?<=[.!?])\s+', text)
+    for sent in sentences:
+        sent_entities = [e for e in entities if e["name"] in sent]
+        if len(sent_entities) >= 2:
+            for i in range(len(sent_entities)):
+                for j in range(i + 1, len(sent_entities)):
+                    add_edge(sent_entities[i]["name"], sent_entities[j]["name"],
+                             "related_to", 0.35,
+                             f"Sentence co-occurrence in {source_path}")
+
+    # ── Pattern 17: Bold text contains backtick-wrapped entities ──
+    # "**SAM `oracle_memory` achieves ... `core_only`**" → SAM related_to oracle_memory
+    bold_blocks = re.finditer(r'\*\*(.+?)\*\*', text)
+    for bm in bold_blocks:
+        bold_content = bm.group(1)
+        # Find bold entity (text before first backtick or all bold text)
+        bold_entity_match = re.match(r'([^*`\n]{2,})', bold_content)
+        if bold_entity_match:
+            bold_entity = bold_entity_match.group(1).strip()
+            # Find backtick-wrapped entities inside the bold block
+            backtick_entities = re.findall(r'`([^`]+)`', bold_content)
+            for bt_entity in backtick_entities:
+                if len(bt_entity) >= 2 and bold_entity.lower() != bt_entity.lower():
+                    add_edge(bold_entity, bt_entity, "related_to", 0.45,
+                             f"Bold+backtick co-occurrence in {source_path}")
+                    add_edge(bt_entity, bold_entity, "validates", 0.30,
+                             f"Bold+backtick reverse in {source_path}")
+
+    # ── Pattern 18: "X achieves/eliminates/reaches Y" without backtick on X ──
+    plain_verb_configs = [
+        (r'(?:the\s+)?([A-Za-z][A-Za-z0-9_\s-]{3,30}?)\s+(?:achieves?|reaches?|eliminates?)\s+(?:the\s+)?`([^`]+)`', "validates", 0.55),
+        (r'(?:the\s+)?([A-Za-z][A-Za-z0-9_\s-]{3,30}?)\s+(?:fails?\s+to\s+set|does\s+not\s+set|did\s+not\s+set)\s+(?:the\s+)?`([^`]+)`', "caused_by", 0.50),
+        (r'(?:the\s+)?([A-Za-z][A-Za-z0-9_\s-]{3,30}?)\s+(?:tries?\s+to|attempts?\s+to)\s+(?:the\s+)?`([^`]+)`', "implements", 0.45),
+    ]
+    for pattern, etype, conf in plain_verb_configs:
+        for m in re.finditer(pattern, text, re.IGNORECASE):
+            s, t = m.group(1).strip(), m.group(2).strip()
+            if len(s) >= 3 and len(t) >= 3:
+                add_edge(s, t, etype, conf,
+                         f"Plain-verb pattern '{etype}' in {source_path}")
+
     # ── Deduplicate ──
     unique_edges = []
     seen = set()

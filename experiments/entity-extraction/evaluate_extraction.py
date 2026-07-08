@@ -22,6 +22,7 @@ _project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_project_root))
 
 from nexus.ingestion.entity_extractor import extract_from_markdown
+from nexus.ingestion.relation_extractor import extract_relations
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -77,7 +78,8 @@ def compute_entity_metrics(
 
 
 def compute_relation_metrics(
-    predicted_rels: list[dict], ground_truth_rels: list[dict]
+    predicted_rels: list[dict], ground_truth_rels: list[dict],
+    fuzzy: bool = False,
 ) -> dict[str, float]:
     """Compute precision, recall, F1 for relation triples (source, target, type)."""
     def _key(rel: dict) -> tuple[str, str, str]:
@@ -90,7 +92,23 @@ def compute_relation_metrics(
     gt_keys = {_key(r) for r in ground_truth_rels}
     pred_keys = {_key(r) for r in predicted_rels}
 
-    tp = len(gt_keys & pred_keys)
+    if fuzzy and len(gt_keys) > 0 and len(pred_keys) > 0:
+        # Use fuzzy matching for source/target names (type must still match exactly)
+        tp = 0
+        matched_preds: set[int] = set()
+        for gt_idx, (gs, gt, gtype) in enumerate(gt_keys):
+            for pred_idx, (ps, pt, ptype) in enumerate(pred_keys):
+                if pred_idx in matched_preds:
+                    continue
+                if gtype != ptype:
+                    continue
+                if _fuzzy_match(gs, ps) and _fuzzy_match(gt, pt):
+                    tp += 1
+                    matched_preds.add(pred_idx)
+                    break
+    else:
+        tp = len(gt_keys & pred_keys)
+
     n_pred = len(pred_keys)
     n_gt = len(gt_keys)
 
@@ -149,16 +167,21 @@ def evaluate() -> None:
         gt_entities = entry.get("entities", [])
         gt_relations = entry.get("relations", [])
 
-        # Run the extractor
+        # Run the extractors
         predicted = extract_from_markdown(text, source)
+        raw_relations, _ = extract_relations(text, source, predicted)
 
-        # The extractor doesn't extract relations, so predicted_rels = []
-        predicted_rels: list[dict] = []
+        # Map extractor field names (source_name/target_name/edge_type) to eval format (source/target/type)
+        predicted_rels: list[dict] = [
+            {"source": r["source_name"], "target": r["target_name"], "type": r["edge_type"]}
+            for r in raw_relations
+        ]
 
         # Compute metrics
         exact_em = compute_entity_metrics(predicted, gt_entities, fuzzy=False)
         fuzzy_em = compute_entity_metrics(predicted, gt_entities, fuzzy=True)
-        rm = compute_relation_metrics(predicted_rels, gt_relations)
+        exact_rm = compute_relation_metrics(predicted_rels, gt_relations, fuzzy=False)
+        fuzzy_rm = compute_relation_metrics(predicted_rels, gt_relations, fuzzy=True)
 
         result = {
             "id": entry["id"],
@@ -171,7 +194,8 @@ def evaluate() -> None:
             "pred_relation_count": len(predicted_rels),
             "entities_exact": exact_em,
             "entities_fuzzy": fuzzy_em,
-            "relations": rm,
+            "relations_exact": exact_rm,
+            "relations_fuzzy": fuzzy_rm,
             "predicted_entities": predicted,
         }
         results_exact.append(result)
@@ -188,10 +212,15 @@ def evaluate() -> None:
     fuzzy_macro = macro_average(fuzzy_all)
     fuzzy_micro = micro_average(fuzzy_all)
 
-    # Relation metrics
-    rel_all = [r["relations"] for r in results_exact]
-    rel_macro = macro_average(rel_all)
-    rel_micro = micro_average(rel_all)
+    # Relation metrics (exact)
+    rel_exact_all = [r["relations_exact"] for r in results_exact]
+    rel_exact_macro = macro_average(rel_exact_all)
+    rel_exact_micro = micro_average(rel_exact_all)
+
+    # Relation metrics (fuzzy)
+    rel_fuzzy_all = [r["relations_fuzzy"] for r in results_exact]
+    rel_fuzzy_macro = macro_average(rel_fuzzy_all)
+    rel_fuzzy_micro = micro_average(rel_fuzzy_all)
 
     # 4. Per-difficulty breakdown
     difficulty_metrics = defaultdict(list)
@@ -240,8 +269,14 @@ def evaluate() -> None:
             },
         },
         "relation_extraction": {
-            "macro": rel_macro,
-            "micro": rel_micro,
+            "exact_match": {
+                "macro": rel_exact_macro,
+                "micro": rel_exact_micro,
+            },
+            "fuzzy_match": {
+                "macro": rel_fuzzy_macro,
+                "micro": rel_fuzzy_micro,
+            },
         },
         "per_difficulty": difficulty_summary,
         "per_document_type": doctype_summary,
@@ -274,8 +309,10 @@ def evaluate() -> None:
     print(f"{'Entity (exact, micro)':<30} {exact_micro['precision']:>10.4f} {exact_micro['recall']:>10.4f} {exact_micro['f1']:>10.4f}")
     print(f"{'Entity (fuzzy, macro)':<30} {fuzzy_macro['precision']:>10.4f} {fuzzy_macro['recall']:>10.4f} {fuzzy_macro['f1']:>10.4f}")
     print(f"{'Entity (fuzzy, micro)':<30} {fuzzy_micro['precision']:>10.4f} {fuzzy_micro['recall']:>10.4f} {fuzzy_micro['f1']:>10.4f}")
-    print(f"{'Relation (macro)':<30} {rel_macro['precision']:>10.4f} {rel_macro['recall']:>10.4f} {rel_macro['f1']:>10.4f}")
-    print(f"{'Relation (micro)':<30} {rel_micro['precision']:>10.4f} {rel_micro['recall']:>10.4f} {rel_micro['f1']:>10.4f}")
+    print(f"{'Relation (exact, macro)':<30} {rel_exact_macro['precision']:>10.4f} {rel_exact_macro['recall']:>10.4f} {rel_exact_macro['f1']:>10.4f}")
+    print(f"{'Relation (exact, micro)':<30} {rel_exact_micro['precision']:>10.4f} {rel_exact_micro['recall']:>10.4f} {rel_exact_micro['f1']:>10.4f}")
+    print(f"{'Relation (fuzzy, macro)':<30} {rel_fuzzy_macro['precision']:>10.4f} {rel_fuzzy_macro['recall']:>10.4f} {rel_fuzzy_macro['f1']:>10.4f}")
+    print(f"{'Relation (fuzzy, micro)':<30} {rel_fuzzy_micro['precision']:>10.4f} {rel_fuzzy_micro['recall']:>10.4f} {rel_fuzzy_micro['f1']:>10.4f}")
 
     print(f"\n{'Difficulty':<20} {'Count':>6} {'Precision':>10} {'Recall':>10} {'F1':>10}")
     print("-" * 58)

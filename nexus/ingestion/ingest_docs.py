@@ -23,11 +23,13 @@ from nexus.graph import Node, Edge
 from nexus.graph.store import InMemoryGraphStore
 from nexus.ingestion.entity_extractor import extract_from_markdown
 from nexus.ingestion.relation_extractor import extract_relations
+from nexus.ingestion.normalizer import canonicalize
+from nexus.ingestion.deduplicator import merge_entity_lists
 
 
 def _slugify(name: str) -> str:
-    """Create a normalized ID from an entity name."""
-    return name.strip().lower().replace(" ", "_").replace("-", "_").replace("/", "_")
+    """Create a normalized ID from an entity name using the canonicalizer."""
+    return canonicalize(name)
 
 
 def _make_node(entity: dict) -> Node:
@@ -166,10 +168,11 @@ def ingest_directory(
 
         rel_path = str(md_file.relative_to(_project_root))
 
-        # Extract entities from markdown
+        # Extract entities from markdown (includes deduplication)
         entities = extract_from_markdown(text, rel_path)
         # Supplement with additional entity patterns
-        entities.extend(_supplement_entities(text, rel_path))
+        supplement = _supplement_entities(text, rel_path)
+        entities = merge_entity_lists([entities, supplement])
 
         if verbose and entities:
             print(f"  {rel_path}: {len(entities)} entities")
