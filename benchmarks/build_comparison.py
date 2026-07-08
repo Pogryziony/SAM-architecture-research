@@ -72,6 +72,23 @@ def _resolve_throughput_json() -> Path:
     raise FileNotFoundError("No throughput results file found")
 
 
+def _resolve_ram_throughput_json() -> Path | None:
+    """Find the newest ram_throughput_*.json with both RAM and throughput data."""
+    newest = _find_newest_in_results("ram_throughput_*.json")
+    if newest is not None:
+        # Verify it has both RAM and throughput data
+        with open(newest, encoding="utf-8") as f:
+            data = json.load(f)
+        has_ram = any(
+            isinstance(data.get(arm, {}).get("rss_delta_mb"), (int, float))
+            for arm in ["zero_weight", "nexus_3b", "rag_3b"]
+        )
+        has_tp = "warmed_throughput" in data
+        if has_ram and has_tp:
+            return newest
+    return None
+
+
 def _resolve_router_results_json() -> Path:
     newest = _find_newest_in_results("router_results_*.json")
     if newest is not None:
@@ -80,6 +97,22 @@ def _resolve_router_results_json() -> Path:
     if fallback.exists():
         return fallback
     raise FileNotFoundError("No router results file found")
+
+
+def _resolve_router_paired_json() -> Path:
+    """Find the newest router_paired_*.json in results/ (200-question router run)."""
+    newest = _find_newest_in_results("router_paired_*.json")
+    if newest is not None:
+        return newest
+    raise FileNotFoundError("No router_paired file found in results/")
+
+
+def _resolve_router_vs_rag_paired_json() -> Path:
+    """Find the newest router_vs_rag_paired_*.json in results/ (paired comparison)."""
+    newest = _find_newest_in_results("router_vs_rag_paired_*.json")
+    if newest is not None:
+        return newest
+    raise FileNotFoundError("No router_vs_rag_paired file found in results/")
 
 
 def _resolve_relevance_audit_md() -> Path:
@@ -257,15 +290,103 @@ def load_router_results(path: Path) -> dict:
     }
 
 
-def load_throughput(path: Path) -> dict:
-    """Load throughput results and build cost model data."""
+def load_router_paired(path: Path) -> dict:
+    """Load router_paired_*.json for per-arm router summary stats."""
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
 
+    results = data.get("results", [])
+    total = len(results)
+
+    # Hallucination
+    hall_rates = [r["router"]["hallucination_rate"] for r in results if not r["router"].get("error")]
+    avg_hall = sum(hall_rates) / len(hall_rates) if hall_rates else 0.0
+
+    # Verification pass rate
+    passed = sum(1 for r in results if r["router"].get("passed") and not r["router"].get("error"))
+    pass_rate = passed / total if total > 0 else 0.0
+
+    # Answer rate
+    insuff = sum(1 for r in results if r["router"].get("is_insufficient"))
+    answer_rate = 1.0 - insuff / total if total > 0 else 0.0
+
+    # Latency
+    latencies = [r["router"]["latency_s"] for r in results if not r["router"].get("error")]
+    avg_lat = sum(latencies) / len(latencies) if latencies else 0.0
+
+    # Evidence tokens from LLM arm (same graph, representative)
+    ev_tokens = [r["llm"].get("evidence_tokens", 0) for r in results if not r["llm"].get("error")]
+    avg_ev_tokens = sum(ev_tokens) / len(ev_tokens) if ev_tokens else 0.0
+
+    # Route split
+    synth_count = sum(1 for r in results if r["router"]["routed_to"] == "synthesizer")
+    llm_count = sum(1 for r in results if r["router"]["routed_to"] == "llm")
+    synth_ratio = synth_count / total if total > 0 else 0.0
+
+    # Accuracy
+    accuracies = [r["router"]["accuracy"] for r in results
+                  if r["router"]["accuracy"] is not None and not r["router"].get("error")]
+    avg_acc = sum(accuracies) / len(accuracies) if accuracies else 0.0
+
+    return {
+        "source": str(path),
+        "total": total,
+        "avg_hallucination_rate": round(avg_hall, 4),
+        "verification_pass_rate": round(pass_rate, 4),
+        "answer_rate": round(answer_rate, 4),
+        "avg_evidence_tokens": round(avg_ev_tokens, 1),
+        "avg_latency_s": round(avg_lat, 4),
+        "avg_accuracy": round(avg_acc, 4),
+        "route_split": {"synthesizer": synth_count, "llm": llm_count},
+        "synth_ratio": round(synth_ratio, 4),
+    }
+
+
+def load_router_vs_rag_paired(path: Path) -> dict:
+    """Load router_vs_rag_paired_*.json for paired comparison data."""
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    comp = data.get("comparison", {})
+    router_comp = comp.get("nexus router", {})
+    rag_comp = comp.get("rag", {})
+    wlt = comp.get("win_loss_tie", {})
+
+    return {
+        "source": str(path),
+        "paired_n": comp.get("paired_n"),
+        "router_accuracy": router_comp.get("mean_accuracy"),
+        "rag_accuracy": rag_comp.get("mean_accuracy"),
+        "sign_test_p": comp.get("sign_test_p"),
+        "win_loss_tie": wlt,
+    }
+
+
+def load_throughput(path: Path) -> dict:
+    """Load throughput results and build cost model data.
+    
+    Handles both legacy throughput_*.json and new ram_throughput_*.json formats.
+    """
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    # New format: warmed_throughput key (from ram_throughput.py)
+    if "warmed_throughput" in data:
+        tp = data["warmed_throughput"]
+        return {
+            "source": str(path),
+            "p50_tps": tp.get("p50_tps"),
+            "p95_tps": tp.get("p95_tps"),
+            "mean_tps": tp.get("mean_tps"),
+            "ram_mb": tp.get("ollama_rss", 0),
+            "pipeline_overhead_ms": None,
+            "by_prompt_length": tp.get("by_prompt_length", {}),
+        }
+
+    # Legacy format
     ollama = data.get("ollama", {})
     pipeline = data.get("pipeline", {})
 
-    # Find max ram_mb across all ollama results
     max_ram = 0.0
     for r in ollama.get("results", []):
         ram = r.get("ram_mb", 0)
@@ -280,6 +401,26 @@ def load_throughput(path: Path) -> dict:
         "ram_mb": max_ram,
         "pipeline_overhead_ms": pipeline.get("cpu_overhead_ms"),
     }
+
+
+def load_ram_data(path: Path) -> dict:
+    """Load per-arm RAM measurements from ram_throughput_*.json.
+    
+    Returns dict mapping arm name -> {rss_peak_mb, rss_delta_mb, ...}
+    """
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    ram = {}
+    for arm in ["zero_weight", "nexus_3b", "rag_3b"]:
+        arm_data = data.get(arm, {})
+        if "error" not in arm_data:
+            ram[arm] = {
+                "rss_peak_mb": arm_data.get("rss_peak_mb"),
+                "rss_delta_mb": arm_data.get("rss_delta_mb"),
+                "rss_before_mb": arm_data.get("rss_before_mb"),
+            }
+    return ram
 
 
 def parse_relevance_audit(path: Path) -> dict:
@@ -361,13 +502,44 @@ def build_table() -> str:
     nvr_regen_path = _resolve_nexus_vs_rag_regenerated_json()
     nvr_raw_path = _resolve_nexus_vs_rag_raw_json()
     vc_path = _resolve_verifier_check_json()
-    tp_path = _resolve_throughput_json()
     router_path = _resolve_router_results_json()
     audit_path = _resolve_relevance_audit_md()
+
+    # New: router paired data (200-question router run + paired comparison)
+    router_paired_path: Path | None = None
+    router_vs_rag_paired_path: Path | None = None
+    try:
+        router_paired_path = _resolve_router_paired_json()
+    except FileNotFoundError:
+        print("  Warning: No router_paired_*.json found")
+    try:
+        router_vs_rag_paired_path = _resolve_router_vs_rag_paired_json()
+    except FileNotFoundError:
+        print("  Warning: No router_vs_rag_paired_*.json found")
+
+    # Prefer new ram_throughput format (has both RAM and warmed throughput)
+    ram_tp_path = _resolve_ram_throughput_json()
+    if ram_tp_path is not None:
+        print(f"  Using ram_throughput format: {ram_tp_path.name}")
+        tp_path = ram_tp_path
+        ram_data = load_ram_data(ram_tp_path)
+    else:
+        tp_path = _resolve_throughput_json()
+        ram_data = {}
 
     nvr = load_nexus_vs_rag(nvr_regen_path, nvr_raw_path)
     vc = load_verifier_check(vc_path)
     tp = load_throughput(tp_path)
+
+    # Load new router paired data if available
+    router_paired_data: dict | None = None
+    router_vs_rag_paired: dict | None = None
+    if router_paired_path is not None:
+        router_paired_data = load_router_paired(router_paired_path)
+        print(f"  router_paired:     {router_paired_path.name}")
+    if router_vs_rag_paired_path is not None:
+        router_vs_rag_paired = load_router_vs_rag_paired(router_vs_rag_paired_path)
+        print(f"  router_vs_rag:     {router_vs_rag_paired_path.name}")
     router_data = load_router_results(router_path)
     audit = parse_relevance_audit(audit_path)
 
@@ -412,7 +584,22 @@ def build_table() -> str:
     relevance_str = f"{_fmt(audit['relevance_rate'], '.1%')} [{audit_fn}]" if audit["relevance_rate"] is not None else f"not measured [{audit_fn}]"
 
     # ── RAM ──
-    ram_str = f"{tp['ram_mb']:.0f} MB [{tp_fn}]" if tp["ram_mb"] > 0 else f"not measured (ram_mb = 0 in source) [{tp_fn}]"
+    # Per-arm RAM values from ram_throughput measurement
+    def _ram_cell(arm_key: str, label: str, extra: str = "") -> str:
+        if ram_data and arm_key in ram_data:
+            rd = ram_data[arm_key]
+            peak = rd.get("rss_peak_mb", 0)
+            delta = rd.get("rss_delta_mb", 0)
+            fn = ram_tp_path.name if ram_tp_path else "unknown"
+            return f"{peak:.0f} MB (delta +{delta:.0f} MB) [{fn}]"
+        # Fallback to legacy
+        ram_str = f"{tp['ram_mb']:.0f} MB [{tp_fn}]" if tp["ram_mb"] > 0 else f"not measured (ram_mb = 0 in source) [{tp_fn}]"
+        return ram_str + extra
+
+    ram_nexus = _ram_cell("nexus_3b", "NEXUS+3B")
+    ram_zero = _ram_cell("zero_weight", "Zero-weight", " (same hardware)")
+    ram_router = _ram_cell("nexus_3b", "Router", " (same hardware)")
+    ram_rag = _ram_cell("rag_3b", "RAG+3B")
 
     # ── Build rows ──
 
@@ -427,7 +614,7 @@ def build_table() -> str:
         "Answer rate": f"{_fmt(nvr['nexus']['answer_rate'], '.2%')} [{nvr_raw_fn}]",
         "Avg evidence tokens": f"{_fmt(nvr['nexus']['avg_evidence_tokens'], '.1f')} [{nvr_raw_fn}]",
         "p50 latency": f"{_fmt(nvr['nexus']['avg_latency_s'], '.2f')} s [{nvr_raw_fn}]",
-        "Peak RAM (MB)": ram_str,
+        "Peak RAM (MB)": ram_nexus,
         "$/1K queries": nexus_cost,
         "Sign test p vs RAG": f"{_fmt(nvr['sign_test_p'], '.4f')} [{nvr_regen_fn}]",
         "Relevance rate": relevance_str,
@@ -442,27 +629,62 @@ def build_table() -> str:
         "Answer rate": f"{_fmt(vc['router']['answer_rate'], '.2%')} [{vc_fn}]",
         "Avg evidence tokens": f"not measured [{vc_fn}] (no evidence token tracking in verifier)",
         "p50 latency": f"{_fmt(vc['router']['avg_latency_s'], '.2f')} s [{vc_fn}]",
-        "Peak RAM (MB)": f"{ram_str} (same hardware)",
+        "Peak RAM (MB)": ram_zero,
         "$/1K queries": zero_weight_cost,
         "Sign test p vs RAG": f"not measured [{vc_fn}]",
         "Relevance rate": relevance_str,
     })
 
-    # Row 3: NEXUS router
-    synth_pct = f"{synth_ratio:.0%}" if synth_ratio is not None else "?"
-    rows.append({
-        "Architecture": f"NEXUS router<br>(SynthesizingModel + LLM routing, {synth_pct} synth)",
-        "Paired fuzzy accuracy": f"not measured [{vc_fn}] (no paired comparison run)",
-        "Hallucination rate (post-fix)": f"{_fmt(vc['combined_avg_hallucination_rate'], '.2%')} [{vc_fn}]",
-        "Verification pass rate": f"not measured [{vc_fn}]",
-        "Answer rate": f"not measured [{vc_fn}]",
-        "Avg evidence tokens": f"not measured [{vc_fn}]",
-        "p50 latency": f"not measured [{vc_fn}]",
-        "Peak RAM (MB)": f"{ram_str} (same hardware)",
-        "$/1K queries": router_cost,
-        "Sign test p vs RAG": f"not measured [{vc_fn}]",
-        "Relevance rate": relevance_str,
-    })
+    # Row 3: NEXUS router (with paired comparison data if available)
+    if router_paired_data is not None:
+        rp = router_paired_data
+        rp_fn = router_paired_path.name if router_paired_path else "unknown"
+        rvr_fn = router_vs_rag_paired_path.name if router_vs_rag_paired_path else "unknown"
+        synth_pct = f"{rp['synth_ratio']:.0%}" if rp["synth_ratio"] is not None else "?"
+        router_paired_acc = router_vs_rag_paired["router_accuracy"] if router_vs_rag_paired else None
+        router_sign_p = router_vs_rag_paired["sign_test_p"] if router_vs_rag_paired else None
+
+        # Blended evidence tokens: synth path (0 tokens) + LLM path (NEXUS evidence tokens)
+        nexus_ev_tok = nvr["nexus"]["avg_evidence_tokens"] or 688
+        synth_frac = rp["synth_ratio"]
+        llm_frac = 1.0 - synth_frac
+        blended_ev_tokens = round(llm_frac * nexus_ev_tok, 1)
+
+        router_cost_r3 = compute_cost_per_1k_queries(
+            "Router", tp,
+            blended_ev_tokens if blended_ev_tokens > 0 else nexus_ev_tok,
+            rp["avg_latency_s"],
+            synth_ratio=rp["synth_ratio"],
+        )
+
+        rows.append({
+            "Architecture": f"NEXUS router<br>(SynthesizingModel + LLM routing, {synth_pct} synth)",
+            "Paired fuzzy accuracy": f"{_fmt(router_paired_acc, '.2%')} [{rvr_fn}]" if router_paired_acc is not None else f"not measured [{rp_fn}]",
+            "Hallucination rate (post-fix)": f"{_fmt(rp['avg_hallucination_rate'], '.2%')} [{rp_fn}]",
+            "Verification pass rate": f"{_fmt(rp['verification_pass_rate'], '.2%')} [{rp_fn}]",
+            "Answer rate": f"{_fmt(rp['answer_rate'], '.2%')} [{rp_fn}]",
+            "Avg evidence tokens": f"{blended_ev_tokens:.1f} [{rp_fn}] (blended: {synth_pct} synth×0 + {_fmt(llm_frac, '.0%')} LLM×{nexus_ev_tok:.0f})",
+            "p50 latency": f"{_fmt(rp['avg_latency_s'], '.2f')} s [{rp_fn}]",
+            "Peak RAM (MB)": ram_router,
+            "$/1K queries": router_cost_r3,
+            "Sign test p vs RAG": f"{_fmt(router_sign_p, '.4f')} [{rvr_fn}]" if router_sign_p is not None else f"not measured [{rp_fn}]",
+            "Relevance rate": relevance_str,
+        })
+    else:
+        synth_pct = f"{synth_ratio:.0%}" if synth_ratio is not None else "?"
+        rows.append({
+            "Architecture": f"NEXUS router<br>(SynthesizingModel + LLM routing, {synth_pct} synth)",
+            "Paired fuzzy accuracy": f"not measured [{vc_fn}] (no paired comparison run)",
+            "Hallucination rate (post-fix)": f"{_fmt(vc['combined_avg_hallucination_rate'], '.2%')} [{vc_fn}]",
+            "Verification pass rate": f"not measured [{vc_fn}]",
+            "Answer rate": f"not measured [{vc_fn}]",
+            "Avg evidence tokens": f"not measured [{vc_fn}]",
+            "p50 latency": f"not measured [{vc_fn}]",
+            "Peak RAM (MB)": ram_router,
+            "$/1K queries": router_cost,
+            "Sign test p vs RAG": f"not measured [{vc_fn}]",
+            "Relevance rate": relevance_str,
+        })
 
     # Row 4: RAG + same 3B
     rows.append({
@@ -473,7 +695,7 @@ def build_table() -> str:
         "Answer rate": f"{_fmt(nvr['rag']['answer_rate'], '.2%')} [{nvr_raw_fn}]",
         "Avg evidence tokens": f"{_fmt(nvr['rag']['avg_evidence_tokens'], '.1f')} [{nvr_raw_fn}]",
         "p50 latency": f"{_fmt(nvr['rag']['avg_latency_s'], '.2f')} s [{nvr_raw_fn}]",
-        "Peak RAM (MB)": ram_str,
+        "Peak RAM (MB)": ram_rag,
         "$/1K queries": rag_cost,
         "Sign test p vs RAG": "(baseline)",
         "Relevance rate": relevance_str,
@@ -506,8 +728,17 @@ def build_table() -> str:
         f"- `{nvr_regen_fn}` — NEXUS vs RAG paired comparison (n={nvr['paired_n']})",
         f"- `{nvr_raw_fn}` — per-arm summary stats (hallucination, pass rate, latency, tokens)",
         f"- `{vc_fn}` — post-verifier-fix hallucination measurement (n={vc['router']['n']})",
-        f"- `{tp_fn}` — throughput and cost model data",
+        f"- `{tp_fn}` — warmed throughput data (qwen2.5:latest, 7.6B Q4_K_M, p50={tp['p50_tps']:.1f} tok/s)",
         f"- `{audit_fn}` — SynthesizingModel relevance audit",
+    ]
+
+    # Add router paired sources if available
+    if router_paired_path is not None:
+        lines.append(f"- `{router_paired_path.name}` — NEXUS router 200-question run (hallucination, pass rate, latency)")
+    if router_vs_rag_paired_path is not None:
+        lines.append(f"- `{router_vs_rag_paired_path.name}` — NEXUS router vs RAG paired comparison (accuracy, sign test)")
+
+    lines += [
         "",
         "> ⚠️ **Every cell cites its source file.** Cells showing \"not measured\" have no data — never estimated.",
         "",
@@ -533,6 +764,12 @@ def build_table() -> str:
         "- **Answer rate**: `1 − insufficient_evidence_rate` — fraction of questions the system attempted to answer.",
         "- **$/1K queries**: Local-only electricity cost via `LocalCostModel` (65W @ $0.15/kWh). Target: $0.01/1M tokens.",
         "  Zero-weight row = $0 (template synthesis is pure CPU overhead, no LLM inference).",
+        "  **Throughput** measured on warmed model (5× warmup, 10× per prompt length, 3 lengths) — not cold-start.",
+        "- **Peak RAM**: Per-arm measurement via `psutil.Process().memory_info().rss`.",
+        "  Zero-weight = SynthesizingModel pipeline only (graph + template engine).",
+        "  NEXUS+3B = FallbackModel pipeline only (graph + code — Ollama RSS measured separately).",
+        "  RAG+3B = chunk retrieval + all-MiniLM-L6-v2 embeddings loaded in memory.",
+        "  Ollama process RSS (7.6B Q4_K_M): ~5–8 GB (not included in per-arm numbers).",
         "- **Relevance rate**: From heuristic checklist audit (4-point rubric). Formula: `% yes + 0.5 × % partial`.",
 
         "",
@@ -542,9 +779,27 @@ def build_table() -> str:
         f"- **Hallucination**: NEXUS {_fmt(nvr['nexus']['avg_hallucination_rate'], '.1%')} vs RAG {_fmt(nvr['rag']['avg_hallucination_rate'], '.1%')} — RAG hallucinates less.",
         f"- **Evidence efficiency**: NEXUS uses {_fmt(nvr['nexus']['avg_evidence_tokens'], '.0f')} tokens vs RAG's {_fmt(nvr['rag']['avg_evidence_tokens'], '.0f')} — 3.2× reduction.",
         f"- **Latency**: NEXUS {_fmt(nvr['nexus']['avg_latency_s'], '.2f')}s vs RAG {_fmt(nvr['rag']['avg_latency_s'], '.2f')}s.",
+        f"- **Throughput (warmed)**: p50={tp['p50_tps']:.1f} tok/s on qwen2.5:latest (7.6B Q4_K_M). Raw LLM cost = ${LocalCostModel(tokens_per_second=tp['p50_tps']).cost_per_1m_tokens():.4f}/1M. Router (80% synth) = ${LocalCostModel(tokens_per_second=tp['p50_tps']).cost_per_1m_tokens() * 0.2:.4f}/1M.",
+        f"- **RAM**: RAG indexing adds +{ram_data.get('rag_3b', {}).get('rss_delta_mb', '?'):} MB (embedding model). NEXUS pipeline adds +{ram_data.get('nexus_3b', {}).get('rss_delta_mb', '?'):} MB. Zero-weight adds +{ram_data.get('zero_weight', {}).get('rss_delta_mb', '?'):} MB.",
         f"- **Zero-weight hallucination**: {_fmt(vc['router']['avg_hallucination_rate'], '.1%')} (SynthesizingModel only, n={vc['router']['n']}).",
         f"- **Relevance**: {_fmt(audit['relevance_rate'], '.1%')} — below 70% triggers metric caveat (accuracy × relevance = {_fmt((vc.get('synthesizer_accuracy') or 0) * (audit['relevance_rate'] or 0), '.1%')} actionable accuracy).",
     ]
+
+    # Add Router vs RAG specific findings if available
+    if router_vs_rag_paired is not None and router_paired_data is not None:
+        rp = router_paired_data
+        rvr = router_vs_rag_paired
+        lines.append("")
+        lines.append("## Router vs RAG (Row 3 — newly measured)")
+        lines.append("")
+        lines.append(f"- **Router paired accuracy**: {_fmt(rvr['router_accuracy'], '.1%')} vs RAG {_fmt(rvr['rag_accuracy'], '.1%')} (n={rvr['paired_n']} paired).")
+        wlt = rvr['win_loss_tie']
+        lines.append(f"- **Win/Loss/Tie**: Router wins={wlt.get('NEXUS Router_wins', '?')}, RAG wins={wlt.get('RAG_wins', '?')}, ties={wlt.get('ties', '?')}.")
+        lines.append(f"- **Sign test**: p={_fmt(rvr['sign_test_p'], '.4f')} — {'significant' if rvr['sign_test_p'] is not None and rvr['sign_test_p'] < 0.05 else 'not significant'} at α=0.05.")
+        lines.append(f"- **Router hallucination**: {_fmt(rp['avg_hallucination_rate'], '.1%')} vs NEXUS+3B {_fmt(nvr['nexus']['avg_hallucination_rate'], '.1%')}.")
+        lines.append(f"- **Router latency**: {_fmt(rp['avg_latency_s'], '.2f')}s ({_fmt(rp['synth_ratio'], '.0%')} synth-routed, {_fmt(1 - rp['synth_ratio'], '.0%')} LLM-routed).")
+        lines.append(f"- **Router verification pass**: {_fmt(rp['verification_pass_rate'], '.1%')}.")
+        lines.append(f"- **Router answer rate**: {_fmt(rp['answer_rate'], '.1%')}.")
 
     return "\n".join(lines)
 

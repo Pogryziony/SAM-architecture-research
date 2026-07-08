@@ -12,10 +12,31 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
-from difflib import get_close_matches
 from typing import Optional
 
 from . import Node, Edge, Path, PathStep
+
+
+def _split_into_segments(node_id: str) -> list[str]:
+    """Split a node ID into word-like segments on _, space, and camelCase boundaries."""
+    # First split on underscore and space
+    parts = re.split(r"[_ ]+", node_id)
+    segments: list[str] = []
+    for part in parts:
+        if not part:
+            continue
+        sub = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", part)
+        sub = re.sub(r"([A-Za-z])(\d)", r"\1 \2", sub)
+        sub = re.sub(r"(\d)([A-Za-z])", r"\1 \2", sub)
+        segments.extend(sub.split())
+    return [s.lower() for s in segments if s]
+
+
+def _compute_trigrams(text: str) -> set[str]:
+    """Compute all character trigrams from a normalized text string.
+    Pads with $ prefix/suffix for boundary sensitivity."""
+    padded = f"$${text}$$"
+    return {padded[i:i + 3] for i in range(len(padded) - 2)} if len(padded) >= 3 else set()
 
 
 class InMemoryGraphStore:
@@ -31,6 +52,37 @@ class InMemoryGraphStore:
         self._property_index: dict[str, list[str]] = defaultdict(list)
         # token (normalized) → list of node_ids that have that token in properties
 
+        # ── Parser optimization: inverted word index ──
+        # Each word → set of node_ids whose normalized name contains that word.
+        # Built once at populate time, used by spot_entities to prune fuzzy-match candidates.
+        self._word_index: dict[str, set[str]] = defaultdict(set)
+
+        # ── Parser optimization: precomputed property text ──
+        # node_id → concatenated key_finding + description for keyword-boost scoring.
+        # Avoids per-candidate get_node() + property lookups during ranking.
+        self._property_text: dict[str, str] = {}
+
+        # ── Parser optimization: cached name-index key list ──
+        # Avoids list(self._name_index.keys()) allocation on every find_entity call.
+        self._name_index_keys: list[str] = []
+        self._alias_index_keys: list[str] = []
+
+        # ── Parser optimization: combined word set for n-gram pre-filtering ──
+        # Set of all words that appear in ANY node's name-index key segments.
+        # Used to skip n-grams that have zero chance of matching any node.
+        self._all_indexed_words: set[str] = set()
+
+        # ── Parser optimization: trigram index for fast fuzzy matching ──
+        # Each trigram (3-char substring) → set of (norm_name, node_id) tuples.
+        # Replaces expensive get_close_matches with fast set-intersection scoring.
+        self._trigram_index: dict[str, set[tuple[str, str]]] = defaultdict(set)
+        # node_id → precomputed trigram set for Jaccard scoring
+        self._node_trigrams: dict[str, set[str]] = {}
+
+        # ── Parser optimization: node_id → normalized_name reverse map ──
+        # For O(1) lookup during second-pass word-boundary matching.
+        self._norm_name_by_id: dict[str, str] = {}
+
     # ── Node operations ──
 
     def add_node(self, node: Node) -> None:
@@ -40,6 +92,16 @@ class InMemoryGraphStore:
         if is_new:
             self._type_index[node.type].append(node.id)
         self._name_index[self._normalize(node.id)] = node.id
+
+        # Build node_id → normalized_name reverse mapping
+        self._norm_name_by_id[node.id] = self._normalize(node.id)
+
+        # ── Word index: index each word-segment of the node ID ──
+        for segment in _split_into_segments(node.id):
+            segment_lower = segment.lower()
+            self._word_index[segment_lower].add(node.id)
+            self._all_indexed_words.add(segment_lower)
+
         # Index aliases for human-friendly entity resolution
         if node.aliases:
             for alias in node.aliases:
@@ -47,12 +109,46 @@ class InMemoryGraphStore:
                 # Only index if not already taken (first-come, first-served)
                 if normalized_alias not in self._alias_index:
                     self._alias_index[normalized_alias] = node.id
+                # Also index alias words into word index
+                for segment in _split_into_segments(normalized_alias):
+                    segment_lower = segment.lower()
+                    self._word_index[segment_lower].add(node.id)
+                    self._all_indexed_words.add(segment_lower)
+
         # Index property values for keyword-based entity lookup
         for value in node.properties.values():
             if isinstance(value, str):
                 for token in self._tokenize(value):
                     if node.id not in self._property_index[token]:
                         self._property_index[token].append(node.id)
+
+        # ── Precompute property text for keyword-boost scoring ──
+        text_parts: list[str] = []
+        for prop_name in ("key_finding", "description"):
+            val = node.properties.get(prop_name, "")
+            if isinstance(val, str) and val:
+                text_parts.append(val.lower())
+        if text_parts:
+            self._property_text[node.id] = " ".join(text_parts)
+
+        # Invalidate cached name-index and alias-index key lists
+        self._name_index_keys = []
+        self._alias_index_keys = []
+
+        # ── Build trigram index for fast fuzzy matching ──
+        norm_name = self._normalize(node.id)
+        trigrams = _compute_trigrams(norm_name)
+        self._node_trigrams[node.id] = trigrams
+        for tg in trigrams:
+            self._trigram_index[tg].add((norm_name, node.id))
+
+        # Also index alias trigrams
+        if node.aliases:
+            for alias in node.aliases:
+                norm_alias = self._normalize(alias)
+                alias_trigrams = _compute_trigrams(norm_alias)
+                for tg in alias_trigrams:
+                    self._trigram_index[tg].add((norm_alias, node.id))
 
     def get_node(self, node_id: str) -> Optional[Node]:
         return self._nodes.get(node_id)
@@ -116,17 +212,113 @@ class InMemoryGraphStore:
         if normalized in self._alias_index:
             return self._alias_index[normalized]
 
-        # Fuzzy match on node IDs
-        matches = get_close_matches(normalized, list(self._name_index.keys()), n=1, cutoff=cutoff)
-        if matches:
-            return self._name_index[matches[0]]
+        # Fast trigram-based fuzzy match (replaces expensive get_close_matches)
+        return self.find_entity_fast(name, cutoff=cutoff)
 
-        # Fuzzy match on aliases
-        alias_matches = get_close_matches(normalized, list(self._alias_index.keys()), n=1, cutoff=cutoff)
-        if alias_matches:
-            return self._alias_index[alias_matches[0]]
+    def find_entity_fast(
+        self, name: str, cutoff: float = 0.8, candidate_ids: set[str] | None = None,
+    ) -> Optional[str]:
+        """Fast entity lookup using trigram Jaccard similarity instead of SequenceMatcher.
+        If candidate_ids is provided, only considers those node IDs."""
+        normalized = self._normalize(name)
 
+        # Exact match on node ID
+        if normalized in self._name_index:
+            nid = self._name_index[normalized]
+            if candidate_ids is None or nid in candidate_ids:
+                return nid
+            return None
+
+        # Exact alias match
+        if normalized in self._alias_index:
+            nid = self._alias_index[normalized]
+            if candidate_ids is None or nid in candidate_ids:
+                return nid
+            return None
+
+        # ── Trigram-based fuzzy scoring ──
+        query_trigrams = _compute_trigrams(normalized)
+        if not query_trigrams:
+            return None
+
+        # Collect candidates: all (norm_name, node_id) that share at least one trigram
+        trigram_hits: dict[str, int] = {}  # node_id → shared trigram count
+        for tg in query_trigrams:
+            for norm_name, nid in self._trigram_index.get(tg, ()):
+                if candidate_ids is not None and nid not in candidate_ids:
+                    continue
+                trigram_hits[nid] = trigram_hits.get(nid, 0) + 1
+
+        if not trigram_hits:
+            return None
+
+        # Score using trigram containment: shared / min(|query|, |node|)
+        # This doesn't penalize longer node names that simply have extra context.
+        # Require at least 2 shared trigrams for short strings to avoid false positives.
+        best_nid: Optional[str] = None
+        best_score: float = 0.0
+        for nid, shared in trigram_hits.items():
+            if shared < 2:
+                continue
+            node_tgs = self._node_trigrams.get(nid, set())
+            if not node_tgs:
+                continue
+            # Containment: how much of the SMALLER set is covered by the intersection
+            min_size = min(len(query_trigrams), len(node_tgs))
+            score = shared / min_size if min_size > 0 else 0.0
+            if score > best_score:
+                best_score = score
+                best_nid = nid
+
+        if best_nid is not None and best_score >= cutoff:
+            return best_nid
         return None
+
+    def find_entity_indexed(
+        self, name: str, candidate_ids: set[str] | None = None, cutoff: float = 0.8,
+    ) -> Optional[str]:
+        """Like find_entity, but only matches against candidate_ids (from word index).
+        If candidate_ids is None or empty, falls back to full find_entity."""
+        normalized = self._normalize(name)
+
+        # Exact match on node ID
+        if normalized in self._name_index:
+            nid = self._name_index[normalized]
+            if candidate_ids is None or nid in candidate_ids:
+                return nid
+            return None
+
+        # Exact alias match
+        if normalized in self._alias_index:
+            nid = self._alias_index[normalized]
+            if candidate_ids is None or nid in candidate_ids:
+                return nid
+            return None
+
+        # Trigram-based fuzzy match against candidates
+        return self.find_entity_fast(name, cutoff=cutoff, candidate_ids=candidate_ids)
+
+    def has_any_indexed_word(self, text: str) -> bool:
+        """Return True if any word-segment of text exists in _all_indexed_words.
+        Used to skip n-grams that have zero chance of matching any node."""
+        for segment in _split_into_segments(text):
+            if segment.lower() in self._all_indexed_words:
+                return True
+        return False
+
+    def get_word_index_candidates(self, query_text: str) -> set[str]:
+        """Return the set of node IDs whose name-index key shares at least one
+        word-segment with query_text. Used to prune fuzzy-match candidates."""
+        candidates: set[str] = set()
+        for segment in _split_into_segments(query_text):
+            segment_lower = segment.lower()
+            if segment_lower in self._word_index:
+                candidates.update(self._word_index[segment_lower])
+        return candidates
+
+    def get_property_text(self, node_id: str) -> str:
+        """Return the precomputed property text for keyword-boost scoring."""
+        return self._property_text.get(node_id, "")
 
     def find_entity_exact(self, name: str) -> Optional[str]:
         """Find a node by name or alias with exact matching only (no fuzzy fallback)."""

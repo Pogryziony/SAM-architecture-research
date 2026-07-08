@@ -1,0 +1,46 @@
+{
+  "source_router": "benchmarks/results/router_paired_20260708.json",
+  "source_rag": "benchmarks/nexus_vs_rag_200.json",
+  "comparison": {
+    "comparison_type": "PAIRED (both arms scorable)",
+    "paired_n": 89,
+    "nexus router": {
+      "mean_accuracy": 0.2082,
+      "n": 89,
+      "label": "NEXUS Router"
+    },
+    "rag": {
+      "mean_accuracy": 0.3378,
+      "n": 89,
+      "label": "RAG"
+    },
+    "win_loss_tie": {
+      "NEXUS Router_wins": 12,
+      "RAG_wins": 27,
+      "ties": 50
+    },
+    "sign_test_p": 0.023703,
+    "sign_test_detail": {
+      "test": "two-sided sign test (exact binomial)",
+      "n_discordant": 39,
+      "arm_a_wins": 12,
+      "arm_b_wins": 27,
+      "ties": 50,
+      "p_value": 0.023703
+    },
+    "secondary_unpaired": {
+      "label": "SECONDARY -- unpaired stats (excluded from primary comparison)",
+      "total_questions": 200,
+      "both_none": 76,
+      "nexus router_only_scored": {
+        "n": 3,
+        "mean_accuracy": 0.0
+      },
+      "rag_only_scored": {
+        "n": 32,
+        "mean_accuracy": 0.0
+      }
+    }
+  },
+  "generated": "2026-07-08T21:57:07.366851+00:00"
+}

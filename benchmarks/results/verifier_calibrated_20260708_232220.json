@@ -1,0 +1,308 @@
+{
+  "avg_hallucination_rate": 0.24944,
+  "pass_rate": "18/30",
+  "num_questions": 30,
+  "model": "SynthesizingModel",
+  "results": [
+    {
+      "answer": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+      "hallucination_rate": 0.3333,
+      "passed": false,
+      "supported_count": 2,
+      "unsupported_count": 1,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.5647
+    },
+    {
+      "answer": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+      "hallucination_rate": 0.5,
+      "passed": false,
+      "supported_count": 1,
+      "unsupported_count": 1,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.4536
+    },
+    {
+      "answer": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+      "hallucination_rate": 1.0,
+      "passed": false,
+      "supported_count": 0,
+      "unsupported_count": 2,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.1459
+    },
+    {
+      "answer": "Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 3,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.3161
+    },
+    {
+      "answer": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 1,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.7914
+    },
+    {
+      "answer": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 1,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.526
+    },
+    {
+      "answer": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+      "hallucination_rate": 1.0,
+      "passed": false,
+      "supported_count": 0,
+      "unsupported_count": 2,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.9358
+    },
+    {
+      "answer": "all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.",
+      "hallucination_rate": 0.3333,
+      "passed": false,
+      "supported_count": 2,
+      "unsupported_count": 1,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.4207
+    },
+    {
+      "answer": "Dense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 2,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.3549
+    },
+    {
+      "answer": "Found and fixed 3 critical bugs. Retrieval is the bottleneck.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 2,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.0639
+    },
+    {
+      "answer": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+      "hallucination_rate": 1.0,
+      "passed": false,
+      "supported_count": 0,
+      "unsupported_count": 2,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.3929
+    },
+    {
+      "answer": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+      "hallucination_rate": 1.0,
+      "passed": false,
+      "supported_count": 0,
+      "unsupported_count": 2,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.4794
+    },
+    {
+      "answer": "Dense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 2,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.1176
+    },
+    {
+      "answer": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 1,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.4722
+    },
+    {
+      "answer": "Chain-set BCE retriever achieved 100.00%, while Dual encoder achieved 27.00%.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 1,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.3936
+    },
+    {
+      "answer": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 1,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.3999
+    },
+    {
+      "answer": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 1,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.4086
+    },
+    {
+      "answer": "Found and fixed 3 critical bugs. Retrieval is the bottleneck.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 2,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.2165
+    },
+    {
+      "answer": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+      "hallucination_rate": 0.3333,
+      "passed": false,
+      "supported_count": 2,
+      "unsupported_count": 1,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.6965
+    },
+    {
+      "answer": "Experiment 0.13A \u2014 Controlled Noisy Memory Tolerance \u2014 noise_+4.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 1,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.8699
+    },
+    {
+      "answer": "all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem. Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+      "hallucination_rate": 0.6,
+      "passed": false,
+      "supported_count": 2,
+      "unsupported_count": 3,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.5968
+    },
+    {
+      "answer": "Found and fixed 3 critical bugs. Retrieval is the bottleneck. all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.",
+      "hallucination_rate": 0.2,
+      "passed": true,
+      "supported_count": 4,
+      "unsupported_count": 1,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.1472
+    },
+    {
+      "answer": "Oracle memory = 99.87-100%, oracle filter = 100% \u2014 the core+memory architecture IS valid. Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture. Dual encoder query projection mismatch prevents SAM from using retrieved memory.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 3,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.6709
+    },
+    {
+      "answer": "all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem. Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+      "hallucination_rate": 0.6,
+      "passed": false,
+      "supported_count": 2,
+      "unsupported_count": 3,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.7148
+    },
+    {
+      "answer": "Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck. Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture. Learned selector precision is the critical bottleneck (50% precision, 96.6% recall).",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 5,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.4334
+    },
+    {
+      "answer": "Oracle memory = 99.87-100%, oracle filter = 100% \u2014 the core+memory architecture IS valid. Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture. Dual encoder query projection mismatch prevents SAM from using retrieved memory.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 3,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.3555
+    },
+    {
+      "answer": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+      "hallucination_rate": 0.3333,
+      "passed": false,
+      "supported_count": 2,
+      "unsupported_count": 1,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.2704
+    },
+    {
+      "answer": "Oracle memory = 99.87-100%, oracle filter = 100% \u2014 the core+memory architecture IS valid. Proves SAM core CAN use external memory \u2014 100% accuracy.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 2,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.3059
+    },
+    {
+      "answer": "16K PKM: 25.8% Rec@8. Oracle text: 100% \u2014 core CAN use memory. Candidate gen: SOLVED (100%). Ranking generalizes poorly (29% val).",
+      "hallucination_rate": 0.25,
+      "passed": false,
+      "supported_count": 3,
+      "unsupported_count": 1,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.2643
+    },
+    {
+      "answer": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+      "hallucination_rate": 0.0,
+      "passed": true,
+      "supported_count": 1,
+      "unsupported_count": 0,
+      "unsupported_claims": [],
+      "error": null,
+      "latency_s": 0.3771
+    }
+  ]
+}

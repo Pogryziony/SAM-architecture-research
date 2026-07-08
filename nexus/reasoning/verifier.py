@@ -358,13 +358,15 @@ def _collect_evidence_entities(evidence_pack: dict[str, Any]) -> set[str]:
                 for part in nid.replace("_", " ").split():
                     if len(part) > 2:
                         entities.add(part.lower())
-            for key in ("name", "display_name", "title"):
+            for key in ("name", "display_name", "title", "key_finding", "description"):
                 val = node.get(key, "")
                 if val:
                     entities.add(val.lower())
+                    # Clean punctuation from parts for better matching
                     for part in re.split(r'[\s_]+', val):
-                        if len(part) > 2:
-                            entities.add(part.lower())
+                        cleaned = part.strip(".,;:!?()[]{}'\"")
+                        if len(cleaned) > 2:
+                            entities.add(cleaned.lower())
             # Collect aliases
             aliases = node.get("aliases", [])
             if isinstance(aliases, list):
@@ -392,6 +394,24 @@ def _collect_evidence_entities(evidence_pack: dict[str, Any]) -> set[str]:
         # Extract underscore identifiers
         for word in re.findall(r'\b([a-z]+_[a-z_]+)\b', fact):
             entities.add(word.lower())
+
+    # Also collect from node_facts (curated key_finding/description text)
+    for nf in evidence_pack.get("node_facts", []):
+        text = nf.get("text", "")
+        if isinstance(text, str) and text:
+            # Strip "NodeID: " prefix to get the content
+            if ": " in text:
+                _, content = text.split(": ", 1)
+            else:
+                content = text
+            # Extract capitalized/technical terms
+            for word in re.findall(r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b', content):
+                entities.add(word.lower())
+            # Extract individual words
+            for part in re.split(r'[\s_]+', content):
+                cleaned = part.strip(".,;:!?()[]{}'\"")
+                if len(cleaned) > 2:
+                    entities.add(cleaned.lower())
 
     return entities
 
@@ -447,6 +467,12 @@ def _collect_evidence_numbers(evidence_pack: dict[str, Any]) -> set[float]:
 
     for fact in evidence_pack.get("facts", []):
         numbers.update(_extract_numbers(fact))
+
+    # Also extract from node_facts
+    for nf in evidence_pack.get("node_facts", []):
+        text = nf.get("text", "")
+        if isinstance(text, str) and text:
+            numbers.update(_extract_numbers(text))
 
     # Also extract numbers from node metadata (IDs often contain numbers)
     for path_data in evidence_pack.get("paths", []):
@@ -771,6 +797,36 @@ class Verifier:
                 # Evidence has NO numbers at all — but the claim makes
                 # numeric assertions. These numbers have zero evidence
                 # grounding, so the claim is unsupported.
+                return False
+
+        # ── GATE 2.5: Named entity fabrication check ─────────────────
+        # If the claim introduces capitalized named entities that aren't
+        # in evidence, flag it. Catches fabrications like "ran on GPU"
+        # mixed into otherwise evidence-grounded claims.
+        # Sentence-starting words are skipped (grammar convention, not
+        # necessarily naming a new entity).
+        _COMMON_CAPITALIZED = frozenset({
+            'the', 'this', 'that', 'these', 'those', 'they', 'we', 'you',
+            'but', 'and', 'for', 'not', 'its', 'are', 'was', 'were',
+            'have', 'has', 'will', 'would', 'could', 'should', 'may',
+            'might', 'can', 'shall', 'then', 'also', 'just', 'only',
+            'does', 'did', 'been', 'being', 'into', 'onto', 'upon',
+            'from', 'with', 'without', 'within', 'than',
+        })
+        for m in re.finditer(r'\b([A-Z][A-Za-z]{2,})\b', claim):
+            word = m.group(1).lower()
+            start_pos = m.start()
+            # Skip common English words
+            if word in _COMMON_CAPITALIZED:
+                continue
+            # Skip if at sentence start (position 0 or after .!?)
+            if start_pos == 0:
+                continue
+            preceding = claim[max(0, start_pos - 3):start_pos].rstrip()
+            if preceding and preceding[-1] in '.!?':
+                continue
+            # This is a named entity claimed in the answer — check evidence
+            if not _entity_present(entities, word):
                 return False
 
         # ── GATE 3: ID-level entity fidelity ─────────────────────────

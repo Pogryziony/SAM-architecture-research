@@ -497,3 +497,161 @@ class TestVerifierComponents:
         nums = _extract_numbers(text)
         assert 0.9987 in nums, f"99.87% → 0.9987, got {nums}"
         assert 1650.0 in nums, f"1,650 → 1650.0, got {nums}"
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Phase 3 — Calibration tests for evidence-copying answers
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# These verify that the verifier correctly handles answers that copy
+# evidence text (fully or partially) — not falsely flagging them as
+# hallucination, while still catching fabrications mixed in.
+
+class TestCalibrationEvidenceCopying:
+    """Verifier must pass evidence-copying answers (0% hallucination) while
+    catching fabricated additions."""
+
+    # ── Test 1: Evidence-copying (exact subset) ─────────────────────────
+
+    def test_copy_exact_subset(self):
+        """Evidence has key_finding 'Oracle memory: 99.87%. Retrieved memory
+        = core_only (68.74%).' Answer copies the first part:
+        'Oracle memory: 99.87%.' → must score hallucination_rate = 0."""
+        evidence = _make_evidence(
+            nodes=[
+                _node(
+                    "Exp_0_6_Validation",
+                    name="oracle memory experiment",
+                    key_finding="Oracle memory: 99.87%. Retrieved memory = core_only (68.74%).",
+                ),
+            ],
+            facts=[
+                "Exp_0_6_Validation: Oracle memory: 99.87%. Retrieved memory = core_only (68.74%).",
+            ],
+        )
+        answer = "Oracle memory: 99.87%."
+
+        verifier = Verifier(hallucination_threshold=0.2)
+        result = verifier.verify(answer, evidence)
+
+        assert result.hallucination_rate == 0.0, (
+            f"Exact evidence copy must have 0% hallucination, "
+            f"got {result.hallucination_rate}. "
+            f"Unsupported: {result.unsupported_claims}"
+        )
+        assert result.passed, "Evidence-copying answer must PASS verification"
+
+    # ── Test 2: Copying with fabricated addition ────────────────────────
+
+    def test_copy_with_fabricated_addition(self):
+        """Evidence says 'Oracle memory: 99.87%.' Answer adds 'ran on GPU' —
+        must detect fabrication (hallucination_rate > 0)."""
+        evidence = _make_evidence(
+            nodes=[
+                _node(
+                    "Exp_0_6_Validation",
+                    name="oracle memory experiment",
+                    key_finding="Oracle memory: 99.87%. Retrieved memory = core_only (68.74%).",
+                ),
+            ],
+            facts=[
+                "Exp_0_6_Validation: Oracle memory: 99.87%. Retrieved memory = core_only (68.74%).",
+            ],
+        )
+        answer = "Oracle memory achieved 99.87% accuracy and ran on GPU."
+
+        verifier = Verifier(hallucination_threshold=0.2)
+        result = verifier.verify(answer, evidence)
+
+        assert result.hallucination_rate > 0.0, (
+            f"Answer with fabricated addition ('ran on GPU') must have "
+            f"hallucination_rate > 0, got {result.hallucination_rate}"
+        )
+        assert len(result.unsupported_claims) >= 1, (
+            f"Expected at least 1 unsupported claim for 'ran on GPU' fabrication"
+        )
+
+    # ── Test 3: Verbatim copy (full key_finding) ────────────────────────
+
+    def test_copy_verbatim_full(self):
+        """Answer copies the ENTIRE key_finding verbatim → 0% hallucination."""
+        key_finding = "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%)."
+        evidence = _make_evidence(
+            nodes=[
+                _node(
+                    "Exp_0_6_Validation",
+                    name="oracle memory experiment",
+                    key_finding=key_finding,
+                ),
+            ],
+            facts=[
+                f"Exp_0_6_Validation: {key_finding}",
+            ],
+        )
+        answer = key_finding
+
+        verifier = Verifier(hallucination_threshold=0.2)
+        result = verifier.verify(answer, evidence)
+
+        assert result.hallucination_rate == 0.0, (
+            f"Verbatim evidence copy must have 0% hallucination, "
+            f"got {result.hallucination_rate}. "
+            f"Unsupported: {result.unsupported_claims}"
+        )
+        assert result.passed, "Verbatim copy must PASS verification"
+
+    # ── Test 4: Correct paraphrase ─────────────────────────────────────
+
+    def test_correct_paraphrase(self):
+        """Answer paraphrases evidence correctly: 'The oracle memory
+        experiment scored 99.87%' → must pass (meaning preserved, within
+        5% tolerance)."""
+        evidence = _make_evidence(
+            nodes=[
+                _node(
+                    "Exp_0_6_Validation",
+                    name="oracle memory experiment",
+                    key_finding="Oracle memory: 99.87%.",
+                ),
+            ],
+            facts=["Exp_0_6_Validation: Oracle memory: 99.87%."],
+        )
+        answer = "The oracle memory experiment scored 99.87%."
+
+        verifier = Verifier(hallucination_threshold=0.2)
+        result = verifier.verify(answer, evidence)
+
+        assert result.hallucination_rate == 0.0, (
+            f"Correct paraphrase must have 0% hallucination, "
+            f"got {result.hallucination_rate}. "
+            f"Unsupported: {result.unsupported_claims}"
+        )
+        assert result.passed, "Correct paraphrase must PASS verification"
+
+    # ── Test 5: Wrong paraphrase (wrong number) ─────────────────────────
+
+    def test_wrong_paraphrase_number(self):
+        """Answer paraphrases with wrong number: 'scored roughly 87%'
+        when evidence says 99.87% → must fail (number not within 5%)."""
+        evidence = _make_evidence(
+            nodes=[
+                _node(
+                    "Exp_0_6_Validation",
+                    name="oracle memory experiment",
+                    key_finding="Oracle memory: 99.87%.",
+                ),
+            ],
+            facts=["Exp_0_6_Validation: Oracle memory: 99.87%."],
+        )
+        answer = "The oracle memory experiment scored roughly 87%."
+
+        verifier = Verifier(hallucination_threshold=0.2)
+        result = verifier.verify(answer, evidence)
+
+        assert result.hallucination_rate > 0.0, (
+            f"Wrong paraphrase (87% vs 99.87%) must have hallucination_rate > 0, "
+            f"got {result.hallucination_rate}"
+        )
+        assert len(result.unsupported_claims) >= 1, (
+            f"Expected at least 1 unsupported claim for wrong number paraphrase"
+        )

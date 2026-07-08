@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from difflib import get_close_matches
 from typing import Optional
 
 from nexus.graph.store import InMemoryGraphStore
@@ -106,7 +105,8 @@ def spot_entities(
     Scan the question text for substrings matching known graph node names.
 
     Uses sliding window with fuzzy matching against the graph name index,
-    plus word-boundary matching for higher precision.
+    plus word-boundary matching for higher precision. Optimized with
+    word-index pruning and n-gram pre-filtering.
 
     Returns:
         (entity_spots, wb_matched)
@@ -119,62 +119,57 @@ def spot_entities(
     matched_node_ids: set[str] = set()
     wb_matched: set[str] = set()
 
-    # Build a list of all candidate substrings (n-grams of various sizes)
-    # Start with longer n-grams for greedy matching
     max_ngram = min(len(words), 8)
-
-    # Pre-filter: collect meaningful content words (not stop words, length ≥ 3)
     content_words = [w for w in words if w not in STOP_WORDS and len(w) >= 2]
+    target_entities = config.max_entry_nodes * 2  # early termination threshold
+
+    # ── N-gram scanning with pre-filtering ──
+    # Only generate and check n-grams whose words appear in the graph word index,
+    # and deduplicate overlapping n-grams (keep the longest match).
+    seen_chunks: set[str] = set()
 
     for ngram_size in range(max_ngram, 0, -1):
+        if len(matched_node_ids) >= target_entities:
+            break  # early termination: enough entities found
+
         for i in range(len(words) - ngram_size + 1):
-            # Compute character offsets from word positions
+            if len(matched_node_ids) >= target_entities:
+                break
+
             chunk = " ".join(words[i:i + ngram_size])
             chunk_stripped = chunk.strip(".,;:?!\"'()[]{}")
 
-            # Skip stop words or very short chunks
-            if len(chunk_stripped) < 2:
+            if len(chunk_stripped) < 2 or chunk_stripped in seen_chunks:
+                continue
+            seen_chunks.add(chunk_stripped)
+
+            # ── OPTIMIZATION: skip n-grams that are all stop words or very short ──
+            if chunk_stripped in STOP_WORDS:
                 continue
 
-            # Try exact match via the graph's find_entity
-            node_id = graph.find_entity(chunk_stripped, cutoff=cutoff)
+            node_id = _try_match(chunk_stripped, graph, cutoff)
             if node_id and node_id not in matched_node_ids:
-                # Find character offsets in the original question
                 start = lowered.find(chunk_stripped)
                 if start >= 0:
                     end = start + len(chunk_stripped)
                     results.append((start, end, chunk_stripped, node_id))
                     matched_node_ids.add(node_id)
-                    # Check if this was a word-boundary match
                     if _word_boundary_match(chunk_stripped, node_id):
                         wb_matched.add(node_id)
 
-            # Also try individual words if ngram_size is 1
-            if ngram_size == 1 and chunk_stripped not in STOP_WORDS:
-                node_id = graph.find_entity(chunk_stripped, cutoff=cutoff)
-                if node_id and node_id not in matched_node_ids:
-                    start = lowered.find(chunk_stripped)
-                    if start >= 0:
-                        end = start + len(chunk_stripped)
-                        results.append((start, end, chunk_stripped, node_id))
-                        matched_node_ids.add(node_id)
-                    if _word_boundary_match(chunk_stripped, node_id):
-                        wb_matched.add(node_id)
-
-    # ── Second pass: word-boundary search on all content words ──
-    # For each content word, check ALL node IDs in the name index for
-    # word-boundary matches. This catches nodes that fuzzy matching missed
-    # (e.g., "oracle" doesn't fuzzy-match "Exp_0_6_Validation" but it IS
-    # a word-boundary match for nodes that contain "oracle" as a segment).
-    name_index = graph._name_index  # normalized_name → node_id
+    # ── Second pass: word-boundary search using word index ──
     for word in content_words:
         word_lower = word.lower()
         if len(word_lower) < 3:
             continue
-        for norm_name, nid in name_index.items():
+        candidates = graph._word_index.get(word_lower, set())
+        for nid in candidates:
             if nid in matched_node_ids:
                 continue
-            segments = _split_into_segments(norm_name)
+            normalized_name = graph._norm_name_by_id.get(nid)
+            if normalized_name is None:
+                continue
+            segments = _split_into_segments(normalized_name)
             if any(word_lower == seg for seg in segments):
                 start = lowered.find(word)
                 if start >= 0:
@@ -183,9 +178,21 @@ def spot_entities(
                     matched_node_ids.add(nid)
                     wb_matched.add(nid)
 
-    # Sort by start position
     results.sort(key=lambda x: x[0])
     return results, wb_matched
+
+
+def _try_match(
+    chunk: str,
+    graph: InMemoryGraphStore,
+    cutoff: float = 0.6,
+) -> Optional[str]:
+    """Try to match a chunk against the graph.
+    Uses word-indexed search first (prunes candidates), falls back to full search.
+    Both use trigram-based scoring — no expensive SequenceMatcher."""
+    candidates = graph.get_word_index_candidates(chunk)
+    node_id = graph.find_entity_fast(chunk, cutoff=cutoff, candidate_ids=candidates or None)
+    return node_id
 
 
 def parse_question(
@@ -503,8 +510,10 @@ def _rank_entities(
         kw_count = keyword_scores.get(eid, 0)
         kw_boost = kw_count * 5.0 if kw_count >= 3 else kw_count * 0.5
 
-        # Key-finding / description text match boost
-        prop_boost = _property_keyword_boost(node, question, config) if node and question else 0.0
+        # Key-finding / description text match boost — use precomputed property text
+        prop_boost = _property_keyword_boost_from_text(
+            graph._property_text.get(eid, ""), question, config, node_type
+        ) if question else 0.0
 
         # Curated node boost: nodes from populate_from_experiments have key_finding
         curated_boost = config.curated_node_boost if node and "key_finding" in node.properties else 0.0
@@ -526,6 +535,29 @@ def _rank_entities(
 
     ranked = sorted(unique, key=_score, reverse=True)
     return ranked[:config.max_entry_nodes]
+
+
+def _property_keyword_boost_from_text(
+    property_text: str,
+    question: str,
+    config: NEXUSConfig,
+    node_type: str = "",
+) -> float:
+    """Check if question keywords appear in precomputed property text.
+    Returns a boost value: 0.0 (no match) up to property_keyword_boost."""
+    if not property_text:
+        return 0.0
+    question_tokens = set(re.findall(r"[a-z]{3,}", question.lower()))
+    if not question_tokens:
+        return 0.0
+
+    match_count = sum(1 for t in question_tokens if t in property_text)
+    if match_count == 0:
+        return 0.0
+
+    boost = config.property_keyword_boost
+    base = boost if node_type == "Experiment" else boost * 0.6
+    return min(base, match_count * (boost / 5.0))
 
 
 # ── Convenience: scan all node names for substring matches ──

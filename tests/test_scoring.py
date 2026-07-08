@@ -136,9 +136,22 @@ def test_regenerated_json_has_required_fields():
     if not json_files:
         pytest.skip("No regenerated JSON files found in benchmarks/results/")
 
-    latest = json_files[-1]
-    with open(latest, encoding="utf-8") as fh:
-        data = json.load(fh)
+    # Find the most recent file that actually has a "comparison" key.
+    # Alphabetical sort puts timestamped files before descriptive names like
+    # "nexus_vs_rag_after_fix.json", so we iterate in reverse to pick the
+    # latest timestamped file with valid comparison data.
+    data: dict[str, object] = {}
+    latest = None
+    for filepath in reversed(json_files):
+        with open(filepath, encoding="utf-8") as fh:
+            candidate = json.load(fh)
+        if "comparison" in candidate and candidate["comparison"]:
+            data = candidate
+            latest = filepath
+            break
+
+    if latest is None:
+        pytest.skip("No nexus_vs_rag_*.json file with a 'comparison' key found")
 
     comparison = data.get("comparison", {})
 

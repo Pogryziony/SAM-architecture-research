@@ -43,7 +43,8 @@ _DEFAULT_RESULTS_DIR = Path(__file__).parent / "results"
 
 def _find_newest_throughput_json(results_dir: Path | None = None) -> Path | None:
     """
-    Find the newest throughput_<timestamp>.json in the results directory.
+    Find the newest throughput_<timestamp>.json or ram_throughput_<timestamp>.json
+    in the results directory. Prefers ram_throughput format (has warmed data).
 
     Returns the Path, or None if no results found.
     """
@@ -54,10 +55,23 @@ def _find_newest_throughput_json(results_dir: Path | None = None) -> Path | None
 
     candidates: list[Path] = []
     for f in results_dir.iterdir():
-        if f.is_file() and f.name.startswith("throughput_") and f.name.endswith(".json"):
+        if f.is_file() and f.name.startswith("ram_throughput_") and f.name.endswith(".json"):
+            # Verify it has throughput data
+            try:
+                with open(f, "r") as fh:
+                    d = json.load(fh)
+                if "warmed_throughput" in d:
+                    candidates.append(f)
+            except Exception:
+                pass
+        elif f.is_file() and f.name.startswith("throughput_") and f.name.endswith(".json") and not f.name.startswith("throughput_results"):
             candidates.append(f)
 
     if not candidates:
+        # Fall back to legacy throughput_results.json
+        legacy = results_dir.parent / "throughput_results.json"
+        if legacy.exists():
+            return legacy
         return None
 
     # Sort by modification time — newest last
@@ -137,20 +151,34 @@ class LocalCostModel:
         with open(newest, "r", encoding="utf-8") as f:
             data = json.load(f)
 
-        tps = data.get(metric, 0.0)
-        if tps is None or tps <= 0:
-            # Try fallback metrics
-            for fallback in ["p50_tps", "mean_tps", "p95_tps"]:
-                tps = data.get(fallback, 0.0)
-                if tps and tps > 0:
-                    break
-
-        # Get RAM — could be a number or a string like "unavailable: ..."
-        ram_raw = data.get("ram_mb", 0.0)
-        if isinstance(ram_raw, (int, float)):
-            ram_mb = float(ram_raw)
+        # Handle new ram_throughput format
+        if "warmed_throughput" in data:
+            tp = data["warmed_throughput"]
+            tps = tp.get(metric, tp.get("p50_tps", 0.0))
+            if tps is None or tps <= 0:
+                for fallback in ["p50_tps", "mean_tps", "p95_tps"]:
+                    tps = tp.get(fallback, 0.0)
+                    if tps and tps > 0:
+                        break
+            ram_raw = tp.get("ollama_rss", 0.0)
+            if isinstance(ram_raw, (int, float)):
+                ram_mb = float(ram_raw)
+            else:
+                ram_mb = 0.0
         else:
-            ram_mb = 0.0
+            # Legacy format
+            tps = data.get(metric, 0.0)
+            if tps is None or tps <= 0:
+                for fallback in ["p50_tps", "mean_tps", "p95_tps"]:
+                    tps = data.get(fallback, 0.0)
+                    if tps and tps > 0:
+                        break
+
+            ram_raw = data.get("ram_mb", 0.0)
+            if isinstance(ram_raw, (int, float)):
+                ram_mb = float(ram_raw)
+            else:
+                ram_mb = 0.0
 
         return cls(
             tokens_per_second=float(tps),
