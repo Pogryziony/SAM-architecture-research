@@ -533,7 +533,7 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
 
     nexus_answered = sum(1 for r in results if not r["nexus"]["is_insufficient"] and not r["nexus"].get("error"))
     nexus_insufficient = sum(1 for r in results if r["nexus"]["is_insufficient"])
-    nexus_passed = sum(1 for r in results if r["nexus"]["passed"] and not r["nexus"].get("error"))
+    nexus_passed = sum(1 for r in results if r["nexus"]["passed"] and not r["nexus"].get("error") and not r["nexus"]["is_insufficient"])
     nexus_hall_rates = [r["nexus"]["hallucination_rate"] for r in results if not r["nexus"].get("error")]
     nexus_latencies = [r["nexus"]["latency_s"] for r in results if not r["nexus"].get("error")]
     nexus_paths = [r["nexus"]["path_count"] for r in results if not r["nexus"].get("error")]
@@ -742,7 +742,7 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
             "insufficient_evidence": nexus_insufficient,
             "answer_rate": round(nexus_answered / total, 4) if total > 0 else 0.0,
             "verification_passed": nexus_passed,
-            "verification_pass_rate": round(nexus_passed / total, 4) if total > 0 else 0.0,
+            "verification_pass_rate": round(nexus_passed / nexus_answered, 4) if nexus_answered > 0 else 0.0,
             "avg_hallucination_rate": round(avg(nexus_hall_rates), 4),
             "min_hallucination_rate": round(min(nexus_hall_rates), 4) if nexus_hall_rates else 0.0,
             "max_hallucination_rate": round(max(nexus_hall_rates), 4) if nexus_hall_rates else 0.0,
@@ -860,7 +860,7 @@ def print_comparison(summary: dict[str, Any]):
             print(f"  {'Post-edit interventions':<38} {'none':>10}")
     
     # Verification pass rate
-    ver_p_str = f"{n['verification_pass_rate']:.1%} ({n['verification_passed']}/{total})"
+    ver_p_str = f"{n['verification_pass_rate']:.1%} ({n['verification_passed']}/{n['answered']})"
     print(f"  {'Verification pass rate':<38} {ver_p_str:>10} {'N/A':>12}")
     
     # Latency
