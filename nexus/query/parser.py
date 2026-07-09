@@ -494,6 +494,35 @@ def _find_alias_matches(
     return alias_matched
 
 
+# ── Intent-conditioned type prior detection ──
+
+_METRIC_TERMS: set[str] = {
+    "accuracy", "precision", "recall", "@k", "%", "f1", "accuracy@",
+    "recall@", "precision@", "latency", "throughput", "tokens",
+    "parameters", "slots", "loss", "perplexity", "bleu", "rouge",
+    "coverage", "speed", "time", "ms", "seconds",
+}
+
+_CONCEPT_TERMS: set[str] = {
+    "why", "what concept", "how does", "role", "purpose",
+    "relationship", "concept", "idea", "theory", "principle",
+    "what is the role", "what is the purpose",
+    "what are the concept", "definition", "define",
+}
+
+
+def _is_metric_question(question: str) -> bool:
+    """Detect if the question is asking about metrics/measurements."""
+    lowered = question.lower()
+    return any(term in lowered for term in _METRIC_TERMS)
+
+
+def _is_concept_question(question: str) -> bool:
+    """Detect if the question is asking about concepts/explanations."""
+    lowered = question.lower()
+    return any(term in lowered for term in _CONCEPT_TERMS)
+
+
 def _rank_entities(
     graph: InMemoryGraphStore,
     entity_ids: list[str],
@@ -511,14 +540,16 @@ def _rank_entities(
       2. **Keyword match count** (from property token index): +5.0 per match (≥3 tokens)
          or +0.5 per match (<3 tokens)
       3. **Type priority**: from config.type_priority (lower = higher priority)
-      4. **Contextual type boost**: keywords in question boost relevant types (+0.10–0.15)
-      5. **Key-finding text match**: question words in key_finding/description (+config.property_keyword_boost)
-      6. **Curated node boost**: nodes with key_finding property (+config.curated_node_boost)
-      7. **Word-boundary match**: exact segment match beats fuzzy (+config.word_boundary_boost)
-      8. **Sub-run penalty**: deprioritize _top, _weighted, _baseline nodes (config.sub_run_penalty)
+      4. **Intent-conditioned type prior**: metric questions → +boost for Experiment/Metric;
+         concept questions → +boost for Concept/Decision (config.type_prior_boost)
+      5. **Contextual type boost**: keywords in question boost relevant types (+0.10–0.15)
+      6. **Key-finding text match**: question words in key_finding/description (+config.property_keyword_boost)
+      7. **Curated node boost**: nodes with key_finding property (+config.curated_node_boost)
+      8. **Word-boundary match**: exact segment match beats fuzzy (+config.word_boundary_boost)
+      9. **Sub-run penalty**: deprioritize _top, _weighted, _baseline nodes (config.sub_run_penalty)
          unless the question mentions ranking/topK/weights
-      9. **Name length**: longer-span matches beat shorter ones (tiebreaker)
-     10. **Cap at config.max_entry_nodes entry nodes**
+     10. **Name length**: longer-span matches beat shorter ones (tiebreaker)
+     11. **Cap at config.max_entry_nodes entry nodes**
 
     Returns the top-ranked entity IDs as a list (deduplicated, order preserved).
     """
@@ -541,6 +572,8 @@ def _rank_entities(
 
     # Pre-compute contextual flags
     has_ranking_kw = _question_has_ranking_keywords(question) if question else False
+    metric_q = _is_metric_question(question) if question else False
+    concept_q = _is_concept_question(question) if question else False
 
     def _score(eid: str) -> tuple[float, int]:
         node = graph.get_node(eid)
@@ -556,6 +589,14 @@ def _rank_entities(
             _contextual_type_boost(eid, question, node_type) if node and question
             else 0.0
         )
+
+        # Intent-conditioned type prior: additive bonus when question intent
+        # aligns with the node's type (e.g., metric questions prefer Experiment/Metric nodes)
+        type_prior = 0.0
+        if metric_q and node_type in ("Experiment", "Metric"):
+            type_prior = config.type_prior_boost
+        elif concept_q and node_type in ("Concept", "Decision"):
+            type_prior = config.type_prior_boost
 
         # Alias match: question literally contains a phrase mapped to this entity.
         # This is the strongest signal — override all other scores.
@@ -582,7 +623,7 @@ def _rank_entities(
             sub_run_penalty = config.sub_run_penalty
 
         type_score = (
-            alias_boost + kw_boost + base_type_prio + ctx_boost + prop_boost
+            alias_boost + kw_boost + base_type_prio + ctx_boost + type_prior + prop_boost
             + curated_boost + wb_boost + sub_run_penalty
         )
         name_len = (len(eid) if eid else 0) * 2

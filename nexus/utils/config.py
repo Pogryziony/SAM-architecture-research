@@ -27,6 +27,7 @@ class NEXUSConfig:
         word_boundary_boost: Boost for exact word-boundary matches
         sub_run_penalty: Penalty for sub-experiment run nodes
         alias_match_boost: Boost when question literally contains an alias phrase
+        type_prior_boost: Additive boost for intent→type alignment (metric→Experiment/Metric, concept→Concept/Decision)
 
     Type priority:
         Lower = higher priority during entry-node ranking.
@@ -57,6 +58,7 @@ class NEXUSConfig:
     word_boundary_boost: float = 0.10
     sub_run_penalty: float = -0.15
     alias_match_boost: float = 50.0
+    type_prior_boost: float = 0.15
 
     # Type priority (lower = higher priority)
     type_priority: dict[str, int] = field(default_factory=lambda: {
