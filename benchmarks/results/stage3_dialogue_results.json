@@ -1,0 +1,23 @@
+{
+  "dialogue_results": {
+    "num_dialogues": 45,
+    "num_turns": 110,
+    "reference_resolution_accuracy": 0.7188,
+    "global_resolution_accuracy": 0.8913,
+    "overall_entity_accuracy": 0.7409,
+    "avg_state_time_ms": 2.7
+  },
+  "single_turn_baseline": {
+    "num_questions": 30,
+    "accuracy_without_state": 0.9333,
+    "accuracy_with_state": 0.9333,
+    "regression": 0.0,
+    "passes_check": true
+  },
+  "gates": {
+    "reference_resolution": true,
+    "no_regression": true,
+    "latency": true
+  },
+  "all_pass": true
+}

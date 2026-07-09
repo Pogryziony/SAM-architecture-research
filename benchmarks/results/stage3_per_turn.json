@@ -1,0 +1,2178 @@
+[
+  {
+    "dialogue_id": "d001",
+    "turn_id": 1,
+    "question": "What was the overall accuracy of the SAM oracle memory experiment?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_6_Validation_oracle_memory",
+      "Exp_0_6_Validation_oracle_text_memory",
+      "Exp_0_9_OracleFilter_oracle_filter",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 17.305,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d001",
+    "turn_id": 2,
+    "question": "How many parameters did it have?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Concept_ArchitectureWorks",
+      "Exp_0_6_Validation_oracle_memory"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 1.692,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d001",
+    "turn_id": 3,
+    "question": "And what about the core-only baseline?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_7_ExternalText",
+      "Exp_0_8_Aggregation",
+      "Exp_0_Diagnosis",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.741,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d001",
+    "turn_id": 4,
+    "question": "Why did that baseline fail at 3-hop?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_6_Validation_dense_baseline",
+      "Metric_Exp_0_6_Validation_dense_baseline_early_val_accuracy_single_hop",
+      "Exp_0_6_Validation_dense_baseline_early",
+      "Exp_0_6_Validation",
+      "Exp_0_9_OracleFilter_baseline"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 2.033,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d002",
+    "turn_id": 1,
+    "question": "Tell me about the chain-set BCE retriever experiment.",
+    "gt_entities": [
+      "Exp_0_11_ChainRetrieval"
+    ],
+    "predicted_entities": [
+      "Concept_ChainRetrieval",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet",
+      "Exp_0_11_ChainRetrieval_chain_set_bce",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 2.547,
+    "intersection": [
+      "Exp_0_11_ChainRetrieval"
+    ]
+  },
+  {
+    "dialogue_id": "d002",
+    "turn_id": 2,
+    "question": "What was its all_required@32 result?",
+    "gt_entities": [
+      "Exp_0_11_ChainRetrieval"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Exp_0_11_ChainRetrieval",
+      "Concept_ChainRetrieval",
+      "Exp_0_10_RequiredSet"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.739,
+    "intersection": [
+      "Exp_0_11_ChainRetrieval"
+    ]
+  },
+  {
+    "dialogue_id": "d002",
+    "turn_id": 3,
+    "question": "How does that compare to the dual encoder retriever?",
+    "gt_entities": [
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet"
+    ],
+    "predicted_entities": [
+      "Concept_RetrievalMismatch",
+      "Exp_0_6_Validation_retrieval_dual_encoder",
+      "Exp_0_10_RequiredSet",
+      "Exp_0_6_Validation_retrieved_memory",
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "entity_accuracy": 0.5,
+    "resolution_source": "context",
+    "state_time_ms": 1.804,
+    "intersection": [
+      "Exp_0_10_RequiredSet"
+    ]
+  },
+  {
+    "dialogue_id": "d003",
+    "turn_id": 1,
+    "question": "What did the pipeline diagnosis experiment find?",
+    "gt_entities": [
+      "Exp_0_Diagnosis"
+    ],
+    "predicted_entities": [
+      "Exp_0_7_ExternalText",
+      "Exp_0_5_DenseDataset",
+      "Exp_0_Diagnosis",
+      "Exp_0_3_PKM_Candidates",
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 1.4,
+    "intersection": [
+      "Exp_0_Diagnosis"
+    ]
+  },
+  {
+    "dialogue_id": "d003",
+    "turn_id": 2,
+    "question": "What were the three bugs it discovered?",
+    "gt_entities": [
+      "Exp_0_Diagnosis"
+    ],
+    "predicted_entities": [
+      "Exp_0_7_ExternalText",
+      "Metric_Exp_0_7_ExternalText_external_text_query_val_accuracy_three_hop",
+      "Exp_0_Diagnosis",
+      "Decision_PivotToNEXUS",
+      "Concept_ArchitectureWorks"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 1.621,
+    "intersection": [
+      "Exp_0_Diagnosis"
+    ]
+  },
+  {
+    "dialogue_id": "d004",
+    "turn_id": 1,
+    "question": "What accuracy did SAM achieve with exactly 1 distractor?",
+    "gt_entities": [
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "predicted_entities": [
+      "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "Concept_OracleMemory",
+      "Decision_PivotToNEXUS",
+      "Concept_NoiseTolerance",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "global",
+    "state_time_ms": 7.731,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d004",
+    "turn_id": 2,
+    "question": "And with 8 distractors?",
+    "gt_entities": [
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "predicted_entities": [
+      "Concept_NoiseTolerance",
+      "Exp_0_8_Aggregation",
+      "Exp_0_13B_RealisticDistractors"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.33,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d004",
+    "turn_id": 3,
+    "question": "Does that mean the gate is the bottleneck?",
+    "gt_entities": [
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "predicted_entities": [
+      "Exp_0_Diagnosis",
+      "Exp_0_3_PKM_Candidates",
+      "Exp_0_13A_NoisyMemory",
+      "Concept_NoiseTolerance",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 1.232,
+    "intersection": [
+      "Exp_0_13A_NoisyMemory"
+    ]
+  },
+  {
+    "dialogue_id": "d004",
+    "turn_id": 4,
+    "question": "No, what proved it's not?",
+    "gt_entities": [
+      "Concept_NoiseTolerance"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Exp_0_3_PKM_Candidates_improved",
+      "Concept_NoiseTolerance",
+      "Concept_PivotToNEXUS"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.448,
+    "intersection": [
+      "Concept_NoiseTolerance"
+    ]
+  },
+  {
+    "dialogue_id": "d005",
+    "turn_id": 1,
+    "question": "What is product-key memory?",
+    "gt_entities": [
+      "Exp_0_2_CompactPKM"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Concept_ArchitectureWorks",
+      "Exp_0_2_CompactPKM",
+      "Concept_OracleMemory"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 0.492,
+    "intersection": [
+      "Exp_0_2_CompactPKM"
+    ]
+  },
+  {
+    "dialogue_id": "d005",
+    "turn_id": 2,
+    "question": "Why does SAM use it instead of dense retrieval?",
+    "gt_entities": [
+      "Exp_0_2_CompactPKM"
+    ],
+    "predicted_entities": [
+      "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "Exp_0_12_Selection_learned_selector",
+      "Exp_0_12_Selection_oracle_filter_top32",
+      "Exp_0_12_Selection_oracle_filter_top64",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 4.337,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d006",
+    "turn_id": 1,
+    "question": "What is the role of the verifier in NEXUS?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Concept_NoiseTolerance",
+      "Concept_ArchitectureWorks"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 2.741,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d006",
+    "turn_id": 2,
+    "question": "Is it rule-based or LLM-based?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.585,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d006",
+    "turn_id": 3,
+    "question": "What threshold does it use?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.345,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d007",
+    "turn_id": 1,
+    "question": "How does NEXUS differ from RAG?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Concept_ChainRetrieval",
+      "Decision_PivotToNEXUS",
+      "Exp_0_3_PKM_Candidates",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 3.732,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d007",
+    "turn_id": 2,
+    "question": "Specifically, how does its knowledge store compare to vector databases?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Exp_0_5_DenseDataset",
+      "Decision_PivotToNEXUS",
+      "Concept_ArchitectureWorks",
+      "Concept_ChainRetrieval"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 2.158,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d008",
+    "turn_id": 1,
+    "question": "What experiment proved that retrieval is the bottleneck?",
+    "gt_entities": [
+      "Exp_0_Diagnosis"
+    ],
+    "predicted_entities": [
+      "Exp_0_Diagnosis",
+      "Exp_0_3_PKM_Candidates",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 3.806,
+    "intersection": [
+      "Exp_0_Diagnosis"
+    ]
+  },
+  {
+    "dialogue_id": "d008",
+    "turn_id": 2,
+    "question": "And what experiment solved it?",
+    "gt_entities": [
+      "Exp_0_11_ChainRetrieval"
+    ],
+    "predicted_entities": [
+      "Exp_0_8_Aggregation",
+      "Exp_0_Diagnosis",
+      "Decision_PivotToNEXUS",
+      "Exp_0_3_PKM_Candidates",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "global",
+    "state_time_ms": 0.893,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d008",
+    "turn_id": 3,
+    "question": "Why did the dual encoder fail at retrieving chains?",
+    "gt_entities": [
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet"
+    ],
+    "predicted_entities": [
+      "Concept_RetrievalMismatch",
+      "Exp_0_6_Validation_retrieval_dual_encoder",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet",
+      "Exp_0_6_Validation_retrieved_memory"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 2.732,
+    "intersection": [
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet"
+    ]
+  },
+  {
+    "dialogue_id": "d009",
+    "turn_id": 1,
+    "question": "What was the key finding of the noise tolerance experiment?",
+    "gt_entities": [
+      "Exp_0_13A_NoisyMemory",
+      "Concept_NoiseTolerance"
+    ],
+    "predicted_entities": [
+      "Exp_0_13A_NoisyMemory_noise_+16",
+      "Exp_0_13A_NoisyMemory_noise_+8",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_13A_NoisyMemory_noise_+0",
+      "Exp_0_13A_NoisyMemory_noise_+1"
+    ],
+    "entity_accuracy": 0.5,
+    "resolution_source": "global",
+    "state_time_ms": 4.359,
+    "intersection": [
+      "Exp_0_13A_NoisyMemory"
+    ]
+  },
+  {
+    "dialogue_id": "d009",
+    "turn_id": 2,
+    "question": "So what IS the real bottleneck then?",
+    "gt_entities": [
+      "Concept_SelectorBottleneck",
+      "Exp_0_12_Selection"
+    ],
+    "predicted_entities": [
+      "Exp_0_Diagnosis",
+      "Exp_0_3_PKM_Candidates",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 0.5,
+    "resolution_source": "context",
+    "state_time_ms": 0.742,
+    "intersection": [
+      "Exp_0_12_Selection"
+    ]
+  },
+  {
+    "dialogue_id": "d009",
+    "turn_id": 3,
+    "question": "And what was done about it?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Exp_0_13A_NoisyMemory",
+      "Decision_PivotToNEXUS"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.406,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d010",
+    "turn_id": 1,
+    "question": "What are the node types in NEXUS?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Exp_0_10_RequiredSet",
+      "Concept_ArchitectureWorks"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 2.985,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d010",
+    "turn_id": 2,
+    "question": "And the edge types?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Exp_0_13A_NoisyMemory",
+      "Decision_PivotToNEXUS",
+      "Exp_0_3_PKM_Candidates",
+      "Exp_0_Diagnosis"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.282,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d011",
+    "turn_id": 1,
+    "question": "Compare the dual encoder and chain-set BCE retrievers.",
+    "gt_entities": [
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet"
+    ],
+    "predicted_entities": [
+      "Concept_RetrievalMismatch",
+      "Concept_ChainRetrieval",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet",
+      "Exp_0_11_ChainRetrieval_chain_set_bce"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 1.798,
+    "intersection": [
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet"
+    ]
+  },
+  {
+    "dialogue_id": "d011",
+    "turn_id": 2,
+    "question": "Which one achieved 100% all_required@32?",
+    "gt_entities": [
+      "Exp_0_11_ChainRetrieval"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Concept_ArchitectureWorks",
+      "Concept_ChainRetrieval",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.876,
+    "intersection": [
+      "Exp_0_11_ChainRetrieval"
+    ]
+  },
+  {
+    "dialogue_id": "d012",
+    "turn_id": 1,
+    "question": "What accuracy did the oracle text memory achieve?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_2_CompactPKM",
+      "Exp_0_6_Validation_oracle_text_memory",
+      "Exp_0_12_Selection_oracle_filter_top32",
+      "Exp_0_9_OracleFilter_oracle_filter",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "global",
+    "state_time_ms": 11.527,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d012",
+    "turn_id": 2,
+    "question": "How does that compare to oracle latent memory?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_2_CompactPKM",
+      "Exp_0_6_Validation_oracle_text_memory",
+      "Exp_0_9_OracleFilter_oracle_filter",
+      "Exp_0_12_Selection",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 5.794,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d012",
+    "turn_id": 3,
+    "question": "What does this prove about the architecture?",
+    "gt_entities": [
+      "Concept_ArchitectureWorks"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Concept_ArchitectureWorks",
+      "Exp_0_2_CompactPKM"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.796,
+    "intersection": [
+      "Concept_ArchitectureWorks"
+    ]
+  },
+  {
+    "dialogue_id": "d013",
+    "turn_id": 1,
+    "question": "What is the query projection mismatch problem?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_7_ExternalText",
+      "Concept_RetrievalMismatch",
+      "Exp_0_10_RequiredSet",
+      "Exp_0_7_ExternalText_external_text_query",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 1.777,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d013",
+    "turn_id": 2,
+    "question": "How did it affect retrieval accuracy?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_7_ExternalText",
+      "Exp_0_6_Validation_pkm_retrieval_early",
+      "Concept_ChainRetrieval",
+      "Exp_0_6_Validation_retrieval_dual_encoder",
+      "Exp_0_2_CompactPKM_retrieval_compact_16k"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 2.484,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d014",
+    "turn_id": 1,
+    "question": "What are the six memory modes in SAM?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_6_Validation_random_memory",
+      "Exp_0_6_Validation_oracle_text_memory",
+      "Exp_0_6_Validation_retrieved_memory",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 6.246,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d014",
+    "turn_id": 2,
+    "question": "Which one is used as the placebo control?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Concept_NoiseTolerance",
+      "Concept_ArchitectureWorks"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.819,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d015",
+    "turn_id": 1,
+    "question": "What is the relationship between the selector bottleneck and the pivot to NEXUS?",
+    "gt_entities": [
+      "Concept_SelectorBottleneck",
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Exp_0_Diagnosis",
+      "Decision_PivotToNEXUS",
+      "Concept_SelectorBottleneck",
+      "Concept_PivotToNEXUS",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 5.506,
+    "intersection": [
+      "Concept_SelectorBottleneck",
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d015",
+    "turn_id": 2,
+    "question": "So the selector's precision was the problem?",
+    "gt_entities": [
+      "Exp_0_12_Selection"
+    ],
+    "predicted_entities": [
+      "Exp_0_Diagnosis",
+      "Decision_PivotToNEXUS",
+      "Concept_SelectorBottleneck",
+      "Exp_0_10_RequiredSet",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 1.193,
+    "intersection": [
+      "Exp_0_12_Selection"
+    ]
+  },
+  {
+    "dialogue_id": "d015",
+    "turn_id": 3,
+    "question": "And the solution was graph traversal instead of flat selection?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Exp_0_Diagnosis",
+      "Decision_PivotToNEXUS",
+      "Exp_0_13A_NoisyMemory",
+      "Concept_PivotToNEXUS",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 2.606,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d016",
+    "turn_id": 1,
+    "question": "What's the difference between controlled and realistic distractors?",
+    "gt_entities": [
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_13B_RealisticDistractors"
+    ],
+    "predicted_entities": [
+      "Exp_0_Diagnosis",
+      "Decision_PivotToNEXUS",
+      "Exp_0_13B_RealisticDistractors",
+      "Exp_0_13A_NoisyMemory",
+      "Concept_NoiseTolerance"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 1.458,
+    "intersection": [
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_13B_RealisticDistractors"
+    ]
+  },
+  {
+    "dialogue_id": "d016",
+    "turn_id": 2,
+    "question": "Which experiment tested realistic ones?",
+    "gt_entities": [
+      "Exp_0_13B_RealisticDistractors"
+    ],
+    "predicted_entities": [
+      "Exp_0_7_ExternalText",
+      "Exp_0_8_Aggregation",
+      "Decision_PivotToNEXUS",
+      "Exp_0_13B_RealisticDistractors",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 1.109,
+    "intersection": [
+      "Exp_0_13B_RealisticDistractors"
+    ]
+  },
+  {
+    "dialogue_id": "d017",
+    "turn_id": 1,
+    "question": "Walk me through the evolution from experiment 0.6 to the pivot.",
+    "gt_entities": [
+      "Decision_PivotToNEXUS",
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_Diagnosis",
+      "Exp_0_3_PKM_Candidates",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_12_Selection",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 0.5,
+    "resolution_source": "global",
+    "state_time_ms": 4.605,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d017",
+    "turn_id": 2,
+    "question": "So 0.6 proved memory works but retrieval fails?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "Exp_0_2_CompactPKM",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_12_Selection",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 6.759,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d017",
+    "turn_id": 3,
+    "question": "And 0.11 solved retrieval?",
+    "gt_entities": [
+      "Exp_0_11_ChainRetrieval"
+    ],
+    "predicted_entities": [
+      "Exp_0_11_ChainRetrieval",
+      "Concept_ChainRetrieval",
+      "Exp_0_Diagnosis"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.492,
+    "intersection": [
+      "Exp_0_11_ChainRetrieval"
+    ]
+  },
+  {
+    "dialogue_id": "d017",
+    "turn_id": 4,
+    "question": "Then 0.12 found the selector is the new bottleneck?",
+    "gt_entities": [
+      "Exp_0_12_Selection"
+    ],
+    "predicted_entities": [
+      "Exp_0_Diagnosis",
+      "Exp_0_3_PKM_Candidates",
+      "Exp_0_13A_NoisyMemory",
+      "Concept_SelectorBottleneck",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 1.96,
+    "intersection": [
+      "Exp_0_12_Selection"
+    ]
+  },
+  {
+    "dialogue_id": "d018",
+    "turn_id": 1,
+    "question": "What was the Rec@8 of the dual encoder on the dense dataset?",
+    "gt_entities": [
+      "Exp_0_5_DenseDataset"
+    ],
+    "predicted_entities": [
+      "Exp_0_5_DenseDataset",
+      "Concept_RetrievalMismatch",
+      "Exp_0_6_Validation_retrieval_dual_encoder",
+      "Exp_0_10_RequiredSet",
+      "Exp_0_6_Validation_retrieved_memory"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 3.143,
+    "intersection": [
+      "Exp_0_5_DenseDataset"
+    ]
+  },
+  {
+    "dialogue_id": "d018",
+    "turn_id": 2,
+    "question": "And what was it on the original sparse dataset?",
+    "gt_entities": [
+      "Exp_0_Diagnosis"
+    ],
+    "predicted_entities": [
+      "Exp_0_5_DenseDataset",
+      "Decision_PivotToNEXUS",
+      "Exp_0_6_Validation",
+      "Exp_0_Diagnosis"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 1.931,
+    "intersection": [
+      "Exp_0_Diagnosis"
+    ]
+  },
+  {
+    "dialogue_id": "d018",
+    "turn_id": 3,
+    "question": "That's a huge jump. How did the dense dataset achieve this?",
+    "gt_entities": [
+      "Exp_0_5_DenseDataset"
+    ],
+    "predicted_entities": [
+      "Exp_0_5_DenseDataset",
+      "Exp_0_6_Validation_dense_openbook",
+      "Decision_PivotToNEXUS",
+      "Exp_0_6_Validation_dense_baseline_early",
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 2.716,
+    "intersection": [
+      "Exp_0_5_DenseDataset"
+    ]
+  },
+  {
+    "dialogue_id": "d019",
+    "turn_id": 1,
+    "question": "What NEXUS stands for?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Exp_0_12_Selection",
+      "Exp_0_6_Validation",
+      "Decision_PivotToNEXUS"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 1.515,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d019",
+    "turn_id": 2,
+    "question": "Why is it called non-parametric?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Exp_0_12_Selection",
+      "Concept_ArchitectureWorks",
+      "Decision_PivotToNEXUS"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 1.081,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d020",
+    "turn_id": 1,
+    "question": "How many live memory slots did the SAM experiments use?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_12_Selection_oracle_filter_top32",
+      "Exp_0_12_Selection_oracle_filter_top64",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_12_Selection",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 9.944,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d020",
+    "turn_id": 2,
+    "question": "And what's the key_dim?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Exp_0_Diagnosis"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.216,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d020",
+    "turn_id": 3,
+    "question": "How do the subkeys work?",
+    "gt_entities": [
+      "Exp_0_2_CompactPKM"
+    ],
+    "predicted_entities": [
+      "Exp_0_13A_NoisyMemory",
+      "Concept_ArchitectureWorks",
+      "Decision_PivotToNEXUS"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.368,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d021",
+    "turn_id": 1,
+    "question": "What was the learned slot selector's precision?",
+    "gt_entities": [
+      "Exp_0_12_Selection"
+    ],
+    "predicted_entities": [
+      "Exp_0_12_Selection_learned_selector",
+      "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_single_hop",
+      "Decision_PivotToNEXUS",
+      "Concept_SelectorBottleneck",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 1.498,
+    "intersection": [
+      "Exp_0_12_Selection"
+    ]
+  },
+  {
+    "dialogue_id": "d021",
+    "turn_id": 2,
+    "question": "And its recall?",
+    "gt_entities": [
+      "Exp_0_12_Selection"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.251,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d021",
+    "turn_id": 3,
+    "question": "Why is high recall but low precision a problem?",
+    "gt_entities": [
+      "Concept_SelectorBottleneck",
+      "Exp_0_12_Selection"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Exp_0_2_CompactPKM",
+      "Concept_SelectorBottleneck",
+      "Metric_Exp_0_7_ExternalText_external_text_query_val_recall_at_8",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 3.749,
+    "intersection": [
+      "Concept_SelectorBottleneck",
+      "Exp_0_12_Selection"
+    ]
+  },
+  {
+    "dialogue_id": "d022",
+    "turn_id": 1,
+    "question": "What is the most important validation of the SAM architecture?",
+    "gt_entities": [
+      "Concept_ArchitectureWorks",
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_6_Validation_random_memory",
+      "Exp_0_6_Validation_oracle_memory",
+      "Exp_0_6_Validation_oracle_text_memory",
+      "Exp_0_6_Validation_retrieved_memory",
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "global",
+    "state_time_ms": 8.038,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d022",
+    "turn_id": 2,
+    "question": "Does this mean the core+memory pattern is valid?",
+    "gt_entities": [
+      "Concept_ArchitectureWorks"
+    ],
+    "predicted_entities": [
+      "Concept_ArchitectureWorks",
+      "Exp_0_6_Validation_oracle_text_memory",
+      "Exp_0_6_Validation_retrieved_memory",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 2.816,
+    "intersection": [
+      "Concept_ArchitectureWorks"
+    ]
+  },
+  {
+    "dialogue_id": "d023",
+    "turn_id": 1,
+    "question": "Compare SAM's oracle memory accuracy to oracle text memory.",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Concept_OracleMemory",
+      "Exp_0_6_Validation_oracle_text_memory",
+      "Exp_0_12_Selection_oracle_filter_top32",
+      "Exp_0_9_OracleFilter_oracle_filter",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 17.845,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d023",
+    "turn_id": 2,
+    "question": "Which was slightly higher?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.331,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d023",
+    "turn_id": 3,
+    "question": "Is the difference statistically meaningful?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.639,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d024",
+    "turn_id": 1,
+    "question": "What was the chronological order of the four research phases?",
+    "gt_entities": [
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_6_Validation",
+      "Exp_0_Diagnosis"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Concept_ArchitectureWorks",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_12_Selection",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 0.5,
+    "resolution_source": "global",
+    "state_time_ms": 3.036,
+    "intersection": [
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d024",
+    "turn_id": 2,
+    "question": "What came after the retrieval revolution?",
+    "gt_entities": [
+      "Exp_0_12_Selection",
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "predicted_entities": [
+      "Exp_0_Diagnosis",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet",
+      "Exp_0_12_Selection",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 0.5,
+    "resolution_source": "context",
+    "state_time_ms": 2.124,
+    "intersection": [
+      "Exp_0_12_Selection"
+    ]
+  },
+  {
+    "dialogue_id": "d025",
+    "turn_id": 1,
+    "question": "What is the NEXUS reasoning pipeline?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Exp_0_3_PKM_Candidates",
+      "Exp_0_6_Validation",
+      "Exp_0_Diagnosis"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 2.02,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d025",
+    "turn_id": 2,
+    "question": "How does step 6 work?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Concept_ArchitectureWorks",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.337,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d025",
+    "turn_id": 3,
+    "question": "And step 8?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Exp_0_8_Aggregation"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.141,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d026",
+    "turn_id": 1,
+    "question": "Jaka by\u0142a og\u00f3lna dok\u0142adno\u015b\u0107 eksperymentu SAM oracle memory?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_6_Validation_oracle_memory",
+      "Exp_0_6_Validation_oracle_text_memory",
+      "Exp_0_12_Selection_oracle_filter_top32",
+      "Exp_0_9_OracleFilter_oracle_filter",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 7.464,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d026",
+    "turn_id": 2,
+    "question": "Ile parametr\u00f3w mia\u0142 ten model?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Exp_0_6_Validation_oracle_memory"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 1.526,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d026",
+    "turn_id": 3,
+    "question": "A jak wypad\u0142 na 3-hop bez pami\u0119ci?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Concept_SelectorBottleneck",
+      "Decision_PivotToNEXUS"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 1.038,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d027",
+    "turn_id": 1,
+    "question": "Dlaczego projekt przeszed\u0142 do NEXUS?",
+    "gt_entities": [
+      "Concept_SelectorBottleneck",
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Concept_RetrievalMismatch"
+    ],
+    "entity_accuracy": 0.5,
+    "resolution_source": "global",
+    "state_time_ms": 2.189,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d027",
+    "turn_id": 2,
+    "question": "Czyli p\u0142aski MLP nie radzi\u0142 sobie z selekcj\u0105 grafow\u0105?",
+    "gt_entities": [
+      "Concept_SelectorBottleneck"
+    ],
+    "predicted_entities": [
+      "Concept_SelectorBottleneck",
+      "Decision_PivotToNEXUS",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 1.617,
+    "intersection": [
+      "Concept_SelectorBottleneck"
+    ]
+  },
+  {
+    "dialogue_id": "d028",
+    "turn_id": 1,
+    "question": "Co to jest product-key memory?",
+    "gt_entities": [
+      "Exp_0_2_CompactPKM"
+    ],
+    "predicted_entities": [
+      "Concept_ArchitectureWorks",
+      "Exp_0_2_CompactPKM",
+      "Concept_PivotToNEXUS",
+      "Concept_OracleMemory"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 0.753,
+    "intersection": [
+      "Exp_0_2_CompactPKM"
+    ]
+  },
+  {
+    "dialogue_id": "d028",
+    "turn_id": 2,
+    "question": "Dlaczego to jest lepsze ni\u017c g\u0119ste wyszukiwanie?",
+    "gt_entities": [
+      "Exp_0_2_CompactPKM"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Concept_ArchitectureWorks",
+      "Concept_PivotToNEXUS"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.662,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d028",
+    "turn_id": 3,
+    "question": "Ile podkluczy u\u017cywa SAM?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.836,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d029",
+    "turn_id": 1,
+    "question": "Jakie s\u0105 typy w\u0119z\u0142\u00f3w w grafie NEXUS?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Concept_SelectorBottleneck",
+      "Decision_PivotToNEXUS"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 2.911,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d029",
+    "turn_id": 2,
+    "question": "A typy kraw\u0119dzi?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.086,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d030",
+    "turn_id": 1,
+    "question": "Jaka by\u0142a precyzja selektora slot\u00f3w?",
+    "gt_entities": [
+      "Exp_0_12_Selection"
+    ],
+    "predicted_entities": [
+      "Concept_SelectorBottleneck",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 0.826,
+    "intersection": [
+      "Exp_0_12_Selection"
+    ]
+  },
+  {
+    "dialogue_id": "d030",
+    "turn_id": 2,
+    "question": "A recall?",
+    "gt_entities": [
+      "Exp_0_12_Selection"
+    ],
+    "predicted_entities": [],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.165,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d030",
+    "turn_id": 3,
+    "question": "Dlaczego to jest w\u0105skie gard\u0142o?",
+    "gt_entities": [
+      "Concept_SelectorBottleneck"
+    ],
+    "predicted_entities": [
+      "Concept_SelectorBottleneck",
+      "Decision_PivotToNEXUS",
+      "Concept_PivotToNEXUS"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.35,
+    "intersection": [
+      "Concept_SelectorBottleneck"
+    ]
+  },
+  {
+    "dialogue_id": "d031",
+    "turn_id": 1,
+    "question": "Which experiments belong to the Core Validation phase?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_7_ExternalText",
+      "Exp_0_6_Validation_pkm_retrieval_early",
+      "Exp_0_8_Aggregation",
+      "Exp_0_6_Validation_retrieval_dual_encoder",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 4.814,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d031",
+    "turn_id": 2,
+    "question": "What was the purpose of that phase?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_7_ExternalText",
+      "Decision_PivotToNEXUS"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.674,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d032",
+    "turn_id": 1,
+    "question": "What is the latest experiment and what does it test?",
+    "gt_entities": [
+      "Exp_0_13B_RealisticDistractors"
+    ],
+    "predicted_entities": [
+      "Exp_0_7_ExternalText",
+      "Exp_0_8_Aggregation",
+      "Exp_0_Diagnosis",
+      "Exp_0_3_PKM_Candidates",
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "global",
+    "state_time_ms": 2.86,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d032",
+    "turn_id": 2,
+    "question": "Is it harder than 0.13A?",
+    "gt_entities": [
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_13B_RealisticDistractors"
+    ],
+    "predicted_entities": [
+      "Exp_0_7_ExternalText",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_13B_RealisticDistractors",
+      "Decision_PivotToNEXUS"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.476,
+    "intersection": [
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_13B_RealisticDistractors"
+    ]
+  },
+  {
+    "dialogue_id": "d033",
+    "turn_id": 1,
+    "question": "What was the dataset size for the dense synthetic experiments?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_5_DenseDataset",
+      "Exp_0_6_Validation_dense_openbook",
+      "Exp_0_6_Validation_dense_baseline",
+      "Exp_0_6_Validation_dense_baseline_early",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 2.867,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d033",
+    "turn_id": 2,
+    "question": "How many examples per slot did that provide?",
+    "gt_entities": [
+      "Exp_0_5_DenseDataset"
+    ],
+    "predicted_entities": [
+      "Exp_0_5_DenseDataset",
+      "Decision_PivotToNEXUS",
+      "Exp_0_3_PKM_Candidates",
+      "Exp_0_12_Selection",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 1.561,
+    "intersection": [
+      "Exp_0_5_DenseDataset"
+    ]
+  },
+  {
+    "dialogue_id": "d034",
+    "turn_id": 1,
+    "question": "What is the controlled noisy memory path?",
+    "gt_entities": [
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "predicted_entities": [
+      "Exp_0_13A_NoisyMemory_noise_+4",
+      "Exp_0_13A_NoisyMemory_noise_+16",
+      "Exp_0_13A_NoisyMemory_noise_+2",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_13A_NoisyMemory_noise_+8"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 5.845,
+    "intersection": [
+      "Exp_0_13A_NoisyMemory"
+    ]
+  },
+  {
+    "dialogue_id": "d034",
+    "turn_id": 2,
+    "question": "How is it different from oracle memory?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_2_CompactPKM",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_6_Validation_oracle_text_memory",
+      "Exp_0_12_Selection",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 4.563,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d035",
+    "turn_id": 1,
+    "question": "What experiment directly preceded the chain-set BCE retriever?",
+    "gt_entities": [
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet"
+    ],
+    "predicted_entities": [
+      "Concept_ChainRetrieval",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet",
+      "Exp_0_11_ChainRetrieval_chain_set_bce",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 2.607,
+    "intersection": [
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet"
+    ]
+  },
+  {
+    "dialogue_id": "d035",
+    "turn_id": 2,
+    "question": "What did it discover about dual encoder results?",
+    "gt_entities": [
+      "Exp_0_10_RequiredSet"
+    ],
+    "predicted_entities": [
+      "Concept_RetrievalMismatch",
+      "Concept_ChainRetrieval",
+      "Exp_0_6_Validation_retrieval_dual_encoder",
+      "Exp_0_10_RequiredSet",
+      "Exp_0_6_Validation_retrieved_memory"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 1.267,
+    "intersection": [
+      "Exp_0_10_RequiredSet"
+    ]
+  },
+  {
+    "dialogue_id": "d036",
+    "turn_id": 1,
+    "question": "What prompted the pivot from SAM to NEXUS?",
+    "gt_entities": [
+      "Concept_SelectorBottleneck",
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Exp_0_2_CompactPKM",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 0.5,
+    "resolution_source": "global",
+    "state_time_ms": 4.262,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d036",
+    "turn_id": 2,
+    "question": "Was that decision justified by experiments?",
+    "gt_entities": [
+      "Exp_0_12_Selection",
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.91,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d037",
+    "turn_id": 1,
+    "question": "What are SAM's core model parameters?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_6_Validation_core_only",
+      "Exp_0_8_Aggregation_external_text_query",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_7_ExternalText_external_text_query",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 2.296,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d037",
+    "turn_id": 2,
+    "question": "How many in the memory component?",
+    "gt_entities": [
+      "Exp_0_6_Validation"
+    ],
+    "predicted_entities": [
+      "Exp_0_6_Validation_core_only",
+      "Exp_0_6_Validation_oracle_text_memory",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_12_Selection",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 3.944,
+    "intersection": [
+      "Exp_0_6_Validation"
+    ]
+  },
+  {
+    "dialogue_id": "d038",
+    "turn_id": 1,
+    "question": "What was the all_required@64 for the dual encoder?",
+    "gt_entities": [
+      "Exp_0_10_RequiredSet"
+    ],
+    "predicted_entities": [
+      "Concept_RetrievalMismatch",
+      "Exp_0_6_Validation_retrieval_dual_encoder",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet",
+      "Exp_0_6_Validation_retrieved_memory"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 1.724,
+    "intersection": [
+      "Exp_0_10_RequiredSet"
+    ]
+  },
+  {
+    "dialogue_id": "d038",
+    "turn_id": 2,
+    "question": "That seems very low \u2014 explain why.",
+    "gt_entities": [
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet"
+    ],
+    "predicted_entities": [
+      "Concept_RetrievalMismatch",
+      "Decision_PivotToNEXUS",
+      "Concept_SelectorBottleneck",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 0.5,
+    "resolution_source": "context",
+    "state_time_ms": 2.344,
+    "intersection": [
+      "Exp_0_11_ChainRetrieval"
+    ]
+  },
+  {
+    "dialogue_id": "d039",
+    "turn_id": 1,
+    "question": "What accuracy did the learned slot selector achieve with oracle filter?",
+    "gt_entities": [
+      "Exp_0_12_Selection"
+    ],
+    "predicted_entities": [
+      "Metric_Exp_0_9_OracleFilter_oracle_filter_val_accuracy_single_hop",
+      "Concept_ArchitectureWorks",
+      "Concept_SelectorBottleneck",
+      "Exp_0_12_Selection",
+      "Exp_0_9_OracleFilter"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 10.399,
+    "intersection": [
+      "Exp_0_12_Selection"
+    ]
+  },
+  {
+    "dialogue_id": "d039",
+    "turn_id": 2,
+    "question": "What does this prove about chain candidates?",
+    "gt_entities": [
+      "Exp_0_12_Selection",
+      "Exp_0_11_ChainRetrieval"
+    ],
+    "predicted_entities": [
+      "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "Decision_PivotToNEXUS",
+      "Exp_0_3_PKM_Candidates",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_11_ChainRetrieval_chain_set_bce"
+    ],
+    "entity_accuracy": 0.5,
+    "resolution_source": "context",
+    "state_time_ms": 1.415,
+    "intersection": [
+      "Exp_0_11_ChainRetrieval"
+    ]
+  },
+  {
+    "dialogue_id": "d040",
+    "turn_id": 1,
+    "question": "What phase comes after the pivot to NEXUS?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Concept_ArchitectureWorks",
+      "Concept_PivotToNEXUS"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 2.669,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d040",
+    "turn_id": 2,
+    "question": "What are the key architectural differences?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Exp_0_10_RequiredSet",
+      "Concept_ArchitectureWorks"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.738,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d041",
+    "turn_id": 1,
+    "question": "What happened at 16 distractors in the noise experiment?",
+    "gt_entities": [
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "predicted_entities": [
+      "Exp_0_Diagnosis",
+      "Exp_0_13B_RealisticDistractors",
+      "Exp_0_13A_NoisyMemory",
+      "Concept_NoiseTolerance",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 4.722,
+    "intersection": [
+      "Exp_0_13A_NoisyMemory"
+    ]
+  },
+  {
+    "dialogue_id": "d041",
+    "turn_id": 2,
+    "question": "Was the 3-hop specifically hurt?",
+    "gt_entities": [
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "predicted_entities": [
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_11_ChainRetrieval",
+      "Concept_PivotToNEXUS",
+      "Decision_PivotToNEXUS"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.94,
+    "intersection": [
+      "Exp_0_13A_NoisyMemory"
+    ]
+  },
+  {
+    "dialogue_id": "d042",
+    "turn_id": 1,
+    "question": "At what noise level does 3-hop reasoning collapse?",
+    "gt_entities": [
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "predicted_entities": [
+      "Exp_0_13A_NoisyMemory_noise_+16",
+      "Exp_0_12_Selection_fixed_top_by_hop",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_13A_NoisyMemory_noise_+0",
+      "Exp_0_13A_NoisyMemory_noise_+1"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 3.644,
+    "intersection": [
+      "Exp_0_13A_NoisyMemory"
+    ]
+  },
+  {
+    "dialogue_id": "d042",
+    "turn_id": 2,
+    "question": "Between 8 and 16 then?",
+    "gt_entities": [
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "predicted_entities": [],
+    "entity_accuracy": 0.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.257,
+    "intersection": []
+  },
+  {
+    "dialogue_id": "d043",
+    "turn_id": 1,
+    "question": "What does SAM's gate do exactly?",
+    "gt_entities": [
+      "Exp_0_13A_NoisyMemory"
+    ],
+    "predicted_entities": [
+      "Exp_0_13A_NoisyMemory",
+      "Concept_NoiseTolerance",
+      "Exp_0_6_Validation",
+      "Decision_PivotToNEXUS"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 1.577,
+    "intersection": [
+      "Exp_0_13A_NoisyMemory"
+    ]
+  },
+  {
+    "dialogue_id": "d043",
+    "turn_id": 2,
+    "question": "And what did the noise experiment prove about it?",
+    "gt_entities": [
+      "Exp_0_13A_NoisyMemory",
+      "Concept_NoiseTolerance"
+    ],
+    "predicted_entities": [
+      "Exp_0_13A_NoisyMemory_noise_+16",
+      "Exp_0_Diagnosis",
+      "Exp_0_3_PKM_Candidates",
+      "Exp_0_13A_NoisyMemory",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 0.5,
+    "resolution_source": "context",
+    "state_time_ms": 6.198,
+    "intersection": [
+      "Exp_0_13A_NoisyMemory"
+    ]
+  },
+  {
+    "dialogue_id": "d044",
+    "turn_id": 1,
+    "question": "Which experiment first showed that chain retrieval works?",
+    "gt_entities": [
+      "Exp_0_11_ChainRetrieval"
+    ],
+    "predicted_entities": [
+      "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_10_RequiredSet",
+      "Exp_0_11_ChainRetrieval_chain_set_bce",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 3.69,
+    "intersection": [
+      "Exp_0_11_ChainRetrieval"
+    ]
+  },
+  {
+    "dialogue_id": "d044",
+    "turn_id": 2,
+    "question": "And did SAM actually use those chains effectively?",
+    "gt_entities": [
+      "Exp_0_12_Selection",
+      "Exp_0_11_ChainRetrieval"
+    ],
+    "predicted_entities": [
+      "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "Exp_0_11_ChainRetrieval",
+      "Exp_0_12_Selection_oracle_filter_top32",
+      "Exp_0_12_Selection_oracle_filter_top64",
+      "Exp_0_12_Selection"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 3.311,
+    "intersection": [
+      "Exp_0_12_Selection",
+      "Exp_0_11_ChainRetrieval"
+    ]
+  },
+  {
+    "dialogue_id": "d045",
+    "turn_id": 1,
+    "question": "What compute resources does NEXUS target?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS",
+      "Exp_0_10_RequiredSet",
+      "Exp_0_6_Validation"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "global",
+    "state_time_ms": 1.988,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  },
+  {
+    "dialogue_id": "d045",
+    "turn_id": 2,
+    "question": "Why no GPUs?",
+    "gt_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "predicted_entities": [
+      "Decision_PivotToNEXUS"
+    ],
+    "entity_accuracy": 1.0,
+    "resolution_source": "context",
+    "state_time_ms": 0.212,
+    "intersection": [
+      "Decision_PivotToNEXUS"
+    ]
+  }
+]
