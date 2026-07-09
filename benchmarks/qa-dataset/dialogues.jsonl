@@ -1,0 +1,110 @@
+{"dialogue_id": "d001", "turn_id": 1, "question": "What was the overall accuracy of the SAM oracle memory experiment?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "global"}
+{"dialogue_id": "d001", "turn_id": 2, "question": "How many parameters did it have?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d001", "turn_id": 3, "question": "And what about the core-only baseline?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d001", "turn_id": 4, "question": "Why did that baseline fail at 3-hop?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d002", "turn_id": 1, "question": "Tell me about the chain-set BCE retriever experiment.", "gt_entities": ["Exp_0_11_ChainRetrieval"], "resolution_source": "global"}
+{"dialogue_id": "d002", "turn_id": 2, "question": "What was its all_required@32 result?", "gt_entities": ["Exp_0_11_ChainRetrieval"], "resolution_source": "context"}
+{"dialogue_id": "d002", "turn_id": 3, "question": "How does that compare to the dual encoder retriever?", "gt_entities": ["Exp_0_11_ChainRetrieval", "Exp_0_10_RequiredSet"], "resolution_source": "context"}
+{"dialogue_id": "d003", "turn_id": 1, "question": "What did the pipeline diagnosis experiment find?", "gt_entities": ["Exp_0_Diagnosis"], "resolution_source": "global"}
+{"dialogue_id": "d003", "turn_id": 2, "question": "What were the three bugs it discovered?", "gt_entities": ["Exp_0_Diagnosis"], "resolution_source": "context"}
+{"dialogue_id": "d004", "turn_id": 1, "question": "What accuracy did SAM achieve with exactly 1 distractor?", "gt_entities": ["Exp_0_13A_NoisyMemory"], "resolution_source": "global"}
+{"dialogue_id": "d004", "turn_id": 2, "question": "And with 8 distractors?", "gt_entities": ["Exp_0_13A_NoisyMemory"], "resolution_source": "context"}
+{"dialogue_id": "d004", "turn_id": 3, "question": "Does that mean the gate is the bottleneck?", "gt_entities": ["Exp_0_13A_NoisyMemory"], "resolution_source": "context"}
+{"dialogue_id": "d004", "turn_id": 4, "question": "No, what proved it's not?", "gt_entities": ["Concept_NoiseTolerance"], "resolution_source": "context"}
+{"dialogue_id": "d005", "turn_id": 1, "question": "What is product-key memory?", "gt_entities": ["Exp_0_2_CompactPKM"], "resolution_source": "global"}
+{"dialogue_id": "d005", "turn_id": 2, "question": "Why does SAM use it instead of dense retrieval?", "gt_entities": ["Exp_0_2_CompactPKM"], "resolution_source": "context"}
+{"dialogue_id": "d006", "turn_id": 1, "question": "What is the role of the verifier in NEXUS?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "global"}
+{"dialogue_id": "d006", "turn_id": 2, "question": "Is it rule-based or LLM-based?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "context"}
+{"dialogue_id": "d006", "turn_id": 3, "question": "What threshold does it use?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "context"}
+{"dialogue_id": "d007", "turn_id": 1, "question": "How does NEXUS differ from RAG?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "global"}
+{"dialogue_id": "d007", "turn_id": 2, "question": "Specifically, how does its knowledge store compare to vector databases?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "context"}
+{"dialogue_id": "d008", "turn_id": 1, "question": "What experiment proved that retrieval is the bottleneck?", "gt_entities": ["Exp_0_Diagnosis"], "resolution_source": "global"}
+{"dialogue_id": "d008", "turn_id": 2, "question": "And what experiment solved it?", "gt_entities": ["Exp_0_11_ChainRetrieval"], "resolution_source": "global"}
+{"dialogue_id": "d008", "turn_id": 3, "question": "Why did the dual encoder fail at retrieving chains?", "gt_entities": ["Exp_0_10_RequiredSet", "Exp_0_11_ChainRetrieval"], "resolution_source": "context"}
+{"dialogue_id": "d009", "turn_id": 1, "question": "What was the key finding of the noise tolerance experiment?", "gt_entities": ["Exp_0_13A_NoisyMemory", "Concept_NoiseTolerance"], "resolution_source": "global"}
+{"dialogue_id": "d009", "turn_id": 2, "question": "So what IS the real bottleneck then?", "gt_entities": ["Exp_0_12_Selection", "Concept_SelectorBottleneck"], "resolution_source": "context"}
+{"dialogue_id": "d009", "turn_id": 3, "question": "And what was done about it?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "context"}
+{"dialogue_id": "d010", "turn_id": 1, "question": "What are the node types in NEXUS?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "global"}
+{"dialogue_id": "d010", "turn_id": 2, "question": "And the edge types?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "context"}
+{"dialogue_id": "d011", "turn_id": 1, "question": "Compare the dual encoder and chain-set BCE retrievers.", "gt_entities": ["Exp_0_11_ChainRetrieval", "Exp_0_10_RequiredSet"], "resolution_source": "global"}
+{"dialogue_id": "d011", "turn_id": 2, "question": "Which one achieved 100% all_required@32?", "gt_entities": ["Exp_0_11_ChainRetrieval"], "resolution_source": "context"}
+{"dialogue_id": "d012", "turn_id": 1, "question": "What accuracy did the oracle text memory achieve?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "global"}
+{"dialogue_id": "d012", "turn_id": 2, "question": "How does that compare to oracle latent memory?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d012", "turn_id": 3, "question": "What does this prove about the architecture?", "gt_entities": ["Concept_ArchitectureWorks"], "resolution_source": "context"}
+{"dialogue_id": "d013", "turn_id": 1, "question": "What is the query projection mismatch problem?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "global"}
+{"dialogue_id": "d013", "turn_id": 2, "question": "How did it affect retrieval accuracy?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d014", "turn_id": 1, "question": "What are the six memory modes in SAM?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "global"}
+{"dialogue_id": "d014", "turn_id": 2, "question": "Which one is used as the placebo control?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d015", "turn_id": 1, "question": "What is the relationship between the selector bottleneck and the pivot to NEXUS?", "gt_entities": ["Concept_SelectorBottleneck", "Decision_PivotToNEXUS"], "resolution_source": "global"}
+{"dialogue_id": "d015", "turn_id": 2, "question": "So the selector's precision was the problem?", "gt_entities": ["Exp_0_12_Selection"], "resolution_source": "context"}
+{"dialogue_id": "d015", "turn_id": 3, "question": "And the solution was graph traversal instead of flat selection?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "context"}
+{"dialogue_id": "d016", "turn_id": 1, "question": "What's the difference between controlled and realistic distractors?", "gt_entities": ["Exp_0_13A_NoisyMemory", "Exp_0_13B_RealisticDistractors"], "resolution_source": "global"}
+{"dialogue_id": "d016", "turn_id": 2, "question": "Which experiment tested realistic ones?", "gt_entities": ["Exp_0_13B_RealisticDistractors"], "resolution_source": "context"}
+{"dialogue_id": "d017", "turn_id": 1, "question": "Walk me through the evolution from experiment 0.6 to the pivot.", "gt_entities": ["Exp_0_6_Validation", "Decision_PivotToNEXUS"], "resolution_source": "global"}
+{"dialogue_id": "d017", "turn_id": 2, "question": "So 0.6 proved memory works but retrieval fails?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d017", "turn_id": 3, "question": "And 0.11 solved retrieval?", "gt_entities": ["Exp_0_11_ChainRetrieval"], "resolution_source": "context"}
+{"dialogue_id": "d017", "turn_id": 4, "question": "Then 0.12 found the selector is the new bottleneck?", "gt_entities": ["Exp_0_12_Selection"], "resolution_source": "context"}
+{"dialogue_id": "d018", "turn_id": 1, "question": "What was the Rec@8 of the dual encoder on the dense dataset?", "gt_entities": ["Exp_0_5_DenseDataset"], "resolution_source": "global"}
+{"dialogue_id": "d018", "turn_id": 2, "question": "And what was it on the original sparse dataset?", "gt_entities": ["Exp_0_Diagnosis"], "resolution_source": "context"}
+{"dialogue_id": "d018", "turn_id": 3, "question": "That's a huge jump. How did the dense dataset achieve this?", "gt_entities": ["Exp_0_5_DenseDataset"], "resolution_source": "context"}
+{"dialogue_id": "d019", "turn_id": 1, "question": "What NEXUS stands for?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "global"}
+{"dialogue_id": "d019", "turn_id": 2, "question": "Why is it called non-parametric?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "context"}
+{"dialogue_id": "d020", "turn_id": 1, "question": "How many live memory slots did the SAM experiments use?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "global"}
+{"dialogue_id": "d020", "turn_id": 2, "question": "And what's the key_dim?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d020", "turn_id": 3, "question": "How do the subkeys work?", "gt_entities": ["Exp_0_2_CompactPKM"], "resolution_source": "context"}
+{"dialogue_id": "d021", "turn_id": 1, "question": "What was the learned slot selector's precision?", "gt_entities": ["Exp_0_12_Selection"], "resolution_source": "global"}
+{"dialogue_id": "d021", "turn_id": 2, "question": "And its recall?", "gt_entities": ["Exp_0_12_Selection"], "resolution_source": "context"}
+{"dialogue_id": "d021", "turn_id": 3, "question": "Why is high recall but low precision a problem?", "gt_entities": ["Concept_SelectorBottleneck", "Exp_0_12_Selection"], "resolution_source": "context"}
+{"dialogue_id": "d022", "turn_id": 1, "question": "What is the most important validation of the SAM architecture?", "gt_entities": ["Concept_ArchitectureWorks", "Exp_0_6_Validation"], "resolution_source": "global"}
+{"dialogue_id": "d022", "turn_id": 2, "question": "Does this mean the core+memory pattern is valid?", "gt_entities": ["Concept_ArchitectureWorks"], "resolution_source": "context"}
+{"dialogue_id": "d023", "turn_id": 1, "question": "Compare SAM's oracle memory accuracy to oracle text memory.", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "global"}
+{"dialogue_id": "d023", "turn_id": 2, "question": "Which was slightly higher?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d023", "turn_id": 3, "question": "Is the difference statistically meaningful?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d024", "turn_id": 1, "question": "What was the chronological order of the four research phases?", "gt_entities": ["Exp_0_Diagnosis", "Exp_0_6_Validation", "Exp_0_11_ChainRetrieval", "Exp_0_13A_NoisyMemory"], "resolution_source": "global"}
+{"dialogue_id": "d024", "turn_id": 2, "question": "What came after the retrieval revolution?", "gt_entities": ["Exp_0_12_Selection", "Exp_0_13A_NoisyMemory"], "resolution_source": "context"}
+{"dialogue_id": "d025", "turn_id": 1, "question": "What is the NEXUS reasoning pipeline?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "global"}
+{"dialogue_id": "d025", "turn_id": 2, "question": "How does step 6 work?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "context"}
+{"dialogue_id": "d025", "turn_id": 3, "question": "And step 8?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "context"}
+{"dialogue_id": "d026", "turn_id": 1, "question": "Jaka była ogólna dokładność eksperymentu SAM oracle memory?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "global"}
+{"dialogue_id": "d026", "turn_id": 2, "question": "Ile parametrów miał ten model?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d026", "turn_id": 3, "question": "A jak wypadł na 3-hop bez pamięci?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d027", "turn_id": 1, "question": "Dlaczego projekt przeszedł do NEXUS?", "gt_entities": ["Decision_PivotToNEXUS", "Concept_SelectorBottleneck"], "resolution_source": "global"}
+{"dialogue_id": "d027", "turn_id": 2, "question": "Czyli płaski MLP nie radził sobie z selekcją grafową?", "gt_entities": ["Concept_SelectorBottleneck"], "resolution_source": "context"}
+{"dialogue_id": "d028", "turn_id": 1, "question": "Co to jest product-key memory?", "gt_entities": ["Exp_0_2_CompactPKM"], "resolution_source": "global"}
+{"dialogue_id": "d028", "turn_id": 2, "question": "Dlaczego to jest lepsze niż gęste wyszukiwanie?", "gt_entities": ["Exp_0_2_CompactPKM"], "resolution_source": "context"}
+{"dialogue_id": "d028", "turn_id": 3, "question": "Ile podkluczy używa SAM?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d029", "turn_id": 1, "question": "Jakie są typy węzłów w grafie NEXUS?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "global"}
+{"dialogue_id": "d029", "turn_id": 2, "question": "A typy krawędzi?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "context"}
+{"dialogue_id": "d030", "turn_id": 1, "question": "Jaka była precyzja selektora slotów?", "gt_entities": ["Exp_0_12_Selection"], "resolution_source": "global"}
+{"dialogue_id": "d030", "turn_id": 2, "question": "A recall?", "gt_entities": ["Exp_0_12_Selection"], "resolution_source": "context"}
+{"dialogue_id": "d030", "turn_id": 3, "question": "Dlaczego to jest wąskie gardło?", "gt_entities": ["Concept_SelectorBottleneck"], "resolution_source": "context"}
+{"dialogue_id": "d031", "turn_id": 1, "question": "Which experiments belong to the Core Validation phase?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "global"}
+{"dialogue_id": "d031", "turn_id": 2, "question": "What was the purpose of that phase?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d032", "turn_id": 1, "question": "What is the latest experiment and what does it test?", "gt_entities": ["Exp_0_13B_RealisticDistractors"], "resolution_source": "global"}
+{"dialogue_id": "d032", "turn_id": 2, "question": "Is it harder than 0.13A?", "gt_entities": ["Exp_0_13B_RealisticDistractors", "Exp_0_13A_NoisyMemory"], "resolution_source": "context"}
+{"dialogue_id": "d033", "turn_id": 1, "question": "What was the dataset size for the dense synthetic experiments?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "global"}
+{"dialogue_id": "d033", "turn_id": 2, "question": "How many examples per slot did that provide?", "gt_entities": ["Exp_0_5_DenseDataset"], "resolution_source": "context"}
+{"dialogue_id": "d034", "turn_id": 1, "question": "What is the controlled noisy memory path?", "gt_entities": ["Exp_0_13A_NoisyMemory"], "resolution_source": "global"}
+{"dialogue_id": "d034", "turn_id": 2, "question": "How is it different from oracle memory?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d035", "turn_id": 1, "question": "What experiment directly preceded the chain-set BCE retriever?", "gt_entities": ["Exp_0_11_ChainRetrieval", "Exp_0_10_RequiredSet"], "resolution_source": "global"}
+{"dialogue_id": "d035", "turn_id": 2, "question": "What did it discover about dual encoder results?", "gt_entities": ["Exp_0_10_RequiredSet"], "resolution_source": "context"}
+{"dialogue_id": "d036", "turn_id": 1, "question": "What prompted the pivot from SAM to NEXUS?", "gt_entities": ["Decision_PivotToNEXUS", "Concept_SelectorBottleneck"], "resolution_source": "global"}
+{"dialogue_id": "d036", "turn_id": 2, "question": "Was that decision justified by experiments?", "gt_entities": ["Exp_0_12_Selection", "Exp_0_13A_NoisyMemory"], "resolution_source": "context"}
+{"dialogue_id": "d037", "turn_id": 1, "question": "What are SAM's core model parameters?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "global"}
+{"dialogue_id": "d037", "turn_id": 2, "question": "How many in the memory component?", "gt_entities": ["Exp_0_6_Validation"], "resolution_source": "context"}
+{"dialogue_id": "d038", "turn_id": 1, "question": "What was the all_required@64 for the dual encoder?", "gt_entities": ["Exp_0_10_RequiredSet"], "resolution_source": "global"}
+{"dialogue_id": "d038", "turn_id": 2, "question": "That seems very low — explain why.", "gt_entities": ["Exp_0_10_RequiredSet", "Exp_0_11_ChainRetrieval"], "resolution_source": "context"}
+{"dialogue_id": "d039", "turn_id": 1, "question": "What accuracy did the learned slot selector achieve with oracle filter?", "gt_entities": ["Exp_0_12_Selection"], "resolution_source": "global"}
+{"dialogue_id": "d039", "turn_id": 2, "question": "What does this prove about chain candidates?", "gt_entities": ["Exp_0_12_Selection", "Exp_0_11_ChainRetrieval"], "resolution_source": "context"}
+{"dialogue_id": "d040", "turn_id": 1, "question": "What phase comes after the pivot to NEXUS?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "global"}
+{"dialogue_id": "d040", "turn_id": 2, "question": "What are the key architectural differences?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "context"}
+{"dialogue_id": "d041", "turn_id": 1, "question": "What happened at 16 distractors in the noise experiment?", "gt_entities": ["Exp_0_13A_NoisyMemory"], "resolution_source": "global"}
+{"dialogue_id": "d041", "turn_id": 2, "question": "Was the 3-hop specifically hurt?", "gt_entities": ["Exp_0_13A_NoisyMemory"], "resolution_source": "context"}
+{"dialogue_id": "d042", "turn_id": 1, "question": "At what noise level does 3-hop reasoning collapse?", "gt_entities": ["Exp_0_13A_NoisyMemory"], "resolution_source": "global"}
+{"dialogue_id": "d042", "turn_id": 2, "question": "Between 8 and 16 then?", "gt_entities": ["Exp_0_13A_NoisyMemory"], "resolution_source": "context"}
+{"dialogue_id": "d043", "turn_id": 1, "question": "What does SAM's gate do exactly?", "gt_entities": ["Exp_0_13A_NoisyMemory"], "resolution_source": "global"}
+{"dialogue_id": "d043", "turn_id": 2, "question": "And what did the noise experiment prove about it?", "gt_entities": ["Exp_0_13A_NoisyMemory", "Concept_NoiseTolerance"], "resolution_source": "context"}
+{"dialogue_id": "d044", "turn_id": 1, "question": "Which experiment first showed that chain retrieval works?", "gt_entities": ["Exp_0_11_ChainRetrieval"], "resolution_source": "global"}
+{"dialogue_id": "d044", "turn_id": 2, "question": "And did SAM actually use those chains effectively?", "gt_entities": ["Exp_0_12_Selection", "Exp_0_11_ChainRetrieval"], "resolution_source": "context"}
+{"dialogue_id": "d045", "turn_id": 1, "question": "What compute resources does NEXUS target?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "global"}
+{"dialogue_id": "d045", "turn_id": 2, "question": "Why no GPUs?", "gt_entities": ["Decision_PivotToNEXUS"], "resolution_source": "context"}
