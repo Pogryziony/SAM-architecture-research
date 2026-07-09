@@ -222,6 +222,7 @@ def parse_question(
     cutoff: float | None = None,
     config: NEXUSConfig = DEFAULT_CONFIG,
     embedding_index=None,
+    encoder_model=None,
 ) -> ParsedQuery:
     """
     Parse a natural language question into structured query intent.
@@ -232,14 +233,37 @@ def parse_question(
         cutoff: Fuzzy matching cutoff for entity resolution (default from config)
         config: NEXUSConfig with tunable parameters
         embedding_index: Optional NodeEmbeddingIndex for semantic entity resolution
+        encoder_model: Optional EncoderLoader for associative encoder (Stage 1)
 
     Returns:
         ParsedQuery with resolved entity IDs, intent, and direction
     """
     if cutoff is None:
         cutoff = config.fuzzy_cutoff
-    # Detect intent
-    intent, direction = detect_intent(question)
+
+    # ── Stage 1: Associative encoder path ──
+    encoder_entities: list[str] = []
+    encoder_intent: str | None = None
+    encoder_scores: dict[str, float] = {}
+    if config.enable_associative_encoder and encoder_model is not None:
+        encoder_result = encoder_model.predict(
+            question, entity_threshold=0.5
+        )
+        encoder_entities = encoder_result["entity_ids"]
+        encoder_intent = encoder_result["intent"]
+        encoder_scores = {
+            eid: score for eid, score in encoder_result["entity_scores"]
+        }
+        # Also report encoder category (not used for routing, but logged)
+        _encoder_category = encoder_result["category"]
+
+    # Detect intent — use encoder intent if available and confident,
+    # otherwise fall back to lexical keyword detection
+    if encoder_intent is not None:
+        intent = encoder_intent
+        direction = "both"  # Default direction for encoder predictions
+    else:
+        intent, direction = detect_intent(question)
 
     # Expand acronyms — add expanded forms as additional search terms
     # that help fuzzy matching find the right entities
@@ -292,7 +316,22 @@ def parse_question(
                 existing_set.add(node_id)
             embedding_scores[node_id] = score
 
+    # ── Associative encoder entity proposals ──
+    # Stage 1: Add encoder-predicted entities with confidence scores.
+    # These supplement the lexical matches; high-confidence encoder
+    # predictions are used alongside lexical matches.
+    if encoder_entities:
+        for eid in encoder_entities:
+            if eid not in existing_set:
+                entity_ids.insert(0, eid)
+                existing_set.add(eid)
+        # Encoder scores are merged into embedding_scores for ranking
+
     # ── Rank and cap entry nodes ──
+    # Add encoder entity scores to embedding_scores for ranking
+    if encoder_scores:
+        embedding_scores.update(encoder_scores)
+
     entity_ids = _rank_entities(graph, entity_ids, question=question,
                                 keyword_scores=keyword_scores, wb_matched=wb_matched,
                                 alias_matched=alias_matched, config=config,
@@ -301,6 +340,10 @@ def parse_question(
     # ── Determine resolution method ──
     if not entity_ids:
         resolution_method = "none"
+    elif encoder_entities and any(
+        eid in entity_ids[: config.max_entry_nodes] for eid in encoder_entities
+    ):
+        resolution_method = "encoder"
     elif alias_matched:
         resolution_method = "alias"
     elif embedding_scores:
