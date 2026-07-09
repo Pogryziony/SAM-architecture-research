@@ -1,0 +1,636 @@
+{
+  "version": "1.0",
+  "phase": 5,
+  "description": "Learned router decision table mapping (intent, has_matching_metric, estimated_hops) → best_arm",
+  "training_config": {
+    "limit": 30,
+    "questions": 30,
+    "table_entries": 7
+  },
+  "metrics": {
+    "router_accuracy": 0.39,
+    "oracle_accuracy": 0.4133,
+    "routing_quality": 0.9435
+  },
+  "decision_table": {
+    "factual_lookup|1|1": {
+      "intent": "factual_lookup",
+      "has_matching_metric": true,
+      "estimated_hops": 1,
+      "count": 18,
+      "synth_wins": 11,
+      "llm_wins": 7,
+      "synth_accuracy": 0.2352,
+      "llm_accuracy": 0.4417,
+      "best_arm": "llm"
+    },
+    "factual_lookup|0|1": {
+      "intent": "factual_lookup",
+      "has_matching_metric": false,
+      "estimated_hops": 1,
+      "count": 3,
+      "synth_wins": 2,
+      "llm_wins": 1,
+      "synth_accuracy": 0.1667,
+      "llm_accuracy": 0.3333,
+      "best_arm": "llm"
+    },
+    "comparison|1|2": {
+      "intent": "comparison",
+      "has_matching_metric": true,
+      "estimated_hops": 2,
+      "count": 2,
+      "synth_wins": 2,
+      "llm_wins": 0,
+      "synth_accuracy": 0.25,
+      "llm_accuracy": 0.25,
+      "best_arm": "synthesizer"
+    },
+    "diagnostic|1|1": {
+      "intent": "diagnostic",
+      "has_matching_metric": true,
+      "estimated_hops": 1,
+      "count": 2,
+      "synth_wins": 2,
+      "llm_wins": 0,
+      "synth_accuracy": 0.125,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    },
+    "comparison|1|1": {
+      "intent": "comparison",
+      "has_matching_metric": true,
+      "estimated_hops": 1,
+      "count": 1,
+      "synth_wins": 0,
+      "llm_wins": 1,
+      "synth_accuracy": 0.5,
+      "llm_accuracy": 1.0,
+      "best_arm": "llm"
+    },
+    "causal_explanation|1|2": {
+      "intent": "causal_explanation",
+      "has_matching_metric": true,
+      "estimated_hops": 2,
+      "count": 3,
+      "synth_wins": 3,
+      "llm_wins": 0,
+      "synth_accuracy": 0.0,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    },
+    "factual_lookup|1|2": {
+      "intent": "factual_lookup",
+      "has_matching_metric": true,
+      "estimated_hops": 2,
+      "count": 1,
+      "synth_wins": 1,
+      "llm_wins": 0,
+      "synth_accuracy": 1.0,
+      "llm_accuracy": 1.0,
+      "best_arm": "synthesizer"
+    }
+  },
+  "per_question_data": [
+    {
+      "question_id": "q001",
+      "question": "What was the overall accuracy of the SAM oracle memory experiment?",
+      "ground_truth": "99.87% overall accuracy, with 99.5% on 1-hop, 100% on 2-hop, and 100% on 3-hop.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 4,
+        "numeric_match": 1.0,
+        "has_key_finding": 0.0
+      },
+      "synthesizer_accurate": true,
+      "synthesizer_accuracy": 0.3333,
+      "llm_accurate": true,
+      "llm_accuracy": 1.0,
+      "best_arm": "llm"
+    },
+    {
+      "question_id": "q002",
+      "question": "What accuracy did the SAM core-only baseline achieve?",
+      "ground_truth": "68.74% overall accuracy, identical to the dense baseline at equal parameters.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 3,
+        "numeric_match": 1.0,
+        "has_key_finding": 0.0
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": true,
+      "llm_accuracy": 1.0,
+      "best_arm": "llm"
+    },
+    {
+      "question_id": "q003",
+      "question": "What was the breakthrough result of the chain-set BCE retriever?",
+      "ground_truth": "all_required@32 = 100% — it finds ALL required slots for EVERY example at K=32.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 4,
+        "numeric_match": 0.5,
+        "has_key_finding": 0.0
+      },
+      "synthesizer_accurate": true,
+      "synthesizer_accuracy": 1.0,
+      "llm_accurate": true,
+      "llm_accuracy": 1.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q004",
+      "question": "What was the precision of the learned slot selector in experiment 0.12?",
+      "ground_truth": "50% precision, with 96.6% recall — meaning it finds nearly all required slots but picks about twice as many distractors.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": false,
+        "estimated_hops": 1,
+        "path_count": 3,
+        "numeric_match": 0.0,
+        "has_key_finding": 0.0
+      },
+      "synthesizer_accurate": true,
+      "synthesizer_accuracy": 0.5,
+      "llm_accurate": true,
+      "llm_accuracy": 0.5,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q005",
+      "question": "How many random distractors can SAM tolerate while maintaining over 90% accuracy?",
+      "ground_truth": "Up to 8 random distractors, achieving 91.58% overall accuracy.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 3,
+        "numeric_match": 1.0,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": true,
+      "synthesizer_accuracy": 0.5,
+      "llm_accurate": true,
+      "llm_accuracy": 1.0,
+      "best_arm": "llm"
+    },
+    {
+      "question_id": "q006",
+      "question": "At what noise level does 3-hop reasoning collapse in SAM?",
+      "ground_truth": "Between 8 and 16 distractors — 3-hop accuracy drops from 79.3% at +8 to 39.0% at +16.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 5,
+        "numeric_match": 0.5,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": true,
+      "llm_accuracy": 0.25,
+      "best_arm": "llm"
+    },
+    {
+      "question_id": "q007",
+      "question": "What accuracy did SAM achieve with the oracle-filter from chain candidates in experiment 0.12?",
+      "ground_truth": "100% accuracy on all hop categories, matching oracle_memory and proving the chain candidates are sufficient.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 3,
+        "numeric_match": 1.0,
+        "has_key_finding": 0.0
+      },
+      "synthesizer_accurate": true,
+      "synthesizer_accuracy": 1.0,
+      "llm_accurate": true,
+      "llm_accuracy": 1.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q008",
+      "question": "What was the all_required@64 result for the dual encoder retriever in experiment 0.10?",
+      "ground_truth": "Only 27% — 73% of examples had required slots completely absent from the top-64 results.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 4,
+        "numeric_match": 0.5,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": true,
+      "synthesizer_accuracy": 0.5,
+      "llm_accurate": true,
+      "llm_accuracy": 0.5,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q009",
+      "question": "What Rec@8 did the dual encoder achieve on the dense dataset in experiment 0.5?",
+      "ground_truth": "99.0% val Rec@8, up from 6.9% on the original sparse dataset.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 5,
+        "numeric_match": 0.5,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": true,
+      "llm_accuracy": 0.5,
+      "best_arm": "llm"
+    },
+    {
+      "question_id": "q010",
+      "question": "What was the key finding of the pipeline diagnosis experiment?",
+      "ground_truth": "Three critical bugs were found and fixed — retrieval was identified as the bottleneck with only 6.9% Rec@8.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 5,
+        "numeric_match": 0.5,
+        "has_key_finding": 1.0
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": false,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q011",
+      "question": "How many parameters does the SAM core model have?",
+      "ground_truth": "Approximately 15.7 million parameters total, with 15.6M in the core and 117K in memory.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": false,
+        "estimated_hops": 1,
+        "path_count": 4,
+        "numeric_match": 0.0,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": false,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q012",
+      "question": "What is the 3-hop accuracy of SAM without memory (core_only)?",
+      "ground_truth": "22.00% — showing that multi-hop reasoning is very hard for the small core without external memory.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 3,
+        "numeric_match": 1.0,
+        "has_key_finding": 0.0
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": true,
+      "llm_accuracy": 1.0,
+      "best_arm": "llm"
+    },
+    {
+      "question_id": "q013",
+      "question": "What dataset size was used for the dense synthetic experiments?",
+      "ground_truth": "19,000 training examples, 3,800 validation, 3,800 test, with 1,650 slots and 853 vocabulary tokens.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 3,
+        "numeric_match": 1.0,
+        "has_key_finding": 0.0
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": false,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q014",
+      "question": "What accuracy did random memory injection achieve in SAM?",
+      "ground_truth": "68.74% — identical to core_only, confirming the placebo control works and the gate suppresses useless memory.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 4,
+        "numeric_match": 1.0,
+        "has_key_finding": 0.0
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": false,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q015",
+      "question": "What was the 2-hop all_required@32 for the dual encoder vs chain-set BCE retriever?",
+      "ground_truth": "Dual encoder: 0.9% — essentially zero. Chain-set BCE: 100%. The improvement was from 0.9% to 100%.",
+      "signals": {
+        "intent": "comparison",
+        "has_matching_metric": true,
+        "estimated_hops": 2,
+        "path_count": 5,
+        "numeric_match": 0.5,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": true,
+      "synthesizer_accuracy": 0.5,
+      "llm_accurate": true,
+      "llm_accuracy": 0.5,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q016",
+      "question": "What did experiment 0.13A prove about the SAM gate?",
+      "ground_truth": "The gate is NOT the bottleneck — SAM tolerates 1-2 distractors with 99.4-99.8% accuracy. The problem is selector noise QUALITY, not quantity.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 3,
+        "numeric_match": 0.5,
+        "has_key_finding": 1.0
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": false,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q017",
+      "question": "How many live memory slots did the SAM experiments use?",
+      "ground_truth": "1,650 live slots, addressed via product-key memory with 64 subkeys and key_dim=64.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": false,
+        "estimated_hops": 1,
+        "path_count": 3,
+        "numeric_match": 0.0,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": true,
+      "llm_accuracy": 0.5,
+      "best_arm": "llm"
+    },
+    {
+      "question_id": "q018",
+      "question": "What were the three critical bugs found in the pipeline diagnosis?",
+      "ground_truth": "(1) best_val_loss was Infinity because validation never ran, (2) InfoNCE loss used dead slots as negatives, (3) Evaluation used wrong checkpoints for SAM modes.",
+      "signals": {
+        "intent": "diagnostic",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 5,
+        "numeric_match": 0.5,
+        "has_key_finding": 1.0
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": false,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q019",
+      "question": "What was the accuracy of oracle text memory compared to oracle latent memory?",
+      "ground_truth": "Oracle text memory achieved 100% accuracy. Oracle latent memory achieved 99.87%. Both prove the core CAN use memory.",
+      "signals": {
+        "intent": "comparison",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 4,
+        "numeric_match": 1.0,
+        "has_key_finding": 0.0
+      },
+      "synthesizer_accurate": true,
+      "synthesizer_accuracy": 0.5,
+      "llm_accurate": true,
+      "llm_accuracy": 1.0,
+      "best_arm": "llm"
+    },
+    {
+      "question_id": "q020",
+      "question": "What accuracy does SAM achieve with exactly 1 distractor in controlled noisy memory?",
+      "ground_truth": "99.82% overall with 99.50% on 3-hop — effectively no degradation from clean oracle memory.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 3,
+        "numeric_match": 1.0,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": true,
+      "synthesizer_accuracy": 0.5,
+      "llm_accurate": false,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q021",
+      "question": "Why did the dual encoder retriever fail to retrieve complete multi-hop chains?",
+      "ground_truth": "The dual encoder maps question text to slot similarity. For chains, question -> Slot A (similar to question) works, but question -> Slot B (similar to Slot A's content, not the question) fails. Intermediate chain slots are not similar enough to the original question text.",
+      "signals": {
+        "intent": "causal_explanation",
+        "has_matching_metric": true,
+        "estimated_hops": 2,
+        "path_count": 5,
+        "numeric_match": 0.5,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": false,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q022",
+      "question": "How did the dense dataset fix enable successful retrieval?",
+      "ground_truth": "The original dataset had only 1.5 examples per slot with 30% unseen slots in validation. The dense dataset provided 21.8 examples per slot with all 1,650 slots shared across splits, giving the retriever enough data to learn slot embeddings.",
+      "signals": {
+        "intent": "diagnostic",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 5,
+        "numeric_match": 0.5,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": true,
+      "synthesizer_accuracy": 0.25,
+      "llm_accurate": false,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q023",
+      "question": "What chain of experiments led from the discovery of the retriever problem to solving it?",
+      "ground_truth": "Exp 0.6 discovered retrieved_memory = core_only. Exp 0.10 diagnosed that multi-hop required slots were absent from dual encoder results (all_required@64 = 27%). Exp 0.11 solved it with chain-set BCE retriever (all_required@32 = 100%).",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 3,
+        "numeric_match": 0.5,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": true,
+      "synthesizer_accuracy": 0.4,
+      "llm_accurate": true,
+      "llm_accuracy": 0.2,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q024",
+      "question": "Why does chain-set retrieval achieve 100% all_required@32 but SAM still equals core_only?",
+      "ground_truth": "Because the chain-set retriever returns 32+ candidates with all required slots present, but SAM receives all 32 slots averaged together. Without a selector, the signal from 1-3 required slots is diluted by ~29 distractors, causing the gate to suppress memory entirely.",
+      "signals": {
+        "intent": "causal_explanation",
+        "has_matching_metric": true,
+        "estimated_hops": 2,
+        "path_count": 5,
+        "numeric_match": 0.5,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": false,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q025",
+      "question": "What is the relationship between the selector bottleneck and the pivot to NEXUS?",
+      "ground_truth": "The selector achieves 96.6% recall but only 50% precision, picking semantically misleading distractors. This is a structural problem: a flat MLP cannot solve graph-structured selection. This failure directly motivated the pivot to NEXUS, where knowledge is an explicit graph and selection becomes graph traversal.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 2,
+        "path_count": 3,
+        "numeric_match": 0.5,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": true,
+      "synthesizer_accuracy": 1.0,
+      "llm_accurate": true,
+      "llm_accuracy": 1.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q026",
+      "question": "Walk through the evolution from experiment 0.6 to the architecture pivot.",
+      "ground_truth": "Exp 0.6 proved oracle memory works (99.87%) but retrieved memory fails (68.74%). Exp 0.7-0.9 tried various retrieval interfaces without success. Exp 0.10 discovered multi-hop slots were missing from retrieval. Exp 0.11 solved retrieval with chain-set BCE (100%). Exp 0.12 showed the selector is the new bottleneck (50% precision). Exp 0.13A proved the architecture tolerates noise — the problem is selector quality, not integration brittleness. This chain of evidence led to the pivot: flat latent vectors cannot solve graph-structured selection.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 3,
+        "numeric_match": 0.5,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": true,
+      "llm_accuracy": 0.5,
+      "best_arm": "llm"
+    },
+    {
+      "question_id": "q027",
+      "question": "What are the six memory modes in SAM?",
+      "ground_truth": "core_only (no memory), oracle_memory (correct slots injected directly), retrieved_memory (learned PKM lookup), random_memory (random slots as placebo), retrieved_memory_external_text_query (standalone retriever), and oracle_text_memory (facts as text tokens).",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 3,
+        "numeric_match": 0.5,
+        "has_key_finding": 0.0
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": false,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q028",
+      "question": "How does SAM differ from RAG?",
+      "ground_truth": "RAG prepends retrieved text to the model input. SAM injects memory into the model's internal computation via learned gating at specific layers. SAM uses latent vectors combined mathematically, not text. SAM's memory is trained together with the core.",
+      "signals": {
+        "intent": "comparison",
+        "has_matching_metric": true,
+        "estimated_hops": 2,
+        "path_count": 5,
+        "numeric_match": 0.5,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": false,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q029",
+      "question": "What is product-key memory and why does SAM use it?",
+      "ground_truth": "PKM enables O(sqrt(N)) lookup by splitting a query into two sub-keys, scoring each against a codebook, and using the Cartesian product to find slots. This makes billion-slot memories tractable. It's differentiable, enabling end-to-end training.",
+      "signals": {
+        "intent": "causal_explanation",
+        "has_matching_metric": true,
+        "estimated_hops": 2,
+        "path_count": 5,
+        "numeric_match": 0.5,
+        "has_key_finding": 0.0
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": false,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    },
+    {
+      "question_id": "q030",
+      "question": "What is the role of the gate in SAM's memory integration?",
+      "ground_truth": "The gate is a learned sigmoid scalar (0-1) that controls how much retrieved memory influences the output: output = core_computation + gate * memory_vector. It learns when to use or suppress memory during training.",
+      "signals": {
+        "intent": "factual_lookup",
+        "has_matching_metric": true,
+        "estimated_hops": 1,
+        "path_count": 4,
+        "numeric_match": 0.5,
+        "has_key_finding": 0.5
+      },
+      "synthesizer_accurate": false,
+      "synthesizer_accuracy": 0.0,
+      "llm_accurate": false,
+      "llm_accuracy": 0.0,
+      "best_arm": "synthesizer"
+    }
+  ]
+}

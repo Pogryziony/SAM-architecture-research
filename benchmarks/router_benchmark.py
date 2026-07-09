@@ -208,6 +208,19 @@ def _avg(lst: list[float]) -> float:
     return round(sum(lst) / len(lst), 4) if lst else 0.0
 
 
+def _load_routing_quality() -> dict[str, Any] | None:
+    """Load routing quality metrics from the learned policy file."""
+    policy_path = _project_root / "nexus" / "reasoning" / "router_policy.json"
+    if not policy_path.exists():
+        return None
+    try:
+        with open(policy_path, "r", encoding="utf-8") as f:
+            policy = json.load(f)
+        return policy.get("metrics", None)
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
 def print_router_results(
     results: list[dict[str, Any]],
     synthesis_accuracies: list[float],
@@ -550,6 +563,17 @@ def main():
     router_lats = [r["router"]["latency_s"] for r in results if not r["router"].get("error")]
     router_avg_lat = _avg(router_lats) if router_lats else 0.0
     print()
+    # ── Phase 5: Routing quality metric ──
+    rq_metrics = _load_routing_quality()
+    if rq_metrics:
+        rq_val = rq_metrics.get("routing_quality", 0.0)
+        rq_acc = rq_metrics.get("router_accuracy", 0.0)
+        rq_ora = rq_metrics.get("oracle_accuracy", 0.0)
+        print()
+        print(f"  ROUTING QUALITY: {rq_val:.1%} "
+              f"(router_acc={rq_acc:.1%}, oracle_acc={rq_ora:.1%})")
+        print(f"  Phase 5: learned decision-table router policy")
+
     print("  +==================================================================+")
     print(f"  |  KILLER CLAIM: {synth_pct_total:.0f}% of queries served at                    |")
     print(f"  |  $0.00 generation cost, ~{router_avg_lat:.3f}s average latency.     |")

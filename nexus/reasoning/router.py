@@ -7,23 +7,27 @@ when the SynthesizingModel is expanded with comparative, chain, and definition
 methods. For these, template-based synthesis achieves comparable accuracy to
 LLM at ~0 generation cost and ~400× faster.
 
+Phase 5: Data-driven routing via learned decision table.
+The decision table maps (intent, has_matching_metric, estimated_hops) → best_arm
+based on per-question paired accuracy data from both arms. When a lookup has no
+match, falls back to the legacy hand-weighted confidence score.
+
 Target: >90% of questions route to synthesizer, achieving near-zero cost for
 the vast majority of queries.
 
 Decision logic:
-  1. factual_lookup intent → synthesizer (key_finding extraction)
-  2. comparison + ≥2 Experiment nodes with numeric key_findings → synthesizer
-  3. multi-hop/chain + paths with ≥2 edges → synthesizer (chain formatter)
-  4. diagnostic + causal edges (caused_by/blocked_by) → synthesizer
-  5. Simple "what is"/"how many"/"which" with ≤1 hop → synthesizer
-  6. No key_finding and no structured facts → LLM
-  7. Complex diagnostic without clear causal chain → LLM
+  1. Load learned decision table from router_policy.json
+  2. Extract signals from evidence pack: intent, has_matching_metric, estimated_hops
+  3. Lookup table → synthesizer or llm with per-arm accuracy stats
+  4. If no match in table, fall back to weighted confidence score (legacy)
 """
 
 from __future__ import annotations
 
+import json
 import re
 import time
+from pathlib import Path
 from typing import Any
 
 from nexus.graph.store import InMemoryGraphStore
@@ -39,13 +43,47 @@ from nexus.reasoning.model_interface import (
 from nexus.reasoning.verifier import Verifier, VerificationResult
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
+# Path to the learned decision table (relative to repo root)
+_POLICY_PATH = Path(__file__).parent / "router_policy.json"
+
+
+def _make_table_key(intent: str, has_matching_metric: bool, estimated_hops: int) -> str:
+    """Build a lookup key matching the decision table format."""
+    return f"{intent}|{int(has_matching_metric)}|{estimated_hops}"
+
 
 class Router:
     """Routes questions to 'synthesizer' or 'llm' based on question type and evidence.
 
     The synthesizer route uses SynthesizingModel (template-based, ~0 cost, ~10ms).
     The LLM route uses OllamaModel or similar (actual inference, higher cost, slower).
+
+    Phase 5: Uses a learned decision table (router_policy.json) for routing.
+    Falls back to hand-weighted confidence score when the table has no match.
     """
+
+    def __init__(self, policy_path: Path | str | None = None):
+        """Initialize the router, loading the learned decision table if available.
+
+        Args:
+            policy_path: Path to router_policy.json. Defaults to the file
+                         next to this module (nexus/reasoning/router_policy.json).
+        """
+        self._policy_path = Path(policy_path) if policy_path else _POLICY_PATH
+        self._decision_table: dict[str, dict[str, Any]] = {}
+        self._table_loaded = False
+        self._load_policy()
+
+    def _load_policy(self) -> None:
+        """Load the learned decision table from router_policy.json."""
+        try:
+            if self._policy_path.exists():
+                with open(self._policy_path, "r", encoding="utf-8") as f:
+                    policy = json.load(f)
+                self._decision_table = policy.get("decision_table", {})
+                self._table_loaded = True
+        except (json.JSONDecodeError, OSError):
+            pass  # Silently fall back to legacy scoring
 
     def route(
         self,
@@ -54,19 +92,11 @@ class Router:
         evidence_pack: dict[str, Any] | None = None,
     ) -> tuple[str, str]:
         """
-        Decide whether to route to 'synthesizer' or 'llm' based on evidence confidence.
+        Decide whether to route to 'synthesizer' or 'llm'.
 
-        Uses three pre-generation signals from the evidence pack:
-          - numeric_match: how well evidence numbers match question intent (0-1)
-          - has_key_finding: whether the target entity has curated key_finding (0-1)
-          - path_count_signal: normalized path count, more paths = more context (0-1)
-
-        Weighted combination (0.4 + 0.4 + 0.2) — numeric match and key_finding
-        are the strongest indicators of evidence quality. Path count is secondary
-        (more paths can mean more noise).
-
-        Threshold ≥ 0.6 → synthesizer (high-confidence evidence)
-        Below 0.6 → LLM (evidence quality uncertain)
+        Phase 5 priority:
+          1. Decision table lookup (learned from per-question paired data)
+          2. Fall back to weighted confidence score (legacy hand-tuning)
 
         Args:
             question: The original natural language question.
@@ -78,12 +108,10 @@ class Router:
         """
         # ── Extract confidence signals from evidence pack ──
         if evidence_pack is None:
-            # Pre-traversal: no evidence yet, default to LLM
             return "llm", "no evidence pack available"
 
         signals = evidence_pack.get("confidence_signals")
         if signals is None:
-            # Fall back to simple type-based check if signals unavailable
             node_facts = evidence_pack.get("node_facts", [])
             if len(node_facts) > 0:
                 return "synthesizer", "has key_findings (fallback)"
@@ -93,28 +121,65 @@ class Router:
         has_key_finding = signals.get("has_key_finding", 0.0)
         path_count_signal = signals.get("path_count_signal", 0.0)
 
-        # ── Weighted confidence score ──
+        # ── Phase 5: Decision table lookup ──
+        if self._table_loaded and self._decision_table:
+            table_route = self._route_by_table(
+                question, parsed_query, numeric_match
+            )
+            if table_route is not None:
+                return table_route
+
+        # ── Legacy: Weighted confidence score (fallback) ──
         confidence_score = (
             0.4 * numeric_match
             + 0.4 * has_key_finding
             + 0.2 * path_count_signal
         )
 
-        # ── Route decision ──
         if confidence_score >= 0.6:
             reason = (
-                f"conf={confidence_score:.2f} "
+                f"fallback conf={confidence_score:.2f} "
                 f"(num={numeric_match:.1f}, kf={has_key_finding:.1f}, "
                 f"paths={path_count_signal:.1f})"
             )
             return "synthesizer", reason
         else:
             reason = (
-                f"low conf={confidence_score:.2f} "
+                f"fallback low conf={confidence_score:.2f} "
                 f"(num={numeric_match:.1f}, kf={has_key_finding:.1f}, "
                 f"paths={path_count_signal:.1f})"
             )
             return "llm", reason
+
+    def _route_by_table(
+        self,
+        question: str,
+        parsed_query: ParsedQuery,
+        numeric_match: float,
+    ) -> tuple[str, str] | None:
+        """Try to route using the learned decision table. Returns None if no match."""
+        intent = parsed_query.intent
+        has_matching_metric = numeric_match > 0.0
+        estimated_hops = self._estimate_hops(question)
+        if estimated_hops < 1:
+            estimated_hops = 1
+
+        key = _make_table_key(intent, has_matching_metric, estimated_hops)
+        entry = self._decision_table.get(key)
+
+        if entry is None:
+            return None
+
+        best_arm = entry.get("best_arm", "llm")
+        synth_acc = entry.get("synth_accuracy", 0.0)
+        llm_acc = entry.get("llm_accuracy", 0.0)
+
+        reason = (
+            f"decision_table: synth_accuracy={synth_acc:.2f}, "
+            f"llm_accuracy={llm_acc:.2f} "
+            f"(intent={intent}, metric={has_matching_metric}, hops={estimated_hops})"
+        )
+        return best_arm, reason
 
     @staticmethod
     def _has_key_finding(evidence_pack: dict[str, Any]) -> bool:
