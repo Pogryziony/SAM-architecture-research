@@ -268,6 +268,7 @@ def build_prompt(question: str, evidence_json: str) -> str:
     facts = evidence.get("facts", [])
     sources = evidence.get("sources", [])
     numbers = evidence.get("numbers", [])
+    numbers_by_metric = evidence.get("numbers_by_metric", {})
     neighbor_facts = evidence.get("neighbor_facts", [])
 
     node_facts = evidence.get("node_facts", [])
@@ -399,6 +400,31 @@ def build_prompt(question: str, evidence_json: str) -> str:
                 ]
                 if kv_pairs:
                     parts.append(f"  - [{entity}] {' | '.join(kv_pairs)}")
+
+        # ── NUMBERS BY METRIC: grouped for easy lookup ──
+        if numbers_by_metric:
+            # Determine the metric term the question asks about
+            from nexus.query.parser import extract_metric_term
+            metric_term = extract_metric_term(question)
+            if metric_term:
+                # Only show the most relevant metric
+                matching_entries = numbers_by_metric.get(metric_term, [])
+                if matching_entries:
+                    parts.append(f"\n  NUMBERS FOR '{metric_term}':")
+                    for entry in matching_entries[:5]:  # cap at 5 entries
+                        entity = entry.get("entity", "")
+                        value = entry.get("value", "")
+                        parts.append(f"  - [{entity}] {value}")
+                else:
+                    # Try prefix match
+                    for key, entries in numbers_by_metric.items():
+                        if key.startswith(metric_term) or metric_term.startswith(key):
+                            parts.append(f"\n  NUMBERS FOR '{key}':")
+                            for entry in entries[:5]:
+                                entity = entry.get("entity", "")
+                                value = entry.get("value", "")
+                                parts.append(f"  - [{entity}] {value}")
+                            break
 
         # ── Neighbor facts: key_findings from directly connected nodes ──
         if neighbor_facts:

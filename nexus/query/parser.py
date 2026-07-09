@@ -23,8 +23,8 @@ INTENT_KEYWORDS: list[tuple[str, str, str]] = [
     (r"\bwhat\s+depends\b",                   "dependency_chain",  "both"),
     (r"\bwhat\s+affects?\b",                  "impact_analysis",   "out"),
     (r"\b(compare|vs\.?|versus|difference|diff)", "comparison",    "both"),
-    (r"\b(what\s+is|what\s+are|list|who)\b", "factual_lookup",    "both"),
-    (r"\b(how\b(?:\s+do|\s+does|\s+to)?|diagnose|debug|fix|broken|wrong|error|bug|issue)", "diagnostic", "in"),
+    (r"\b(what\s+is|what\s+are|how\s+many|how\s+much|list|who)\b", "factual_lookup",    "both"),
+    (r"\b(how\b(?:\s+(?:do|does|to|can|should|would|could|did|is|are))?|diagnose|debug|fix|broken|wrong|error|bug|issue)", "diagnostic", "in"),
 ]
 
 # Words that are never entity candidates (common English words that happen to
@@ -278,6 +278,59 @@ def parse_question(
         alias_matched_ids=alias_matched,
         resolution_method=resolution_method,
     )
+
+
+def extract_metric_term(question: str) -> str | None:
+    """Extract the metric term a factual question is asking about.
+
+    Detects patterns like:
+        "What was the overall accuracy of ..."  → "accuracy"
+        "What was the precision of ..."          → "precision"
+        "What was the recall of ..."             → "recall"
+        "How many random distractors ..."         → "distractors"
+        "What was the all_required@64 result ..." → "all_required"
+        "What Rec@8 did ..."                     → "recall@8"
+
+    Returns the normalized metric key or None if no metric term detected.
+    """
+    q_lower = question.lower()
+
+    # ── @-notation metrics (all_required@64, Rec@8, etc.) ──
+    at_match = re.search(
+        r'(all_required|recall|rec|precision|prec|coverage|cov|f1)@(\d+)',
+        q_lower, re.IGNORECASE,
+    )
+    if at_match:
+        prefix = at_match.group(1).lower()
+        if prefix == "rec":
+            prefix = "recall"
+        elif prefix == "prec":
+            prefix = "precision"
+        elif prefix == "cov":
+            prefix = "coverage"
+        num = at_match.group(2)
+        return f"{prefix}@{num}"
+
+    # ── Explicit metric names ──
+    direct_metrics = [
+        "accuracy", "precision", "recall", "f1", "coverage",
+        "loss", "perplexity", "bleu", "rouge",
+    ]
+    for metric in direct_metrics:
+        if metric in q_lower:
+            return metric
+
+    # ── "how many" → count-related ──
+    if re.search(r'how\s+many', q_lower):
+        return "count"
+
+    # ── "number of" → count-related ──
+    if re.search(r'number\s+of\s+(\w+)', q_lower):
+        num_match = re.search(r'number\s+of\s+(\w+)', q_lower)
+        if num_match:
+            return num_match.group(1).rstrip('s')
+
+    return None
 
 
 # ── Convenience: scan all node names for substring matches ──

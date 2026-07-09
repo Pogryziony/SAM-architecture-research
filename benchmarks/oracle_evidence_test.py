@@ -85,6 +85,15 @@ def _flatten_evidence_pack(pack: dict[str, Any]) -> str:
         if bits:
             parts.append("; ".join(bits))
 
+    # Numbers by metric (grouped) - limit to most relevant entries
+    for metric_name, entries in pack.get("numbers_by_metric", {}).items():
+        # Only include the first 3 entries per metric to avoid bloat
+        for entry in entries[:3]:
+            entity = entry.get("entity", "")
+            value = entry.get("value", "")
+            if value:
+                parts.append(f"{entity}: {metric_name} = {value}")
+
     return "\n".join(parts)
 
 

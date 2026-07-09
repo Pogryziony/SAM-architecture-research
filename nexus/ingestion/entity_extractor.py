@@ -246,7 +246,9 @@ def _extract_metrics(text: str) -> dict[str, str]:
         metrics['k'] = m.group(1)
 
     # ── Pattern 9: Standalone percentages (e.g., "99.87%", "68.74%") ──
-    # Only capture if we haven't already tagged them with a named metric
+    # Only capture if we haven't already tagged them with a named metric.
+    # Try to find context keywords near the percentage rather than using
+    # "accuracy"/"metric_N" defaults which conflate unrelated numbers.
     standalone_pct = re.compile(r'(\d{1,3}(?:\.\d+)?)\s*%')
     unnamed_count = 0
     for m in standalone_pct.finditer(text):
@@ -255,7 +257,29 @@ def _extract_metrics(text: str) -> dict[str, str]:
         already_captured = any(v == f"{val_str}%" for v in metrics.values())
         if not already_captured:
             unnamed_count += 1
-            key = f"accuracy" if unnamed_count == 1 else f"metric_{unnamed_count}"
+            # Look at text BEFORE the percentage for context keywords
+            prefix_text = text[:m.start()].lower()
+            # Extract the last 80 chars for tight context
+            prefix_context = prefix_text[-80:] if len(prefix_text) > 80 else prefix_text
+            # Known metric sense words to try (ordered by specificity)
+            sense_words = [
+                "accuracy", "recall", "precision", "f1", "coverage",
+                "oracle", "core", "retrieved", "random", "baseline",
+                "text", "latent", "dual", "chain", "selector",
+            ]
+            # Find the nearest sense word in the prefix context
+            nearest_word = ""
+            nearest_pos = -1
+            for word in sense_words:
+                pos = prefix_context.rfind(word)
+                if pos > nearest_pos:
+                    nearest_pos = pos
+                    nearest_word = word
+            if nearest_word and nearest_pos >= 0:
+                key = f"{nearest_word}_{'accuracy' if nearest_word not in ('accuracy', 'recall', 'precision', 'f1', 'coverage') else ''}"
+                key = key.rstrip('_')
+            else:
+                key = f"value_{unnamed_count}"
             # Only add if this key isn't already taken
             if key not in metrics:
                 metrics[key] = f"{val_str}%"

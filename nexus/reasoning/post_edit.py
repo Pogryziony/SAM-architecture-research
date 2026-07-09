@@ -351,5 +351,16 @@ def _collect_evidence_numbers(evidence_pack: dict[str, Any]) -> set[float]:
     for n in evidence_pack.get("numbers", []):
         if isinstance(n, (int, float)):
             numbers.add(float(n))
+        elif isinstance(n, dict):
+            for k, v in n.items():
+                if k != "entity":
+                    numbers.update(_extract_numbers(str(v)))
+
+    # Also from numbers_by_metric (grouped)
+    for metric_name, entries in evidence_pack.get("numbers_by_metric", {}).items():
+        for entry in entries:
+            value = entry.get("value", "")
+            if value:
+                numbers.update(_extract_numbers(str(value)))
 
     return numbers

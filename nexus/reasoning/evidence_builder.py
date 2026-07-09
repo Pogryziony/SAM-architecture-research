@@ -437,21 +437,27 @@ def _resolve_target_entity_from_evidence(
     return best_match
 
 
-def _collect_numbers(
+def _collect_numbers_by_metric(
     paths: list[Path],
     graph: InMemoryGraphStore,
-) -> list[dict[str, Any]]:
-    """
-    Collect all structured metric→value pairs from all nodes in the evidence.
+) -> dict[str, list[dict[str, Any]]]:
+    """Collect all numbers grouped by metric name for easy lookup.
 
-    For each unique node across all paths, extracts the 'metrics' property
-    (if present) and returns a flat list of {entity, metric_name: value} entries.
+    Iterates over all unique nodes in the traversal paths. For each node:
+    - If it has a 'metrics' dict property, group each metric→value pair
+    - If it's a Metric-type node with 'name' and 'value' properties, include those too
+    - Also proactively follows derived_from edges to collect Metric nodes that
+      are connected to traversed experiment/run nodes but may not appear in
+      the top traversal paths.
 
-    This creates a machine-readable NUMBERS table that the prompt template
-    can render as simple key-value pairs for the model.
+    Returns a dict like:
+      {"accuracy": [{"entity": "Exp_0_6_Validation", "value": "99.87%"}],
+       "recall": [{"entity": "Exp_0_12_Selection", "value": "96.6%"}]}
     """
-    numbers: list[dict[str, Any]] = []
+    by_metric: dict[str, list[dict[str, Any]]] = {}
     seen_entities: set[str] = set()
+    # Track experiment/run node IDs to proactively collect their metric nodes
+    exp_node_ids: set[str] = set()
 
     for path in paths:
         for step in path.steps:
@@ -462,11 +468,196 @@ def _collect_numbers(
                 node = graph.get_node(node_id)
                 if node is None:
                     continue
+
+                # Track experiment/run nodes for proactive metric collection
+                if node.type == "Experiment":
+                    exp_node_ids.add(node_id)
+
+                # Case 1: node has a 'metrics' dict (e.g., experiment nodes)
+                metrics = node.properties.get("metrics")
+                if metrics and isinstance(metrics, dict):
+                    for key, value in metrics.items():
+                        if key not in by_metric:
+                            by_metric[key] = []
+                        by_metric[key].append({"entity": node_id, "value": str(value)})
+
+                # Case 2: Metric-type node with name/value properties
+                if node.type == "Metric":
+                    metric_name = node.properties.get("name")
+                    metric_value = node.properties.get("value")
+                    if metric_name and metric_value is not None:
+                        key = metric_name.lower().replace(" ", "_")
+                        if key not in by_metric:
+                            by_metric[key] = []
+                        unit = node.properties.get("unit", "")
+                        val = metric_value
+                        # Scale percentages: metrics.json stores 0.9158 for 91.58%
+                        if unit == "%" and isinstance(val, (int, float)):
+                            val = round(val * 100, 2)
+                        val_str = f"{val}{unit}"
+                        by_metric[key].append({"entity": node_id, "value": val_str})
+
+    # ── Proactive collection: follow derived_from edges to collect Metric nodes ──
+    # from experiment/run nodes that appeared in traversal paths.
+    for exp_id in exp_node_ids:
+        for edge in graph.get_edges(exp_id, "in"):
+            if edge.type != "derived_from":
+                continue
+            neighbor_id = edge.source  # derived_from source → target
+            if neighbor_id in seen_entities:
+                continue
+            seen_entities.add(neighbor_id)
+            neighbor = graph.get_node(neighbor_id)
+            if neighbor is None:
+                continue
+
+            # If the neighbor is a Metric node, collect it
+            if neighbor.type == "Metric":
+                metric_name = neighbor.properties.get("name")
+                metric_value = neighbor.properties.get("value")
+                if metric_name and metric_value is not None:
+                    key = metric_name.lower().replace(" ", "_")
+                    if key not in by_metric:
+                        by_metric[key] = []
+                    unit = neighbor.properties.get("unit", "")
+                    val = metric_value
+                    if unit == "%" and isinstance(val, (int, float)):
+                        val = round(val * 100, 2)
+                    val_str = f"{val}{unit}"
+                    by_metric[key].append({"entity": neighbor_id, "value": val_str})
+
+            # If the neighbor is a run node, also follow ITS incoming derived_from
+            # to find its metric children
+            if neighbor.type == "Experiment":
+                for inner_edge in graph.get_edges(neighbor_id, "in"):
+                    if inner_edge.type != "derived_from":
+                        continue
+                    inner_id = inner_edge.source
+                    if inner_id in seen_entities:
+                        continue
+                    seen_entities.add(inner_id)
+                    inner_node = graph.get_node(inner_id)
+                    if inner_node and inner_node.type == "Metric":
+                        m_name = inner_node.properties.get("name")
+                        m_value = inner_node.properties.get("value")
+                        if m_name and m_value is not None:
+                            key = m_name.lower().replace(" ", "_")
+                            if key not in by_metric:
+                                by_metric[key] = []
+                            unit = inner_node.properties.get("unit", "")
+                            val = m_value
+                            if unit == "%" and isinstance(val, (int, float)):
+                                val = round(val * 100, 2)
+                            val_str = f"{val}{unit}"
+                            by_metric[key].append({"entity": inner_id, "value": val_str})
+
+    return by_metric
+
+
+def _collect_numbers(
+    paths: list[Path],
+    graph: InMemoryGraphStore,
+) -> list[dict[str, Any]]:
+    """
+    Collect all structured metric→value pairs from all nodes in the evidence.
+
+    For each unique node across all paths, extracts the 'metrics' property
+    (if present) and returns a flat list of {entity, metric_name: value} entries.
+    Also proactively follows derived_from edges to collect Metric-type nodes.
+
+    This creates a machine-readable NUMBERS table that the prompt template
+    can render as simple key-value pairs for the model.
+    """
+    numbers: list[dict[str, Any]] = []
+    seen_entities: set[str] = set()
+    exp_node_ids: set[str] = set()
+
+    for path in paths:
+        for step in path.steps:
+            for node_id in (step.from_node, step.to_node):
+                if node_id in seen_entities:
+                    continue
+                seen_entities.add(node_id)
+                node = graph.get_node(node_id)
+                if node is None:
+                    continue
+
+                # Track experiment/run nodes for proactive metric collection
+                if node.type == "Experiment":
+                    exp_node_ids.add(node_id)
+
+                # Case 1: node has a 'metrics' dict (e.g., experiment nodes)
                 metrics = node.properties.get("metrics")
                 if metrics and isinstance(metrics, dict) and metrics:
                     entry: dict[str, Any] = {"entity": node_id}
                     entry.update(metrics)
                     numbers.append(entry)
+
+                # Case 2: Metric-type node with name/value properties
+                if node.type == "Metric":
+                    metric_name = node.properties.get("name")
+                    metric_value = node.properties.get("value")
+                    if metric_name and metric_value is not None:
+                        unit = node.properties.get("unit", "")
+                        val = metric_value
+                        if unit == "%" and isinstance(val, (int, float)):
+                            val = round(val * 100, 2)
+                        entry = {
+                            "entity": node_id,
+                            metric_name.lower().replace(" ", "_"): f"{val}{unit}",
+                        }
+                        numbers.append(entry)
+
+    # ── Proactive collection: follow derived_from edges to Metric nodes ──
+    for exp_id in exp_node_ids:
+        for edge in graph.get_edges(exp_id, "in"):
+            if edge.type != "derived_from":
+                continue
+            neighbor_id = edge.source
+            if neighbor_id in seen_entities:
+                continue
+            seen_entities.add(neighbor_id)
+            neighbor = graph.get_node(neighbor_id)
+            if neighbor is None:
+                continue
+
+            if neighbor.type == "Metric":
+                m_name = neighbor.properties.get("name")
+                m_value = neighbor.properties.get("value")
+                if m_name and m_value is not None:
+                    unit = neighbor.properties.get("unit", "")
+                    val = m_value
+                    if unit == "%" and isinstance(val, (int, float)):
+                        val = round(val * 100, 2)
+                    entry = {
+                        "entity": neighbor_id,
+                        m_name.lower().replace(" ", "_"): f"{val}{unit}",
+                    }
+                    numbers.append(entry)
+
+            # If neighbor is a run node, also collect its metric children
+            if neighbor.type == "Experiment":
+                for inner_edge in graph.get_edges(neighbor_id, "in"):
+                    if inner_edge.type != "derived_from":
+                        continue
+                    inner_id = inner_edge.source
+                    if inner_id in seen_entities:
+                        continue
+                    seen_entities.add(inner_id)
+                    inner_node = graph.get_node(inner_id)
+                    if inner_node and inner_node.type == "Metric":
+                        inner_name = inner_node.properties.get("name")
+                        inner_value = inner_node.properties.get("value")
+                        if inner_name and inner_value is not None:
+                            unit = inner_node.properties.get("unit", "")
+                            val = inner_value
+                            if unit == "%" and isinstance(val, (int, float)):
+                                val = round(val * 100, 2)
+                            entry = {
+                                "entity": inner_id,
+                                inner_name.lower().replace(" ", "_"): f"{val}{unit}",
+                            }
+                            numbers.append(entry)
 
     return numbers
 
@@ -580,6 +771,7 @@ def build_evidence(
         "facts": [],
         "sources": [],
         "numbers": [],
+        "numbers_by_metric": {},
         "neighbor_facts": [],
     }
 
@@ -632,6 +824,9 @@ def build_evidence(
 
     # ── NUMBERS section: flat, machine-readable table of all numbers ──
     evidence["numbers"] = _collect_numbers(paths, graph)
+
+    # ── NUMBERS_BY_METRIC: grouped by metric name for easy model lookup ──
+    evidence["numbers_by_metric"] = _collect_numbers_by_metric(paths, graph)
 
     # ── Neighbor key_findings: 1-hop neighbor facts for enriched context ──
     evidence["neighbor_facts"] = _collect_neighbor_key_findings(
