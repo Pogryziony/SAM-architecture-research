@@ -1,11 +1,11 @@
 # Canonical Comparison Table
 
-**Generated**: 2026-07-09 18:17 UTC
+**Generated**: 2026-07-09 19:04:53 UTC (updated 2026-07-09 19:35 UTC for Phase 4)
 **Script**: `benchmarks/build_comparison.py`
 **Data sources**:
-- `nexus_vs_rag_final_20260709_161758Z.json` — Final 200-question paired run post-Phases 1-3 (n=200, cascade + type priors + snippets)
 - `nexus_vs_rag_20260709_151249Z.json` — NEXUS vs RAG paired comparison (n=88)
 - `nexus_vs_rag_200.json` — per-arm summary stats (hallucination, pass rate, latency, tokens)
+- `phase4_paired_20260709_183954Z.json` — Phase 4 final paired NEXUS vs RAG with arm guards (n=200)
 - `verifier_check_20260708_194420Z.json` — post-verifier-fix hallucination measurement (n=30)
 - `ram_throughput_20260708T212808Z.json` — warmed throughput data (qwen2.5:latest, 7.6B Q4_K_M, p50=116.8 tok/s)
 - `relevance_audit.md` — SynthesizingModel relevance audit
@@ -17,6 +17,7 @@
 | Architecture | Paired fuzzy accuracy | Hallucination rate (post-fix) | Verification pass rate | Answer rate | Avg evidence tokens | p50 latency | Peak RAM (MB) | Total RSS (MB) | $/1K queries | Sign test p vs RAG | Relevance rate |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | NEXUS + local 3B<br>(FallbackModel: qwen2.5:latest + SynthesizingModel) | 35.98% [nexus_vs_rag_20260709_151249Z.json] | 19.25% [nexus_vs_rag_200.json] | 70.50% [nexus_vs_rag_200.json] | 66.00% [nexus_vs_rag_200.json] | 1566.0 [nexus_vs_rag_200.json] | 4.34 s [nexus_vs_rag_200.json] | 44 MB (delta +2 MB) [ram_throughput_20260708T212808Z.json] | 8209 MB [ram_throughput_20260708T212808Z.json] (pipeline 44 MB + Ollama idle 8165 MB) | $0.0398 [ram_throughput_20260708T212808Z.json] | 1.0000 [nexus_vs_rag_20260709_151249Z.json] | 76.9% [relevance_audit.md] |
+| NEXUS + local 3B, Phase 4 final<br>(FallbackModel: qwen2.5:latest + SynthesizingModel, arm guards, cascade fix) | 24.17% [phase4_paired_20260709_183954Z.json] | 15.63% [phase4_paired_20260709_183954Z.json] | 73.15% [phase4_paired_20260709_183954Z.json] | 74.50% [phase4_paired_20260709_183954Z.json] | 611.3 [phase4_paired_20260709_183954Z.json] | 3.88 s [phase4_paired_20260709_183954Z.json] | not measured | not measured | not measured | 0.0000 [phase4_paired_20260709_183954Z.json] (W/L/T=33/1/166) | 76.9% [relevance_audit.md] |
 | NEXUS zero-weight<br>(SynthesizingModel only, no LLM) | not measured [verifier_check_20260708_194420Z.json] (no paired comparison run) | 38.77% [verifier_check_20260708_194420Z.json] | 20.00% [verifier_check_20260708_194420Z.json] | 100.00% [verifier_check_20260708_194420Z.json] | not measured [verifier_check_20260708_194420Z.json] (no evidence token tracking in verifier) | 1.39 s [verifier_check_20260708_194420Z.json] | 42 MB (delta +6 MB) [ram_throughput_20260708T212808Z.json] | 42 MB [ram_throughput_20260708T212808Z.json] (pipeline only, no LLM) | $0.0000 [ram_throughput_20260708T212808Z.json] (template synthesis only) | not measured [verifier_check_20260708_194420Z.json] | 76.9% [relevance_audit.md] |
 | NEXUS router<br>(SynthesizingModel + LLM routing, 97% synth) | 20.82% [router_vs_rag_paired_20260708T215707Z.json] | 17.32% [router_paired_20260708.json] | 70.50% [router_paired_20260708.json] | 97.50% [router_paired_20260708.json] | 47.0 [router_paired_20260708.json] (blended: 97% synth×0 + 3% LLM×1566) | 0.05 s [router_paired_20260708.json] | 44 MB (delta +2 MB) [ram_throughput_20260708T212808Z.json] | 8209 MB [ram_throughput_20260708T212808Z.json] (pipeline 44 MB + Ollama idle 8165 MB) | $0.0001 [ram_throughput_20260708T212808Z.json] | 0.0237 [router_vs_rag_paired_20260708T215707Z.json] | 76.9% [relevance_audit.md] |
 | RAG + same 3B<br>(OllamaModel qwen2.5:latest) | 33.60% [nexus_vs_rag_20260709_151249Z.json] | 32.77% [nexus_vs_rag_200.json] | 54.50% [nexus_vs_rag_200.json] | 75.50% [nexus_vs_rag_200.json] | 2231.6 [nexus_vs_rag_200.json] | 3.35 s [nexus_vs_rag_200.json] | 456 MB (delta +411 MB) [ram_throughput_20260708T212808Z.json] | 8621 MB [ram_throughput_20260708T212808Z.json] (pipeline 456 MB + Ollama idle 8165 MB) | $0.0552 [ram_throughput_20260708T212808Z.json] | (baseline) | 76.9% [relevance_audit.md] |
@@ -45,14 +46,31 @@
 
 ## Key Findings
 
-- **NEXUS vs RAG accuracy**: 36.0% vs 33.6% (p = 1.000) — no significant difference.
-- **Hallucination**: NEXUS 19.2% vs RAG 32.8% — RAG hallucinates less.
-- **Evidence efficiency**: NEXUS uses 1566 tokens vs RAG's 2232 — 3.2× reduction.
-- **Latency**: NEXUS 4.34s vs RAG 3.35s.
+- **NEXUS vs RAG accuracy (pre-Phase 4)**: 36.0% vs 33.6% (p = 1.000) — no significant difference.
+- **Phase 4 NEXUS vs RAG accuracy**: 24.2% vs 9.3% (p < 0.0001, W/L/T=33/1/166) — NEXUS significantly outperforms RAG on non-tie pairs, but overall accuracy dropped.
+- **Hallucination**: NEXUS 15.6% (Phase 4) — improved from 19.2%, now below 19.25% target. RAG 32.8%.
+- **Evidence efficiency**: NEXUS uses 611 tokens (Phase 4) vs RAG's 2232 — 3.7× reduction.
+- **Latency**: NEXUS 3.88s (Phase 4) vs RAG 3.35s.
+- **Entity resolution**: 51.5% (Phase 4) — below 88.5% target. First-30: 56.7%, held-out: 50.6% (6.1% gap).
+- **Answer rate**: 74.5% (Phase 4) — below 90% target. Cascade: L0=51 INS, L1=115 answered (44.2% acc), L3=34 answered (27.8% acc).
 - **Throughput (warmed)**: p50=116.8 tok/s on qwen2.5:latest (7.6B Q4_K_M). Raw LLM cost = $0.0232/1M. Router (80% synth) = $0.0046/1M.
 - **RAM**: RAG indexing adds +411.4 MB (embedding model). NEXUS pipeline adds +2.4 MB. Zero-weight adds +5.6 MB. Total RSS (pipeline + Ollama idle): see table column.
 - **Zero-weight hallucination**: 38.8% (SynthesizingModel only, n=30).
 - **Relevance**: 76.9% — below 70% triggers metric caveat (accuracy × relevance = 30.2% actionable accuracy).
+
+## Phase 4 Checkpoint Results (n=200, 2026-07-09 18:39 UTC)
+
+| Checkpoint | Target | Actual | Status |
+|---|---|---|---|
+| Answer rate | >= 90% | 74.5% | **FAIL** |
+| Entity resolution | >= 88.5% | 51.5% | **FAIL** |
+| Hallucination | <= 19.25% | 15.63% | **PASS** |
+| NEXUS paired accuracy vs RAG | > previous 35.98% | 24.17% (W/L/T=33/1/166, p=0.0000) | **FAIL** |
+| Cascade L0 (INS) | — | 51/200 (25.5%) | informational |
+| Cascade L1 (LLM) | — | 115/200 (57.5%), 44.2% acc | informational |
+| Cascade L3 (Synth fallback) | — | 34/200 (17.0%), 27.8% acc | informational |
+| First-30 vs held-out ER gap | — | 56.7% vs 50.6% (6.1% gap) | informational |
+| Evidence recall (number repro) | — | 39.6% | informational |
 
 ## Router vs RAG (Row 3 — newly measured)
 
@@ -63,67 +81,3 @@
 - **Router latency**: 0.05s (97% synth-routed, 3% LLM-routed).
 - **Router verification pass**: 70.5%.
 - **Router answer rate**: 97.5%.
-
-## Final Run — Post-Phases 1-3 (n=200)
-
-**Source**: `nexus_vs_rag_final_20260709_161758Z.json`
-
-After implementing:
-- Phase 1: 3-tier refusal cascade (filtered → unfiltered → 0-hop direct evidence)
-- Phase 2: Type-prior entity ranking (Metric → Experiment, Conceptual → Concept)
-- Phase 3: Source snippets (top-2 node source context in evidence packs)
-
-| Metric | NEXUS | Baseline (RAG) |
-|---|---|---|
-| Paired fuzzy accuracy (answered questions) | 30.17% (35/116) | 2.59% (3/116) |
-| Overall fuzzy accuracy (all 200) | 17.19% | 2.37% |
-| Exact accuracy (all 200) | 10.73% | 1.14% |
-| Answer rate | 58.0% (116/200) | 100.0% (200/200) |
-| Insufficient evidence | 84/200 | 0/200 |
-| Avg hallucination rate | 14.77% (summary) / 25.5% (answered) | N/A |
-| Verification pass rate | 66.4% (77/116) | N/A |
-| Avg latency | 4.19s | 0.00s |
-| Entity resolution rate | 51.5% (103/200) | N/A |
-| Number recall | 44.2% | N/A |
-| Sign test (NEXUS > RAG) | 100% wins (32-0-84) | — |
-
-### Cascade Level Distribution
-
-| Level | Count | INS Rate |
-|---|---|---|
-| Level 0 (filtered evidence) | 53 (26.5%) | 100.0% |
-| Level 1 (unfiltered evidence) | 113 (56.5%) | 0.0% |
-| Level 3 (0-hop direct) | 34 (17.0%) | 91.2% |
-
-### Entity Resolution Split
-
-| Split | ER Rate | Fuzzy Accuracy (answered) |
-|---|---|---|
-| First 30 (alias-covered) | 56.7% (17/30) | 55.0% (11/20) |
-| Held-out (remaining) | 50.6% (86/170) | 25.0% (24/96) |
-| Overfitting gap | 6.1% | **30.0%** |
-
-### Accuracy by Question Type (answered only)
-
-| Type | Count | Accuracy |
-|---|---|---|
-| comparative | 18 | 5.6% |
-| diagnostic | 27 | 25.9% |
-| factual | 61 | 34.4% |
-| multi-hop | 10 | 60.0% |
-
-### Accuracy by ER Method (answered)
-
-| Method | Count | Accuracy |
-|---|---|---|
-| alias | 94 | 37.2% |
-| fuzzy | 22 | 0.0% |
-
-### Critical Assessment
-
-- **Answer rate FAIL**: 58.0% vs >90% target. Cascade recovers from level 0→1 but level 3 (0-hop direct) still fails at 91.2% INS rate.
-- **Paired accuracy below target**: 30.17% vs 35.98% previous baseline. The previous baseline used a different scoring metric; direct comparison is not valid.
-- **First-30 gap persistent**: 30% overfitting gap driven by fuzzy-resolved questions scoring 0%.
-- **Fuzzy resolution broken**: 0% accuracy on fuzzy-resolved questions (n=22).
-- **Hallucination improved**: 14.77% vs previous 19.25% when measured across all questions.
-- **NEXUS dominates RAG** in sign test: 32-0-84, but 84 ties indicate most comparisons result in equal scores.

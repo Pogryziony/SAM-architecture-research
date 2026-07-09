@@ -1,6 +1,10 @@
 # Benchmarks Results Index
 
-*Auto-generated 2026-07-08 21:59 UTC from 9 result files.*
+*Auto-generated 2026-07-08 21:59 UTC from 9 result files. Updated 2026-07-09 19:35 UTC for Phase 4.*
+
+| File | Date (UTC) | Size | Key Metrics | Command to Reproduce |
+|---|---|---|---|---|
+| `phase4_paired_20260709_183954Z.json` | 2026-07-09 18:39 UTC | — | N=200, NEXUS=24.17%, RAG=9.25%, W/L/T=33/1/166, p=0.0000, answer_rate=74.5%, ER=51.5%, hall=15.63%, cascade L0=51/L1=115/L3=34 | `python benchmarks/run_benchmark.py --limit 200 --arm-rag rag_retrieval --output benchmarks/results/phase4_paired_20260709_183954Z.json` |
 
 | File | Date (UTC) | Size | Key Metrics | Command to Reproduce |
 |---|---|---|---|---|
