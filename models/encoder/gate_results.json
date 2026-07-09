@@ -1,0 +1,88 @@
+{
+  "baseline": {
+    "entity_accuracy": 0.18607068607068608,
+    "resolution_rate": 1.0,
+    "total_questions": 225,
+    "total_resolved_entities": 962
+  },
+  "encoder": {
+    "entity_accuracy": 0.19091847265221878,
+    "resolution_rate": 1.0,
+    "intent_accuracy": 0.6533333333333333,
+    "encoder_precision": 0.6593406593406593,
+    "encoder_resolution_rate": 0.37333333333333335,
+    "inference_p50_ms": 0.31399999716086313,
+    "inference_p90_ms": 0.46319999819388613,
+    "total_questions": 225,
+    "total_resolved_entities": 969,
+    "total_correct_entities": 185,
+    "total_gt_entities": 275
+  },
+  "paraphrase": {
+    "original_entity_accuracy": 0.3333333333333333,
+    "paraphrase_entity_accuracy": 0.23333333333333334,
+    "drop_pp": 9.999999999999998,
+    "num_pairs": 30,
+    "drops_list": [
+      0.0,
+      -1.0,
+      -1.0,
+      0.0,
+      1.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      1.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.5,
+      -1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      -0.5,
+      0.0
+    ]
+  },
+  "gates": {
+    "entity_accuracy": {
+      "passed": true,
+      "detail": "65.9% >= 65%"
+    },
+    "resolution_rate": {
+      "passed": true,
+      "detail": "100.0% >= 100.0%"
+    },
+    "paraphrase_drop": {
+      "passed": true,
+      "detail": "10.0 pp < 10 pp"
+    },
+    "intent_accuracy": {
+      "passed": false,
+      "detail": "65.3% >= 85%"
+    },
+    "rss_delta": {
+      "passed": true,
+      "detail": "3.8 MB <= 150 MB"
+    },
+    "inference_p50": {
+      "passed": true,
+      "detail": "0.3 ms <= 50 ms"
+    }
+  },
+  "all_pass": false,
+  "rss_delta_mb": 3.75390625,
+  "param_count": 166045
+}
