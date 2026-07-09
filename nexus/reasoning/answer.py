@@ -140,6 +140,7 @@ def answer_question(
     max_paths: int = 7,
     config: NEXUSConfig = DEFAULT_CONFIG,
     embedding_index=None,
+    dialogue_state=None,
 ) -> dict[str, Any]:
     """
     Run the complete NEXUS pipeline on a natural language question.
@@ -163,6 +164,7 @@ def answer_question(
        config: NEXUSConfig with tunable parameters
        embedding_index: Optional NodeEmbeddingIndex for semantic entity resolution.
            Auto-creates and builds from graph if None and needed.
+       dialogue_state: Optional DialogueState for anaphora/ellipsis resolution (Stage 3).
 
     Returns:
        Dict with keys:
@@ -213,7 +215,8 @@ def answer_question(
     # ── Step 1: Parse ──
     t0 = time.perf_counter()
     parsed = parse_question(question, graph, cutoff=0.6, config=config,
-                            embedding_index=embedding_index)
+                            embedding_index=embedding_index,
+                            dialogue_state=dialogue_state)
     timing["parse_time"] = round(time.perf_counter() - t0, 6)
 
     result["parsed_query"] = parsed

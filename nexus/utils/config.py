@@ -112,5 +112,13 @@ class NEXUSConfig:
     enable_normalization: bool = False
     enable_associative_encoder: bool = False
 
+    # ── Stage 3 dialogue state ──
+    # dialogue_decay: Multiplicative decay factor applied each turn to entity
+    #   activations in the dialogue state (0.0–1.0). Lower = faster forgetting.
+    # dialogue_boost: Additive boost applied to entity ranking scores when the
+    #   entity is active in the dialogue state. Helps resolve anaphora/ellipsis.
+    dialogue_decay: float = 0.7
+    dialogue_boost: float = 1.0
+
 
 DEFAULT_CONFIG = NEXUSConfig()

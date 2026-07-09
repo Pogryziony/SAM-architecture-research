@@ -223,6 +223,7 @@ def parse_question(
     config: NEXUSConfig = DEFAULT_CONFIG,
     embedding_index=None,
     encoder_model=None,
+    dialogue_state=None,
 ) -> ParsedQuery:
     """
     Parse a natural language question into structured query intent.
@@ -234,6 +235,7 @@ def parse_question(
         config: NEXUSConfig with tunable parameters
         embedding_index: Optional NodeEmbeddingIndex for semantic entity resolution
         encoder_model: Optional EncoderLoader for associative encoder (Stage 1)
+        dialogue_state: Optional DialogueState for anaphora/ellipsis resolution (Stage 3)
 
     Returns:
         ParsedQuery with resolved entity IDs, intent, and direction
@@ -360,10 +362,30 @@ def parse_question(
     if encoder_scores:
         embedding_scores.update(encoder_scores)
 
+    # ── Stage 3: Dialogue state integration ──
+    # When dialogue_state is active, consult active entities BEFORE global search.
+    # Pronouns ("it", "this", "that") trigger reference resolution against state.
+    # Active entities get a boost in _rank_entities (dialogue_boost).
+    dialogue_active_ids: set[str] = set()
+    if dialogue_state is not None:
+        # Check for pronoun/definite references
+        if dialogue_state.has_references(question):
+            from stack.dialogue.state import _detect_pronouns
+            refs = _detect_pronouns(question)
+            for ref in refs:
+                resolved = dialogue_state.resolve_reference(ref, graph)
+                if resolved and resolved not in existing_set:
+                    entity_ids.insert(0, resolved)
+                    existing_set.add(resolved)
+        
+        # Get active entity IDs for ranking boost
+        dialogue_active_ids = dialogue_state.get_active_entity_ids()
+
     entity_ids = _rank_entities(graph, entity_ids, question=question,
                                 keyword_scores=keyword_scores, wb_matched=wb_matched,
                                 alias_matched=alias_matched, config=config,
-                                embedding_scores=embedding_scores)
+                                embedding_scores=embedding_scores,
+                                dialogue_active_ids=dialogue_active_ids)
 
     # ── Determine resolution method ──
     if not entity_ids:
@@ -642,6 +664,7 @@ def _rank_entities(
     alias_matched: set[str] | None = None,
     config: NEXUSConfig = DEFAULT_CONFIG,
     embedding_scores: dict[str, float] | None = None,
+    dialogue_active_ids: set[str] | None = None,
 ) -> list[str]:
     """
     Rank entity IDs by quality and return the top candidates (capped).
@@ -652,21 +675,22 @@ def _rank_entities(
     **Tier 1 — base_score determines acceptance (inclusion under cap):**
       1. **Alias match**: question contains a phrase mapped to this entity (+config.alias_match_boost)
       2. **Embedding match**: semantic similarity via embedding index (+config.embedding_match_boost)
-      3. **Keyword match count** (from property token index): +5.0 per match (≥3 tokens)
+      3. **Dialogue boost**: entity is active in dialogue state (+config.dialogue_boost * activation)
+      4. **Keyword match count** (from property token index): +5.0 per match (≥3 tokens)
          or +0.5 per match (<3 tokens)
-      4. **Type priority**: from config.type_priority (lower = higher priority)
-      5. **Contextual type boost**: keywords in question boost relevant types (+0.10–0.15)
-      6. **Key-finding text match**: question words in key_finding/description (+config.property_keyword_boost)
-      7. **Curated node boost**: nodes with key_finding property (+config.curated_node_boost)
-      8. **Word-boundary match**: exact segment match beats fuzzy (+config.word_boundary_boost)
-      9. **Sub-run penalty**: deprioritize _top, _weighted, _baseline nodes (config.sub_run_penalty)
+      5. **Type priority**: from config.type_priority (lower = higher priority)
+      6. **Contextual type boost**: keywords in question boost relevant types (+0.10–0.15)
+      7. **Key-finding text match**: question words in key_finding/description (+config.property_keyword_boost)
+      8. **Curated node boost**: nodes with key_finding property (+config.curated_node_boost)
+      9. **Word-boundary match**: exact segment match beats fuzzy (+config.word_boundary_boost)
+     10. **Sub-run penalty**: deprioritize _top, _weighted, _baseline nodes (config.sub_run_penalty)
          unless the question mentions ranking/topK/weights
 
     **Tier 2 — tie-breakers (affect ordering within same base_score):**
-     10. **Intent-conditioned type prior**: metric questions → +boost for Experiment/Metric;
+     11. **Intent-conditioned type prior**: metric questions → +boost for Experiment/Metric;
          concept questions → +boost for Concept/Decision (config.type_prior_boost)
          — TIE-BREAKER ONLY: cannot push an entity above the cap over one with higher base_score
-     11. **Name length**: longer-span matches beat shorter ones
+     12. **Name length**: longer-span matches beat shorter ones
 
     **Final: Cap at config.max_entry_nodes entry nodes**
 
@@ -680,6 +704,8 @@ def _rank_entities(
         alias_matched = set()
     if embedding_scores is None:
         embedding_scores = {}
+    if dialogue_active_ids is None:
+        dialogue_active_ids = set()
     if not entity_ids:
         return []
 
@@ -730,6 +756,10 @@ def _rank_entities(
         # Weaker than alias but stronger than keyword/text matching.
         emb_boost = config.embedding_match_boost if eid in embedding_scores else 0.0
 
+        # Dialogue boost: entity is active in dialogue state from prior turns.
+        # Helps resolve anaphora/ellipsis by preferring recently-discussed entities.
+        dialogue_boost_val = config.dialogue_boost if eid in dialogue_active_ids else 0.0
+
         # Keyword match boost: proportional to token match count.
         kw_count = keyword_scores.get(eid, 0)
         kw_boost = kw_count * 5.0 if kw_count >= 3 else kw_count * 0.5
@@ -753,7 +783,7 @@ def _rank_entities(
         # Base score: all ranking signals *except* type_prior.
         # This determines acceptance into the max_entry_nodes cap.
         base_score = (
-            alias_boost + emb_boost + kw_boost + base_type_prio + ctx_boost + prop_boost
+            alias_boost + emb_boost + dialogue_boost_val + kw_boost + base_type_prio + ctx_boost + prop_boost
             + curated_boost + wb_boost + sub_run_penalty
         )
         name_len = (len(eid) if eid else 0) * 2
