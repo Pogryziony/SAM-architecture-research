@@ -428,6 +428,30 @@ def run_nexus_pipeline(
     prompt_tokens = _count_tokens(prompt_text)
     completion_tokens = _count_tokens(answer)
 
+    # Extract evidence facts for oracle test
+    evidence_raw = ""
+    evidence_pack = result.get("evidence_pack", {})
+    if evidence_pack:
+        # Flatten evidence_pack to text for fact extraction
+        node_facts = evidence_pack.get("node_facts", [])
+        facts = evidence_pack.get("facts", [])
+        neighbor_facts = evidence_pack.get("neighbor_facts", [])
+        numbers = evidence_pack.get("numbers", [])
+        
+        # Concatenate all evidence texts
+        evidence_texts = []
+        for nf in node_facts:
+            evidence_texts.append(nf.get("text", ""))
+        for f in facts:
+            evidence_texts.append(f)
+        for nf in neighbor_facts:
+            evidence_texts.append(nf.get("text", ""))
+        for num_entry in numbers:
+            num_entry_str = "; ".join(f"{k}: {v}" for k, v in num_entry.items() if k != "entity")
+            if num_entry_str:
+                evidence_texts.append(num_entry_str)
+        evidence_raw = " ".join(evidence_texts)
+
     return {
         "answer": answer,
         "passed": passed,
@@ -446,6 +470,7 @@ def run_nexus_pipeline(
             result["parsed_query"].entity_ids if result.get("parsed_query") else []
         ),
         "post_edit_changes": result.get("post_edit_changes"),
+        "evidence_raw": evidence_raw,
     }
 
 

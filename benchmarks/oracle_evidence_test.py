@@ -49,6 +49,45 @@ def _count_tokens(text: str) -> int:
     return len(text.split())
 
 
+def _flatten_evidence_pack(pack: dict[str, Any]) -> str:
+    """Flatten evidence_pack dict to a single text string for fact extraction.
+
+    Produces a human-readable representation suitable for prompt injection
+    and key-fact matching against ground truth.
+    """
+    if not pack:
+        return ""
+    parts: list[str] = []
+
+    # Node facts (curated key_findings/descriptions)
+    for nf in pack.get("node_facts", []):
+        text = nf.get("text", "") if isinstance(nf, dict) else str(nf)
+        if text.strip():
+            parts.append(text.strip())
+
+    # Edge-based facts
+    for f in pack.get("facts", []):
+        if isinstance(f, str) and f.strip():
+            parts.append(f.strip())
+
+    # Neighbor key_findings
+    for nf in pack.get("neighbor_facts", []):
+        text = nf.get("text", "") if isinstance(nf, dict) else str(nf)
+        if text.strip():
+            parts.append(text.strip())
+
+    # Numbers section
+    for num_entry in pack.get("numbers", []):
+        bits = []
+        for k, v in num_entry.items():
+            if k not in ("entity", "source") and v is not None:
+                bits.append(f"{k}: {v}")
+        if bits:
+            parts.append("; ".join(bits))
+
+    return "\n".join(parts)
+
+
 def run_oracle_evidence_test(
     limit: int = 30,
     output_path: str = "benchmarks/results/oracle_evidence_test.json",
@@ -110,7 +149,9 @@ def run_oracle_evidence_test(
             baseline_latency = time.perf_counter() - t0
             
             baseline_answer = baseline_result.get("answer", "")
-            baseline_evidence = baseline_result.get("evidence", "")
+            baseline_path_count = baseline_result.get("path_count", 0)
+            evidence_pack = baseline_result.get("evidence_pack", {})
+            baseline_evidence = _flatten_evidence_pack(evidence_pack)
             baseline_accuracy = compute_key_fact_score(baseline_answer, ground_truth)
             
         except Exception as exc:
@@ -146,10 +187,13 @@ def run_oracle_evidence_test(
         evidence_recall_denominator = len(gt_facts)
         evidence_recall = evidence_recall_numerator / evidence_recall_denominator if evidence_recall_denominator > 0 else 0.0
         
-        # Step 4: Inject GT fact into evidence pack
+        # Step 4: Inject GT fact INTO the real evidence (not replacing it)
         # Pick one GT fact to inject (the first one for consistency)
         gt_fact_to_inject = sorted(gt_facts)[0] if gt_facts else ""
-        oracle_evidence = baseline_evidence + f"\n- (ORACLE INJECTED) {gt_fact_to_inject}"
+        if baseline_evidence:
+            oracle_evidence = baseline_evidence + f"\n- (ORACLE INJECTED) {gt_fact_to_inject}"
+        else:
+            oracle_evidence = f"- (ORACLE INJECTED) {gt_fact_to_inject}"
         
         # Step 5a: Rerun LLM with oracle evidence
         try:
@@ -200,6 +244,8 @@ def run_oracle_evidence_test(
             "evidence_recall": round(evidence_recall, 4),
             "evidence_recall_num": evidence_recall_numerator,
             "evidence_recall_den": evidence_recall_denominator,
+            "path_count": baseline_path_count,
+            "evidence_tokens": _count_tokens(baseline_evidence),
             "baseline_answer": baseline_answer,
             "baseline_accuracy": round(baseline_acc_score, 4) if baseline_acc_score is not None else None,
             "baseline_latency_s": round(baseline_latency, 4),
@@ -238,6 +284,9 @@ def run_oracle_evidence_test(
     
     def avg(lst):
         return sum(lst) / len(lst) if lst else 0.0
+
+    path_counts = [r.get("path_count", 0) for r in valid_results]
+    evidence_token_counts = [r.get("evidence_tokens", 0) for r in valid_results]
     
     summary = {
         "total_questions": total,
@@ -273,6 +322,16 @@ def run_oracle_evidence_test(
             "min": round(min(evidence_recalls), 4) if evidence_recalls else None,
             "max": round(max(evidence_recalls), 4) if evidence_recalls else None,
         },
+        "path_count": {
+            "mean": round(avg(path_counts), 1),
+            "total_zero": sum(1 for p in path_counts if p == 0),
+            "total_nonzero": sum(1 for p in path_counts if p > 0),
+        },
+        "evidence_tokens": {
+            "mean": round(avg(evidence_token_counts), 1),
+            "min": round(min(evidence_token_counts)) if evidence_token_counts else None,
+            "max": round(max(evidence_token_counts)) if evidence_token_counts else None,
+        },
         "oracle_ceiling": round(avg(oracle_llm_accs), 4) if oracle_llm_accs else None,
         "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
     }
@@ -303,6 +362,17 @@ def run_oracle_evidence_test(
     print("EVIDENCE RECALL (GT facts present in baseline evidence pack):")
     print(f"  Mean recall: {summary['evidence_recall']['mean']:.2%}")
     print(f"  Min / Max: {summary['evidence_recall']['min']:.2%} / {summary['evidence_recall']['max']:.2%}")
+    print()
+
+    print("GRAPH TRAVERSAL:")
+    print(f"  Mean paths: {summary['path_count']['mean']:.1f}")
+    print(f"  Questions with 0 paths: {summary['path_count']['total_zero']}")
+    print(f"  Questions with paths: {summary['path_count']['total_nonzero']}")
+    print()
+
+    print("EVIDENCE SIZE:")
+    print(f"  Mean tokens: {summary['evidence_tokens']['mean']:.0f}")
+    print(f"  Min / Max: {summary['evidence_tokens']['min']} / {summary['evidence_tokens']['max']}")
     print()
     
     # Decision gate
