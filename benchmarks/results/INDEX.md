@@ -13,3 +13,4 @@
 | `synth_after_fix.json` | 2026-07-08 20:22 UTC | 92 KB | questions=30, nodes=1870, edges=562, model=FallbackModel(SynthesizingModel + SynthesizingModel), limit=30 | `python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results.json` |
 | `verifier_calibrated_20260708_232220.json` | 2026-07-08 21:22 UTC | 10 KB | results=30 | `python benchmarks/verifier_check.py` |
 | `verifier_check_20260708_194420Z.json` | 2026-07-08 19:47 UTC | 90 KB | questions=30, nodes=1855, edges=563, model=OllamaModel(qwen2.5-coder:3b), limit=30 | `python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results.json` |
+| 2026-07-09 15:12:49 UTC | `nexus_vs_rag_20260709_151249Z.json` | `python benchmarks/regenerate_comparison.py` | N=88, NEXUS=35.98%, RAG=33.60%, W/L/T=15/15/58, p=1.0 |

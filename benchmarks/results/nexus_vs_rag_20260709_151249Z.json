@@ -1,57 +1,47 @@
 {
-  "config": {
-    "limit": 200,
-    "model_label": "qwen2.5:latest",
-    "nexus_model": "FallbackModel(OllamaModel(qwen2.5:latest) + SynthesizingModel)",
-    "rag_model": "OllamaModel",
-    "verification_threshold": 0.2,
-    "chunk_size_tokens": 500,
-    "chunk_overlap": 100,
-    "top_k_chunks": 5,
-    "embedding_model": "all-MiniLM-L6-v2",
-    "rag_corpus_dirs": [
-      "C:\\Users\\Pogry\\Projects\\SAM-architecture-research\\sam-lm\\docs",
-      "C:\\Users\\Pogry\\Projects\\SAM-architecture-research\\sam-lm\\experiments"
-    ],
-    "rag_chunk_count": 90
-  },
-  "graph_provenance": {
-    "node_count": 1866,
-    "edge_count": 2107,
-    "timestamp": "2026-07-09T14:47:02.033536+00:00"
-  },
-  "summary": {
-    "total_questions": 200,
-    "scorable_questions": 141,
+  "generated_at": "2026-07-09T15:12:49.964035+00:00",
+  "source_file": "benchmarks\\results\\nexus_vs_rag_paired_20260709_144656Z.json",
+  "scorer": "benchmarks.scoring.compute_fact_score (unified)",
+  "total_questions": 200,
+  "comparison": {
+    "comparison_type": "PAIRED (both arms scorable)",
+    "paired_n": 88,
     "nexus": {
-      "errors": 0,
-      "answered": 132,
-      "insufficient_evidence": 68,
-      "answer_rate": 0.66,
-      "verification_passed": 141,
-      "verification_pass_rate": 0.705,
-      "avg_hallucination_rate": 0.1925,
-      "avg_latency_s": 4.3408,
-      "avg_paths_found": 4.18,
-      "avg_accuracy": 0.2246,
-      "avg_evidence_tokens": 1566.0
+      "mean_accuracy": 0.3598,
+      "n": 88,
+      "label": "NEXUS"
     },
     "rag": {
-      "errors": 0,
-      "answered": 151,
-      "insufficient_evidence": 49,
-      "answer_rate": 0.755,
-      "verification_passed": 109,
-      "verification_pass_rate": 0.545,
-      "avg_hallucination_rate": 0.3277,
-      "avg_latency_s": 3.3465,
-      "avg_accuracy": 0.2424,
-      "avg_evidence_tokens": 2231.6
+      "mean_accuracy": 0.336,
+      "n": 88,
+      "label": "RAG"
     },
-    "entity_resolution": {
-      "hits": 177,
-      "total": 200,
-      "rate": 0.885
+    "win_loss_tie": {
+      "NEXUS_wins": 15,
+      "RAG_wins": 15,
+      "ties": 58
+    },
+    "sign_test_p": 1.0,
+    "sign_test_detail": {
+      "test": "two-sided sign test (exact binomial)",
+      "n_discordant": 30,
+      "arm_a_wins": 15,
+      "arm_b_wins": 15,
+      "ties": 58,
+      "p_value": 1.0
+    },
+    "secondary_unpaired": {
+      "label": "SECONDARY -- unpaired stats (excluded from primary comparison)",
+      "total_questions": 200,
+      "both_none": 112,
+      "nexus_only_scored": {
+        "n": 0,
+        "mean_accuracy": null
+      },
+      "rag_only_scored": {
+        "n": 0,
+        "mean_accuracy": null
+      }
     }
   },
   "results": [
@@ -3395,15 +3385,15 @@
         "gt_entity_ids": [
           "Exp_0_13A_NoisyMemory"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -3924,15 +3914,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -3984,15 +3974,15 @@
           }
         ],
         "evidence_tokens": 1843,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -4130,15 +4120,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -4190,15 +4180,15 @@
           }
         ],
         "evidence_tokens": 2244,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -4336,15 +4326,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -4396,15 +4386,15 @@
           }
         ],
         "evidence_tokens": 2102,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -4551,15 +4541,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -4611,15 +4601,15 @@
           }
         ],
         "evidence_tokens": 2128,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -5034,15 +5024,15 @@
           }
         ],
         "evidence_tokens": 2241,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -5077,15 +5067,15 @@
         "gt_entity_ids": [
           "Exp_0_6_Validation"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -5183,15 +5173,15 @@
           "Exp_0_11_ChainRetrieval",
           "Exp_0_13A_NoisyMemory"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -5914,15 +5904,15 @@
           }
         ],
         "evidence_tokens": 2307,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -6378,15 +6368,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -6438,15 +6428,15 @@
           }
         ],
         "evidence_tokens": 2400,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -6481,15 +6471,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -7012,15 +7002,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -7072,15 +7062,15 @@
           }
         ],
         "evidence_tokens": 1850,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -7218,15 +7208,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -7278,15 +7268,15 @@
           }
         ],
         "evidence_tokens": 2043,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -7321,15 +7311,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -7381,15 +7371,15 @@
           }
         ],
         "evidence_tokens": 1850,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -7642,15 +7632,15 @@
         "gt_entity_ids": [
           "Exp_0_12_Selection"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -8295,15 +8285,15 @@
         "gt_entity_ids": [
           "Exp_0_13A_NoisyMemory"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -8398,15 +8388,15 @@
         "gt_entity_ids": [
           "Exp_0_8_Aggregation"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -8604,15 +8594,15 @@
         "gt_entity_ids": [
           "Exp_0_9_OracleFilter"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -8664,15 +8654,15 @@
           }
         ],
         "evidence_tokens": 2137,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -8883,15 +8873,15 @@
           }
         ],
         "evidence_tokens": 2062,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -8926,15 +8916,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -8986,15 +8976,15 @@
           }
         ],
         "evidence_tokens": 2076,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -9148,15 +9138,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -9208,15 +9198,15 @@
           }
         ],
         "evidence_tokens": 2478,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -9311,15 +9301,15 @@
           }
         ],
         "evidence_tokens": 2248,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -9889,15 +9879,15 @@
         "gt_entity_ids": [
           "Exp_0_2_CompactPKM"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -10124,15 +10114,15 @@
           "Decision_PivotToNEXUS",
           "Concept_ArchitectureWorks"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -10287,15 +10277,15 @@
           }
         ],
         "evidence_tokens": 2131,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -10390,15 +10380,15 @@
           }
         ],
         "evidence_tokens": 2486,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -10536,15 +10526,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -10596,15 +10586,15 @@
           }
         ],
         "evidence_tokens": 1694,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -10639,15 +10629,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -11172,15 +11162,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -11232,15 +11222,15 @@
           }
         ],
         "evidence_tokens": 1508,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -11335,15 +11325,15 @@
           }
         ],
         "evidence_tokens": 2134,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -11621,15 +11611,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -11945,15 +11935,15 @@
         "gt_entity_ids": [
           "Concept_ArchitectureWorks"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -12108,15 +12098,15 @@
           }
         ],
         "evidence_tokens": 2476,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -12151,15 +12141,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -12211,15 +12201,15 @@
           }
         ],
         "evidence_tokens": 2144,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -12314,15 +12304,15 @@
           }
         ],
         "evidence_tokens": 2485,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -12641,15 +12631,15 @@
           }
         ],
         "evidence_tokens": 2067,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -12684,15 +12674,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -12848,15 +12838,15 @@
           }
         ],
         "evidence_tokens": 2117,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -12891,15 +12881,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -12951,15 +12941,15 @@
           }
         ],
         "evidence_tokens": 2042,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -13119,15 +13109,15 @@
         "gt_entity_ids": [
           "Exp_0_13B_RealisticDistractors"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -13179,15 +13169,15 @@
           }
         ],
         "evidence_tokens": 2392,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -13282,15 +13272,15 @@
           }
         ],
         "evidence_tokens": 1608,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -13431,15 +13421,15 @@
         "gt_entity_ids": [
           "Decision_PivotToNEXUS"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -13491,15 +13481,15 @@
           }
         ],
         "evidence_tokens": 2073,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -13931,15 +13921,15 @@
           }
         ],
         "evidence_tokens": 2348,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -13974,15 +13964,15 @@
         "gt_entity_ids": [
           "Exp_0_Diagnosis"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -14137,15 +14127,15 @@
           }
         ],
         "evidence_tokens": 2490,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -14398,15 +14388,15 @@
         "gt_entity_ids": [
           "Exp_0_Diagnosis"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -14501,15 +14491,15 @@
         "gt_entity_ids": [
           "Exp_0_Diagnosis"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -14816,15 +14806,15 @@
         "gt_entity_ids": [
           "Exp_0_Diagnosis"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -14876,15 +14866,15 @@
           }
         ],
         "evidence_tokens": 2321,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -15250,15 +15240,15 @@
         "gt_entity_ids": [
           "Exp_0_2_CompactPKM"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -15353,15 +15343,15 @@
         "gt_entity_ids": [
           "Exp_0_2_CompactPKM"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -15679,15 +15669,15 @@
         "gt_entity_ids": [
           "Exp_0_2_CompactPKM"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -16129,15 +16119,15 @@
         "gt_entity_ids": [
           "Exp_0_3_PKM_Candidates"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -16232,15 +16222,15 @@
         "gt_entity_ids": [
           "Exp_0_3_PKM_Candidates"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -16555,15 +16545,15 @@
         "gt_entity_ids": [
           "Exp_0_3_PKM_Candidates"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -17001,15 +16991,15 @@
         "gt_entity_ids": [
           "Exp_0_5_DenseDataset"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -17061,15 +17051,15 @@
           }
         ],
         "evidence_tokens": 2391,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -17104,15 +17094,15 @@
         "gt_entity_ids": [
           "Exp_0_5_DenseDataset"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -17431,15 +17421,15 @@
         "gt_entity_ids": [
           "Exp_0_5_DenseDataset"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -18311,15 +18301,15 @@
         "gt_entity_ids": [
           "Exp_0_6_Validation"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -18371,15 +18361,15 @@
           }
         ],
         "evidence_tokens": 2180,
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       }
@@ -18736,15 +18726,15 @@
         "gt_entity_ids": [
           "Exp_0_7_ExternalText"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -19148,15 +19138,15 @@
         "gt_entity_ids": [
           "Exp_0_7_ExternalText"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -19461,15 +19451,15 @@
         "gt_entity_ids": [
           "Exp_0_8_Aggregation"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -19667,15 +19657,15 @@
         "gt_entity_ids": [
           "Exp_0_8_Aggregation"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -19770,15 +19760,15 @@
         "gt_entity_ids": [
           "Exp_0_8_Aggregation"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -19976,15 +19966,15 @@
         "gt_entity_ids": [
           "Exp_0_8_Aggregation"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -20508,15 +20498,15 @@
         "gt_entity_ids": [
           "Exp_0_9_OracleFilter"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -20830,15 +20820,15 @@
         "gt_entity_ids": [
           "Exp_0_9_OracleFilter"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
@@ -21366,15 +21356,15 @@
         "gt_entity_ids": [
           "Exp_0_10_RequiredSet"
         ],
-        "accuracy": 0.0,
-        "exact_accuracy": 0.0,
+        "accuracy": null,
+        "exact_accuracy": null,
         "scoring_detail": {
           "gt_numbers": [],
           "pred_numbers": [],
           "fuzzy_matches": 0,
           "total_gt": 0,
-          "fuzzy_score": 0.0,
-          "exact_score": 0.0,
+          "fuzzy_score": null,
+          "exact_score": null,
           "entity_overlap": []
         }
       },
