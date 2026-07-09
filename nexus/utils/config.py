@@ -96,5 +96,13 @@ class NEXUSConfig:
     #       insufficiency instruction (for A/B testing later).
     tier3_backend: str = "synth"
 
+    # ── Stage 1 candidate gates (Stage 0 baseline: both False) ──
+    # enable_embedding_er: When True, builds an all-MiniLM-L6-v2 embedding index
+    #   for semantic entity resolution (Stage 1 experiment).
+    # enable_cooccurrence_edges: When True, adds low-confidence related_to edges
+    #   between all entity pairs co-occurring in the same document (Stage 1 experiment).
+    enable_embedding_er: bool = False
+    enable_cooccurrence_edges: bool = False
+
 
 DEFAULT_CONFIG = NEXUSConfig()

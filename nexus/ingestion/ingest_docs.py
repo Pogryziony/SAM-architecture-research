@@ -25,6 +25,7 @@ from nexus.ingestion.entity_extractor import extract_from_markdown, _is_valid_en
 from nexus.ingestion.relation_extractor import extract_relations
 from nexus.ingestion.normalizer import canonicalize, normalize_entity_name
 from nexus.ingestion.deduplicator import merge_entity_lists
+from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
 
 # ── Sub-experiment variant suffix patterns ──
@@ -208,6 +209,7 @@ def ingest_directory(
     directory: Path,
     graph: InMemoryGraphStore,
     verbose: bool = False,
+    config: NEXUSConfig = DEFAULT_CONFIG,
 ) -> tuple[int, int]:
     """
     Walk a directory, extract entities and relations from all .md files,
@@ -365,26 +367,28 @@ def ingest_directory(
         # ── Co-occurrence edges: add related_to between all entity pairs
         #     from the same document that don't already have a typed edge.
         #     Low confidence (0.3) to distinguish from manually extracted edges.
-        node_ids = list(entity_node_map.values())
-        existing_edges: set[tuple[str, str]] = set()
-        for eid in node_ids:
-            for edge in graph.get_edges(eid, direction="both"):
-                existing_edges.add((edge.source, edge.target))
-        
-        for i in range(len(node_ids)):
-            for j in range(i + 1, len(node_ids)):
-                src, tgt = node_ids[i], node_ids[j]
-                if (src, tgt) not in existing_edges and (tgt, src) not in existing_edges:
-                    co_edge = Edge(
-                        type="related_to",
-                        source=src,
-                        target=tgt,
-                        confidence=0.3,
-                        evidence=f"Co-occurs in {rel_path}",
-                    )
-                    graph.add_edge(co_edge)
-                    edges_added += 1
-                    existing_edges.add((src, tgt))
+        #     Gated behind enable_cooccurrence_edges — Stage 1 candidate.
+        if config.enable_cooccurrence_edges:
+            node_ids = list(entity_node_map.values())
+            existing_edges: set[tuple[str, str]] = set()
+            for eid in node_ids:
+                for edge in graph.get_edges(eid, direction="both"):
+                    existing_edges.add((edge.source, edge.target))
+            
+            for i in range(len(node_ids)):
+                for j in range(i + 1, len(node_ids)):
+                    src, tgt = node_ids[i], node_ids[j]
+                    if (src, tgt) not in existing_edges and (tgt, src) not in existing_edges:
+                        co_edge = Edge(
+                            type="related_to",
+                            source=src,
+                            target=tgt,
+                            confidence=0.3,
+                            evidence=f"Co-occurs in {rel_path}",
+                        )
+                        graph.add_edge(co_edge)
+                        edges_added += 1
+                        existing_edges.add((src, tgt))
 
     return nodes_added, edges_added
 

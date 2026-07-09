@@ -42,7 +42,7 @@ from nexus.reasoning.model_interface import (
     get_available_model, FallbackModel, SynthesizingModel,
 )
 from nexus.reasoning.verifier import Verifier, VerificationResult
-from nexus.query.embedding_resolver import NodeEmbeddingIndex
+from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
 # Cost model for local-only pricing
 from benchmarks.cost_model import (
@@ -1252,9 +1252,14 @@ def main():
     print(f"Graph ready: {graph_provenance['node_count']} nodes, {graph_provenance['edge_count']} edges")
 
     # ── Embedding index for semantic entity resolution ──
-    print("\nBuilding embedding index (all-MiniLM-L6-v2)...")
-    embedding_index = NodeEmbeddingIndex()
-    embedding_index.build_index(graph)
+    # Gated behind enable_embedding_er — Stage 1 candidate.
+    config = DEFAULT_CONFIG
+    embedding_index = None
+    if config.enable_embedding_er:
+        from nexus.query.embedding_resolver import NodeEmbeddingIndex
+        print("\nBuilding embedding index (all-MiniLM-L6-v2)...")
+        embedding_index = NodeEmbeddingIndex()
+        embedding_index.build_index(graph)
 
     # Pinned for reproducibility — change only in controlled experiments.
     from nexus.reasoning.model_interface import OllamaModel
