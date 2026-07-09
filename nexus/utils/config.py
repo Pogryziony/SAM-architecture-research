@@ -104,5 +104,13 @@ class NEXUSConfig:
     enable_embedding_er: bool = False
     enable_cooccurrence_edges: bool = False
 
+    # ── Stage 1 SAM+NEXUS associative stack ──
+    # enable_normalization: When True, applies PL/EN lemmatization and stopword
+    #   removal to question text before entity spotting (Stage 1 experiment).
+    # enable_associative_encoder: When True, uses the trained associative encoder
+    #   to predict entities + intent + category (Stage 1 experiment).
+    enable_normalization: bool = False
+    enable_associative_encoder: bool = False
+
 
 DEFAULT_CONFIG = NEXUSConfig()

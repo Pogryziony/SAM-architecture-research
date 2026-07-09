@@ -126,6 +126,14 @@ def spot_entities(
         - entity_spots: list of (start, end, matched_substring, node_id) tuples
         - wb_matched: set of node_ids that were matched via word-boundary (not just fuzzy)
     """
+    # ── Stage 1: Apply normalization sublayer if enabled ──
+    original_question = question
+    if config.enable_normalization:
+        from stack.normalization.lemmatizer import normalize as norm_fn
+        normalized = norm_fn(question)
+        if normalized.strip():
+            question = normalized
+
     lowered = question.lower()
     words = lowered.split()
     results: list[tuple[int, int, str, str]] = []
