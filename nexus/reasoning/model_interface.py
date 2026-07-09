@@ -451,9 +451,23 @@ class SynthesizingModel(ModelInterface):
                     medium_conf = []
                     low_conf = []
                 else:
-                    return "Insufficient evidence to answer."
+                    # ── Final fallback: parse EVIDENCE: bullet points directly ──
+                    raw_facts = self._parse_raw_evidence_bullets(prompt)
+                    if raw_facts:
+                        high_conf = raw_facts
+                        medium_conf = []
+                        low_conf = []
+                    else:
+                        return "Insufficient evidence to answer."
             else:
-                return "Insufficient evidence to answer."
+                # ── Final fallback: parse EVIDENCE: bullet points directly ──
+                raw_facts = self._parse_raw_evidence_bullets(prompt)
+                if raw_facts:
+                    high_conf = raw_facts
+                    medium_conf = []
+                    low_conf = []
+                else:
+                    return "Insufficient evidence to answer."
 
         if not high_conf and not medium_conf and not low_conf:
             return "Insufficient evidence to answer."
@@ -497,6 +511,8 @@ class SynthesizingModel(ModelInterface):
         # No "These findings are drawn from" boilerplate — the verifier
         # checks key-fact overlap, not citation proximity.
 
+        return "\n".join(paragraphs) if paragraphs else "Insufficient evidence to answer."
+
     # ── Specialized zero-LLM synthesis methods ──
 
     @staticmethod
@@ -537,10 +553,29 @@ class SynthesizingModel(ModelInterface):
         Returns exactly one sentence. If no key_finding is found for the
         question entity, returns empty string to fall through to the
         generic evidence path.
+
+        Handles two prompt formats:
+          1. Full NEXUS prompt (with structured sections)
+          2. Simple oracle prompt (QUESTION + EVIDENCE + instruction)
         """
         question = _extract_line(prompt, "QUESTION:") or ""
 
-        # Extract ONLY the facts section — stop at the first sub-section header
+        # ── Detect metric term from the question ──
+        try:
+            from nexus.query.parser import extract_metric_term
+            metric_term = extract_metric_term(question)
+        except ImportError:
+            metric_term = None
+
+        # ── Try NUMBERS FOR metric section first (most precise match) ──
+        if metric_term:
+            numbers_answer = self._extract_from_numbers_section(
+                prompt, question, metric_term,
+            )
+            if numbers_answer:
+                return numbers_answer
+
+        # ── Try full NEXUS prompt format ──
         section_markers = [
             "Additional context",
             "Supporting evidence:",
@@ -559,7 +594,10 @@ class SynthesizingModel(ModelInterface):
                 break
 
         if not answer_section:
-            return ""  # Let fallback handle it
+            # ── Fallback: parse simple EVIDENCE: section (oracle format) ──
+            return self._synthesize_factual_from_evidence(
+                prompt, question, metric_term,
+            )
 
         # Parse facts from the answer section
         # Only accept facts that look like "NodeID: Description" (no spaces
@@ -601,6 +639,9 @@ class SynthesizingModel(ModelInterface):
             fact_lower = fact.lower()
             fact_words = set(re.findall(r'\w+', fact_lower))
             overlap = len(q_keywords & fact_words)
+            # Bonus for facts that contain the metric term
+            if metric_term and metric_term in fact_lower:
+                overlap += 10
             # Bonus for facts that contain the node ID (more specific match)
             clean = re.sub(r'^\[.*?\]\s*', '', fact)
             if ": " in clean:
@@ -624,7 +665,236 @@ class SynthesizingModel(ModelInterface):
         if not best.rstrip().endswith("."):
             best = best.rstrip() + "."
 
+        # ── Metric-aware extraction: extract only the relevant {value} {metric}
+        # when the fact contains multiple numbers ──
+        if metric_term and best:
+            extracted = self._extract_metric_value_from_fact(best, metric_term)
+            if extracted:
+                best = extracted
+
         return best
+
+    def _extract_from_numbers_section(
+        self, prompt: str, question: str, metric_term: str,
+    ) -> str:
+        """Extract answer from NUMBERS FOR '{metric}' section in the prompt.
+
+        This handles the structured numbers_by_metric section added in Phase 2.
+        Returns a formatted answer like "The Exp_0_6 achieved 99.87% accuracy."
+        or "" if no match found.
+        """
+        # Search for "NUMBERS FOR '{metric_term}'" header
+        numbers_section = ""
+        for line in prompt.split("\n"):
+            stripped = line.strip()
+            if stripped.startswith("NUMBERS FOR '") and metric_term.lower() in stripped.lower():
+                # Extract everything from this line to the next blank line or section start
+                start_idx = prompt.find(stripped)
+                if start_idx == -1:
+                    continue
+                rest = prompt[start_idx + len(stripped):]
+                # Find next blank line or section boundary
+                end_idx = len(rest)
+                for delim in ["\n\n", "\n  KEY NUMBERS", "\n  NUMBERS FOR", "\n  Connected", "\n  Supporting"]:
+                    pos = rest.find(delim)
+                    if pos != -1 and pos < end_idx:
+                        end_idx = pos
+                numbers_section = rest[:end_idx]
+                break
+
+        # Also try prefix match on metric keys
+        if not numbers_section:
+            for line in prompt.split("\n"):
+                stripped = line.strip()
+                if stripped.startswith("NUMBERS FOR '"):
+                    # Extract the key between quotes
+                    m = re.match(r"NUMBERS FOR '([^']+)'", stripped)
+                    if m:
+                        key = m.group(1)
+                        if key.startswith(metric_term) or metric_term.startswith(key):
+                            start_idx = prompt.find(stripped)
+                            rest = prompt[start_idx + len(stripped):]
+                            end_idx = len(rest)
+                            for delim in ["\n\n", "\n  KEY NUMBERS", "\n  NUMBERS FOR", "\n  Connected", "\n  Supporting"]:
+                                pos = rest.find(delim)
+                                if pos != -1 and pos < end_idx:
+                                    end_idx = pos
+                            numbers_section = rest[:end_idx]
+                            metric_term = key  # Use the actual key name
+                            break
+
+        if not numbers_section:
+            return ""
+
+        # Parse entity-value pairs from the section
+        entries = []
+        for line in numbers_section.split("\n"):
+            line = line.strip()
+            # Match "- [EntityID] value" format
+            m = re.match(r'-\s*\[([^\]]+)\]\s*(.+)', line)
+            if m:
+                entity = m.group(1)
+                value = m.group(2).strip()
+                entries.append((entity, value))
+
+        if not entries:
+            return ""
+
+        # Score entries by overlap with question keywords
+        q_words = set(re.findall(r'\w+', question.lower()))
+        q_stopwords = {
+            'what', 'that', 'this', 'with', 'from', 'which', 'does', 'many',
+            'while', 'over', 'through', 'there', 'their', 'about', 'between',
+            'these', 'differ', 'compare', 'compared', 'experiment', 'was', 'were',
+            'did', 'the', 'and', 'for', 'how', 'is', 'are', 'of', 'in', 'to', 'a', 'an'
+        }
+        q_keywords = q_words - q_stopwords
+
+        scored_entries = []
+        for entity, value in entries:
+            entity_words = set(re.findall(r'\w+', entity.lower()))
+            overlap = len(q_keywords & entity_words)
+            scored_entries.append((overlap, entity, value))
+
+        scored_entries.sort(key=lambda x: -x[0])
+        if not scored_entries:
+            return ""
+
+        _, best_entity, best_value = scored_entries[0]
+
+        # Format a clean, natural-language answer
+        entity_name = best_entity.replace("_", " ")
+        return f"The {entity_name} achieved {best_value} {metric_term}."
+
+    def _synthesize_factual_from_evidence(
+        self, prompt: str, question: str, metric_term: str | None,
+    ) -> str:
+        """Fallback: synthesize answer from a simple EVIDENCE: section.
+
+        Used when the prompt lacks the full NEXUS structured sections
+        (e.g., oracle evidence test format).
+        """
+        # Extract everything between "EVIDENCE:" and "ANSWER:" or end
+        evidence_section = _extract_section(prompt, "EVIDENCE:", "ANSWER:")
+        if not evidence_section:
+            evidence_section = _extract_section(
+                prompt, "EVIDENCE:", "Based on the evidence",
+            )
+        if not evidence_section:
+            # No delimiter found; take everything after EVIDENCE: to end
+            idx = prompt.find("EVIDENCE:")
+            if idx == -1:
+                return ""
+            evidence_section = prompt[idx + len("EVIDENCE:"):].strip()
+
+        if not evidence_section:
+            return ""
+
+        # Also look for KEY NUMBERS and NUMBERS FOR sections in the prompt
+        if metric_term:
+            numbers_answer = self._extract_from_numbers_section(
+                prompt, question, metric_term,
+            )
+            if numbers_answer:
+                return numbers_answer
+
+        # Parse facts from evidence — accept both bullet-point and plain-text lines
+        facts = self._parse_evidence_lines(evidence_section)
+
+        if not facts:
+            return ""
+
+        # Score by keyword overlap (same logic as main path)
+        q_words = set(re.findall(r'\w+', question.lower()))
+        q_stopwords = {
+            'what', 'that', 'this', 'with', 'from', 'which', 'does', 'many',
+            'while', 'over', 'through', 'there', 'their', 'about', 'between',
+            'these', 'differ', 'compare', 'compared', 'experiment', 'was', 'were',
+            'did', 'the', 'and', 'for', 'how', 'is', 'are', 'of', 'in', 'to', 'a', 'an'
+        }
+        q_keywords = q_words - q_stopwords
+
+        scored = []
+        for fact in facts:
+            fact_lower = fact.lower()
+            fact_words = set(re.findall(r'\w+', fact_lower))
+            overlap = len(q_keywords & fact_words)
+            # Heavy bonus for facts containing the metric term (e.g., "accuracy")
+            if metric_term and metric_term in fact_lower:
+                overlap += 10
+            scored.append((overlap, fact))
+
+        scored.sort(key=lambda x: -x[0])
+        if not scored or scored[0][0] == 0:
+            return ""
+
+        _, best = scored[0]
+
+        # ── Metric-aware extraction: extract only the relevant {value} {metric}
+        # when the fact contains multiple numbers ──
+        if metric_term and best:
+            extracted = self._extract_metric_value_from_fact(best, metric_term)
+            if extracted:
+                best = extracted
+
+        if not best.rstrip().endswith("."):
+            best = best.rstrip() + "."
+        return best
+
+    @staticmethod
+    def _extract_metric_value_from_fact(fact: str, metric_term: str) -> str | None:
+        """Extract just the {value} {metric} portion from a fact that
+        contains multiple numbers.
+
+        Example:
+            fact = "Proves SAM core CAN use memory — 100% accuracy, 99.87% overall."
+            metric_term = "accuracy"
+            returns "100% accuracy"
+
+        Returns None if no clear single value+metric pair found.
+        """
+        fact_lower = fact.lower()
+        if metric_term not in fact_lower:
+            return None
+
+        # Count how many numbers are in the fact
+        numbers_in_fact = re.findall(r'\d+(?:\.\d+)?%?', fact)
+        if len(numbers_in_fact) <= 1:
+            return None  # Only one number, use whole fact
+
+        # Try to find "{value} {metric}" or "{metric} {value}" patterns
+        # Pattern 1: "99.87% accuracy" (value before metric)
+        m = re.search(
+            r'(\d+(?:\.\d+)?%?)\s*' + re.escape(metric_term),
+            fact, re.IGNORECASE,
+        )
+        if m:
+            # Extract bounded by punctuation (commas, periods, dashes, etc.)
+            phrase_start = m.start()
+            while phrase_start > 0 and fact[phrase_start - 1] not in ',.—\n:;':
+                phrase_start -= 1
+            phrase_end = m.end()
+            while phrase_end < len(fact) and fact[phrase_end] not in ',.—\n:;':
+                phrase_end += 1
+            snippet = fact[phrase_start:phrase_end].strip().lstrip(',.—:; \t')
+            return snippet
+
+        # Pattern 2: "accuracy of 99.87%" or "accuracy: 99.87%"
+        m = re.search(
+            re.escape(metric_term) + r'\s*(?:of\s+|:\s*)?(\d+(?:\.\d+)?%?)',
+            fact, re.IGNORECASE,
+        )
+        if m:
+            phrase_start = m.start()
+            while phrase_start > 0 and fact[phrase_start - 1] not in ',.—\n:;':
+                phrase_start -= 1
+            phrase_end = m.end()
+            while phrase_end < len(fact) and fact[phrase_end] not in ',.—\n:;':
+                phrase_end += 1
+            snippet = fact[phrase_start:phrase_end].strip().lstrip(',.—:; \t')
+            return snippet
+
+        return None
 
     def _synthesize_comparative(self, prompt: str) -> str:
         """Synthesize a comparative answer: extracts numbers from 2 entities,
@@ -756,6 +1026,72 @@ class SynthesizingModel(ModelInterface):
         if len(description) > 50:
             short += "..."
         return short[0].upper() + short[1:] if short else "Entity"
+
+    @staticmethod
+    def _parse_raw_evidence_bullets(prompt: str) -> list[str]:
+        """Parse facts from a raw EVIDENCE: section.
+
+        Used as a final fallback when no structured section markers exist
+        (e.g., simple oracle/synthetic prompt format).
+        Accepts both bullet-point (- prefix) and plain-text lines.
+        """
+        # Extract the EVIDENCE: section
+        evidence_section = _extract_section(prompt, "EVIDENCE:", "ANSWER:")
+        if not evidence_section:
+            evidence_section = _extract_section(
+                prompt, "EVIDENCE:", "Based on the evidence",
+            )
+        if not evidence_section:
+            idx = prompt.find("EVIDENCE:")
+            if idx != -1:
+                evidence_section = prompt[idx + len("EVIDENCE:"):].strip()
+
+        if not evidence_section:
+            return []
+
+        return SynthesizingModel._parse_evidence_lines(evidence_section)
+
+    @staticmethod
+    def _parse_evidence_lines(evidence_text: str) -> list[str]:
+        """Parse fact lines from evidence text.
+        
+        Accepts both bullet-point (- prefix) and plain-text lines.
+        Filters out empty lines, section headers, and boilerplate.
+        """
+        facts = []
+        for line in evidence_text.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            # Skip section headers and boilerplate
+            if line.lower().startswith((
+                "based on the evidence", "answer:", "question:",
+                "key numbers", "numbers for", "connected entity",
+                "supporting evidence", "knowledge graph",
+                "relation facts", "sources", "key findings",
+            )):
+                continue
+            
+            # Strip bullet prefix if present
+            content = line
+            if content.startswith("- "):
+                content = content[2:].strip()
+            
+            if not content:
+                continue
+            if "insufficient" in content.lower():
+                continue
+            # Strip (ORACLE INJECTED) prefix
+            content = re.sub(r'^\(ORACLE INJECTED\)\s*', '', content)
+            # Strip annotation prefixes like "[This concept is directly validated...]"
+            content = re.sub(r'^\[.*?\]\s*', '', content)
+            # Skip lines that are just references or IDs
+            if re.match(r'^\[\d+\]', content):
+                continue
+            
+            facts.append(content)
+        
+        return facts
 
     def _synthesize_chain(self, prompt: str) -> str:
         """Synthesize a chain/narrative answer from evidence.
