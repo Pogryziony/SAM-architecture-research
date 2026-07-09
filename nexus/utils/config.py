@@ -14,6 +14,9 @@ from dataclasses import dataclass, field
 class NEXUSConfig:
     """Central configuration for NEXUS pipeline parameters.
 
+    Model:
+        model_name: Pinned for reproducibility — change only in controlled experiments.
+
     Entity resolution:
         fuzzy_cutoff: Minimum similarity for fuzzy matching (0.0–1.0)
         max_entry_nodes: Maximum number of entry nodes for traversal
@@ -34,7 +37,15 @@ class NEXUSConfig:
 
     Verification:
         hallucination_threshold: Maximum allowed hallucination rate
+
+    Post-edit:
+        post_edit_enabled: When True, corrects hallucinated numbers in answers.
+            Defaults to False because post-edit masks the model's true accuracy.
+            Enable only for explicit experiments studying post-edit behavior.
     """
+
+    # Model — pinned for reproducibility; change only in controlled experiments
+    model_name: str = "qwen2.5:latest"
 
     # Entity resolution
     fuzzy_cutoff: float = 0.5
@@ -68,6 +79,9 @@ class NEXUSConfig:
 
     # Verification
     hallucination_threshold: float = 0.2
+
+    # Post-edit — disabled by default; masks model's true accuracy
+    post_edit_enabled: bool = False
 
 
 DEFAULT_CONFIG = NEXUSConfig()

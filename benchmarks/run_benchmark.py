@@ -8,12 +8,14 @@ Reproducibility: The benchmark graph is built deterministically from
 populate_from_experiments + ingest_docs in fixed order. Results are exactly
 reproducible from committed code with no non-deterministic components.
 
+Model pinned to qwen2.5:latest for reproducibility — change only in controlled experiments.
+
 Exact reproduction command:
-    python benchmarks/run_benchmark.py --limit 50 --output benchmarks/results.json
+    python benchmarks/run_benchmark.py --limit 50 --output benchmarks/results/my_run_TIMESTAMP.json
 
 Usage:
-    python benchmarks/run_benchmark.py --limit 50
-    python benchmarks/run_benchmark.py --limit 100 --output benchmarks/results.json
+    python benchmarks/run_benchmark.py --limit 50 --output benchmarks/results/my_run.json
+    python benchmarks/run_benchmark.py --limit 100 --output benchmarks/results/my_run.json
 """
 
 from __future__ import annotations
@@ -337,7 +339,7 @@ def build_benchmark_graph() -> tuple[InMemoryGraphStore, dict[str, Any]]:
     provenance = {
         "node_count": graph.node_count,
         "edge_count": graph.edge_count,
-        "build_command": "python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results.json",
+        "build_command": "python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results/TIMESTAMPED_FILE.json",
         "build_steps": [
             "1. populate_from_experiments(EXPERIMENTS_DIR, graph)",
             "2. ingest_directory('docs/', graph)",
@@ -1070,8 +1072,9 @@ def main():
         help="Number of questions to benchmark (default: 50)"
     )
     parser.add_argument(
-        "--output", type=str, default="benchmarks/results.json",
-        help="Output file for results (default: benchmarks/results.json)"
+        "--output", type=str, required=True,
+        help="WARNING: Do not use results.json — use timestamped filenames. "
+             "Output file for results (e.g., benchmarks/results/my_run_20260709T1200Z.json)"
     )
     parser.add_argument(
         "--no-populate", action="store_true",
@@ -1102,8 +1105,9 @@ def main():
         graph, graph_provenance = build_benchmark_graph()
     print(f"Graph ready: {graph_provenance['node_count']} nodes, {graph_provenance['edge_count']} edges")
 
-    # Initialize models
-    primary_model = get_available_model()
+    # Pinned for reproducibility — change only in controlled experiments.
+    from nexus.reasoning.model_interface import OllamaModel
+    primary_model = OllamaModel(model_name="qwen2.5:latest")
     # Wrap in FallbackModel: uses LLM first, falls back to SynthesizingModel
     # when the LLM says "insufficient evidence" but evidence IS present
     nexus_model = FallbackModel(primary_model)

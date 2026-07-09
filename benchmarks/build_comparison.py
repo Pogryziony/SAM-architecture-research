@@ -40,11 +40,26 @@ def _find_newest_in_results(glob_pattern: str) -> Path | None:
 
 
 def _resolve_nexus_vs_rag_regenerated_json() -> Path:
-    """Return path to the newest nexus_vs_rag_*.json in results/ (regenerated comparison)."""
-    newest = _find_newest_in_results("nexus_vs_rag_*.json")
-    if newest is not None:
-        return newest
-    raise FileNotFoundError("No nexus_vs_rag regenerated comparison found in results/")
+    """Return path to the newest nexus_vs_rag_*.json in results/ that contains a 'comparison' key."""
+    results_dir = _SCRIPT_DIR / "results"
+    candidates = sorted(results_dir.glob("nexus_vs_rag_*.json"))
+    if not candidates:
+        raise FileNotFoundError("No nexus_vs_rag files found in results/")
+    # Filter to files that actually have a 'comparison' key (regenerated comparison output),
+    # not raw benchmark run outputs (which have no comparison data).
+    comparison_files = []
+    for p in candidates:
+        try:
+            with open(p, encoding="utf-8") as f:
+                data = json.load(f)
+            if "comparison" in data and data["comparison"]:
+                comparison_files.append(p)
+        except (json.JSONDecodeError, OSError):
+            continue
+    if not comparison_files:
+        raise FileNotFoundError("No nexus_vs_rag files with 'comparison' key found in results/")
+    comparison_files.sort(key=lambda p: p.stat().st_mtime)
+    return comparison_files[-1]
 
 
 def _resolve_nexus_vs_rag_raw_json() -> Path:
@@ -90,9 +105,22 @@ def _resolve_ram_throughput_json() -> Path | None:
 
 
 def _resolve_router_results_json() -> Path:
-    newest = _find_newest_in_results("router_results_*.json")
-    if newest is not None:
-        return newest
+    """Find the newest router_results_*.json or router_paired_*.json in results/ that has summary data."""
+    # Prefer timestamped files in results/ with actual data
+    results_dir = _SCRIPT_DIR / "results"
+    
+    # Try router_results_* first (timestamped router benchmark outputs)
+    candidates = sorted(results_dir.glob("router_results_*.json"))
+    for p in reversed(candidates):
+        try:
+            with open(p, encoding="utf-8") as f:
+                data = json.load(f)
+            if "summary" in data and data["summary"]:
+                return p
+        except (json.JSONDecodeError, OSError):
+            continue
+    
+    # Fall back to benchmarks/router_results.json (legacy)
     fallback = _SCRIPT_DIR / "router_results.json"
     if fallback.exists():
         return fallback

@@ -10,8 +10,7 @@ Key metric: For factual 1-hop questions (~63% of dataset), the router achieves
 comparable accuracy to RAG+frontier at 0% of the generation cost and ~400× faster.
 
 Usage:
-    python benchmarks/router_benchmark.py --limit 30
-    python benchmarks/router_benchmark.py --limit 30 --output benchmarks/router_results.json
+    python benchmarks/router_benchmark.py --limit 30 --output benchmarks/results/router_TIMESTAMP.json
 """
 
 from __future__ import annotations
@@ -359,8 +358,9 @@ def main():
         help="Number of questions to benchmark (default: 30)"
     )
     parser.add_argument(
-        "--output", type=str, default="benchmarks/router_results.json",
-        help="Output file for results (default: benchmarks/router_results.json)"
+        "--output", type=str, required=True,
+        help="WARNING: Do not use router_results.json — use timestamped filenames. "
+             "Output file for results (e.g., benchmarks/results/router_TIMESTAMP.json)"
     )
     args = parser.parse_args()
 

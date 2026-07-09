@@ -1,1 +1,4 @@
 **/__pycache__/
+benchmarks/results.json
+benchmarks/router_results.json
+benchmarks/throughput_results.json

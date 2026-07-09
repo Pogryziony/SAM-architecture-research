@@ -189,17 +189,23 @@ def answer_question(
     timing["generate_time"] = round(time.perf_counter() - t0, 6)
     result["raw_answer"] = raw_answer
 
-    # ── Step 5.5: Post-edit — fix hallucinated numbers ──
+    # ── Step 5.5: Post-edit — fix hallucinated numbers (disabled by default) ──
+    # Post-edit masks the model's true accuracy; enable only for explicit experiments.
     t0 = time.perf_counter()
-    post_edit_result = edit_answer(raw_answer, evidence_pack)
-    timing["post_edit_time"] = round(time.perf_counter() - t0, 6)
-    answer = post_edit_result["answer"]
+    if config.post_edit_enabled:
+        post_edit_result = edit_answer(raw_answer, evidence_pack)
+        timing["post_edit_time"] = round(time.perf_counter() - t0, 6)
+        answer = post_edit_result["answer"]
+        result["post_edit_changes"] = {
+            "numbers_fixed": post_edit_result["numbers_fixed"],
+            "numbers_removed": post_edit_result["numbers_removed"],
+            "changes": post_edit_result["changes"],
+        }
+    else:
+        answer = raw_answer
+        timing["post_edit_time"] = 0.0
+        result["post_edit_changes"] = None
     result["answer"] = answer
-    result["post_edit_changes"] = {
-        "numbers_fixed": post_edit_result["numbers_fixed"],
-        "numbers_removed": post_edit_result["numbers_removed"],
-        "changes": post_edit_result["changes"],
-    }
 
     # ── Step 6: Verify ──
     t0 = time.perf_counter()

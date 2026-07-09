@@ -223,11 +223,11 @@ class OllamaModel(ModelInterface):
         ollama pull qwen2.5-coder:3b
         ollama serve
 
-    Uses the smallest available model by default (qwen2.5-coder:3b ~1.9 GB).
-    All generation is synchronous — call generate() on each question.
+    Pinned for reproducibility — change only in controlled experiments.
+    Uses qwen2.5:latest (~4.7 GB) by default. All generation is synchronous.
 
     Parameters:
-        model_name: Ollama model tag (default: "qwen2.5-coder:3b")
+        model_name: Ollama model tag (default: "qwen2.5:latest")
         host: Ollama API host (default: "http://localhost:11434")
         timeout: Request timeout in seconds (default: 120)
         system_prompt: Override the default system prompt (None = strip from prompt)
@@ -235,7 +235,7 @@ class OllamaModel(ModelInterface):
 
     def __init__(
         self,
-        model_name: str = "qwen2.5-coder:3b",
+        model_name: str = "qwen2.5:latest",
         host: str = "http://localhost:11434",
         timeout: float = 120.0,
         system_prompt: str | None = None,
@@ -1018,8 +1018,10 @@ def _check_ollama_available() -> tuple[bool, str]:
             data = json.loads(resp.read().decode("utf-8"))
             models = [m["name"] for m in data.get("models", [])]
 
-            # Prefer smallest models first
+            # Pinned for reproducibility — change only in controlled experiments.
+            # Prefer qwen2.5:latest first, then smallest models.
             preferred = [
+                "qwen2.5:latest",
                 "qwen2.5-coder:3b",
                 "qwen2.5:3b",
                 "qwen2.5-coder:1.5b",
@@ -1202,7 +1204,7 @@ class FallbackModel(ModelInterface):
     format is ambiguous (e.g., document titles instead of experiment data).
 
     Usage:
-        primary = OllamaModel(model_name="qwen2.5-coder:3b")
+        primary = OllamaModel(model_name="qwen2.5:latest")
         model = FallbackModel(primary)
         answer = model.generate(prompt)  # tries LLM, falls back if needed
     """
