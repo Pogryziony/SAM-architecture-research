@@ -135,6 +135,7 @@ def _extract_node_facts(
     graph: InMemoryGraphStore,
     question_intent: str = "factual_lookup",
     target_entity: str | None = None,
+    question: str = "",
 ) -> list[dict[str, Any]]:
     """
     Extract curated key_finding/description properties from unique nodes
@@ -152,7 +153,11 @@ def _extract_node_facts(
     by beam search. This ensures questions like "What concept does X validate?"
     always surface the relevant Concept descriptions.
 
-    Returns a list of {text, confidence, source} dicts.
+    Relevance scoring: each fact is scored by word overlap with the question.
+    Facts mentioning the target_entity get a bonus. This replaces the old
+    binary target_entity filter which was too aggressive.
+
+    Returns a list of {text, confidence, source} dicts, sorted by relevance.
     """
     seen_nodes: set[str] = set()
     # Track which Concept nodes are directly linked by validates/contradicts edges
@@ -247,25 +252,33 @@ def _extract_node_facts(
                 "_priority": priority,
             })
 
-    # If target_entity is specified, filter to only facts mentioning it.
-    # If filtering removes everything, fall back to all facts — the prompt
-    # template will handle second-level filtering.
-    if target_entity:
-        target_lower = target_entity.lower()
-        filtered = [
-            f for f in raw_facts
-            if target_lower in f.get("text", "").lower()
-        ]
-        if filtered:
-            raw_facts = filtered
-        # else: keep all facts as fallback
+    # ── Relevance scoring: word overlap with question + target_entity bonus ──
+    # This replaces the old binary target_entity filter which was too aggressive.
+    question_words: set[str] = set()
+    if question:
+        question_words = set(re.findall(r'\w+', question.lower()))
 
-    # Sort by priority descending, then by source for stability
-    raw_facts.sort(key=lambda f: (-f["_priority"], f["source"]))
+    for f in raw_facts:
+        fact_text = f.get("text", "").lower()
+        # Score by word overlap with question
+        if question_words:
+            fact_words = set(re.findall(r'\w+', fact_text))
+            overlap = len(question_words & fact_words)
+        else:
+            overlap = 0
+        # Target entity match gets a strong bonus
+        entity_bonus = 0
+        if target_entity and target_entity.lower() in fact_text:
+            entity_bonus = 20
+        f["_relevance"] = overlap + entity_bonus
 
-    # Strip internal _priority key before returning
+    # Sort by relevance descending, then priority descending, then source
+    raw_facts.sort(key=lambda f: (-f["_relevance"], -f["_priority"], f["source"]))
+
+    # Strip internal keys before returning
     for f in raw_facts:
         del f["_priority"]
+        del f["_relevance"]
 
     return raw_facts
 
@@ -666,6 +679,7 @@ def _collect_neighbor_key_findings(
     paths: list[Path],
     graph: InMemoryGraphStore,
     target_entity: str | None = None,
+    question: str = "",
 ) -> list[dict[str, Any]]:
     """
     Include key_findings/descriptions from 1-hop neighbor nodes.
@@ -676,7 +690,10 @@ def _collect_neighbor_key_findings(
     include it — this catches cases where the answer lives in a
     connected node, not the target entity directly.
 
-    Returns a list of {entity, type, text} dicts.
+    Relevance scoring via word overlap with question orders
+    results from most to least relevant.
+
+    Returns a list of {entity, type, text} dicts, sorted by relevance.
     """
     neighbor_facts: list[dict[str, Any]] = []
     seen_neighbors: set[str] = set()
@@ -711,18 +728,12 @@ def _collect_neighbor_key_findings(
                 or neighbor_id in in_path_nodes 
                 or neighbor_id == entity_id):
                 continue
-            # Apply target_entity filter: if set, neighbor must relate to it
-            if target_entity and target_entity.lower() not in neighbor_id.lower():
-                # Also check if the edge itself connects to target_entity
-                if (target_entity.lower() not in edge.source.lower() 
-                    and target_entity.lower() not in edge.target.lower()):
-                    continue
 
             neighbor = graph.get_node(neighbor_id)
             if neighbor is None:
                 continue
-            # Only include Experiment and Concept neighbors with key info
-            if neighbor.type not in ("Experiment", "Concept"):
+            # Include Experiment, Concept, and Decision neighbors with key info
+            if neighbor.type not in ("Experiment", "Concept", "Decision"):
                 continue
             props = neighbor.properties
             text = props.get("key_finding") or props.get("description")
@@ -730,11 +741,26 @@ def _collect_neighbor_key_findings(
                 continue
 
             seen_neighbors.add(neighbor_id)
+            # Compute relevance score via question word overlap
+            relevance = 0
+            if question:
+                qw = set(re.findall(r'\w+', question.lower()))
+                nw = set(re.findall(r'\w+', text.lower()))
+                relevance = len(qw & nw)
+                if target_entity and target_entity.lower() in neighbor_id.lower():
+                    relevance += 15  # strong bonus for target match
             neighbor_facts.append({
                 "entity": neighbor_id,
                 "type": neighbor.type,
                 "text": text,
+                "_relevance": relevance,
             })
+
+    # Sort by relevance descending
+    neighbor_facts.sort(key=lambda nf: -nf["_relevance"])
+    # Strip internal key
+    for nf in neighbor_facts:
+        del nf["_relevance"]
 
     return neighbor_facts
 
@@ -743,8 +769,8 @@ def build_evidence(
     question: str,
     paths: list[Path],
     graph: InMemoryGraphStore,
-    max_paths: int = 5,
-    max_facts_per_path: int = 10,
+    max_paths: int = 7,
+    max_facts_per_path: int = 20,
     question_intent: str = "factual_lookup",
     target_entity: str | None = None,
 ) -> str:
@@ -816,7 +842,7 @@ def build_evidence(
     # Extract curated node facts (key_finding/description) — placed BEFORE
     # edge-based facts because they are more reliable (manually curated).
     evidence["node_facts"] = _extract_node_facts(
-        paths, graph, question_intent, target_entity
+        paths, graph, question_intent, target_entity, question
     )
 
     evidence["facts"] = all_facts
@@ -824,13 +850,20 @@ def build_evidence(
 
     # ── NUMBERS section: flat, machine-readable table of all numbers ──
     evidence["numbers"] = _collect_numbers(paths, graph)
+    # Cap at 80 entries — enough to cover most experiments without bloat
+    if len(evidence["numbers"]) > 80:
+        evidence["numbers"] = evidence["numbers"][:80]
 
     # ── NUMBERS_BY_METRIC: grouped by metric name for easy model lookup ──
     evidence["numbers_by_metric"] = _collect_numbers_by_metric(paths, graph)
+    # Cap each metric to at most 15 entries to prevent extreme bloat
+    for key in list(evidence["numbers_by_metric"].keys()):
+        if len(evidence["numbers_by_metric"][key]) > 15:
+            evidence["numbers_by_metric"][key] = evidence["numbers_by_metric"][key][:15]
 
     # ── Neighbor key_findings: 1-hop neighbor facts for enriched context ──
     evidence["neighbor_facts"] = _collect_neighbor_key_findings(
-        paths, graph, target_entity
+        paths, graph, target_entity, question
     )
 
     # ── Add confidence signals for routing ──

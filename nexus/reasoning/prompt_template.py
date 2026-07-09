@@ -111,11 +111,14 @@ def _filter_relevant_nodes(
 def _find_question_entity(
     question: str,
     paths: list[dict[str, Any]],
+    node_facts: list[dict[str, Any]] | None = None,
 ) -> str | None:
     """Find which entity (node ID) the question is specifically about.
 
     Checks whether any node ID (or a significant portion) appears
     directly in the question text, or has strong word overlap with it.
+    Also checks node_facts text content for word overlap with the question
+    to find entities whose descriptions match the question.
     Returns the matching node ID, or None if no clear match.
     """
     q_lower = question.lower()
@@ -150,6 +153,31 @@ def _find_question_entity(
         if overlap > 0 and overlap > best_score:
             best_score = overlap
             best_match = nid
+
+    # Also check node_facts text for entities whose facts match the question
+    if node_facts and best_score < 3:
+        for nf in node_facts:
+            text = nf.get("text", "")
+            if not text:
+                continue
+            # Extract entity ID from the text (format: "EntityID: description")
+            match = re.match(r'^(\S+):', text)
+            if not match:
+                continue
+            nid = match.group(1)
+            nid_lower = nid.lower()
+            text_lower = text.lower()
+            # Score by word overlap between question and fact text
+            fact_words = set(re.findall(r'\w+', text_lower))
+            overlap = len(q_words & fact_words)
+            # Bonus for entity name appearing in question
+            nid_words_set = set(re.findall(r'[a-zA-Z0-9]+', nid_lower))
+            meaningful_nid = {w for w in nid_words_set if len(w) > 2}
+            entity_overlap = len(meaningful_nid & q_words)
+            total_score = overlap + entity_overlap * 5
+            if total_score > best_score:
+                best_score = total_score
+                best_match = nid
 
     return best_match
 
@@ -248,6 +276,33 @@ def _format_sources(sources: list[str]) -> str:
     return "\n".join(lines)
 
 
+def _render_metric_numbers(
+    parts: list[str],
+    numbers_by_metric: dict[str, list[dict[str, Any]]],
+    question: str,
+) -> None:
+    """Render the NUMBERS BY METRIC section for a specific question's metric term."""
+    from nexus.query.parser import extract_metric_term
+    metric_term = extract_metric_term(question)
+    if metric_term:
+        matching_entries = numbers_by_metric.get(metric_term, [])
+        if matching_entries:
+            parts.append(f"\n  Numbers for '{metric_term}':")
+            for entry in matching_entries[:5]:
+                entity = entry.get("entity", "")
+                value = entry.get("value", "")
+                parts.append(f"  - [{entity}] {value}")
+        else:
+            for key, entries in numbers_by_metric.items():
+                if key.startswith(metric_term) or metric_term.startswith(key):
+                    parts.append(f"\n  Numbers for '{key}':")
+                    for entry in entries[:5]:
+                        entity = entry.get("entity", "")
+                        value = entry.get("value", "")
+                        parts.append(f"  - [{entity}] {value}")
+                    break
+
+
 def build_prompt(question: str, evidence_json: str) -> str:
     """
     Build a clean text prompt from a question and JSON evidence pack.
@@ -277,7 +332,7 @@ def build_prompt(question: str, evidence_json: str) -> str:
     q_type = _detect_question_type(question)
 
     # Find which entity the question is specifically about
-    target_entity = _find_question_entity(question, paths) if q_type == "factual" else None
+    target_entity = _find_question_entity(question, paths, node_facts) if q_type == "factual" else None
 
     parts: list[str] = []
 
@@ -355,15 +410,21 @@ def build_prompt(question: str, evidence_json: str) -> str:
     if not paths and not facts and not node_facts:
         parts.append("  (No evidence found in the knowledge graph.)")
     else:
-        # Filter paths to relevant nodes
+        # All node_facts are pre-sorted by relevance in the evidence builder.
+        # For factual questions, we highlight target-entity-specific facts first,
+        # then show supporting context.
+
         filtered_paths = _filter_relevant_nodes(paths, question)
 
         if q_type == "factual" and target_entity:
-            # ── Factual: show ONLY the target entity's key findings prominently ──
-            # Strict: prefer facts mentioning the target entity.
+            # ── Factual + target entity: show target-specific facts prominently ──
             target_facts = [
                 nf for nf in node_facts
                 if target_entity.lower() in nf.get("text", "").lower()
+            ]
+            other_facts = [
+                nf for nf in node_facts
+                if target_entity.lower() not in nf.get("text", "").lower()
             ]
 
             parts.append("\n  The answer to your question is in these facts:")
@@ -373,25 +434,60 @@ def build_prompt(question: str, evidence_json: str) -> str:
                     if text:
                         parts.append(f"  - {text}")
             else:
-                # Fallback: no entity-specific facts found — show all facts
-                # but with stronger instruction to find the right one
                 parts.append("  (look for the fact most relevant to the question)")
                 for nf in node_facts:
                     text = nf.get("text", "")
                     if text:
                         parts.append(f"  - {text}")
+
+            # NUMBERS BY METRIC for the question's metric term
+            if numbers_by_metric:
+                _render_metric_numbers(parts, numbers_by_metric, question)
+
+            # Neighbor facts for additional context
+            if neighbor_facts:
+                parts.append("\n  Related entity findings:")
+                for nf in neighbor_facts:
+                    entity = nf.get("entity", "")
+                    etype = nf.get("type", "")
+                    text = nf.get("text", "")
+                    if text:
+                        parts.append(f"  - [{etype}] {entity}: {text}")
+
+            # Other relevant facts (non-target but still question-relevant)
+            if other_facts:
+                parts.append("\n  Other relevant findings:")
+                for nf in other_facts[:3]:  # cap to save tokens
+                    text = nf.get("text", "")
+                    if text:
+                        parts.append(f"  - {text}")
+
         else:
-            # ── Non-factual: show all KEY FINDINGS prominently ──
+            # ── Non-factual or no target entity: show all key facts ──
             if node_facts:
-                parts.append("\n  The answer to your question is in these facts:")
+                parts.append("\n  Key evidence (most relevant facts):")
                 for nf in node_facts:
                     text = nf.get("text", "")
                     if text:
                         parts.append(f"  - {text}")
 
-        # ── KEY NUMBERS section: flat, scannable number table ──
+            # NUMBERS BY METRIC for the question's metric term
+            if numbers_by_metric:
+                _render_metric_numbers(parts, numbers_by_metric, question)
+
+            # Neighbor facts
+            if neighbor_facts:
+                parts.append("\n  Related entity findings:")
+                for nf in neighbor_facts:
+                    entity = nf.get("entity", "")
+                    etype = nf.get("type", "")
+                    text = nf.get("text", "")
+                    if text:
+                        parts.append(f"  - [{etype}] {entity}: {text}")
+
+        # ── KEY NUMBERS section: flat, scannable number table (for all q types) ──
         if numbers:
-            parts.append("\n  KEY NUMBERS (from evidence):")
+            parts.append("\n  Key metrics from evidence:")
             for num_entry in numbers:
                 entity = num_entry.get("entity", "")
                 kv_pairs = [
@@ -401,61 +497,23 @@ def build_prompt(question: str, evidence_json: str) -> str:
                 if kv_pairs:
                     parts.append(f"  - [{entity}] {' | '.join(kv_pairs)}")
 
-        # ── NUMBERS BY METRIC: grouped for easy lookup ──
-        if numbers_by_metric:
-            # Determine the metric term the question asks about
-            from nexus.query.parser import extract_metric_term
-            metric_term = extract_metric_term(question)
-            if metric_term:
-                # Only show the most relevant metric
-                matching_entries = numbers_by_metric.get(metric_term, [])
-                if matching_entries:
-                    parts.append(f"\n  NUMBERS FOR '{metric_term}':")
-                    for entry in matching_entries[:5]:  # cap at 5 entries
-                        entity = entry.get("entity", "")
-                        value = entry.get("value", "")
-                        parts.append(f"  - [{entity}] {value}")
-                else:
-                    # Try prefix match
-                    for key, entries in numbers_by_metric.items():
-                        if key.startswith(metric_term) or metric_term.startswith(key):
-                            parts.append(f"\n  NUMBERS FOR '{key}':")
-                            for entry in entries[:5]:
-                                entity = entry.get("entity", "")
-                                value = entry.get("value", "")
-                                parts.append(f"  - [{entity}] {value}")
-                            break
+        # ── Edge-based facts (relation chains) ──
+        if facts:
+            parts.append("\n  Relation chains:")
+            for fact in facts:
+                parts.append(f"  - {fact}")
 
-        # ── Neighbor facts: key_findings from directly connected nodes ──
-        if neighbor_facts:
-            parts.append("\n  Connected entity facts:")
-            for nf in neighbor_facts:
-                entity = nf.get("entity", "")
-                etype = nf.get("type", "")
-                text = nf.get("text", "")
-                if text:
-                    parts.append(f"  - [{etype}] {entity}: {text}")
-
-        # For factual questions with a target entity, skip dependency chains,
-        # supporting evidence, and relation facts — they're irrelevant noise.
-        if not (q_type == "factual" and target_entity):
-            # Node details — filtered to relevant nodes
+        # ── Supporting evidence (for non-factual only) ──
+        if q_type != "factual":
             node_details = _format_node_details(filtered_paths)
             if node_details:
                 parts.append("\n  Supporting evidence:")
                 parts.extend(node_details)
 
-            # Path chains (use filtered paths)
             if filtered_paths:
                 parts.append("\n  Knowledge graph paths:")
                 path_lines = _format_path_steps(filtered_paths)
                 parts.extend(path_lines)
-
-            # Facts (human-readable relations)
-            if facts:
-                parts.append("\n  Relation facts:")
-                for fact in facts:
-                    parts.append(f"  - {fact}")
 
         # Sources
         if sources:

@@ -33,7 +33,7 @@ def answer_question(
     verifier: Verifier | None = None,
     max_depth: int | None = None,
     beam_width: int | None = None,
-    max_paths: int = 5,
+    max_paths: int = 7,
     config: NEXUSConfig = DEFAULT_CONFIG,
 ) -> dict[str, Any]:
     """

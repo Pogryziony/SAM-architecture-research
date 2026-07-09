@@ -85,10 +85,9 @@ def _flatten_evidence_pack(pack: dict[str, Any]) -> str:
         if bits:
             parts.append("; ".join(bits))
 
-    # Numbers by metric (grouped) - limit to most relevant entries
+    # Numbers by metric (grouped) - include more entries
     for metric_name, entries in pack.get("numbers_by_metric", {}).items():
-        # Only include the first 3 entries per metric to avoid bloat
-        for entry in entries[:3]:
+        for entry in entries[:10]:
             entity = entry.get("entity", "")
             value = entry.get("value", "")
             if value:
@@ -270,7 +269,13 @@ def run_oracle_evidence_test(
         results.append(result)
         
         # Print progress
-        print(f"  baseline: {baseline_acc_score:.2%} | oracle LLM: {oracle_acc_llm_score:.2%} (+{improvement_llm:.0%}) | synth: {oracle_acc_synth_score:.2%} (+{improvement_synth:.0%}) | recall: {evidence_recall:.0%}")
+        b_acc = f"{baseline_acc_score:.2%}" if baseline_acc_score is not None else "N/A"
+        o_llm = f"{oracle_acc_llm_score:.2%}" if oracle_acc_llm_score is not None else "N/A"
+        o_syn = f"{oracle_acc_synth_score:.2%}" if oracle_acc_synth_score is not None else "N/A"
+        i_llm = f"{improvement_llm:+.0%}" if improvement_llm is not None else "N/A"
+        i_syn = f"{improvement_synth:+.0%}" if improvement_synth is not None else "N/A"
+        e_rec = f"{evidence_recall:.0%}" if evidence_recall is not None else "N/A"
+        print(f"  baseline: {b_acc} | oracle LLM: {o_llm} (+{i_llm}) | synth: {o_syn} (+{i_syn}) | recall: {e_rec}")
     
     # Aggregate stats
     print("\n" + "="*80)
