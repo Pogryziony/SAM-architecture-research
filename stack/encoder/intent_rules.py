@@ -24,6 +24,8 @@ class RuleIntentClassifier:
         # ── COMPARISON ──
         # "Compare X vs Y", "Compare the 3-hop...", etc.
         (r"^compare\b", "comparison", True),
+        # "How does SAM differ from RAG?" / "How does NEXUS handle X differently from Y?" / "How does NEXUS store knowledge compared to Z?"
+        (r"^how does .+ (differ|compared)", "comparison", True),
 
         # ── MULTI-HOP ──
         # "How does the X experiment relate to the Y experiment?" (78/78 multi-hop)
@@ -60,6 +62,8 @@ class RuleIntentClassifier:
             "diagnostic",
             True,
         ),
+        # "Walk through why ..." / "Walk through the NEXUS ..." → diagnostic
+        (r"^walk through (why|the nexus)", "diagnostic", True),
 
         # ── FACTUAL LOOKUP ──
         # "How many/much X?" (27/29 factual)

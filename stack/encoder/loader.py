@@ -169,7 +169,7 @@ class EncoderLoader:
 
         if isinstance(self.tokenizer, CharNgramTokenizer):
             offsets_list, indices_list = self.tokenizer.tokenize_batch([question])
-            offsets = torch.tensor(offsets_list, dtype=torch.long)
+            offsets = torch.tensor(offsets_list[:-1], dtype=torch.long)
             indices = torch.tensor(indices_list, dtype=torch.long)
         elif isinstance(self.tokenizer, WordTokenizer):
             offsets, indices = self.tokenizer.encode_batch([question])
