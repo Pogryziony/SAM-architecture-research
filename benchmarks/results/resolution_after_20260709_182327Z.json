@@ -1,0 +1,3415 @@
+{
+  "total": 170,
+  "no_entity_found": 0,
+  "metric_q_count": 13,
+  "concept_q_count": 31,
+  "exp_picked_for_metric": 12,
+  "metric_node_picked_for_metric": 0,
+  "concept_picked_for_concept": 31,
+  "decision_picked_for_concept": 3,
+  "metric_q_exp_top1": 5,
+  "metric_q_any_exp": 12,
+  "questions": [
+    {
+      "q_id": "?",
+      "question": "What is the query projection mismatch problem?",
+      "entity_ids": [
+        "Concept_RetrievalMismatch",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Retriever_To_Sam_Integration"
+      ],
+      "entity_types": [
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Why is SAM's oracle_memory accuracy 99.87% but oracle_text_memory 100%?",
+      "entity_ids": [
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance",
+        "Experiment_0_Results_(poc_Validation)",
+        "\"the_Latent_Memory_Path_Is_Fragile\"",
+        "Controlled_Random_Distractors",
+        "Retrieval_At_K=32_Is_Perfect"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": true,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What is the controlled noisy memory path and how is it different from oracle memory?",
+      "entity_ids": [
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance",
+        "Oracle_Filter",
+        "The_Situation_Before_0.13a"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the difference between controlled distractors and realistic distractors?",
+      "entity_ids": [
+        "Exp_0_13B_RealisticDistractors",
+        "Sam_Does_Not_Collapse_With_One_Distractor",
+        "Sam_Tolerates_Mild_Noise_Very_Well",
+        "Experiment_0.13b",
+        "confirmed_1"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Technology"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What does NEXUS stand for?",
+      "entity_ids": [
+        "Nexus_Approach",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Knowledge_Evolves_Incrementally",
+        "Cpu/ram_Budget_Is_Constrained"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the core architectural difference between NEXUS and RAG?",
+      "entity_ids": [
+        "Decision_PivotToNEXUS",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Nexus_Approach",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Query_Vector"
+      ],
+      "entity_types": [
+        "Decision",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What are the node types in the NEXUS graph data model?",
+      "entity_ids": [
+        "Node_Types",
+        "Data_Model",
+        "Step_3:_Relation_Extraction",
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "Document_Chunks_+_Embeddings"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What are the edge types in the NEXUS graph data model?",
+      "entity_ids": [
+        "Data_Model",
+        "Step_3:_Relation_Extraction",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Nexus_Approach",
+        "Nodes_(entities)_+_Edges_(relationships)"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the NEXUS reasoning pipeline?",
+      "entity_ids": [
+        "The_Reasoning_Pipeline",
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "Document_Chunks_+_Embeddings",
+        "Core_Principle",
+        "Explicitly"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "How does NEXUS handle multi-hop reasoning differently from SAM?",
+      "entity_ids": [
+        "Multi_Hop_Reasoning",
+        "Nexus_Approach",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Query_Vector"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What is the role of the verifier in NEXUS?",
+      "entity_ids": [
+        "Graph_Construction_Cost_Is_Prohibitive",
+        "Graph_Reasoning_\u2014_Traversal_As_The_Reasoning_Engine",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)",
+        "The_Reasoning_Pipeline"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What compute resources does NEXUS target and why?",
+      "entity_ids": [
+        "Nexus_Approach",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Document_Chunks_+_Embeddings"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "How does NEXUS store knowledge compared to vector databases used in RAG?",
+      "entity_ids": [
+        "Nexus_Approach",
+        "Query_Vector",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "The_Core_Difference_(in_One_Sentence)"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "Which experiment first proved that retrieval is the bottleneck?",
+      "entity_ids": [
+        "Training_Time_Optimizer_Memory_+_Cold_Slots",
+        "Consider_Text/payload_Memory",
+        "Conditioned_On",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance",
+        "Gate_2"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Decision"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What experiment directly preceded the chain-set BCE retriever development?",
+      "entity_ids": [
+        "Concept_ChainRetrieval",
+        "Chain_Set_Bce",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Chain_Set_Bce_Retriever_(experiment_0.11)",
+        "Slot_Graph_Expander_(experiment_0.11)"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Which experiments belong to the 'Core Validation' phase?",
+      "entity_ids": [
+        "Experiment_0_Results_(poc_Validation)",
+        "Original_Gates_(experiments_0.0\u20130.6)",
+        "Decision_Gates",
+        "Gate_1",
+        "Validation"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Decision",
+        "Decision",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the chronological order of the four research phases?",
+      "entity_ids": [
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "Document_Chunks_+_Embeddings",
+        "Step_3:_Relation_Extraction",
+        "Knowledge_Record_Format",
+        "Explicitly"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the latest experiment and what does it test?",
+      "entity_ids": [
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Sam_Does_Not_Collapse_With_One_Distractor",
+        "Sam_Tolerates_Mild_Noise_Very_Well",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Original_Gates_(experiments_0.0\u20130.6)"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the most important validation of the SAM architecture?",
+      "entity_ids": [
+        "Iterative_Querying",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Experimental_Validation_Plan",
+        "Experiment_0_Results_(poc_Validation)",
+        "Experiment_0_\u2014_Pipeline_Diagnosis"
+      ],
+      "entity_types": [
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the key insight from the noise tolerance experiment?",
+      "entity_ids": [
+        "Exp_0_13A_NoisyMemory",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Sam_Does_Not_Collapse_With_One_Distractor",
+        "The_Situation_Before_0.13a"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Why was retrieval considered 'solved' at experiment 0.11?",
+      "entity_ids": [
+        "Exp_0_11_ChainRetrieval",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance",
+        "Experiment_0_Results_(poc_Validation)",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Nodes_(entities)_+_Edges_(relationships)"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What is the structural problem that forced the pivot from SAM to NEXUS?",
+      "entity_ids": [
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance",
+        "Sam_Does_Not_Collapse_With_One_Distractor",
+        "All_Knowledge_Inside_Dense_Weights",
+        "Controlled_Random_Distractors",
+        "The_Situation_Before_0.13a"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Does SAM's gate cause the retrieval failure?",
+      "entity_ids": [
+        "Failure_Analysis_(retrieval)",
+        "Experiment_0.13b_\u2014_Realistic_Retrieval_Distractor_Replay_(in_Progress)",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Significance_For_0.12_Results"
+      ],
+      "entity_types": [
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Why does NEXUS use graph traversal instead of embedding-based retrieval?",
+      "entity_ids": [
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Nexus_Approach",
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Document_Chunks_+_Embeddings"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What is the role of the LLM in NEXUS?",
+      "entity_ids": [
+        "Graph_Reasoning_\u2014_Traversal_As_The_Reasoning_Engine",
+        "Graph_Construction_Cost_Is_Prohibitive",
+        "The_Reasoning_Pipeline",
+        "Core_Principle",
+        "Experimental_Validation_Plan"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "How does NEXUS handle knowledge updates differently from retraining a dense model?",
+      "entity_ids": [
+        "Prototype_(phase_1_2):_In_Memory_Python",
+        "Step_5:_Source_Annotation",
+        "Software/qa_Automation",
+        "Type_Disambiguation",
+        "Name_Normalization"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What types of questions is NEXUS expected to handle better than RAG?",
+      "entity_ids": [
+        "Graph_Construction_Cost_Is_Prohibitive",
+        "Nexus_Approach",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Domain_Has_Few_Structured_Relationships",
+        "The_Core_Difference_(in_One_Sentence)"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the significance of confidence scores on NEXUS edges?",
+      "entity_ids": [
+        "Confidence_Scores",
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "Document_Chunks_+_Embeddings",
+        "Step_3:_Relation_Extraction",
+        "Explicitly"
+      ],
+      "entity_types": [
+        "Metric",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "When would you use RAG instead of NEXUS?",
+      "entity_ids": [
+        "Memory_Value_Construction_(uniform_Averaging)",
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "Domain_Has_Few_Structured_Relationships",
+        "Graph_Construction_Cost_Is_Prohibitive",
+        "Domain_Has_Rich,_Explicit_Structure"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What are the key risks that remain unvalidated for the SAM approach?",
+      "entity_ids": [
+        "Current_Status",
+        "Updated:_2026_06_18",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Significance_For_0.12_Results"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Why doesn't SAM currently beat GPT or other production LLMs?",
+      "entity_ids": [
+        "Iterative_Querying",
+        "Efficiency_Target",
+        "Experimental_Validation_Plan",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Realistic_Retrieved_Memory_Sam"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": true,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What is the padding bug and why was it critical to fix?",
+      "entity_ids": [
+        "Padding_Bug",
+        "[roadmap](roadmap.md)",
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "Different_Pytorch/numpy_Versions",
+        "End_To_End_Pipeline_Validation"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "Why might synthetic dataset results not transfer to real-world data?",
+      "entity_ids": [
+        "Synthetic_Dataset",
+        "Experiment_0.12",
+        "Iterative_Querying",
+        "Scale_Test",
+        "\"the_Latent_Memory_Path_Is_Fragile\""
+      ],
+      "entity_types": [
+        "Concept",
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What is the first phase of the NEXUS roadmap?",
+      "entity_ids": [
+        "[troubleshooting](troubleshooting.md)",
+        "[repository_Map](repository_Map.md)",
+        "Hallucination_Is_Unacceptable",
+        "Step_3:_Relation_Extraction",
+        "[roadmap](roadmap.md)"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the critical validation experiment for NEXUS in Phase 4?",
+      "entity_ids": [
+        "Exp_0_6_Validation",
+        "Step_3:_Relation_Extraction",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Experimental_Validation_Plan"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the target model size for the first NEXUS production model?",
+      "entity_ids": [
+        "Step_3:_Relation_Extraction",
+        "Iterative_Querying",
+        "Scale_Test",
+        "Experimental_Validation_Plan",
+        "Nodes_(entities)_+_Edges_(relationships)"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What are the five phases of the NEXUS roadmap?",
+      "entity_ids": [
+        "Nexus_Approach",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Graph_Construction_Cost_Is_Prohibitive",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Step_3:_Relation_Extraction"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "If SAM tolerates +8 random distractors at 91.6%, why does the selector with ~1.75 distractors fail?",
+      "entity_ids": [
+        "Exp_0_13A_NoisyMemory",
+        "\"the_Latent_Memory_Path_Is_Fragile\"",
+        "Integration_Step",
+        "Diagnose_Selector_Noise_Quality",
+        "Experiment_0.13b_\u2014_Realistic_Retrieval_Distractor_Replay_(in_Progress)"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Experiment"
+      ],
+      "is_metric": true,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What would need to be true for SAM to have beaten the core_only baseline?",
+      "entity_ids": [
+        "Controlled_Random_Distractors",
+        "Semantically_Misleading",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance",
+        "The_Situation_Before_0.13a",
+        "Oracle_Filter"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the gate training-dynamics risk mentioned in the status document?",
+      "entity_ids": [
+        "Mentioned_In",
+        "Experiment_0.13b_\u2014_Realistic_Retrieval_Distractor_Replay_(in_Progress)",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance",
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "Controlled_Random_Distractors"
+      ],
+      "entity_types": [
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What accuracy did the dense baseline achieve in experiment 0.6?",
+      "entity_ids": [
+        "Exp_0_6_Validation",
+        "Dense_Baseline",
+        "Sam_Does_Not_Collapse_With_One_Distractor",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": true,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "How many parameters does the dense baseline have compared to SAM core?",
+      "entity_ids": [
+        "Concept_OracleMemory",
+        "Dense_Baseline",
+        "Original_Gates_(experiments_0.0\u20130.6)",
+        "Experiment_0",
+        "Decision_Gates"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Decision"
+      ],
+      "is_metric": true,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the architecture of the SAM core transformer?",
+      "entity_ids": [
+        "Concept_OracleMemory",
+        "Retrieved_Memory_Sam",
+        "Iterative_Querying",
+        "Repository_Map",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the difference between uniform_mean and score_weighted aggregation in SAM?",
+      "entity_ids": [
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Identical_To_Core_Only",
+        "retrieval_interface",
+        "selection_variants"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Entity",
+        "Entity"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the oracle filter diagnostic and what did it prove?",
+      "entity_ids": [
+        "Oracle_Filter_Diagnostic",
+        "Exp_0_9_OracleFilter",
+        "Sam_Does_Not_Collapse_With_One_Distractor",
+        "\"the_Latent_Memory_Path_Is_Fragile\"",
+        "Integration_Step"
+      ],
+      "entity_types": [
+        "Concept",
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the forced-gate experiment and what did it find?",
+      "entity_ids": [
+        "Sam_Does_Not_Collapse_With_One_Distractor",
+        "Sam_Tolerates_Mild_Noise_Very_Well",
+        "\"the_Latent_Memory_Path_Is_Fragile\"",
+        "Integration_Step",
+        "Selection"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the aggregation architecture risk for SAM?",
+      "entity_ids": [
+        "Randomly_Sampled_From_Live_Slots",
+        "Oracle_Plus_Distractors",
+        "N_Random_Distractors",
+        "Iterative_Querying",
+        "Normal_Memory_Path"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the slot graph expander and why did it fail?",
+      "entity_ids": [
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)",
+        "\"the_Latent_Memory_Path_Is_Fragile\"",
+        "Integration_Step",
+        "Nexus_Approach"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What are the five memory integration modes in SAM?",
+      "entity_ids": [
+        "Memory_Integration",
+        "Sam_Oracle_Memory_Works",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "\"the_Latent_Memory_Path_Is_Fragile\"",
+        "Realistic_Retrieved_Memory_Sam"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the oracle filter accuracy in experiment 0.9?",
+      "entity_ids": [
+        "Exp_0_9_OracleFilter",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance",
+        "Oracle_Filter",
+        "Controlled_Random_Distractors",
+        "The_Situation_Before_0.13a"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": true,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "How does NEXUS distinguish between semantically similar but factually wrong information?",
+      "entity_ids": [
+        "Semantically_Similar",
+        "Factually_Wrong",
+        "Nexus_Approach",
+        "Query_Vector",
+        "Hard_Negative"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What is the evidence pack in NEXUS and how big is it?",
+      "entity_ids": [
+        "Nexus_Approach",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Query_Vector",
+        "Nodes_(entities)_+_Edges_(relationships)"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What edge types have the highest traversal weight and why?",
+      "entity_ids": [
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Nexus_Approach",
+        "Query_Vector",
+        "Step_5:_Path_Selection"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What are the intent types recognized by the NEXUS query parser?",
+      "entity_ids": [
+        "Decision_PivotToNEXUS",
+        "Nexus_Approach",
+        "Query_Vector",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)"
+      ],
+      "entity_types": [
+        "Decision",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "How does beam search work in NEXUS graph traversal?",
+      "entity_ids": [
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Nexus_Approach",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Query_Vector",
+        "Hallucination_Is_Unacceptable"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What are the key metrics for evaluating NEXUS vs RAG?",
+      "entity_ids": [
+        "Decision_PivotToNEXUS",
+        "Nexus_Approach",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Prototype_(phase_1_2):_In_Memory_Python",
+        "The_Core_Difference_(in_One_Sentence)"
+      ],
+      "entity_types": [
+        "Decision",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What experiments validated that the SAM core can use memory for reasoning?",
+      "entity_ids": [
+        "Concept_OracleMemory",
+        "Oracle_Text_Memory_Works",
+        "Oracle_Vs_Retrieved_Gap_Analysis",
+        "Current_Status",
+        "Updated:_2026_06_18"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the difference between any_required@K and all_required@K?",
+      "entity_ids": [
+        "Step_3:_Relation_Extraction",
+        "Knowledge_Record_Format",
+        "Llm_Based",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": true,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Why is the synthetic dataset limited to 853 vocabulary tokens?",
+      "entity_ids": [
+        "Synthetic_Dataset",
+        "Efficiency_Target",
+        "Original_Gates_(experiments_0.0\u20130.6)",
+        "Experiment_0.12",
+        "Decision_Gates"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Decision"
+      ],
+      "is_metric": true,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What is the significance of the 1-hop accuracy remaining high (92.8%) even at 16 distractors?",
+      "entity_ids": [
+        "Gate_Suppression_Is_Not_The_Bottleneck",
+        "\"the_Latent_Memory_Path_Is_Fragile\"",
+        "\"sam_Collapses_With_Any_Noise\"",
+        "Selectivity_Mechanisms",
+        "Integration_Step"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": true,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What does SAM use as its primary memory addressing scheme?",
+      "entity_ids": [
+        "Pkm_(product_Key_Memory)",
+        "Current_Status",
+        "Updated:_2026_06_18",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Experiment_0.6_\u2014_Full_Validation"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the Rec@8 improvement from the original dataset to the dense dataset?",
+      "entity_ids": [
+        "Exp_0_5_DenseDataset",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Gate_1_(rec@8_\u2265_80%):_Passed",
+        "Experiment_0.5_\u2014_Dense_Dataset_Fix",
+        "dense_dataset_fix"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Bug",
+        "Entity"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What are the three novel bets of the SAM/NEXUS thesis?",
+      "entity_ids": [
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Realistic_Retrieved_Memory_Sam",
+        "Two_Hop_Improves_Substantially",
+        "Sam_Oracle_Memory_Works"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "How does the NEXUS ingestion pipeline handle deduplication?",
+      "entity_ids": [
+        "Decision_PivotToNEXUS",
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "Document_Chunks_+_Embeddings",
+        "Step_3:_Relation_Extraction",
+        "Core_Principle"
+      ],
+      "entity_types": [
+        "Decision",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What is the difference between NEXUS beam search and simple BFS traversal?",
+      "entity_ids": [
+        "Decision_PivotToNEXUS",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Nexus_Approach",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Prototype_(phase_1_2):_In_Memory_Python"
+      ],
+      "entity_types": [
+        "Decision",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What SAM experiments would need to be rerun after the padding bug fix?",
+      "entity_ids": [
+        "Padding_Bug",
+        "Exp_0_6_Validation",
+        "[roadmap](roadmap.md)",
+        "End_To_End_Pipeline_Validation",
+        "Revalidate_Learned_Selector"
+      ],
+      "entity_types": [
+        "Concept",
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the long-term vision for NEXUS beyond Phase 5?",
+      "entity_ids": [
+        "Step_3:_Relation_Extraction",
+        "[roadmap](roadmap.md)",
+        "Iterative_Querying",
+        "Scale_Test",
+        "Experimental_Validation_Plan"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the hybrid RAG + NEXUS approach and when would you use it?",
+      "entity_ids": [
+        "Decision_PivotToNEXUS",
+        "Hallucination_Is_Unacceptable",
+        "Experimental_Validation_Plan",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Hybrid_Approach"
+      ],
+      "entity_types": [
+        "Decision",
+        "Concept",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the training budget for SAM experiments?",
+      "entity_ids": [
+        "Training_Budget",
+        "Exp_0_6_Validation",
+        "Randomly_Sampled_From_Live_Slots",
+        "Oracle_Plus_Distractors",
+        "N_Random_Distractors"
+      ],
+      "entity_types": [
+        "Concept",
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What edge types have the lowest traversal weight in NEXUS and why?",
+      "entity_ids": [
+        "Nexus_Approach",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Query_Vector",
+        "detailed_comparison_why"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Entity"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "How does NEXUS path scoring combine multiple factors?",
+      "entity_ids": [
+        "Step_5:_Path_Selection",
+        "Nexus_Approach",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Verifier_Is_Rule_Based"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What does the recency bonus do in path scoring?",
+      "entity_ids": [
+        "Step_5:_Path_Selection",
+        "path_selection_from",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "\"the_Latent_Memory_Path_Is_Fragile\"",
+        "Oracle_Memory_Path_Is_Valid"
+      ],
+      "entity_types": [
+        "Concept",
+        "Entity",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What are the entry points for knowledge ingestion in NEXUS?",
+      "entity_ids": [
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Step_3:_Relation_Extraction",
+        "Nexus_Approach",
+        "Query_Vector"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Why is the NEXUS verifier rule-based rather than LLM-based?",
+      "entity_ids": [
+        "Decision_PivotToNEXUS",
+        "Verifier_Is_Rule_Based",
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "Domain_Has_Few_Structured_Relationships",
+        "Prototype_(phase_1_2):_In_Memory_Python"
+      ],
+      "entity_types": [
+        "Decision",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What is the NEXUS position on hallucination compared to RAG?",
+      "entity_ids": [
+        "Experimental_Validation_Plan",
+        "Hallucination_Is_Unacceptable",
+        "Graph_Construction_Cost_Is_Prohibitive",
+        "Knowledge_Evolves_Incrementally",
+        "Cpu/ram_Budget_Is_Constrained"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "How does the SAM dual encoder retrieval compare to NEXUS graph traversal?",
+      "entity_ids": [
+        "Concept_RetrievalMismatch",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Nexus_Approach",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Query_Vector"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What is the 'CPU-first' design principle in NEXUS?",
+      "entity_ids": [
+        "Hallucination_Is_Unacceptable",
+        "Verifier_Is_Rule_Based",
+        "Experimental_Validation_Plan",
+        "Graph_Reasoning_\u2014_Traversal_As_The_Reasoning_Engine",
+        "Nodes_(entities)_+_Edges_(relationships)"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What was the wall time for SAM oracle_memory training?",
+      "entity_ids": [
+        "Sam_Oracle_Memory",
+        "Controlled_Random_Distractors",
+        "Semantically_Misleading",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": true,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "How does the confidence decay over path length in NEXUS?",
+      "entity_ids": [
+        "Step_5:_Path_Selection",
+        "path_selection_from",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Nexus_Approach"
+      ],
+      "entity_types": [
+        "Concept",
+        "Entity",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What would SAM success have meant at small scale?",
+      "entity_ids": [
+        "Architectural_Pattern",
+        "[troubleshooting](troubleshooting.md)",
+        "[repository_Map](repository_Map.md)",
+        "Software/qa_Automation",
+        ">2\u00d7_The_Compute_Budget"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What does the SAM project explicitly NOT aim to do?",
+      "entity_ids": [
+        "Repository_Map",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Experimental_Validation_Plan"
+      ],
+      "entity_types": [
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What graph storage backend is recommended for NEXUS production?",
+      "entity_ids": [
+        "Graph_Storage",
+        "Step_3:_Relation_Extraction",
+        "Experimental_Validation_Plan",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Graph_Update_Model"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "How does the length penalty work in NEXUS path scoring?",
+      "entity_ids": [
+        "Step_5:_Path_Selection",
+        "Nexus_Approach",
+        "path_selection_from",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Entity",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What experiment tested whether SAM gate suppression was causing retrieval failures?",
+      "entity_ids": [
+        "\"the_Latent_Memory_Path_Is_Fragile\"",
+        "Integration_Step",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Controlled_Random_Distractors"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the relationship between experiment 0.12 and experiment 0.13A?",
+      "entity_ids": [
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_12_Selection",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Sam_Does_Not_Collapse_With_One_Distractor"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "How does NEXUS handle entity disambiguation?",
+      "entity_ids": [
+        "Nexus_Approach",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Graph_Construction_Cost_Is_Prohibitive",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Query_Vector"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What metrics are used for evaluation in the NEXUS Phase 4 benchmark?",
+      "entity_ids": [
+        "Decision_PivotToNEXUS",
+        "Step_3:_Relation_Extraction",
+        "relation_extraction",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Experiment_0.13b"
+      ],
+      "entity_types": [
+        "Decision",
+        "Concept",
+        "Entity",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the difference between a SAM 'slot' and a NEXUS 'node'?",
+      "entity_ids": [
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Nexus_Approach",
+        "Step_3:_Relation_Extraction",
+        "Query_Vector"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What happens when NEXUS graph traversal hits a dead end?",
+      "entity_ids": [
+        "Graph_Construction_Cost_Is_Prohibitive",
+        "Hallucination_Is_Unacceptable",
+        "Experimental_Validation_Plan",
+        "Graph_Reasoning_\u2014_Traversal_As_The_Reasoning_Engine",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the relationship between experiment 0.5 findings and the NEXUS design?",
+      "entity_ids": [
+        "Exp_0_5_DenseDataset",
+        "Step_3:_Relation_Extraction",
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "Document_Chunks_+_Embeddings",
+        "Knowledge_Record_Format"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What are the decision rules for the 0.13B experiment?",
+      "entity_ids": [
+        "Experiment_0.13b",
+        "Experiment_1",
+        "Realistic_Retrieval_Distractor_Replay",
+        "Step_3:_Relation_Extraction",
+        "Integration_Step"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "How does NEXUS path deduplication work?",
+      "entity_ids": [
+        "Nexus_Approach",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Query_Vector",
+        "Test_Chain_Set_With_External_Text_Query"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What are the knowledge update properties of SAM vs NEXUS?",
+      "entity_ids": [
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Nexus_Approach",
+        "Query_Vector",
+        "Step_3:_Relation_Extraction"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is the traversal latency target for NEXUS?",
+      "entity_ids": [
+        "Experimental_Validation_Plan",
+        "Create_A_Qa_Dataset",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "Graph_Construction_Cost_Is_Prohibitive"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": true,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "How was the SAM dense baseline validated to be genuinely different from SAM core_only?",
+      "entity_ids": [
+        "Dense_Baseline",
+        "Retrieved_Memory_Sam",
+        "Bug_3:_Evaluation_Used_Wrong_Checkpoints_For_Sam_Modes",
+        "Bug_2:_Retrieval_Infonce_Dead_Slot_Negatives",
+        "Bug_1:_Best_Val_Loss:_Infinity"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Bug",
+        "Bug",
+        "Bug"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What is SAM's key efficiency thesis?",
+      "entity_ids": [
+        "[current_Status](current_Status.md)",
+        "[concepts_And_Terms](glossary.md)",
+        "[architecture](architecture.md)",
+        "[experiments](experiments.md)",
+        "[roadmap](roadmap.md)"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What NEXUS concepts map to the successful chain-set retrieval finding?",
+      "entity_ids": [
+        "Nexus_Approach",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Document_Chunks_+_Embeddings"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": true
+    },
+    {
+      "q_id": "?",
+      "question": "What is the NEXUS answer for the 'selector precision bottleneck'?",
+      "entity_ids": [
+        "Concept_SelectorBottleneck",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Integration_Step",
+        "Selection",
+        "Experiment_0_\u2014_Pipeline_Diagnosis"
+      ],
+      "entity_types": [
+        "Concept",
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Experiment"
+      ],
+      "is_metric": true,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What does the SAM experiment index list as the recommended reading order?",
+      "entity_ids": [
+        "Experiment_Index",
+        "Controlled_Noisy_Memory_(0.13a)",
+        "Detailed_Predictions.jsonl",
+        "[roadmap](roadmap.md)",
+        "Checkpoint_Best.pt"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What makes the multi-positive BCE loss fundamentally different from InfoNCE for retrieval?",
+      "entity_ids": [
+        "Bce_Loss",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Slot_Graph_Expander_(experiment_0.11)",
+        "Selection",
+        "Chain_Set_Bce_Retriever_(experiment_0.11)"
+      ],
+      "entity_types": [
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Experiment"
+      ],
+      "is_metric": true,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "How many sub-experiment runs does the NEXUS graph contain?",
+      "entity_ids": [
+        "Nexus_Approach",
+        "Query_Vector",
+        "Rag_Vs_Graph_Sam_(nexus)_\u2014_Detailed_Comparison",
+        "The_Core_Difference_(in_One_Sentence)",
+        "chunks_1"
+      ],
+      "entity_types": [
+        "Concept",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Technology"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the main finding of the pipeline diagnosis experiment?",
+      "entity_ids": [
+        "Exp_0_Diagnosis",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Experiment_0_Results_(poc_Validation)",
+        "pipeline_diagnosis",
+        "Nodes_(entities)_+_Edges_(relationships)"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Entity",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What research question did the pipeline diagnosis experiment investigate?",
+      "entity_ids": [
+        "Exp_0_Diagnosis",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Step_3:_Relation_Extraction",
+        "Experiment_Index",
+        "pipeline_diagnosis"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Experiment",
+        "Entity"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Which research phase does the pipeline diagnosis experiment belong to?",
+      "entity_ids": [
+        "Exp_0_Diagnosis",
+        "Step_3:_Relation_Extraction",
+        "Sam_Lm_Experiment_0_\u2014_Diagnosis_Report",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Experiment_Index"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What problem or limitation from previous experiments did the pipeline diagnosis experiment address?",
+      "entity_ids": [
+        "Exp_0_Diagnosis",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Step_3:_Relation_Extraction",
+        "Integration_Step",
+        "Experiment_Index"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the significance of the pipeline diagnosis experiment for the overall SAM research arc?",
+      "entity_ids": [
+        "Exp_0_Diagnosis",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Nodes_(entities)_+_Edges_(relationships)",
+        "Document_Chunks_+_Embeddings"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "If the pipeline diagnosis experiment had failed, what would have been the consequence?",
+      "entity_ids": [
+        "Exp_0_Diagnosis",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Controlled_Random_Distractors",
+        "The_Situation_Before_0.13a"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What experiment directly builds on the findings of the pipeline diagnosis experiment?",
+      "entity_ids": [
+        "Exp_0_Diagnosis",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Experiment_Index",
+        "experiment_index_quick",
+        "pipeline_diagnosis"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Entity",
+        "Entity"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Summarize the pipeline diagnosis experiment in one sentence.",
+      "entity_ids": [
+        "Exp_0_Diagnosis",
+        "Sam_Lm_Experiment_0_\u2014_Diagnosis_Report",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Experiment_Index",
+        "Summary_Verdict"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the main finding of the compact PKM retrieval experiment?",
+      "entity_ids": [
+        "Exp_0_2_CompactPKM",
+        "Experiment_0_Results_(poc_Validation)",
+        "summary_the",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Entity",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What research question did the compact PKM retrieval experiment investigate?",
+      "entity_ids": [
+        "Exp_0_2_CompactPKM",
+        "Step_3:_Relation_Extraction",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Which research phase does the compact PKM retrieval experiment belong to?",
+      "entity_ids": [
+        "Exp_0_2_CompactPKM",
+        "Experiment_0_Results_(poc_Validation)",
+        "Changes_Made_For_Experiment_0.3",
+        "Retrieval_Diagnostics",
+        "Slot_Selector_(sam/model/slot_Selector.py)"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What problem or limitation from previous experiments did the compact PKM retrieval experiment address?",
+      "entity_ids": [
+        "Exp_0_2_CompactPKM",
+        "Slot_Selector_(sam/model/slot_Selector.py)",
+        "Step_3:_Relation_Extraction",
+        "Integration_Step",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_And_Slot_Selection"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the significance of the compact PKM retrieval experiment for the overall SAM research arc?",
+      "entity_ids": [
+        "Exp_0_2_CompactPKM",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0_Results_(poc_Validation)",
+        "Bug_3:_Evaluation_Used_Wrong_Checkpoints_For_Sam_Modes",
+        "Bug_2:_Retrieval_Infonce_Dead_Slot_Negatives"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Bug",
+        "Bug"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "If the compact PKM retrieval experiment had failed, what would have been the consequence?",
+      "entity_ids": [
+        "Exp_0_2_CompactPKM",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance",
+        "Controlled_Random_Distractors",
+        "The_Situation_Before_0.13a",
+        "Semantically_Misleading"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What experiment directly builds on the findings of the compact PKM retrieval experiment?",
+      "entity_ids": [
+        "Exp_0_2_CompactPKM",
+        "Experiment_0_Results_(poc_Validation)",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Summarize the compact PKM retrieval experiment in one sentence.",
+      "entity_ids": [
+        "Exp_0_2_CompactPKM",
+        "Experiment_0_Results_(poc_Validation)",
+        "Changes_Made_For_Experiment_0.3",
+        "Retrieval_Diagnostics",
+        "Slot_Selector_(sam/model/slot_Selector.py)"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the main finding of the PKM candidate generation experiment?",
+      "entity_ids": [
+        "Exp_0_3_PKM_Candidates",
+        "Experiment_0_Results_(poc_Validation)",
+        "summary_the",
+        "Sam_Lm_Experiment_0.3_\u2014_Pkm_Retrieval_Diagnosis_And_Repair",
+        "Experiment_0.3"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Entity",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What research question did the PKM candidate generation experiment investigate?",
+      "entity_ids": [
+        "Exp_0_3_PKM_Candidates",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Sam_Lm_Experiment_0.3_\u2014_Pkm_Retrieval_Diagnosis_And_Repair",
+        "Experiment_0_Results_(poc_Validation)",
+        "Experiment_0.3"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Which research phase does the PKM candidate generation experiment belong to?",
+      "entity_ids": [
+        "Exp_0_3_PKM_Candidates",
+        "Sam_Lm_Experiment_0.3_\u2014_Pkm_Retrieval_Diagnosis_And_Repair",
+        "Experiment_0_Results_(poc_Validation)",
+        "Experiment_0.3",
+        "Slot_Selector_(sam/model/slot_Selector.py)"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What problem or limitation from previous experiments did the PKM candidate generation experiment address?",
+      "entity_ids": [
+        "Exp_0_3_PKM_Candidates",
+        "Slot_Selector_(sam/model/slot_Selector.py)",
+        "Experiment_0_Results_(poc_Validation)",
+        "Sam_Does_Not_Collapse_With_One_Distractor",
+        "Step_3:_Relation_Extraction"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the significance of the PKM candidate generation experiment for the overall SAM research arc?",
+      "entity_ids": [
+        "Exp_0_3_PKM_Candidates",
+        "Experiment_0_Results_(poc_Validation)",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "summary_the",
+        "Bug_3:_Evaluation_Used_Wrong_Checkpoints_For_Sam_Modes"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Entity",
+        "Bug"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "If the PKM candidate generation experiment had failed, what would have been the consequence?",
+      "entity_ids": [
+        "Exp_0_3_PKM_Candidates",
+        "Sam_Lm_Experiment_0.3_\u2014_Pkm_Retrieval_Diagnosis_And_Repair",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance",
+        "Experiment_0_Results_(poc_Validation)",
+        "Experiment_0.3"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What experiment directly builds on the findings of the PKM candidate generation experiment?",
+      "entity_ids": [
+        "Exp_0_3_PKM_Candidates",
+        "Experiment_0_Results_(poc_Validation)",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Sam_Lm_Experiment_0.3_\u2014_Pkm_Retrieval_Diagnosis_And_Repair",
+        "Experiment_0.3"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Summarize the PKM candidate generation experiment in one sentence.",
+      "entity_ids": [
+        "Exp_0_3_PKM_Candidates",
+        "Sam_Lm_Experiment_0.3_\u2014_Pkm_Retrieval_Diagnosis_And_Repair",
+        "Experiment_0_Results_(poc_Validation)",
+        "Experiment_0.3",
+        "Slot_Selector_(sam/model/slot_Selector.py)"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the main finding of the dense dataset experiment?",
+      "entity_ids": [
+        "Exp_0_5_DenseDataset",
+        "Experiment_0_Results_(poc_Validation)",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Gate_1_(rec@8_\u2265_80%):_Passed"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What research question did the dense dataset experiment investigate?",
+      "entity_ids": [
+        "Exp_0_5_DenseDataset",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Gate_1_(rec@8_\u2265_80%):_Passed",
+        "Experiment_0.5_\u2014_Dense_Dataset_Fix"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Bug"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Which research phase does the dense dataset experiment belong to?",
+      "entity_ids": [
+        "Exp_0_5_DenseDataset",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Original_Gates_(experiments_0.0\u20130.6)",
+        "Decision_Gates",
+        "Gate_1"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Decision",
+        "Decision"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What problem or limitation from previous experiments did the dense dataset experiment address?",
+      "entity_ids": [
+        "Exp_0_5_DenseDataset",
+        "Required_Slots",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Randomly_Sampled_From_Live_Slots",
+        "Oracle_Plus_Distractors"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the significance of the dense dataset experiment for the overall SAM research arc?",
+      "entity_ids": [
+        "Exp_0_5_DenseDataset",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Gate_1_(rec@8_\u2265_80%):_Passed",
+        "Experiment_0.5_\u2014_Dense_Dataset_Fix"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Bug"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "If the dense dataset experiment had failed, what would have been the consequence?",
+      "entity_ids": [
+        "Exp_0_5_DenseDataset",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Gate_1_(rec@8_\u2265_80%):_Passed",
+        "Experiment_0.5_\u2014_Dense_Dataset_Fix",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Bug",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What experiment directly builds on the findings of the dense dataset experiment?",
+      "entity_ids": [
+        "Exp_0_5_DenseDataset",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Gate_1_(rec@8_\u2265_80%):_Passed",
+        "Experiment_0.5_\u2014_Dense_Dataset_Fix"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Bug"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Summarize the dense dataset experiment in one sentence.",
+      "entity_ids": [
+        "Exp_0_5_DenseDataset",
+        "Scale_Test",
+        "Experiment_0_Results_(poc_Validation)",
+        "Experiment_0_\u2014_Pipeline_Diagnosis",
+        "Experiment_0.6_\u2014_Full_Validation"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the main finding of the full validation experiment?",
+      "entity_ids": [
+        "Exp_0_6_Validation",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Gate_1_(rec@8_\u2265_80%):_Passed",
+        "Experiment_0.5_\u2014_Dense_Dataset_Fix",
+        "Experiment_0_Results_(poc_Validation)"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Bug",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What research question did the full validation experiment investigate?",
+      "entity_ids": [
+        "Exp_0_6_Validation",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Gate_1_(rec@8_\u2265_80%):_Passed",
+        "Step_3:_Relation_Extraction",
+        "Experiment_0.5_\u2014_Dense_Dataset_Fix"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Bug"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Which research phase does the full validation experiment belong to?",
+      "entity_ids": [
+        "Exp_0_6_Validation",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Original_Gates_(experiments_0.0\u20130.6)",
+        "Decision_Gates",
+        "Gate_1"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Decision",
+        "Decision"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What problem or limitation from previous experiments did the full validation experiment address?",
+      "entity_ids": [
+        "Exp_0_6_Validation",
+        "Sam_Does_Not_Collapse_With_One_Distractor",
+        "Step_3:_Relation_Extraction",
+        "Integration_Step",
+        "Experiment_0_\u2014_Pipeline_Diagnosis"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the significance of the full validation experiment for the overall SAM research arc?",
+      "entity_ids": [
+        "Exp_0_6_Validation",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Gate_1_(rec@8_\u2265_80%):_Passed",
+        "Bug_3:_Evaluation_Used_Wrong_Checkpoints_For_Sam_Modes",
+        "Experiment_0.5_\u2014_Dense_Dataset_Fix"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Bug",
+        "Bug"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "If the full validation experiment had failed, what would have been the consequence?",
+      "entity_ids": [
+        "Exp_0_6_Validation",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Gate_1_(rec@8_\u2265_80%):_Passed",
+        "Experiment_0.5_\u2014_Dense_Dataset_Fix",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Bug",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What experiment directly builds on the findings of the full validation experiment?",
+      "entity_ids": [
+        "Exp_0_6_Validation",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Gate_1_(rec@8_\u2265_80%):_Passed",
+        "Experiment_0.5_\u2014_Dense_Dataset_Fix",
+        "Experiment_0_\u2014_Pipeline_Diagnosis"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Bug",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Summarize the full validation experiment in one sentence.",
+      "entity_ids": [
+        "Exp_0_6_Validation",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Original_Gates_(experiments_0.0\u20130.6)",
+        "Decision_Gates",
+        "Gate_1"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Decision",
+        "Decision"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the main finding of the external text query experiment?",
+      "entity_ids": [
+        "Exp_0_7_ExternalText",
+        "External_Text_Query",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What research question did the external text query experiment investigate?",
+      "entity_ids": [
+        "Exp_0_7_ExternalText",
+        "External_Text_Query",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Experiment_0.6_\u2014_Full_Validation"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Which research phase does the external text query experiment belong to?",
+      "entity_ids": [
+        "Exp_0_7_ExternalText",
+        "External_Text_Query",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What problem or limitation from previous experiments did the external text query experiment address?",
+      "entity_ids": [
+        "Exp_0_7_ExternalText",
+        "External_Text_Query",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.6_\u2014_Full_Validation"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the significance of the external text query experiment for the overall SAM research arc?",
+      "entity_ids": [
+        "External_Text_Query",
+        "Exp_0_7_ExternalText",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "retrieval_interface"
+      ],
+      "entity_types": [
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Entity"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "If the external text query experiment had failed, what would have been the consequence?",
+      "entity_ids": [
+        "Exp_0_7_ExternalText",
+        "External_Text_Query",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Experiment_0.6_\u2014_Full_Validation",
+        "topk"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Entity"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What experiment directly builds on the findings of the external text query experiment?",
+      "entity_ids": [
+        "Exp_0_7_ExternalText",
+        "External_Text_Query",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Experiment_0.6_\u2014_Full_Validation"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Summarize the external text query experiment in one sentence.",
+      "entity_ids": [
+        "Exp_0_7_ExternalText",
+        "External_Text_Query",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.6_\u2014_Full_Validation"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the main finding of the aggregation variants experiment?",
+      "entity_ids": [
+        "Exp_0_8_Aggregation",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "selection_variants",
+        "retrieved_memory_external_text_query"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Entity",
+        "Entity"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What research question did the aggregation variants experiment investigate?",
+      "entity_ids": [
+        "Exp_0_8_Aggregation",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "selection_variants",
+        "Sam_Does_Not_Collapse_With_One_Distractor"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Entity",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Which research phase does the aggregation variants experiment belong to?",
+      "entity_ids": [
+        "Exp_0_8_Aggregation",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Experiment_0.13b",
+        "Significance_For_0.12_Results"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What problem or limitation from previous experiments did the aggregation variants experiment address?",
+      "entity_ids": [
+        "Exp_0_8_Aggregation",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Sam_Does_Not_Collapse_With_One_Distractor",
+        "Required_Slots",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the significance of the aggregation variants experiment for the overall SAM research arc?",
+      "entity_ids": [
+        "Exp_0_8_Aggregation",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "selection_variants",
+        "retrieval_interface",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Entity",
+        "Entity",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "If the aggregation variants experiment had failed, what would have been the consequence?",
+      "entity_ids": [
+        "Exp_0_8_Aggregation",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance",
+        "Controlled_Random_Distractors"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What experiment directly builds on the findings of the aggregation variants experiment?",
+      "entity_ids": [
+        "Exp_0_8_Aggregation",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "selection_variants",
+        "retrieved_memory_external_text_query"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Entity",
+        "Entity"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Summarize the aggregation variants experiment in one sentence.",
+      "entity_ids": [
+        "Exp_0_8_Aggregation",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Sam_Does_Not_Collapse_With_One_Distractor",
+        "Aggregation"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the main finding of the oracle filter & multi-query experiment?",
+      "entity_ids": [
+        "Exp_0_9_OracleFilter",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "retrieval_interface",
+        "selection_variants"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Entity",
+        "Entity"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What research question did the oracle filter & multi-query experiment investigate?",
+      "entity_ids": [
+        "Exp_0_9_OracleFilter",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "set_retrieval_diagnostics"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Entity"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Which research phase does the oracle filter & multi-query experiment belong to?",
+      "entity_ids": [
+        "Exp_0_9_OracleFilter",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Reclassify_Sam_As_A_Retrieval_Heavy_Specialist"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What problem or limitation from previous experiments did the oracle filter & multi-query experiment address?",
+      "entity_ids": [
+        "Exp_0_9_OracleFilter",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "set_retrieval_diagnostics",
+        "all_required@k"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Entity",
+        "Entity"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the significance of the oracle filter & multi-query experiment for the overall SAM research arc?",
+      "entity_ids": [
+        "Exp_0_9_OracleFilter",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "retrieval_interface",
+        "selection_variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Entity",
+        "Entity",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "If the oracle filter & multi-query experiment had failed, what would have been the consequence?",
+      "entity_ids": [
+        "Exp_0_9_OracleFilter",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance",
+        "Oracle_Filter"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What experiment directly builds on the findings of the oracle filter & multi-query experiment?",
+      "entity_ids": [
+        "Exp_0_9_OracleFilter",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "set_retrieval_diagnostics"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Entity"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Summarize the oracle filter & multi-query experiment in one sentence.",
+      "entity_ids": [
+        "Exp_0_9_OracleFilter",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "set_retrieval_diagnostics",
+        "Nexus_Approach"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Entity",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the main finding of the required-set diagnostics experiment?",
+      "entity_ids": [
+        "Exp_0_10_RequiredSet",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Experiment_0.13a_\u2014_Controlled_Noisy_Memory_Tolerance",
+        "Experiment_0_\u2014_Pipeline_Diagnosis"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What research question did the required-set diagnostics experiment investigate?",
+      "entity_ids": [
+        "Exp_0_10_RequiredSet",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Step_3:_Relation_Extraction",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "Which research phase does the required-set diagnostics experiment belong to?",
+      "entity_ids": [
+        "Exp_0_10_RequiredSet",
+        "Step_3:_Relation_Extraction",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "Experiment_0.12_\u2014_Candidate_Selection_And_Memory_Use_Training",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Concept",
+        "Experiment",
+        "Experiment",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What problem or limitation from previous experiments did the required-set diagnostics experiment address?",
+      "entity_ids": [
+        "Exp_0_10_RequiredSet",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics",
+        "Step_3:_Relation_Extraction",
+        "Integration_Step",
+        "Required_Slots"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Concept",
+        "Concept",
+        "Concept"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    },
+    {
+      "q_id": "?",
+      "question": "What was the significance of the required-set diagnostics experiment for the overall SAM research arc?",
+      "entity_ids": [
+        "Exp_0_10_RequiredSet",
+        "Experiment_0.7_0.9_\u2014_Retrieval_Interface_And_Selection_Variants",
+        "retrieval_interface",
+        "selection_variants",
+        "Experiment_0.10_\u2014_Required_Set_Retrieval_Diagnostics"
+      ],
+      "entity_types": [
+        "Experiment",
+        "Experiment",
+        "Entity",
+        "Entity",
+        "Experiment"
+      ],
+      "is_metric": false,
+      "is_concept": false
+    }
+  ],
+  "resolution_rate": 1.0
+}

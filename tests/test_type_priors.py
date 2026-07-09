@@ -258,3 +258,178 @@ def test_type_prior_is_additive_not_replacement(type_graph):
     # Entities should still be found — type prior just adjusts ranking,
     # it doesn't replace entity resolution
     assert len(parsed.entity_ids) >= 0  # May or may not find entities
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Tie-breaker enforcement: type_prior MUST NOT affect acceptance under cap
+# ═══════════════════════════════════════════════════════════════════════
+
+@pytest.fixture
+def cap_graph():
+    """Graph with 7+ nodes for testing max_entry_nodes cap behaviour."""
+    g = InMemoryGraphStore()
+    g.add_node(Node(id="exp_boosted", type="Experiment",
+                    properties={"name": "Boosted Experiment"}))
+    g.add_node(Node(id="concept_high", type="Concept",
+                    properties={"name": "High-scoring Concept"}))
+    g.add_node(Node(id="exp_high", type="Experiment",
+                    properties={"name": "High-scoring Experiment"}))
+    g.add_node(Node(id="metric_mid", type="Metric",
+                    properties={"name": "Mid-scoring Metric"}))
+    g.add_node(Node(id="concept_mid", type="Concept",
+                    properties={"name": "Mid-scoring Concept"}))
+    g.add_node(Node(id="decision_low", type="Decision",
+                    properties={"name": "Low-scoring Decision"}))
+    g.add_node(Node(id="concept_low", type="Concept",
+                    properties={"name": "Low-scoring Concept"}))
+    return g
+
+
+def test_type_prior_is_tiebreaker_not_acceptance(cap_graph):
+    """A type-prior-boosted candidate must NOT displace a higher-base-score
+    candidate past the max_entry_nodes cap."""
+    config = NEXUSConfig(
+        max_entry_nodes=3,
+        type_prior_boost=0.15,
+        alias_match_boost=0.0,
+    )
+
+    # keyword_scores control base_score: higher kw_score → higher base_score
+    keyword_scores = {
+        "concept_high": 10,  # kw_boost = 50.0  → highest base_score
+        "exp_high": 8,       # kw_boost = 40.0
+        "concept_mid": 6,    # kw_boost = 30.0
+        "exp_boosted": 5,    # kw_boost = 25.0  → would need type_prior to beat concept_mid
+        "decision_low": 3,   # kw_boost = 15.0
+        "metric_mid": 3,     # kw_boost = 15.0
+        "concept_low": 1,    # kw_boost = 0.5
+    }
+
+    entity_ids = list(keyword_scores.keys())
+
+    # Metric question → Experiment and Metric nodes get type_prior +0.15
+    ranked = _rank_entities(
+        cap_graph, entity_ids,
+        question="what was the accuracy of the experiment?",
+        config=config,
+        keyword_scores=keyword_scores,
+    )
+
+    assert len(ranked) == 3, f"Expected 3 results, got {len(ranked)}: {ranked}"
+
+    # concept_high and exp_high have highest base_score → must be in top 3
+    assert "concept_high" in ranked, (
+        f"concept_high (base kw_boost=50.0) must be in top 3, got {ranked}"
+    )
+    assert "exp_high" in ranked, (
+        f"exp_high (base kw_boost=40.0) must be in top 3, got {ranked}"
+    )
+
+    # concept_mid has higher base_score (30.0) than exp_boosted (25.0).
+    # exp_boosted gets +0.15 type_prior, but base_score is the primary key.
+    # concept_mid MUST rank above exp_boosted regardless of type_prior.
+    mid_idx = ranked.index("concept_mid") if "concept_mid" in ranked else 999
+    boosted_idx = ranked.index("exp_boosted") if "exp_boosted" in ranked else 999
+    if "concept_mid" in ranked and "exp_boosted" in ranked:
+        assert mid_idx < boosted_idx, (
+            f"concept_mid must rank above exp_boosted (base 30.0 > 25.0), "
+            f"type_prior is tie-breaker only. Got: {ranked}"
+        )
+
+    # exp_boosted (base 25.0) has lower base than concept_mid (30.0),
+    # so concept_mid should be in top 3 — exp_boosted can only enter if
+    # concept_mid is already there and the cap is big enough.
+    assert "concept_mid" in ranked, (
+        f"concept_mid (base 30.0) must rank above exp_boosted (base 25.0), "
+        f"even with type_prior. Got: {ranked}"
+    )
+
+
+def test_type_prior_orders_within_same_base_tier(cap_graph):
+    """Within the same base_score tier, type-prior-boosted candidate ranks
+    above an unboosted one."""
+    config = NEXUSConfig(
+        max_entry_nodes=7,  # high enough to include all
+        type_prior_boost=0.15,
+        alias_match_boost=0.0,
+        # Equalize type_priority so base_type_prio is the same for all nodes
+        type_priority={"Experiment": 0, "Decision": 0, "Concept": 0, "Metric": 0,
+                       "Bug": 0, "Requirement": 0, "TestCase": 0, "Entity": 0,
+                       "Document": 0, "CodeFile": 0},
+    )
+
+    keyword_scores = {
+        "metric_mid": 3,    # kw_boost = 15.0
+        "decision_low": 3,  # kw_boost = 15.0 (same base_score)
+        "concept_high": 5,  # kw_boost = 25.0
+    }
+
+    entity_ids = list(keyword_scores.keys())
+
+    # Metric question → Metric nodes get type_prior, Decision does not
+    ranked = _rank_entities(
+        cap_graph, entity_ids,
+        question="what was the accuracy of the experiment?",
+        config=config,
+        keyword_scores=keyword_scores,
+    )
+
+    # metric_mid and decision_low have same base_score (15.0).
+    # metric_mid gets +0.15 type_prior → should rank above decision_low.
+    metric_idx = ranked.index("metric_mid")
+    decision_idx = ranked.index("decision_low")
+    assert metric_idx < decision_idx, (
+        f"metric_mid must rank above decision_low (same base 15.0 + type_prior), "
+        f"got: {ranked}"
+    )
+
+
+def test_lower_base_score_never_displaces_above_cap(cap_graph):
+    """A candidate with lower base_score is never accepted over one with higher
+    base_score, even if the lower one has maximum type_prior boost."""
+    config = NEXUSConfig(
+        max_entry_nodes=5,
+        type_prior_boost=0.15,
+        alias_match_boost=0.0,
+    )
+
+    # 7 candidates with distinct base_score tiers
+    keyword_scores = {
+        "concept_high": 10,  # kw_boost = 50.0
+        "exp_high": 8,       # kw_boost = 40.0
+        "concept_mid": 6,    # kw_boost = 30.0
+        "exp_boosted": 5,    # kw_boost = 25.0
+        "metric_mid": 4,     # kw_boost = 20.0
+        "decision_low": 3,   # kw_boost = 15.0
+        "concept_low": 1,    # kw_boost = 0.5
+    }
+
+    entity_ids = list(keyword_scores.keys())
+
+    # Metric question → Experiment/Metric get +0.15 type_prior
+    ranked = _rank_entities(
+        cap_graph, entity_ids,
+        question="what was the accuracy of the experiment?",
+        config=config,
+        keyword_scores=keyword_scores,
+    )
+
+    assert len(ranked) == 5, f"Expected 5 results, got {len(ranked)}: {ranked}"
+
+    # Top 5 by base_score: concept_high(50), exp_high(40), concept_mid(30),
+    #   exp_boosted(25), metric_mid(20)
+    # concept_low(0.5) and decision_low(15) have lower base → must NOT be in top 5
+    assert "concept_low" not in ranked, (
+        f"concept_low (base 0.5) must not displace any top-5 candidate, got: {ranked}"
+    )
+    assert "decision_low" not in ranked, (
+        f"decision_low (base 15.0) has lower base_score than all top 5; "
+        f"type_prior is tie-breaker only. Got: {ranked}"
+    )
+
+    # The five highest base_score entities must all be present
+    expected_top5 = {"concept_high", "exp_high", "concept_mid", "exp_boosted", "metric_mid"}
+    assert set(ranked) == expected_top5, (
+        f"Top 5 must be the five highest base_score entities. "
+        f"Expected: {expected_top5}, Got: {set(ranked)}"
+    )

@@ -535,21 +535,28 @@ def _rank_entities(
     """
     Rank entity IDs by quality and return the top candidates (capped).
 
-    Ranking criteria (in order of impact):
+    Two-tier ranking ensures the type-prior boost affects ordering but never
+    causes an entity to displace another past the max_entry_nodes cap:
+
+    **Tier 1 — base_score determines acceptance (inclusion under cap):**
       1. **Alias match**: question contains a phrase mapped to this entity (+config.alias_match_boost)
       2. **Keyword match count** (from property token index): +5.0 per match (≥3 tokens)
          or +0.5 per match (<3 tokens)
       3. **Type priority**: from config.type_priority (lower = higher priority)
-      4. **Intent-conditioned type prior**: metric questions → +boost for Experiment/Metric;
-         concept questions → +boost for Concept/Decision (config.type_prior_boost)
-      5. **Contextual type boost**: keywords in question boost relevant types (+0.10–0.15)
-      6. **Key-finding text match**: question words in key_finding/description (+config.property_keyword_boost)
-      7. **Curated node boost**: nodes with key_finding property (+config.curated_node_boost)
-      8. **Word-boundary match**: exact segment match beats fuzzy (+config.word_boundary_boost)
-      9. **Sub-run penalty**: deprioritize _top, _weighted, _baseline nodes (config.sub_run_penalty)
+      4. **Contextual type boost**: keywords in question boost relevant types (+0.10–0.15)
+      5. **Key-finding text match**: question words in key_finding/description (+config.property_keyword_boost)
+      6. **Curated node boost**: nodes with key_finding property (+config.curated_node_boost)
+      7. **Word-boundary match**: exact segment match beats fuzzy (+config.word_boundary_boost)
+      8. **Sub-run penalty**: deprioritize _top, _weighted, _baseline nodes (config.sub_run_penalty)
          unless the question mentions ranking/topK/weights
-     10. **Name length**: longer-span matches beat shorter ones (tiebreaker)
-     11. **Cap at config.max_entry_nodes entry nodes**
+
+    **Tier 2 — tie-breakers (affect ordering within same base_score):**
+      9. **Intent-conditioned type prior**: metric questions → +boost for Experiment/Metric;
+         concept questions → +boost for Concept/Decision (config.type_prior_boost)
+         — TIE-BREAKER ONLY: cannot push an entity above the cap over one with higher base_score
+     10. **Name length**: longer-span matches beat shorter ones
+
+    **Final: Cap at config.max_entry_nodes entry nodes**
 
     Returns the top-ranked entity IDs as a list (deduplicated, order preserved).
     """
@@ -575,7 +582,7 @@ def _rank_entities(
     metric_q = _is_metric_question(question) if question else False
     concept_q = _is_concept_question(question) if question else False
 
-    def _score(eid: str) -> tuple[float, int]:
+    def _score(eid: str) -> tuple[float, float, int]:
         node = graph.get_node(eid)
         node_type = node.type if node else ""
 
@@ -591,7 +598,10 @@ def _rank_entities(
         )
 
         # Intent-conditioned type prior: additive bonus when question intent
-        # aligns with the node's type (e.g., metric questions prefer Experiment/Metric nodes)
+        # aligns with the node's type (e.g., metric questions prefer Experiment/Metric nodes).
+        # APPLIED AS A TIE-BREAKER ONLY — affects ordering among entities with the
+        # same base_score; never causes an entity to be accepted or rejected from the
+        # max_entry_nodes cap.
         type_prior = 0.0
         if metric_q and node_type in ("Experiment", "Metric"):
             type_prior = config.type_prior_boost
@@ -622,12 +632,18 @@ def _rank_entities(
         if _is_sub_run_node(eid) and not has_ranking_kw:
             sub_run_penalty = config.sub_run_penalty
 
-        type_score = (
-            alias_boost + kw_boost + base_type_prio + ctx_boost + type_prior + prop_boost
+        # Base score: all ranking signals *except* type_prior.
+        # This determines acceptance into the max_entry_nodes cap.
+        base_score = (
+            alias_boost + kw_boost + base_type_prio + ctx_boost + prop_boost
             + curated_boost + wb_boost + sub_run_penalty
         )
         name_len = (len(eid) if eid else 0) * 2
-        return (type_score, name_len)
+        # Sort key: (base_score, type_prior, name_len)
+        #   - base_score: primary — determines inclusion under cap
+        #   - type_prior: secondary tie-breaker — order among same-base entities
+        #   - name_len:   tertiary tie-breaker
+        return (base_score, type_prior, name_len)
 
     ranked = sorted(unique, key=_score, reverse=True)
     return ranked[:config.max_entry_nodes]
