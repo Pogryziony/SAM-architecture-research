@@ -50,6 +50,7 @@ from benchmarks.cost_model import (
     estimate_cost_per_1k, format_cost_comparison, format_router_cost_comparison,
     FRONTIER_PRICING,  # retained for historical reference
 )
+from benchmarks.compare_arms import compare_paired
 
 
 # ---- Token counting (for conciseness) ----
@@ -610,7 +611,7 @@ def run_rag_retrieval(
     }
 
 
-def validate_benchmark_results(results: list[dict], config: dict) -> list[str]:
+def validate_benchmark_results(results: list[dict], config: dict, question_count: int | None = None) -> list[str]:
     """Validate benchmark results. Returns list of error messages (empty = valid)."""
     errors = []
 
@@ -625,6 +626,25 @@ def validate_benchmark_results(results: list[dict], config: dict) -> list[str]:
     rag_tokens = [r.get("retrieval_tokens") or 0 for r in rag_results]
     if rag_results and sum(rag_tokens) == 0:
         errors.append("RAG arm labeled rag_retrieval but all retrieval_tokens == 0 — check config")
+
+    # ── Guard 1: RAG arm zero result rows (when configured) ──
+    rag_arm_mode = config.get("arm_rag", "")
+    if rag_arm_mode == "rag_retrieval" and len(rag_results) == 0:
+        errors.append(
+            f"RAG arm configured as 'rag_retrieval' but produced 0 result rows "
+            f"({len(results)} total rows)"
+        )
+
+    # ── Guard 2: Row count mismatch ──
+    if question_count is not None:
+        arm_count = 2  # nexus + rag/baseline
+        expected_rows = question_count * arm_count
+        if len(results) != expected_rows:
+            errors.append(
+                f"Row count mismatch: expected {expected_rows} "
+                f"({question_count} questions × {arm_count} arms), "
+                f"got {len(results)}"
+            )
 
     # Check both arms used same model backend
     nexus_models = set(r.get("nexus", {}).get("model", "") for r in results)
@@ -1440,7 +1460,34 @@ def main():
     }
 
     # ── Validation ──
-    validation_errors = validate_benchmark_results(results, config_header)
+    validation_errors = validate_benchmark_results(
+        results, config_header, question_count=total,
+    )
+
+    # ── Guard 3: paired_n == 0 — compute paired comparison ──
+    # Group results by question_id, extract NEXUS/RAG scores
+    nexus_by_q: dict[str, float | None] = {}
+    rag_by_q: dict[str, float | None] = {}
+    for r in results:
+        qid = r.get("question_id", "")
+        arm = r.get("arm_mode", "")
+        accuracy = r.get("nexus", {}).get("accuracy") if arm == "nexus" else r.get("baseline", {}).get("accuracy")
+        if arm == "nexus":
+            nexus_by_q[qid] = accuracy
+        else:
+            rag_by_q[qid] = accuracy
+
+    # Align scores 1:1 by question_id for paired comparison
+    all_qids = sorted(set(list(nexus_by_q.keys()) + list(rag_by_q.keys())))
+    nexus_aligned = [nexus_by_q.get(qid) for qid in all_qids]
+    rag_aligned = [rag_by_q.get(qid) for qid in all_qids]
+    paired_comparison = compare_paired(nexus_aligned, rag_aligned, "NEXUS", "RAG")
+
+    if paired_comparison["paired_n"] == 0:
+        validation_errors.append(
+            "paired_n == 0: no question has both arms scored — paired comparison is impossible"
+        )
+
     is_valid = len(validation_errors) == 0
 
     # Determine output path
@@ -1462,6 +1509,7 @@ def main():
         "config": config_header,
         "graph_provenance": graph_provenance,
         "summary": summary,
+        "paired_comparison": paired_comparison,
         "results": results,
     }
     with open(final_output_path, "w", encoding="utf-8") as f:
