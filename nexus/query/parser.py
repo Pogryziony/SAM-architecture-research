@@ -14,6 +14,19 @@ from typing import Optional
 from nexus.graph.store import InMemoryGraphStore
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
+# Lazily loaded embedding resolver — imported on first use to avoid
+# sentence_transformers dependency at module import time.
+_embedding_module = None
+
+
+def _get_embedding_module():
+    """Lazy-import the embedding resolver module."""
+    global _embedding_module
+    if _embedding_module is None:
+        from nexus.query.embedding_resolver import NodeEmbeddingIndex
+        _embedding_module = NodeEmbeddingIndex
+    return _embedding_module
+
 
 # ── Intent keyword mapping ──
 
@@ -200,6 +213,7 @@ def parse_question(
     graph: InMemoryGraphStore,
     cutoff: float | None = None,
     config: NEXUSConfig = DEFAULT_CONFIG,
+    embedding_index=None,
 ) -> ParsedQuery:
     """
     Parse a natural language question into structured query intent.
@@ -209,6 +223,7 @@ def parse_question(
         graph: The graph store to resolve entities against
         cutoff: Fuzzy matching cutoff for entity resolution (default from config)
         config: NEXUSConfig with tunable parameters
+        embedding_index: Optional NodeEmbeddingIndex for semantic entity resolution
 
     Returns:
         ParsedQuery with resolved entity IDs, intent, and direction
@@ -256,16 +271,32 @@ def parse_question(
             entity_ids.insert(0, amid)
             existing_set.add(amid)
 
+    # ── Embedding-based semantic entity resolution ──
+    # Use all-MiniLM-L6-v2 to find nodes whose names/descriptions are
+    # semantically closest to the question. These are weaker than alias
+    # matches but stronger than pure substring matching.
+    embedding_scores: dict[str, float] = {}
+    if embedding_index is not None:
+        top_emb = embedding_index.query(question, top_k=10)
+        for node_id, score in top_emb:
+            if node_id not in existing_set:
+                entity_ids.insert(0, node_id)
+                existing_set.add(node_id)
+            embedding_scores[node_id] = score
+
     # ── Rank and cap entry nodes ──
     entity_ids = _rank_entities(graph, entity_ids, question=question,
                                 keyword_scores=keyword_scores, wb_matched=wb_matched,
-                                alias_matched=alias_matched, config=config)
+                                alias_matched=alias_matched, config=config,
+                                embedding_scores=embedding_scores)
 
     # ── Determine resolution method ──
     if not entity_ids:
         resolution_method = "none"
     elif alias_matched:
         resolution_method = "alias"
+    elif embedding_scores:
+        resolution_method = "embedding"
     else:
         resolution_method = "fuzzy"
 
@@ -531,6 +562,7 @@ def _rank_entities(
     wb_matched: set[str] | None = None,
     alias_matched: set[str] | None = None,
     config: NEXUSConfig = DEFAULT_CONFIG,
+    embedding_scores: dict[str, float] | None = None,
 ) -> list[str]:
     """
     Rank entity IDs by quality and return the top candidates (capped).
@@ -540,21 +572,22 @@ def _rank_entities(
 
     **Tier 1 — base_score determines acceptance (inclusion under cap):**
       1. **Alias match**: question contains a phrase mapped to this entity (+config.alias_match_boost)
-      2. **Keyword match count** (from property token index): +5.0 per match (≥3 tokens)
+      2. **Embedding match**: semantic similarity via embedding index (+config.embedding_match_boost)
+      3. **Keyword match count** (from property token index): +5.0 per match (≥3 tokens)
          or +0.5 per match (<3 tokens)
-      3. **Type priority**: from config.type_priority (lower = higher priority)
-      4. **Contextual type boost**: keywords in question boost relevant types (+0.10–0.15)
-      5. **Key-finding text match**: question words in key_finding/description (+config.property_keyword_boost)
-      6. **Curated node boost**: nodes with key_finding property (+config.curated_node_boost)
-      7. **Word-boundary match**: exact segment match beats fuzzy (+config.word_boundary_boost)
-      8. **Sub-run penalty**: deprioritize _top, _weighted, _baseline nodes (config.sub_run_penalty)
+      4. **Type priority**: from config.type_priority (lower = higher priority)
+      5. **Contextual type boost**: keywords in question boost relevant types (+0.10–0.15)
+      6. **Key-finding text match**: question words in key_finding/description (+config.property_keyword_boost)
+      7. **Curated node boost**: nodes with key_finding property (+config.curated_node_boost)
+      8. **Word-boundary match**: exact segment match beats fuzzy (+config.word_boundary_boost)
+      9. **Sub-run penalty**: deprioritize _top, _weighted, _baseline nodes (config.sub_run_penalty)
          unless the question mentions ranking/topK/weights
 
     **Tier 2 — tie-breakers (affect ordering within same base_score):**
-      9. **Intent-conditioned type prior**: metric questions → +boost for Experiment/Metric;
+     10. **Intent-conditioned type prior**: metric questions → +boost for Experiment/Metric;
          concept questions → +boost for Concept/Decision (config.type_prior_boost)
          — TIE-BREAKER ONLY: cannot push an entity above the cap over one with higher base_score
-     10. **Name length**: longer-span matches beat shorter ones
+     11. **Name length**: longer-span matches beat shorter ones
 
     **Final: Cap at config.max_entry_nodes entry nodes**
 
@@ -566,6 +599,8 @@ def _rank_entities(
         wb_matched = set()
     if alias_matched is None:
         alias_matched = set()
+    if embedding_scores is None:
+        embedding_scores = {}
     if not entity_ids:
         return []
 
@@ -612,6 +647,10 @@ def _rank_entities(
         # This is the strongest signal — override all other scores.
         alias_boost = config.alias_match_boost if eid in alias_matched else 0.0
 
+        # Embedding match: semantic similarity via all-MiniLM-L6-v2.
+        # Weaker than alias but stronger than keyword/text matching.
+        emb_boost = config.embedding_match_boost if eid in embedding_scores else 0.0
+
         # Keyword match boost: proportional to token match count.
         kw_count = keyword_scores.get(eid, 0)
         kw_boost = kw_count * 5.0 if kw_count >= 3 else kw_count * 0.5
@@ -635,7 +674,7 @@ def _rank_entities(
         # Base score: all ranking signals *except* type_prior.
         # This determines acceptance into the max_entry_nodes cap.
         base_score = (
-            alias_boost + kw_boost + base_type_prio + ctx_boost + prop_boost
+            alias_boost + emb_boost + kw_boost + base_type_prio + ctx_boost + prop_boost
             + curated_boost + wb_boost + sub_run_penalty
         )
         name_len = (len(eid) if eid else 0) * 2

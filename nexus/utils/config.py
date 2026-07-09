@@ -58,6 +58,7 @@ class NEXUSConfig:
     word_boundary_boost: float = 0.10
     sub_run_penalty: float = -0.15
     alias_match_boost: float = 50.0
+    embedding_match_boost: float = 3.0
     type_prior_boost: float = 0.15
 
     # Type priority (lower = higher priority)

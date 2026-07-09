@@ -139,6 +139,7 @@ def answer_question(
     beam_width: int | None = None,
     max_paths: int = 7,
     config: NEXUSConfig = DEFAULT_CONFIG,
+    embedding_index=None,
 ) -> dict[str, Any]:
     """
     Run the complete NEXUS pipeline on a natural language question.
@@ -160,6 +161,8 @@ def answer_question(
        beam_width: Beam width for search (default from config)
        max_paths: Maximum paths to include in evidence
        config: NEXUSConfig with tunable parameters
+       embedding_index: Optional NodeEmbeddingIndex for semantic entity resolution.
+           Auto-creates and builds from graph if None and needed.
 
     Returns:
        Dict with keys:
@@ -209,14 +212,15 @@ def answer_question(
 
     # ── Step 1: Parse ──
     t0 = time.perf_counter()
-    parsed = parse_question(question, graph, cutoff=0.6, config=config)
+    parsed = parse_question(question, graph, cutoff=0.6, config=config,
+                            embedding_index=embedding_index)
     timing["parse_time"] = round(time.perf_counter() - t0, 6)
 
     result["parsed_query"] = parsed
     result["entity_resolution_method"] = parsed.resolution_method
 
     # Map resolution method to a confidence score
-    _resolution_confidence_map = {"alias": 1.0, "fuzzy": 0.6, "none": 0.0}
+    _resolution_confidence_map = {"alias": 1.0, "embedding": 0.8, "fuzzy": 0.6, "none": 0.0}
     result["resolution_confidence"] = _resolution_confidence_map.get(
         parsed.resolution_method, 0.0,
     )

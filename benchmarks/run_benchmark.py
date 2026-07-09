@@ -42,6 +42,7 @@ from nexus.reasoning.model_interface import (
     get_available_model, FallbackModel, SynthesizingModel,
 )
 from nexus.reasoning.verifier import Verifier, VerificationResult
+from nexus.query.embedding_resolver import NodeEmbeddingIndex
 
 # Cost model for local-only pricing
 from benchmarks.cost_model import (
@@ -365,6 +366,7 @@ def run_nexus_pipeline(
     graph: InMemoryGraphStore,
     model: ModelInterface,
     verifier: Verifier,
+    embedding_index: Any = None,
 ) -> dict[str, Any]:
     """
     Run the full NEXUS pipeline and return timing + metrics.
@@ -387,6 +389,7 @@ def run_nexus_pipeline(
     try:
         result = answer_question(
             question_text, graph, model=model, verifier=verifier,
+            embedding_index=embedding_index,
         )
     except Exception as exc:
         elapsed = time.perf_counter() - t0
@@ -1232,6 +1235,11 @@ def main():
         graph, graph_provenance = build_benchmark_graph()
     print(f"Graph ready: {graph_provenance['node_count']} nodes, {graph_provenance['edge_count']} edges")
 
+    # ── Embedding index for semantic entity resolution ──
+    print("\nBuilding embedding index (all-MiniLM-L6-v2)...")
+    embedding_index = NodeEmbeddingIndex()
+    embedding_index.build_index(graph)
+
     # Pinned for reproducibility — change only in controlled experiments.
     from nexus.reasoning.model_interface import OllamaModel
     primary_model = OllamaModel(model_name="qwen2.5:latest")
@@ -1264,7 +1272,8 @@ def main():
         marker = f"[{i}/{total}]"
         
         # Run NEXUS pipeline (honest entity resolution — no known_entity_ids bypass)
-        nexus_result = run_nexus_pipeline(qtext, graph, nexus_model, verifier)
+        nexus_result = run_nexus_pipeline(qtext, graph, nexus_model, verifier,
+                                         embedding_index=embedding_index)
         
         # Entity resolution accuracy: check if parser found at least one correct entity.
         # Also accept sub-run prefixes: Exp_0_6_Validation_dense_openbook matches Exp_0_6_Validation.
