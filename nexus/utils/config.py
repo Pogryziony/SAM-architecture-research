@@ -34,7 +34,10 @@ class NEXUSConfig:
 
     Traversal:
         max_depth: Maximum path length in beam search
-        beam_width: Number of paths to keep at each depth step
+        beam_width: Number of paths to keep at each depth step.
+            Raised from 5->20 to exploit co-occurrence edge density (47:1).
+        edge_confidence_threshold: Skip edges below this confidence when
+            higher-confidence typed edges exist for the same node pair.
 
     Verification:
         hallucination_threshold: Maximum allowed hallucination rate
@@ -78,7 +81,8 @@ class NEXUSConfig:
 
     # Traversal
     max_depth: int = 4
-    beam_width: int = 5
+    beam_width: int = 25
+    edge_confidence_threshold: float = 0.3
 
     # Verification
     hallucination_threshold: float = 0.2

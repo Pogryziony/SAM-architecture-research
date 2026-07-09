@@ -802,6 +802,17 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
         if not r["nexus"].get("error") and r["nexus"].get("entity_resolution_hit") is not None
     )
     entity_resolution_rate = round(er_hits / er_total, 4) if er_total > 0 else 0.0
+    
+    # Entity accuracy: resolved entities match GT expected entities
+    ea_hits = sum(
+        1 for r in results
+        if not r["nexus"].get("error") and r["nexus"].get("entity_accuracy") is True
+    )
+    ea_total = sum(
+        1 for r in results
+        if not r["nexus"].get("error") and r["nexus"].get("entity_accuracy") is not None
+    )
+    entity_accuracy_rate = round(ea_hits / ea_total, 4) if ea_total > 0 else 0.0
 
     # ── Entity resolution by split: first-30 vs remaining (held-out) ──
     # The first 30 questions have good alias coverage (manually aliased in
@@ -899,6 +910,7 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
         "accuracy_by_hops": accuracy_by_hops,
         "accuracy_by_type": accuracy_by_type,
         "entity_resolution_rate": entity_resolution_rate,
+        "entity_accuracy": entity_accuracy_rate,
         "entity_resolution": {
             "hits": er_hits,
             "total": er_total,
@@ -1002,6 +1014,10 @@ def print_comparison(summary: dict[str, Any]):
         er = summary["entity_resolution"]
         er_str = f"{er['rate']:.1%} ({er['hits']}/{er['total']})"
         print(f"  {'Entity resolution rate':<38} {er_str:>10} {'N/A':>12}")
+    if summary.get("entity_accuracy"):
+        ea = summary["entity_accuracy"]
+        ea_str = f"{ea:.1%}" if isinstance(ea, float) else str(ea)
+        print(f"  {'Entity accuracy (vs GT expected)':<38} {ea_str:>10} {'N/A':>12}")
 
     # Entity resolution by split (first-30 vs remaining)
     if summary.get("entity_resolution_by_split"):
@@ -1279,14 +1295,19 @@ def main():
         # Also accept sub-run prefixes: Exp_0_6_Validation_dense_openbook matches Exp_0_6_Validation.
         gt_entity_ids: list[str] = q.get("entities", [])
         nexus_parsed_ids: list[str] = nexus_result.get("parsed_entity_ids", [])
-        entity_resolution_hit = bool(
+        
+        # Resolution success: did we resolve ANY entities?
+        entity_resolution_hit = bool(nexus_parsed_ids)
+        # Entity accuracy: did we resolve the EXPECTED entities?
+        entity_accuracy = bool(
             gt_entity_ids and any(
                 gid == pid or pid.startswith(gid + "_")
                 for gid in gt_entity_ids
                 for pid in nexus_parsed_ids
             )
-        )
+        ) if gt_entity_ids else None  # None when GT has no entities listed
         nexus_result["entity_resolution_hit"] = entity_resolution_hit
+        nexus_result["entity_accuracy"] = entity_accuracy
         nexus_result["gt_entity_ids"] = gt_entity_ids
         
         # Compute accuracy for NEXUS (fuzzy + exact)

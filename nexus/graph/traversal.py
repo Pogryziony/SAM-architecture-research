@@ -60,6 +60,10 @@ def beam_search(
             for edge in edges:
                 if edge_types and edge.type not in edge_types:
                     continue
+                
+                # Skip low-confidence edges when we have many options
+                if edge.confidence < min(0.3, getattr(config, 'edge_confidence_threshold', 0.3)):
+                    continue
 
                 # Determine next node and direction flag
                 if direction == "out":
