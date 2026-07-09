@@ -1,0 +1,869 @@
+{
+  "summary": {
+    "title": "Tier-3 Cascade Diagnostic",
+    "timestamp": "20260709T183718Z",
+    "config_tier3_backend": "synth",
+    "total_questions": 34,
+    "tier3_total": 24,
+    "tier3_ins_count": 0,
+    "tier3_ins_rate": 0.0,
+    "tier3_accuracy": 0.0417,
+    "tier3_accurate_count": 1,
+    "cascade_distribution": {
+      "level_3": 24,
+      "level_1": 10
+    },
+    "total_time_s": 238.1
+  },
+  "results": [
+    {
+      "question_id": "q013",
+      "question": "What dataset size was used for the dense synthetic experiments?",
+      "ground_truth": "19,000 training examples, 3,800 validation, 3,800 test, with 1,650 slots and 853 vocabulary tokens.",
+      "answer": "99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.\n[Exp_0_5_DenseDataset] Dense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            853.0,
+            1650.0,
+            3800.0,
+            19000.0
+          ],
+          "pred_numbers": [
+            0.99,
+            0.9987,
+            1.0,
+            21.8
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 4,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 7.948
+    },
+    {
+      "question_id": "q020",
+      "question": "What accuracy does SAM achieve with exactly 1 distractor in controlled noisy memory?",
+      "ground_truth": "99.82% overall with 99.50% on 3-hop \u00e2\u20ac\u201d effectively no degradation from clean oracle memory.",
+      "answer": "SAM achieves 99.82% overall accuracy with exactly 1 distractor in controlled noisy memory.",
+      "cascade_level": 1,
+      "is_insufficient": false,
+      "is_correct": true,
+      "score": {
+        "fuzzy_accuracy": 1.0,
+        "exact_accuracy": 0.5,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.995,
+            0.9982
+          ],
+          "pred_numbers": [
+            0.9982,
+            1.0
+          ],
+          "fuzzy_matches": 2,
+          "total_gt": 2,
+          "fuzzy_score": 1.0,
+          "exact_score": 0.5,
+          "entity_overlap": [
+            "99.82%"
+          ]
+        }
+      },
+      "elapsed_s": 5.138
+    },
+    {
+      "question_id": "q046",
+      "question": "Which experiments belong to the 'Core Validation' phase?",
+      "ground_truth": "Experiments 0.6 (Full Validation), 0.7 (External Text Query), 0.8 (Aggregation Variants), and 0.9 (Oracle-Filter).",
+      "answer": "[Exp_0_8_Aggregation] Tested weighted, threshold, softmax-mass, score-gap selection.\n[Exp_0_7_ExternalText] External text query bypasses hidden-state projection. Tested topK sweep.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 7.304
+    },
+    {
+      "question_id": "q071",
+      "question": "What accuracy did the dense baseline achieve in experiment 0.6?",
+      "ground_truth": "68.74% overall, with 91.50% on 1-hop, 71.14% on 2-hop, and 22.00% on 3-hop \u00e2\u20ac\u201d identical to SAM core_only, validating architecture parity.",
+      "answer": "The dense baseline achieved 1-hop_accuracy of 91.5% in experiment 0.6.",
+      "cascade_level": 1,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": 0.25,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.22,
+            0.6874,
+            0.7114,
+            0.915
+          ],
+          "pred_numbers": [
+            0.6,
+            0.915
+          ],
+          "fuzzy_matches": 1,
+          "total_gt": 4,
+          "fuzzy_score": 0.25,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 5.123
+    },
+    {
+      "question_id": "q073",
+      "question": "What is the architecture of the SAM core transformer?",
+      "ground_truth": "d_model=384, 6 layers, 6 attention heads, d_ff=1536, with RMSNorm and memory injection at every memory_every-th block.",
+      "answer": "[Concept_OracleMemory] Proves SAM core CAN use external memory \u2014 100% accuracy.\nAll_required@32 = 100%. But SAM still = core_only.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            6.0
+          ],
+          "pred_numbers": [
+            1.0
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 1,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 7.401
+    },
+    {
+      "question_id": "q084",
+      "question": "What are the intent types recognized by the NEXUS query parser?",
+      "ground_truth": "causal_explanation (Why does X happen?), impact_analysis (What does X affect?), factual_lookup (What is X?), comparison (X vs Y), diagnostic (Why is X failing?), and dependency_chain (What does X depend on?).",
+      "answer": "[Decision_PivotToNEXUS] Pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning).\n[Exp_0_7_ExternalText] External text query bypasses hidden-state projection. Tested topK sweep.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 7.468
+    },
+    {
+      "question_id": "q089",
+      "question": "Why is the synthetic dataset limited to 853 vocabulary tokens?",
+      "ground_truth": "The dataset is template-generated with made-up entities and properties. The small vocabulary is a design choice for controlled experiments \u00e2\u20ac\u201d it keeps the model size small and training fast, focusing on reasoning patterns rather than language modeling.",
+      "answer": "Based on the provided evidence, we can conclude that Experiment 0.3 \u2014 PKM Candidate Generation is a dependency of Experiment 0.6 \u2014 Full Validation. This relationship is supported by multiple paths in the knowledge graph:\n\n1. **Path 1 (score: 0.112):**\n   - Exp_0_3_PKM_Candidates depends on Exp_0_5_DenseDataset\n   - Exp_0_5_DenseDataset depends on Exp_0_3_PKM_Candidates\n   - Exp_0_6_Validation depends on Exp_0_5_DenseDataset\n\n2. **Path 4 (score: 0.056):**\n   - Exp_0_3_PKM_Candidates depends on Exp_0_5_DenseDataset\n   - Exp_0_5_DenseDataset depends on Exp_0_3_PKM_Candidates\n   - Exp_0_6_Validation depends on Exp_0_5_DenseDataset\n   - Exp_0_6_Validation_core_only is derived from Exp_0_6_Validation\n   - Metric_Exp_0_6_Validation_core_only_val_accuracy_overall is derived from Exp_0_6_Validation",
+      "cascade_level": 1,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 6.933
+    },
+    {
+      "question_id": "q092",
+      "question": "What was the Rec@8 improvement from the original dataset to the dense dataset?",
+      "ground_truth": "From 6.9% to 99.0% \u00e2\u20ac\u201d a 14x improvement achieved by increasing examples per slot from 1.5 to 21.8 and ensuring all slots appear in all data splits.",
+      "answer": "[Exp_0_5_DenseDataset] Dense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": 0.5,
+        "exact_accuracy": 0.5,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.069,
+            0.99,
+            1.5,
+            21.8
+          ],
+          "pred_numbers": [
+            0.99,
+            1.0,
+            21.8
+          ],
+          "fuzzy_matches": 2,
+          "total_gt": 4,
+          "fuzzy_score": 0.5,
+          "exact_score": 0.5,
+          "entity_overlap": [
+            "99.0%"
+          ]
+        }
+      },
+      "elapsed_s": 7.32
+    },
+    {
+      "question_id": "q094",
+      "question": "How does the NEXUS ingestion pipeline handle deduplication?",
+      "ground_truth": "Fuzzy name matching (Levenshtein distance < 3), type disambiguation (resolving entity type from context), and merge strategy (newer properties override older, edges are union with confidence averaging).",
+      "answer": "Based on the provided evidence, the key findings and paths in the knowledge graph, we can conclude that:\n\n1. **Experiment 0 \u2014 Pipeline Diagnosis** identified critical bugs in the retrieval process, which was a bottleneck.\n\n2. The diagnosis led to improvements in subsequent experiments:\n   - **Experiment 0.2 \u2014 Compact PKM Retrieval**: Addressed some of the issues found.\n   - **Experiment 0.3 \u2014 PKM Candidate Generation**: Further refined the retrieval and candidate generation processes.\n   - **Experiment 0.5 \u2014 Dense Dataset Fix**: Fixed issues related to dense dataset handling, which improved overall performance.\n\n3. The improvements in Experiment 0.5 led to better validation results:\n   - **Experiment 0.6 \u2014 Full Validation** showed significant accuracy improvements on the OpenBookQA dataset.\n   - On the validation set, it achieved 100% accuracy for all hop counts (1-hop, 2-hop, and 3-hop).\n   - The best validation loss was very low at 0.0035.\n\n4. **Experiment 0.7 \u2014 External Text Query** and **Experiment 0.8 \u2014 Aggregation & Selection Variants** further validated the robustness of the system by testing it with",
+      "cascade_level": 1,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 6.978
+    },
+    {
+      "question_id": "q098",
+      "question": "What is the hybrid RAG + NEXUS approach and when would you use it?",
+      "ground_truth": "Graph provides the skeleton (what relates to what, why). RAG provides the flesh (detailed explanations, examples, nuances from source documents). Combined context fed to the reasoning model. Useful when both structural relationships and textual detail are needed.",
+      "answer": "Based on the provided information, here are some key points and answers to your questions:\n\n1. The experiments were conducted with different levels of noise in the memory:\n   - +4 noise level: Overall accuracy 98.1%\n   - +8 noise level: Overall accuracy 91.58%\n   - +16 noise level: Overall accuracy 75.42%\n\n2. The best performance was observed at the +4 noise level, with an overall accuracy of 98.1%.\n\n3. As expected, increasing the noise level led to a decrease in overall accuracy:\n   - +4: 98.1%\n   - +8: 91.58%\n   - +16: 75.42%\n\n4. The recall@32 metric was consistently 100% across all noise levels, indicating that the model could always retrieve at least one correct answer when asked.\n\n5. The 1-hop accuracy remained relatively high even with increased noise:\n   - +4: 98.1%\n   - +8: 95.9%\n   - +16: 92.8%\n\n6. However, the 3-hop accuracy dropped significantly as noise increased",
+      "cascade_level": 1,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 7.011
+    },
+    {
+      "question_id": "q099",
+      "question": "What was the training budget for SAM experiments?",
+      "ground_truth": "3-8 epochs, batch_size=64, learning rate=3e-4, 200 warmup steps, trained on CPU. Oracle-filter configs used 8 epochs matching sam_tiny_dense.yaml.",
+      "answer": "99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.\n[Exp_0_13A_NoisyMemory] SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            8.0,
+            200.0
+          ],
+          "pred_numbers": [
+            0.9987
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 2,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 8.079
+    },
+    {
+      "question_id": "q104",
+      "question": "Why is the NEXUS verifier rule-based rather than LLM-based?",
+      "ground_truth": "Deterministic, fast, and reliable. Using an LLM to verify another LLM introduces the same hallucination risk. A rule-based verifier checks entity presence, relation presence, and contradiction \u00e2\u20ac\u201d objective, reproducible checks.",
+      "answer": "Based on the provided information, it appears that YouQuery is a dependency for Experiment 0.10 \u2014 Required-Set Retrieval Diagnostics. This can be inferred from the fact that there are multiple paths connecting YouQuery to Experiment 0.10 through other experiments (Exp_0_6, Exp_0_7, Exp_0_8, and Exp_0_9).\n\nThe key evidence supporting this is:\n\n- **Path 1**: Exp_0_6_Validation -> Exp_0_7_ExternalText -> Exp_0_8_Aggregation -> Exp_0_9_OracleFilter -> Exp_0_10_RequiredSet\n- **Paths 2 to 5**: Similar paths connecting YouQuery through different experiments leading to Exp_0_10_RequiredSet.\n\nTherefore, the answer is that YouQuery is a dependency for Experiment 0.10 \u2014 Required-Set Retrieval Diagnostics.",
+      "cascade_level": 1,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 6.636
+    },
+    {
+      "question_id": "q117",
+      "question": "What metrics are used for evaluation in the NEXUS Phase 4 benchmark?",
+      "ground_truth": "Answer accuracy, hallucination rate, evidence precision, context size (bytes), end-to-end latency, traversal latency, RAM usage, source traceability, and answer completeness.",
+      "answer": "[Decision_PivotToNEXUS] Pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning).\n[Exp_0_10_RequiredSet] all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 7.339
+    },
+    {
+      "question_id": "q125",
+      "question": "How was the SAM dense baseline validated to be genuinely different from SAM core_only?",
+      "ground_truth": "Checkpoint identity analysis showed different SHA256 hashes and file sizes. Prediction comparison on 50 examples showed 66% identical predictions but 34% different \u00e2\u20ac\u201d the identical 68.74% aggregate accuracy was a coincidence of balanced differences.",
+      "answer": "Based on the information provided, here are the key points that support the decision to pivot to NEXUS:\n\n1. **Concept_ArchitectureWorks**:\n   - Experiment 0.13A \u2014 Controlled Noisy Memory Tolerance validates Concept_ArchitectureWorks (confidence: 0.95)\n   - This concept is further supported by Experiment 0.6 \u2014 Full Validation, which also validates it with a confidence of 0.95.\n\n2. **Concept_PivotToNEXUS**:\n   - Experiment 0.13A \u2014 Controlled Noisy Memory Tolerance validates Concept_PivotToNEXUS (confidence: 0.95)\n   - This concept is directly supported by the experimental evidence from Experiment 0.13A.\n\n3. **Experimental Evidence**:\n   - The experiments show varying levels of accuracy and recall for different noise tolerance settings, indicating that the system can handle some level of noise but not extreme amounts.\n   - For example, at +8 noise, the overall accuracy is still relatively high (79.33%), while at +16 noise, it drops significantly to 75.42%.\n\n4. **Pivot Decision**:\n   - The pivot decision is explicitly stated",
+      "cascade_level": 1,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            0.34,
+            0.66,
+            0.6874,
+            50.0
+          ],
+          "pred_numbers": [
+            0.6,
+            0.7542,
+            0.95,
+            1.0,
+            2.0,
+            3.0,
+            4.0
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 4,
+          "fuzzy_score": 0.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 7.011
+    },
+    {
+      "question_id": "q133",
+      "question": "What research question did the pipeline diagnosis experiment investigate?",
+      "ground_truth": "The experiment investigated whether pipeline diagnosis could be achieved or understood within the SAM architecture.",
+      "answer": "[Exp_0_Diagnosis] Found and fixed 3 critical bugs. Retrieval is the bottleneck.\nSOLVED (100%). Ranking generalizes poorly (29% val).",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 8.247
+    },
+    {
+      "question_id": "q134",
+      "question": "Which research phase does the pipeline diagnosis experiment belong to?",
+      "ground_truth": "It belongs to the 'Pipeline Setup' phase of SAM research.",
+      "answer": "[Exp_0_Diagnosis] Found and fixed 3 critical bugs. Retrieval is the bottleneck.\nSOLVED (100%). Ranking generalizes poorly (29% val).",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 8.16
+    },
+    {
+      "question_id": "q135",
+      "question": "What problem or limitation from previous experiments did the pipeline diagnosis experiment address?",
+      "ground_truth": "It addressed the limitations discovered in the preceding experiment in the dependency chain.",
+      "answer": "The pipeline diagnosis experiment addressed the retrieval bottleneck identified in previous experiments.",
+      "cascade_level": 1,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 5.174
+    },
+    {
+      "question_id": "q137",
+      "question": "If the pipeline diagnosis experiment had failed, what would have been the consequence?",
+      "ground_truth": "The research would have had to backtrack or find an alternative approach for the Pipeline Setup phase.",
+      "answer": "[Exp_0_Diagnosis] Found and fixed 3 critical bugs. Retrieval is the bottleneck.\nSOLVED (100%). Ranking generalizes poorly (29% val).",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 8.108
+    },
+    {
+      "question_id": "q139",
+      "question": "Summarize the pipeline diagnosis experiment in one sentence.",
+      "ground_truth": "Found 3 bugs; retrieval is bottleneck (6.9% Rec@8)",
+      "answer": "[Exp_0_Diagnosis] Found and fixed 3 critical bugs. Retrieval is the bottleneck.\nSOLVED (100%). Ranking generalizes poorly (29% val).",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": true,
+      "score": {
+        "fuzzy_accuracy": 1.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [
+            3.0
+          ],
+          "pred_numbers": [
+            3.0
+          ],
+          "fuzzy_matches": 1,
+          "total_gt": 1,
+          "fuzzy_score": 1.0,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 8.162
+    },
+    {
+      "question_id": "q141",
+      "question": "What research question did the compact PKM retrieval experiment investigate?",
+      "ground_truth": "The experiment investigated whether compact PKM retrieval could be achieved or understood within the SAM architecture.",
+      "answer": "25.8% Rec@8. Oracle text: 100% \u2014 core CAN use memory.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 6.906
+    },
+    {
+      "question_id": "q145",
+      "question": "If the compact PKM retrieval experiment had failed, what would have been the consequence?",
+      "ground_truth": "The research would have had to backtrack or find an alternative approach for the Pipeline Setup phase.",
+      "answer": "25.8% Rec@8. Oracle text: 100% \u2014 core CAN use memory.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 6.838
+    },
+    {
+      "question_id": "q146",
+      "question": "What experiment directly builds on the findings of the compact PKM retrieval experiment?",
+      "ground_truth": "Check the graph: Exp_0_2_CompactPKM has incoming depends_on edges from the next experiment in the chain.",
+      "answer": "Exp_0_3_PKM_Candidates directly builds on the findings of the compact PKM retrieval experiment.",
+      "cascade_level": 1,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": 0.0,
+        "exact_accuracy": 0.0,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": 0.0,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 4.725
+    },
+    {
+      "question_id": "q150",
+      "question": "Which research phase does the PKM candidate generation experiment belong to?",
+      "ground_truth": "It belongs to the 'Pipeline Setup' phase of SAM research.",
+      "answer": "SOLVED (100%). Ranking generalizes poorly (29% val).",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 6.774
+    },
+    {
+      "question_id": "q153",
+      "question": "If the PKM candidate generation experiment had failed, what would have been the consequence?",
+      "ground_truth": "The research would have had to backtrack or find an alternative approach for the Pipeline Setup phase.",
+      "answer": "SOLVED (100%). Ranking generalizes poorly (29% val).",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 6.776
+    },
+    {
+      "question_id": "q158",
+      "question": "Which research phase does the dense dataset experiment belong to?",
+      "ground_truth": "It belongs to the 'Pipeline Setup' phase of SAM research.",
+      "answer": "[Exp_0_5_DenseDataset] Dense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.\n[Exp_0_13A_NoisyMemory] SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 7.393
+    },
+    {
+      "question_id": "q161",
+      "question": "If the dense dataset experiment had failed, what would have been the consequence?",
+      "ground_truth": "The research would have had to backtrack or find an alternative approach for the Pipeline Setup phase.",
+      "answer": "[Exp_0_5_DenseDataset] Dense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.\n[Exp_0_13A_NoisyMemory] SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 7.486
+    },
+    {
+      "question_id": "q166",
+      "question": "Which research phase does the full validation experiment belong to?",
+      "ground_truth": "It belongs to the 'Core Validation' phase of SAM research.",
+      "answer": "The full validation experiment belongs to the validation phase.",
+      "cascade_level": 1,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 5.025
+    },
+    {
+      "question_id": "q169",
+      "question": "If the full validation experiment had failed, what would have been the consequence?",
+      "ground_truth": "The research would have had to backtrack or find an alternative approach for the Core Validation phase.",
+      "answer": "99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 7.782
+    },
+    {
+      "question_id": "q177",
+      "question": "If the external text query experiment had failed, what would have been the consequence?",
+      "ground_truth": "The research would have had to backtrack or find an alternative approach for the Core Validation phase.",
+      "answer": "[Exp_0_7_ExternalText] External text query bypasses hidden-state projection. Tested topK sweep.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 7.371
+    },
+    {
+      "question_id": "q182",
+      "question": "Which research phase does the aggregation variants experiment belong to?",
+      "ground_truth": "It belongs to the 'Core Validation' phase of SAM research.",
+      "answer": "[Exp_0_8_Aggregation] Tested weighted, threshold, softmax-mass, score-gap selection.\n[Exp_0_13A_NoisyMemory] SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 6.998
+    },
+    {
+      "question_id": "q185",
+      "question": "If the aggregation variants experiment had failed, what would have been the consequence?",
+      "ground_truth": "The research would have had to backtrack or find an alternative approach for the Core Validation phase.",
+      "answer": "[Exp_0_8_Aggregation] Tested weighted, threshold, softmax-mass, score-gap selection.\n[Exp_0_13A_NoisyMemory] SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 6.983
+    },
+    {
+      "question_id": "q190",
+      "question": "Which research phase does the oracle filter & multi-query experiment belong to?",
+      "ground_truth": "It belongs to the 'Core Validation' phase of SAM research.",
+      "answer": "[Exp_0_9_OracleFilter] Oracle filter achieves 79.95%. Multi-query implemented but not yet effective.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 7.146
+    },
+    {
+      "question_id": "q193",
+      "question": "If the oracle filter & multi-query experiment had failed, what would have been the consequence?",
+      "ground_truth": "The research would have had to backtrack or find an alternative approach for the Core Validation phase.",
+      "answer": "[Exp_0_9_OracleFilter] Oracle filter achieves 79.95%. Multi-query implemented but not yet effective.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": null,
+        "exact_accuracy": null,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": null,
+          "entity_overlap": []
+        }
+      },
+      "elapsed_s": 7.194
+    },
+    {
+      "question_id": "q194",
+      "question": "What experiment directly builds on the findings of the oracle filter & multi-query experiment?",
+      "ground_truth": "Check the graph: Exp_0_9_OracleFilter has incoming depends_on edges from the next experiment in the chain.",
+      "answer": "[Exp_0_9_OracleFilter] Oracle filter achieves 79.95%. Multi-query implemented but not yet effective.",
+      "cascade_level": 3,
+      "is_insufficient": false,
+      "is_correct": false,
+      "score": {
+        "fuzzy_accuracy": 0.5,
+        "exact_accuracy": 0.5,
+        "scoring_detail": {
+          "gt_numbers": [],
+          "pred_numbers": [
+            0.7995
+          ],
+          "fuzzy_matches": 0,
+          "total_gt": 0,
+          "fuzzy_score": null,
+          "exact_score": 0.5,
+          "entity_overlap": [
+            "exp_0_9_oraclefilter"
+          ]
+        }
+      },
+      "elapsed_s": 7.201
+    }
+  ]
+}

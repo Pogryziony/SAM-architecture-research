@@ -804,12 +804,15 @@ def _collect_source_snippets(
     snippets: list[dict[str, Any]] = []
     for node, _ in scored[:2]:
         snippet = node.properties.get("source_snippet", "")
-        if snippet:
-            snippets.append({
-                "entity": node.id,
-                "text": snippet,
-                "source": node.sources[0] if node.sources else "",
-            })
+        ctx = node.properties.get("source_context", "")
+        if snippet or ctx:
+            entry: dict[str, Any] = {"entity": node.id,
+                "source": node.sources[0] if node.sources else ""}
+            if snippet:
+                entry["text"] = snippet[:400]  # truncated for budget
+            if ctx:
+                entry["context"] = ctx[:500]   # full section text
+            snippets.append(entry)
     return snippets
 
 

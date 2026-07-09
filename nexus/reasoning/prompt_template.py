@@ -504,11 +504,15 @@ def build_prompt(question: str, evidence_json: str) -> str:
             for snip in snippets[:2]:
                 entity = snip.get("entity", "")
                 text = snip.get("text", "")
+                ctx = snip.get("context", "")
                 if text:
-                    # Truncate long snippets to keep total evidence under token budget
                     if len(text) > 400:
                         text = text[:397] + "..."
                     parts.append(f"  [{entity}] {text}")
+                if ctx:
+                    if len(ctx) > 500:
+                        ctx = ctx[:497] + "..."
+                    parts.append(f"  [{entity} context] {ctx}")
 
         # ── Edge-based facts (relation chains) ──
         if facts:

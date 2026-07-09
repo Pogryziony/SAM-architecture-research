@@ -817,6 +817,30 @@ def _extract_source_snippet(text: str, line_num: int, entity_name: str = "") -> 
     return snippet
 
 
+def _extract_source_context(text: str, line_num: int) -> str:
+    """Extract full markdown section (header to header) containing line_num."""
+    if not text or line_num <= 0:
+        return ""
+    lines = text.split('\n')
+    if line_num > len(lines):
+        return ""
+    start = 0
+    for i in range(line_num - 1, -1, -1):
+        if re.match(r'^#{1,3}\s+', lines[i]):
+            start = i
+            break
+    end = len(lines)
+    for i in range(line_num, len(lines)):
+        if re.match(r'^#{1,3}\s+', lines[i]):
+            end = i
+            break
+    ctx = '\n'.join(lines[start:end]).strip()
+    words = ctx.split()
+    if len(words) > 500:
+        ctx = ' '.join(words[:500]) + '...'
+    return ctx
+
+
 def _extract_plain_text_entities(text: str, source_path: str) -> list[dict[str, Any]]:
     """
     Extract entity mentions that the backtick-based extractor misses.
