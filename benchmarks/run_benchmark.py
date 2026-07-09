@@ -24,6 +24,7 @@ import argparse
 import datetime
 import json
 import re
+import subprocess
 import sys
 import time
 from pathlib import Path
@@ -530,10 +531,124 @@ def run_baseline(
     }
 
 
+def run_rag_retrieval(
+    question_text: str,
+    graph: InMemoryGraphStore,
+    model: ModelInterface,
+) -> dict[str, Any]:
+    """Run simple keyword-based RAG retrieval + model generation.
+
+    Uses the graph's keyword index (find_entity_by_keywords) to locate
+    relevant entities, extracts their properties as evidence, and feeds
+    them to the model as context.
+    """
+    t0 = time.perf_counter()
+
+    # Keyword search in graph
+    keyword_hits = graph.find_entity_by_keywords(question_text)
+    evidence_texts: list[str] = []
+    for nid, _ in keyword_hits[:10]:  # top 10 matching entities
+        node = graph.get_node(nid)
+        if node is None:
+            continue
+        props = node.properties
+        name = props.get("name", nid)
+        desc = props.get("description", "")
+        key_finding = props.get("key_finding", "")
+        parts = [name]
+        if key_finding:
+            parts.append(f"key_finding: {key_finding}")
+        if desc:
+            parts.append(desc)
+        evidence_texts.append(". ".join(parts))
+
+    evidence_raw = " | ".join(evidence_texts) if evidence_texts else ""
+    retrieval_tokens = _count_tokens(evidence_raw)
+
+    evidence_block = (
+        evidence_raw if evidence_raw
+        else "(No evidence found in the knowledge graph.)"
+    )
+
+    prompt = (
+        "SYSTEM: You are a precise reasoning assistant. "
+        "Answer based on the evidence provided. "
+        "If the evidence is insufficient, say so honestly.\n\n"
+        f"QUESTION: {question_text}\n\n"
+        f"EVIDENCE:\n  {evidence_block}\n\n"
+        "ANSWER:"
+    )
+
+    try:
+        answer = model.generate(prompt)
+    except Exception as exc:
+        elapsed = time.perf_counter() - t0
+        return {
+            "answer": f"[ERROR] {exc}",
+            "is_insufficient": False,
+            "latency_s": round(elapsed, 4),
+            "prompt_tokens": _count_tokens(prompt),
+            "completion_tokens": 0,
+            "retrieval_tokens": retrieval_tokens,
+            "error": str(exc),
+        }
+    elapsed = time.perf_counter() - t0
+
+    is_insufficient = "insufficient evidence" in answer.lower()
+
+    return {
+        "answer": answer,
+        "is_insufficient": is_insufficient,
+        "latency_s": round(elapsed, 4),
+        "prompt_tokens": _count_tokens(prompt),
+        "completion_tokens": _count_tokens(answer),
+        "retrieval_tokens": retrieval_tokens,
+        "error": None,
+    }
+
+
+def validate_benchmark_results(results: list[dict], config: dict) -> list[str]:
+    """Validate benchmark results. Returns list of error messages (empty = valid)."""
+    errors = []
+
+    # Check NEXUS arm
+    nexus_results = [r for r in results if r.get("arm_mode") == "nexus"]
+    nexus_tokens = [r.get("retrieval_tokens") or 0 for r in nexus_results]
+    if nexus_results and sum(nexus_tokens) == 0:
+        errors.append("NEXUS arm: all retrieval_tokens == 0 — evidence pack empty")
+
+    # Check RAG arm
+    rag_results = [r for r in results if r.get("arm_mode") == "rag_retrieval"]
+    rag_tokens = [r.get("retrieval_tokens") or 0 for r in rag_results]
+    if rag_results and sum(rag_tokens) == 0:
+        errors.append("RAG arm labeled rag_retrieval but all retrieval_tokens == 0 — check config")
+
+    # Check both arms used same model backend
+    nexus_models = set(r.get("nexus", {}).get("model", "") for r in results)
+    rag_models = set(r.get("baseline", {}).get("model", "") for r in results)
+    if nexus_models and rag_models and nexus_models != rag_models:
+        errors.append(f"Model mismatch: NEXUS={nexus_models}, RAG={rag_models}")
+
+    return errors
+
+
 # ---- Metrics computation ----
 
 def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
-    """Compute aggregate metrics from benchmark results."""
+    """Compute aggregate metrics from benchmark results.
+
+    Deduplicates rows by question_id to avoid double-counting when both
+    NEXUS and RAG arm rows are present for the same question.
+    """
+    # Deduplicate: keep the first row per question_id
+    seen: set[str] = set()
+    deduped: list[dict[str, Any]] = []
+    for r in results:
+        qid = r.get("question_id", "")
+        if qid not in seen:
+            seen.add(qid)
+            deduped.append(r)
+    results = deduped
     total = len(results)
     nexus_errors = sum(1 for r in results if r["nexus"].get("error"))
     baseline_errors = sum(1 for r in results if r["baseline"].get("error"))
@@ -1087,6 +1202,11 @@ def main():
         "--no-populate", action="store_true",
         help="Skip graph population (use existing populated graph -- for debugging)"
     )
+    parser.add_argument(
+        "--arm-rag", type=str, default="evidence_blind",
+        choices=["evidence_blind", "rag_retrieval"],
+        help="RAG arm mode: evidence_blind (no graph access) or rag_retrieval (keyword search)"
+    )
     args = parser.parse_args()
 
     # Resolve paths
@@ -1115,12 +1235,23 @@ def main():
     # Pinned for reproducibility — change only in controlled experiments.
     from nexus.reasoning.model_interface import OllamaModel
     primary_model = OllamaModel(model_name="qwen2.5:latest")
+    model_name_nexus = primary_model._model_name  # e.g. "qwen2.5:latest"
     # Wrap in FallbackModel: uses LLM first, falls back to SynthesizingModel
     # when the LLM says "insufficient evidence" but evidence IS present
     nexus_model = FallbackModel(primary_model)
     verifier = Verifier(hallucination_threshold=0.2)
-    baseline_model = EvidenceBlindModel()
 
+    # RAG arm: evidence-blind by default, configurable to rag_retrieval
+    rag_arm_mode: str = args.arm_rag
+    if rag_arm_mode == "rag_retrieval":
+        # For RAG retrieval, use the same LLM (without Fallback) with keyword evidence
+        rag_model = OllamaModel(model_name="qwen2.5:latest")
+        model_name_rag = rag_model._model_name
+    else:
+        rag_model = EvidenceBlindModel()
+        model_name_rag = model_name_nexus  # same underlying model
+
+    print(f"\nArm config: NEXUS={model_name_nexus} (nexus), RAG={model_name_rag} ({rag_arm_mode})")
     print(f"\nRunning benchmark on {total} questions...\n")
 
     results: list[dict[str, Any]] = []
@@ -1156,17 +1287,25 @@ def main():
         nexus_result["accuracy"] = nexus_scores["fuzzy_accuracy"]
         nexus_result["exact_accuracy"] = nexus_scores["exact_accuracy"]
         nexus_result["scoring_detail"] = nexus_scores["scoring_detail"]
+        nexus_result["model"] = model_name_nexus
+
+        # Compute NEXUS retrieval tokens from evidence_raw
+        nexus_retrieval_tokens = _count_tokens(nexus_result.get("evidence_raw", ""))
+
+        # Run RAG arm (evidence-blind or retrieval-based)
+        if rag_arm_mode == "rag_retrieval":
+            baseline_result = run_rag_retrieval(qtext, graph, rag_model)
+        else:
+            baseline_result = run_baseline(qtext, rag_model)
         
-        # Run evidence-blind baseline
-        baseline_result = run_baseline(qtext, baseline_model)
-        
-        # Compute accuracy for baseline (fuzzy + exact)
+        # Compute accuracy for baseline/RAG (fuzzy + exact)
         baseline_scores = compute_key_fact_score(
             baseline_result["answer"], ground_truth
         )
         baseline_result["accuracy"] = baseline_scores["fuzzy_accuracy"]
         baseline_result["exact_accuracy"] = baseline_scores["exact_accuracy"]
         baseline_result["scoring_detail"] = baseline_scores["scoring_detail"]
+        baseline_result["model"] = model_name_rag
 
         # Compute conciseness metric
         question_type = q.get("question_type", "factual")
@@ -1201,7 +1340,16 @@ def main():
               f"nexus={nexus_result['latency_s']:.3f}s (gen={gen_time:.3f}s, {nexus_result['prompt_tokens']}->{nexus_result['completion_tokens']}tok) | "
               f"baseline={baseline_result['latency_s']:.3f}s (fuzzy={bas_fuzzy if bas_fuzzy is not None else 'N/A'})")
         
-        results.append({
+        # Determine rag retrieval tokens
+        if rag_arm_mode == "rag_retrieval":
+            rag_retrieval_tokens = baseline_result.get("retrieval_tokens", 0)
+        else:
+            rag_retrieval_tokens = 0
+
+        # Emit two result rows per question: one for NEXUS arm, one for RAG arm.
+        # Both carry the full nexus/baseline sub-dicts for reference, but each
+        # has its own arm_mode + retrieval_tokens at the top level for validation.
+        common_fields = {
             "question_id": qid,
             "question": qtext,
             "ground_truth": ground_truth,
@@ -1210,39 +1358,88 @@ def main():
             "hops": q.get("hops", 1),
             "nexus": nexus_result,
             "baseline": baseline_result,
+        }
+
+        # NEXUS arm row
+        results.append({
+            **common_fields,
+            "arm_mode": "nexus",
+            "retrieval_tokens": nexus_retrieval_tokens,
+        })
+
+        # RAG/baseline arm row
+        results.append({
+            **common_fields,
+            "arm_mode": rag_arm_mode,
+            "retrieval_tokens": rag_retrieval_tokens,
         })
 
     # Compute summary
     summary = compute_summary(results)
 
-    # Save results
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_data = {
-        "config": {
-            "limit": args.limit,
-            "model": nexus_model.name,
-            "model_backend": type(nexus_model).__name__,
-            "underlying_model": primary_model.name,
-            "verification_threshold": 0.2,
-            "local_inference": True,
-            "local_cost_model": {
-                "type": "LocalCostModel",
-                "watts_at_load": 65,
-                "electricity_cost_per_kwh": 0.15,
-                "target_per_1m_tokens": 0.01,
-                "frontier_pricing": FRONTIER_PRICING,  # historical reference
-            },
+    # ── Config header ──
+    try:
+        git_commit = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], text=True, cwd=str(_project_root)
+        ).strip()[:8]
+    except Exception:
+        git_commit = "unknown"
+
+    config_header = {
+        "model_nexus": model_name_nexus,
+        "model_rag": model_name_rag,
+        "git_commit": git_commit,
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "arm_nexus": "nexus",
+        "arm_rag": rag_arm_mode,
+        "limit": args.limit,
+        "verification_threshold": 0.2,
+        "local_inference": True,
+        "local_cost_model": {
+            "type": "LocalCostModel",
+            "watts_at_load": 65,
+            "electricity_cost_per_kwh": 0.15,
+            "target_per_1m_tokens": 0.01,
+            "frontier_pricing": FRONTIER_PRICING,
         },
+    }
+
+    # ── Validation ──
+    validation_errors = validate_benchmark_results(results, config_header)
+    is_valid = len(validation_errors) == 0
+
+    # Determine output path
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    if not is_valid:
+        ts = datetime.datetime.now().strftime("%Y%m%dT%H%M%SZ")
+        original_stem = output_path.stem
+        invalid_path = output_path.parent / f"{original_stem}_INVALID_{ts}.json"
+        print(f"\n*** BENCHMARK VALIDATION FAILED ***", file=sys.stderr)
+        for err in validation_errors:
+            print(f"  ERROR: {err}", file=sys.stderr)
+        print(f"  Writing results to: {invalid_path}", file=sys.stderr)
+        final_output_path = invalid_path
+    else:
+        final_output_path = output_path
+
+    # Save results
+    output_data = {
+        "config": config_header,
         "graph_provenance": graph_provenance,
         "summary": summary,
         "results": results,
     }
-    with open(output_path, "w", encoding="utf-8") as f:
+    with open(final_output_path, "w", encoding="utf-8") as f:
         json.dump(output_data, f, indent=2, ensure_ascii=False)
-    print(f"\nResults saved to: {output_path}")
+    print(f"\nResults saved to: {final_output_path}")
+    if not is_valid:
+        print(f"  (original requested path: {output_path})")
 
     # Print comparison table
     print_comparison(summary)
+
+    if not is_valid:
+        sys.exit(1)
 
 
 if __name__ == "__main__":
