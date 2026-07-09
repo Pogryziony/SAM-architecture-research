@@ -2,3 +2,4 @@
 benchmarks/results.json
 benchmarks/router_results.json
 benchmarks/throughput_results.json
+models/*.pt
