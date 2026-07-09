@@ -1,8 +1,9 @@
 # Canonical Comparison Table
 
-**Generated**: 2026-07-09 15:19:12 UTC
+**Generated**: 2026-07-09 18:17 UTC
 **Script**: `benchmarks/build_comparison.py`
 **Data sources**:
+- `nexus_vs_rag_final_20260709_161758Z.json` — Final 200-question paired run post-Phases 1-3 (n=200, cascade + type priors + snippets)
 - `nexus_vs_rag_20260709_151249Z.json` — NEXUS vs RAG paired comparison (n=88)
 - `nexus_vs_rag_200.json` — per-arm summary stats (hallucination, pass rate, latency, tokens)
 - `verifier_check_20260708_194420Z.json` — post-verifier-fix hallucination measurement (n=30)
@@ -62,3 +63,67 @@
 - **Router latency**: 0.05s (97% synth-routed, 3% LLM-routed).
 - **Router verification pass**: 70.5%.
 - **Router answer rate**: 97.5%.
+
+## Final Run — Post-Phases 1-3 (n=200)
+
+**Source**: `nexus_vs_rag_final_20260709_161758Z.json`
+
+After implementing:
+- Phase 1: 3-tier refusal cascade (filtered → unfiltered → 0-hop direct evidence)
+- Phase 2: Type-prior entity ranking (Metric → Experiment, Conceptual → Concept)
+- Phase 3: Source snippets (top-2 node source context in evidence packs)
+
+| Metric | NEXUS | Baseline (RAG) |
+|---|---|---|
+| Paired fuzzy accuracy (answered questions) | 30.17% (35/116) | 2.59% (3/116) |
+| Overall fuzzy accuracy (all 200) | 17.19% | 2.37% |
+| Exact accuracy (all 200) | 10.73% | 1.14% |
+| Answer rate | 58.0% (116/200) | 100.0% (200/200) |
+| Insufficient evidence | 84/200 | 0/200 |
+| Avg hallucination rate | 14.77% (summary) / 25.5% (answered) | N/A |
+| Verification pass rate | 66.4% (77/116) | N/A |
+| Avg latency | 4.19s | 0.00s |
+| Entity resolution rate | 51.5% (103/200) | N/A |
+| Number recall | 44.2% | N/A |
+| Sign test (NEXUS > RAG) | 100% wins (32-0-84) | — |
+
+### Cascade Level Distribution
+
+| Level | Count | INS Rate |
+|---|---|---|
+| Level 0 (filtered evidence) | 53 (26.5%) | 100.0% |
+| Level 1 (unfiltered evidence) | 113 (56.5%) | 0.0% |
+| Level 3 (0-hop direct) | 34 (17.0%) | 91.2% |
+
+### Entity Resolution Split
+
+| Split | ER Rate | Fuzzy Accuracy (answered) |
+|---|---|---|
+| First 30 (alias-covered) | 56.7% (17/30) | 55.0% (11/20) |
+| Held-out (remaining) | 50.6% (86/170) | 25.0% (24/96) |
+| Overfitting gap | 6.1% | **30.0%** |
+
+### Accuracy by Question Type (answered only)
+
+| Type | Count | Accuracy |
+|---|---|---|
+| comparative | 18 | 5.6% |
+| diagnostic | 27 | 25.9% |
+| factual | 61 | 34.4% |
+| multi-hop | 10 | 60.0% |
+
+### Accuracy by ER Method (answered)
+
+| Method | Count | Accuracy |
+|---|---|---|
+| alias | 94 | 37.2% |
+| fuzzy | 22 | 0.0% |
+
+### Critical Assessment
+
+- **Answer rate FAIL**: 58.0% vs >90% target. Cascade recovers from level 0→1 but level 3 (0-hop direct) still fails at 91.2% INS rate.
+- **Paired accuracy below target**: 30.17% vs 35.98% previous baseline. The previous baseline used a different scoring metric; direct comparison is not valid.
+- **First-30 gap persistent**: 30% overfitting gap driven by fuzzy-resolved questions scoring 0%.
+- **Fuzzy resolution broken**: 0% accuracy on fuzzy-resolved questions (n=22).
+- **Hallucination improved**: 14.77% vs previous 19.25% when measured across all questions.
+- **NEXUS dominates RAG** in sign test: 32-0-84, but 84 ties indicate most comparisons result in equal scores.
