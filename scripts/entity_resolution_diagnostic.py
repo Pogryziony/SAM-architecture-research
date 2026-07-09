@@ -51,6 +51,36 @@ def main():
     metric_q_exp_top1 = 0
     metric_q_any_exp = 0
 
+    # ── unified metric tracking ──
+    resolution_hits = 0     # any entities found
+    entity_accuracy_hits = 0  # entities match GT expected
+    entity_accuracy_total = 0  # questions with GT entities listed
+
+    for q in held_out:
+        q_id = q.get("question_id", "?")
+        question = q.get("question", "")
+        total += 1
+
+        parsed = parse_question(question, graph, config=config)
+        entity_ids = parsed.entity_ids
+        is_metric = _is_metric_question(question)
+        is_concept = _is_concept_question(question)
+
+        # ── Resolution rate: any entities found? ──
+        if entity_ids:
+            resolution_hits += 1
+
+        # ── Entity accuracy: match against GT expected entities ──
+        gt_entity_ids: list[str] = q.get("entities", [])
+        if gt_entity_ids:
+            entity_accuracy_total += 1
+            if any(
+                gid == pid or pid.startswith(gid + "_")
+                for gid in gt_entity_ids
+                for pid in entity_ids
+            ):
+                entity_accuracy_hits += 1
+
     for q in held_out:
         q_id = q.get("question_id", "?")
         question = q.get("question", "")
@@ -99,6 +129,12 @@ def main():
     print(f"{'='*60}")
     print(f"  Total questions evaluated : {total}")
     print(f"  No entity found            : {no_entity_found}")
+    print()
+    print(f"  -- Unified entity resolution metrics --")
+    resolution_rate = resolution_hits / total if total > 0 else 0.0
+    entity_accuracy_rate = entity_accuracy_hits / entity_accuracy_total if entity_accuracy_total > 0 else 0.0
+    print(f"  resolution_rate  (any entities found)  : {resolution_hits}/{total} = {resolution_rate:.1%}")
+    print(f"  entity_accuracy  (matches GT expected)  : {entity_accuracy_hits}/{entity_accuracy_total} = {entity_accuracy_rate:.1%}")
     print()
     print(f"  Metric questions           : {metric_q_count}")
     print(f"    Experiment in results    : {exp_picked_for_metric} ({exp_picked_for_metric/max(metric_q_count,1)*100:.1f}%)")

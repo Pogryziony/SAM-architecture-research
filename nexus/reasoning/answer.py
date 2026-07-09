@@ -218,6 +218,7 @@ def answer_question(
 
     result["parsed_query"] = parsed
     result["entity_resolution_method"] = parsed.resolution_method
+    result["entities_resolved"] = bool(parsed.entity_ids)  # L0 consistency: cascade_level 0 ↔ no entities resolved
 
     # Map resolution method to a confidence score
     _resolution_confidence_map = {"alias": 1.0, "embedding": 0.8, "fuzzy": 0.6, "none": 0.0}
