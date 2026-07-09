@@ -1,40 +1,139 @@
-# STAGE1_NEGATIVE.md — Associative Encoder Gate Failure
+# STAGE1B_NEGATIVE.md — Associative Encoder v2 Gate Failure
 
-Status: **GATES FAILED** — see details below.
+**Date**: 2026-07-10  
+**Status**: **STAGE 1B GATES FAILED** — program STOPPED per immutable protocol.  
+**Pre-registered in**: EXPERIMENT_SAM_NEXUS_STACK.md §Stage 1B
 
-## Gate Results
+---
+
+## Gate Results (Test Split: 225 questions)
 
 | Gate | Value | Threshold | Pass |
 |------|-------|-----------|------|
-| entity_accuracy | 0.0% | >= 65% | FAIL |
+| entity_accuracy | 18.8% | >= 65% | **FAIL** |
 | resolution_rate | 100.0% | >= 100% (no regression) | PASS |
 | paraphrase_drop | 0.0 pp | < 10 pp | PASS |
-| intent_accuracy | 82.2% | >= 85% | FAIL |
+| intent_accuracy | 82.2% | >= 85% | **FAIL** |
 | RSS delta | 6.8 MB | <= 150 MB | PASS |
 | inference p50 | 0.6 ms | <= 50 ms | PASS |
 
+**2 of 6 gates FAIL**. The program stops here.
+
+---
+
 ## Per-Head Metrics
 
-- **Entity precision** (encoder-only): 0.0%
-- **Entity resolution rate** (encoder-only): 0.0%
-- **Combined entity_accuracy**: 18.8%
-- **Combined resolution_rate**: 100.0%
-- **Intent accuracy**: 82.2%
-- **Paraphrase drop**: 0.0 pp
-- **Inference p50**: 0.6 ms
-- **RSS delta**: 6.8 MB
-- **Parameters**: 555,017
+| Metric | Value |
+|--------|-------|
+| Combined entity_accuracy | 18.8% (lexical baseline: 18.8%, no improvement) |
+| Entity re-ranker precision | 11.5% (when enabled; disabled in final eval) |
+| Entity re-ranker recall | ~98% (near-perfect — predicts almost all candidates) |
+| Resolution rate | 100.0% (unchanged) |
+| Intent accuracy (rule + model) | 82.2% (up from 65.3% in Stage 1) |
+| Rule coverage | ~43% of test questions |
+| Rule accuracy | ~96% on matched cases |
+| Model intent accuracy | ~70% on unmatched cases |
+| RSS delta | 6.8 MB (well within budget) |
+| Inference p50 | 0.6 ms (well within budget) |
+| Parameters | 555,017 |
+| Training epochs | 30 (early stopped at intent plateau) |
 
-## Failure Hypothesis
+---
 
-The encoder was trained on only 375 questions (with augmentation to 1181) covering just 21 unique entity types. The training data is insufficient to learn robust entity representations that generalize to the full test set. The model overfits to surface-level lexical patterns and struggles with paraphrased inputs.
+## What Worked
 
-Key issues:
-1. Limited entity diversity (21 unique entities in training) prevents learning semantic entity representations.
-2. The word-level embedding lacks subword information, making the model brittle to morphological variation.
-3. The small model capacity (166K params) may be insufficient for the multi-task learning objective.
+### 1. Rule-First Intent Classification
 
-## 20 Worst Cases
+The rule-based intent classifier is the **clear success** of Stage 1b. Intent accuracy improved from 65.3% (Stage 1) to 82.2% (+16.9 pp). The rules cover 43% of the test set at 96% accuracy. The remaining 57% is handled by the encoder model at ~70% accuracy. This validates the hypothesis that symbolic rules can handle the templated patterns in the QA dataset, leaving the model to handle genuinely ambiguous cases.
+
+### 2. Char N-Gram Tokenizer and Sequential Component
+
+The char tri/penta-gram hashing and pseudo-sequential GRU work correctly at the implementation level: feature dimension is reasonable (3,517), training converges, inference is fast (0.6 ms p50). The architecture composes with the rule classifier without conflicts.
+
+### 3. Resource Budget
+
+RSS delta (6.8 MB) and inference latency (0.6 ms) are well within the 150 MB / 50 ms gates. The CPU-only training constraint is maintained throughout.
+
+---
+
+## What Failed and Why
+
+### Failure 1: Entity Accuracy (18.8% vs 65%)
+
+**Root cause**: The entity re-ranker cannot bridge the gap from lexical entity spotting (18.8% accuracy) to the gate threshold (65%). There are three compounding factors:
+
+1. **Lexical baseline is too weak**. The fuzzy substring match in the NEXUS parser resolves entities at only 18.8% precision on the test split. The entities "Decision_PivotToNEXUS" and "Concept_ArchitectureWorks" appear frequently in GT but are never found by substring matching because their names don't appear in question text.
+
+2. **Re-ranker training class imbalance**. With 1–3 positive entities out of 20 candidates per question (5–15% positive ratio), weighted BCE (pos_weight=15) pushes all entity scores upward. This gives ~98% recall but only ~11.5% precision. The re-ranker cannot learn to discriminate candidates because the signal from 1–3 positives is overwhelmed by 17–19 negatives.
+
+3. **Entity pool mismatch**. The model was trained on only 21 entity types (the entities appearing in the 375-question training split). The graph has 366 nodes. The re-ranker cannot generalize to unseen entity types — it overfits to the 21 training entities.
+
+**Why the hypothesis fails**: The entity re-ranker was designed to score top-K candidates from the lexical index. But (a) the lexical index provides poor recall on semantic entities (e.g., concepts, decisions), and (b) with 21 entity types and 1:19 positive ratio, no amount of loss weighting can produce a discriminative re-ranker. The re-ranker hypothesis is valid for the chain-set retriever design (where candidates are pre-filtered to relevant ones), but the NEXUS lexical index doesn't provide a meaningful candidate set to re-rank.
+
+### Failure 2: Intent Accuracy (82.2% vs 85%)
+
+**Root cause**: While rules improved intent dramatically, the remaining 2.8 pp gap is at the limit of what the model can achieve on 375 training examples. The 57% of questions not matched by rules are the genuinely ambiguous cases (e.g., "What is the difference between controlled distractors and realistic distractors?" — labeled comparative; "What is the role of the verifier?" — labeled factual; "How does the SAM gate work?" — labeled factual). These cases require semantic understanding that 375 training examples cannot provide.
+
+**Why the hypothesis partially holds**: Rule-first intent was the right architectural decision (+16.9 pp improvement). But the model's capacity ceiling on the residual cases is ~70%, limited by training data size. Closing the gap would require either (a) more training data, (b) a larger model, or (c) more comprehensive rules. None of these are available within the Stage 1b constraints.
+
+---
+
+## Failure Hypothesis (Final)
+
+The core hypothesis of Stage 1b was that four architectural changes (rule-first intent, char n-grams, re-ranker, focal loss) would solve the Stage 1 failures. The evidence:
+
+1. **Rule-first intent**: **Confirmed** — improved intent from 65.3% to 82.2%. But insufficient alone to clear 85%.
+2. **Char n-grams + sequential component**: **Unclear** — the model's intent accuracy on unmatched cases (~70%) is only marginally better than Stage 1 (~65%). The architecture works but the training data is the binding constraint.
+3. **Entity re-ranker**: **Falsified** — the re-ranker cannot produce discriminative scores with 1:19 class imbalance on 21 entity types. The design assumes a pre-filtered candidate set from the lexical index, but the lexical index doesn't provide meaningful candidates for semantic/concept entities.
+4. **Focal loss / class weights**: **Insufficient** — focal loss with class weights helps but cannot overcome the fundamental 1:19 imbalance for entity scoring.
+
+**The negative is about the hypothesis**: The entity re-ranker design is structurally incompatible with the NEXUS lexical entity spotter. The re-ranker requires a candidate set with high recall (most GT entities present) and moderate precision (not all 366 graph nodes). The NEXUS lexical index provides candidates at 18.8% recall — most GT entities are missing from the candidate set, so re-ranking cannot help.
+
+---
+
+## Implications for the SAM+NEXUS Stack
+
+The experiment protocol states: "If Stage 1b also fails: the negative is about the hypothesis, not the implementation, and STOP is final."
+
+The SAM-as-encoder layer (Stage 1) cannot meet the entity accuracy gate with the current entity spotting infrastructure. This does not invalidate the NEXUS graph traversal approach — the lexical entity spotter works at 18.8% precision but 100% resolution rate (every question gets at least one entity). The remaining entity resolution gap would need:
+
+1. **Improved entity spotting** — embedding-based semantic matching (already present via NodeEmbeddingIndex but not scored in these metrics) or LLM-based entity extraction.
+2. **Entity expansion** — graph traversal from spotted entities to related entities could compensate for missed GT entities.
+3. **Ablation of the entity accuracy gate** — the 65% metric may be inappropriately high for a system where entity spotting is supplementary to graph traversal.
+
+The intent classification improvement (82.2%) demonstrates that the rule-first symbolic approach is viable and reduces model dependency for structured QA datasets.
+
+---
+
+## Appendix: 20 Worst Entity Cases
+
+All cases share the same pattern: GT entities are "Decision_PivotToNEXUS" or concept-type entities that never appear verbatim in question text. The lexical index resolves experiment-type entities (e.g., "Exp_0_6_Validation") from text fragments but misses abstract entities entirely.
+
+| Case | Question | GT Entities | Resolved |
+|------|----------|-------------|----------|
+| q538 | What is the significance of the oracle memory experiment achieving 99.87% accuracy? | Decision_PivotToNEXUS | Exp_0_6_Validation, Exp_0_12_Selection, ... |
+| q539 | What is the significance of the chain-set BCE retriever achieving 100% all_required@32? | Decision_PivotToNEXUS | Concept_ChainRetrieval, Exp_0_11_ChainRetrieval, ... |
+| q541 | What is the significance of the noise tolerance experiment showing 91.6% at +8 distractors? | Decision_PivotToNEXUS | Exp_0_13A_NoisyMemory, ... |
+| q543 | What is the significance of the dense dataset improving retrieval from 6.9% to 99.0% Rec@8? | Decision_PivotToNEXUS | Exp_0_5_DenseDataset, Exp_0_12_Selection, ... |
+| q544 | What is the significance of the pivot from SAM to NEXUS? | Decision_PivotToNEXUS | Exp_0_12_Selection, Exp_0_11_ChainRetrieval, ... |
+| q545 | What is the significance of the NEXUS CPU-first design principle? | Decision_PivotToNEXUS | Exp_0_13A_NoisyMemory, Exp_0_Diagnosis, ... |
+| q546 | What is the significance of the NEXUS verifier being rule-based? | Decision_PivotToNEXUS | Exp_0_13A_NoisyMemory, Exp_0_Diagnosis, ... |
+| q548 | What is the significance of the multi-positive BCE loss vs InfoNCE? | Decision_PivotToNEXUS | Exp_0_11_ChainRetrieval, Exp_0_10_RequiredSet, ... |
+| q549 | What is the significance of the 3-hop collapse at +16 distractors? | Decision_PivotToNEXUS | Exp_0_13A_NoisyMemory, Concept_NoiseTolerance, ... |
+| q579–583 | What was the goal/key challenge/breakthrough/surprise/lesson of the 'Selection & Noise' phase? | Exp_0_13B_RealisticDistractors, Exp_0_12_Selection, Exp_0_13A_NoisyMemory | Exp_0_13A_NoisyMemory, ... (misses 2/3 GT) |
+| q584–588 | What if SAM had been tested on real-world data / chain-set discovered earlier / entity extraction is bottleneck? | Decision_PivotToNEXUS | Exp_0_13A_NoisyMemory, Exp_0_7_ExternalText, ... |
+| q591–597 | How many Experiment nodes / Which experiment node has most edges / What is the longest dependency chain? | Decision_PivotToNEXUS | Exp_0_13A_NoisyMemory, Exp_0_Diagnosis, ... |
+| q607 | Where would you find the SAM experiment reports? | Decision_PivotToNEXUS | Exp_0_13A_NoisyMemory, Exp_0_11_ChainRetrieval, ... |
+
+**Pattern**: In 15/20 worst cases, "Decision_PivotToNEXUS" is the only GT entity and never appears in resolved entities. The lexical index cannot match decision-type nodes because they have no text-surface overlap with questions. This is a structural limitation of substring-based entity spotting, not a problem the encoder can fix.
+
+---
+
+## Program Status: **STOPPED**
+
+Per EXPERIMENT_SAM_NEXUS_STACK.md §Stage 1B Verdict Rule: "If Stage 1b also fails: the negative is about the hypothesis, not the implementation, and STOP is final."
+
+The experiment is stopped. All artifacts are preserved in this commit. The program can be restarted only with a new pre-registered hypothesis that addresses the entity spotting limitation.
 
 ### Case 1: q552
 **Question**: Compare the all_required@K at K=8, 16, 32 for chain-set BCE across different SAM configurations: K=8: 81.03%, K=16: 96.53%, K=32: 100.00%. What does this tell us?
