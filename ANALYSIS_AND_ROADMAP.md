@@ -624,3 +624,36 @@ Phase 5 → Release:   All benchmarks documented, pipeline reproducible, API sta
 ---
 
 *This document supersedes all previous SAM roadmap documents. The SAM classic experiments (0–0.13A) are archived in `sam-lm/` and their findings are incorporated into the NEXUS design rationale above.*
+
+---
+
+## Phase 4 Status — 2026-07-09
+
+**Results file**: `benchmarks/results/phase4_paired_20260709_183954Z.json`
+**Git commit**: e6e000f
+
+### Checkpoint Results
+
+| Checkpoint | Target | Actual | Status |
+|---|---|---|---|
+| Answer rate | ≥ 90% | 74.5% (149/200) | ❌ FAIL |
+| Entity resolution | ≥ 88.5% | 51.5% (103/200) | ❌ FAIL |
+| Hallucination | ≤ 19.25% | 15.63% | ✅ PASS |
+| Paired accuracy vs RAG | > prev 35.98% | 24.17% (W=33, L=1, T=166) | ❌ FAIL |
+
+### Measured Causes
+
+1. **Entity resolution regression (88.5% → 51.5%)**: The type-prior-as-tiebreaker fix (Phase 1) did not restore the pre-regression 88.5% rate. Investigation needed: the diagnostic script reported 100% resolution on held-out questions while the benchmark shows 51.5% — these may measure different things (entity spotting vs usable entity IDs that yield paths).
+
+2. **RAG accuracy drop (33.6% → 9.25%)**: The Phase 3 arm guard correctly prevents the RAG arm from accessing graph evidence. The previous 33.6% RAG accuracy was inflated by evidence-blind baseline scoring against lenient metrics. The 9.25% represents honest evidence-blind RAG accuracy.
+
+3. **Answer rate below target (74.5% vs 90%)**: Cascade Level 1 recovers 115/200 questions. Level 3 synth fallback recovers 34 more but with 27.8% accuracy. Level 0 (51 questions, no entity resolution) cannot be recovered by cascade — these are genuine entity resolution failures.
+
+4. **W/L/T = 33/1/166**: On the 34 questions where answers differ, NEXUS dominates (33 wins, 1 loss). But 166 questions are ties (both score 0) because of low answer rates on both arms.
+
+### Open Items for Phase 5
+
+- Router held-out quality (currently unvalidated beyond n=15/15)
+- Oracle-test rebuild (force generation, inject into synth parse section)
+- Latency budget experiment (relevance-rank truncation)
+- Entity resolution root-cause: why does spot_entities + find_entity_by_keywords resolve only 51.5% when the diagnostic reports 100%?
