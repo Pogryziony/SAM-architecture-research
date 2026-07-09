@@ -1432,6 +1432,17 @@ def main():
     # Compute summary
     summary = compute_summary(results)
 
+    # ── Stage 2.2: Distillation logging ──
+    # Append verifier-passed (evidence→answer) pairs for Stage 4 training
+    try:
+        from benchmarks.distillation_logger import log_distillation_pairs, get_pair_count
+        new_pairs = log_distillation_pairs(results)
+        total_pairs = get_pair_count()
+        if new_pairs > 0:
+            print(f"\nDistillation: +{new_pairs} new pairs → data/distillation/pairs.jsonl (total: {total_pairs})")
+    except ImportError:
+        pass  # Distillation logger not available — ok on old branches
+
     # ── Config header ──
     try:
         git_commit = subprocess.check_output(
