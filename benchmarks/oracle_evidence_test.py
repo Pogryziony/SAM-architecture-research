@@ -204,14 +204,23 @@ def run_oracle_evidence_test(
             oracle_evidence = f"- (ORACLE INJECTED) {gt_fact_to_inject}"
         
         # Step 5a: Rerun LLM with oracle evidence
+        # Use the EXACT baseline prompt; inject 1 GT fact line into the EVIDENCE section.
         try:
             t0 = time.perf_counter()
-            oracle_prompt_llm = (
-                "SYSTEM: You are a precise reasoning assistant.\n\n"
-                f"QUESTION: {qtext}\n\n"
-                f"EVIDENCE:\n{oracle_evidence}\n\n"
-                "ANSWER:"
-            )
+            baseline_prompt = baseline_result.get("prompt_text", "")
+            gt_injection = f"\n  - (ORACLE GROUND TRUTH) {gt_fact_to_inject}"
+            # Find the EVIDENCE section header and inject right after it
+            evidence_marker = "\nEVIDENCE:"
+            evidence_idx = baseline_prompt.find(evidence_marker)
+            if evidence_idx != -1:
+                # Insert after the "EVIDENCE:" line (find the next newline)
+                next_nl = baseline_prompt.find("\n", evidence_idx + len(evidence_marker))
+                if next_nl != -1:
+                    oracle_prompt_llm = baseline_prompt[:next_nl] + gt_injection + baseline_prompt[next_nl:]
+                else:
+                    oracle_prompt_llm = baseline_prompt + gt_injection
+            else:
+                oracle_prompt_llm = baseline_prompt + gt_injection
             oracle_answer_llm = primary_model.generate(oracle_prompt_llm)
             oracle_latency_llm = time.perf_counter() - t0
             oracle_accuracy_llm = compute_key_fact_score(oracle_answer_llm, ground_truth)
@@ -221,14 +230,10 @@ def run_oracle_evidence_test(
             oracle_latency_llm = 0.0
         
         # Step 5b: Rerun SynthesizingModel with oracle evidence
+        # Use the SAME baseline prompt with GT injected (identical to LLM oracle prompt).
         try:
             t0 = time.perf_counter()
-            oracle_prompt_synth = (
-                f"QUESTION: {qtext}\n\n"
-                f"EVIDENCE:\n{oracle_evidence}\n\n"
-                "Based on the evidence, provide a concise answer:"
-            )
-            oracle_answer_synth = synth_model.generate(oracle_prompt_synth)
+            oracle_answer_synth = synth_model.generate(oracle_prompt_llm)
             oracle_latency_synth = time.perf_counter() - t0
             oracle_accuracy_synth = compute_key_fact_score(oracle_answer_synth, ground_truth)
         except Exception as exc:
