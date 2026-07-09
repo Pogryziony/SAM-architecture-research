@@ -30,7 +30,7 @@ from nexus.graph.store import InMemoryGraphStore
 from nexus.graph.traversal import traverse_with_intent
 from nexus.query.parser import parse_question, ParsedQuery
 from nexus.reasoning.evidence_builder import build_evidence, build_evidence_pack
-from nexus.reasoning.prompt_template import build_prompt
+from nexus.reasoning.prompt_template import build_prompt, _find_question_entity
 from nexus.reasoning.model_interface import (
     ModelInterface,
     SynthesizingModel,
@@ -54,77 +54,67 @@ class Router:
         evidence_pack: dict[str, Any] | None = None,
     ) -> tuple[str, str]:
         """
-        Decide whether to route to 'synthesizer' or 'llm'.
+        Decide whether to route to 'synthesizer' or 'llm' based on evidence confidence.
+
+        Uses three pre-generation signals from the evidence pack:
+          - numeric_match: how well evidence numbers match question intent (0-1)
+          - has_key_finding: whether the target entity has curated key_finding (0-1)
+          - path_count_signal: normalized path count, more paths = more context (0-1)
+
+        Weighted combination (0.4 + 0.4 + 0.2) — numeric match and key_finding
+        are the strongest indicators of evidence quality. Path count is secondary
+        (more paths can mean more noise).
+
+        Threshold ≥ 0.6 → synthesizer (high-confidence evidence)
+        Below 0.6 → LLM (evidence quality uncertain)
 
         Args:
             question: The original natural language question.
             parsed_query: ParsedQuery with intent and entity resolution.
-            evidence_pack: Evidence pack dict (None if pre-traversal — assumes key_finding exists).
+            evidence_pack: Evidence pack dict (must contain confidence_signals).
 
         Returns:
             (route: str, reason: str) — route is "synthesizer" or "llm".
         """
-        # Check whether the evidence contains curated key_findings
-        has_kf = self._has_key_finding(evidence_pack) if evidence_pack is not None else True
+        # ── Extract confidence signals from evidence pack ──
+        if evidence_pack is None:
+            # Pre-traversal: no evidence yet, default to LLM
+            return "llm", "no evidence pack available"
 
-        # ── Rule 1: factual_lookup intent → synthesizer candidate ──
-        if parsed_query.intent == "factual_lookup":
-            if has_kf:
-                return "synthesizer", "factual_lookup intent"
-            else:
-                return "llm", "factual_lookup but no key_finding in evidence"
+        signals = evidence_pack.get("confidence_signals")
+        if signals is None:
+            # Fall back to simple type-based check if signals unavailable
+            node_facts = evidence_pack.get("node_facts", [])
+            if len(node_facts) > 0:
+                return "synthesizer", "has key_findings (fallback)"
+            return "llm", "no confidence signals — no evidence"
 
-        # ── Rule 2: comparison + ≥2 Experiment nodes with numeric key_findings → synthesizer ──
-        if parsed_query.intent == "comparison":
-            if evidence_pack and self._has_comparable_entities(evidence_pack):
-                return "synthesizer", "comparative with numeric evidence"
-            elif has_kf:
-                return "synthesizer", "comparison intent with key_findings"
-            else:
-                return "llm", "comparison but no structured evidence"
+        numeric_match = signals.get("numeric_match", 0.0)
+        has_key_finding = signals.get("has_key_finding", 0.0)
+        path_count_signal = signals.get("path_count_signal", 0.0)
 
-        # ── Rule 3: multi-hop/dependency chain with ≥2 edges → synthesizer ──
-        if parsed_query.intent in ("dependency_chain", "impact_analysis"):
-            if evidence_pack and self._has_multi_edge_paths(evidence_pack):
-                return "synthesizer", "multi-hop chain with ≥2 edges"
-            elif has_kf:
-                return "synthesizer", "chain intent with key_findings"
-            else:
-                return "llm", "chain intent but no structured paths"
+        # ── Weighted confidence score ──
+        confidence_score = (
+            0.4 * numeric_match
+            + 0.4 * has_key_finding
+            + 0.2 * path_count_signal
+        )
 
-        # ── Rule 4: diagnostic + causal edges (caused_by/blocked_by) → synthesizer ──
-        if parsed_query.intent == "diagnostic":
-            if evidence_pack and self._has_causal_edges(evidence_pack):
-                return "synthesizer", "diagnostic with causal chain"
-            elif evidence_pack and self._has_multi_edge_paths(evidence_pack):
-                return "synthesizer", "diagnostic with multi-edge path"
-            elif has_kf:
-                return "synthesizer", "diagnostic intent with key_findings"
-            else:
-                return "llm", "diagnostic without clear causal chain"
-
-        # ── Rule 5: causal_explanation → try synthesizer if evidence is structured ──
-        if parsed_query.intent == "causal_explanation":
-            if evidence_pack and (self._has_causal_edges(evidence_pack) or self._has_multi_edge_paths(evidence_pack)):
-                return "synthesizer", "causal explanation with structured evidence"
-            elif has_kf:
-                return "synthesizer", "causal intent with key_findings"
-            else:
-                return "llm", "causal explanation without structured chain"
-
-        # ── Rule 6: Simple what-is / how-many / which questions with ≤1 hop ──
-        if self._is_simple_factual(question) and self._estimate_hops(question) <= 1:
-            if has_kf:
-                return "synthesizer", "simple factual question (<=1 hop)"
-            else:
-                return "llm", "simple factual but no key_finding in evidence"
-
-        # ── Rule 7: No key_finding → LLM (nothing to synthesize from) ──
-        if not has_kf:
-            return "llm", "no key_finding in evidence"
-
-        # ── Rule 8: Everything else → LLM ──
-        return "llm", "complex question beyond template synthesis"
+        # ── Route decision ──
+        if confidence_score >= 0.6:
+            reason = (
+                f"conf={confidence_score:.2f} "
+                f"(num={numeric_match:.1f}, kf={has_key_finding:.1f}, "
+                f"paths={path_count_signal:.1f})"
+            )
+            return "synthesizer", reason
+        else:
+            reason = (
+                f"low conf={confidence_score:.2f} "
+                f"(num={numeric_match:.1f}, kf={has_key_finding:.1f}, "
+                f"paths={path_count_signal:.1f})"
+            )
+            return "llm", reason
 
     @staticmethod
     def _has_key_finding(evidence_pack: dict[str, Any]) -> bool:
@@ -354,8 +344,25 @@ class RoutedPipeline:
             return result
 
         # ── Step 3: Build evidence ──
+        # Determine target entity for factual questions to feed confidence signals.
+        target_entity = None
+        if parsed.intent == "factual_lookup":
+            node_dicts: list[dict[str, Any]] = []
+            seen: set[str] = set()
+            for p in paths:
+                nodes: list[dict[str, Any]] = []
+                for step in p.steps:
+                    for nid in (step.from_node, step.to_node):
+                        if nid not in seen:
+                            seen.add(nid)
+                            nodes.append({"id": nid})
+                if nodes:
+                    node_dicts.append({"nodes": nodes})
+            target_entity = _find_question_entity(question, node_dicts)
+
         evidence_pack = build_evidence_pack(
-            question, paths, self.graph, question_intent=parsed.intent
+            question, paths, self.graph, question_intent=parsed.intent,
+            target_entity=target_entity,
         )
         result["evidence_pack"] = evidence_pack
 
@@ -366,7 +373,8 @@ class RoutedPipeline:
 
         # ── Step 5: Generate ──
         evidence_json = build_evidence(
-            question, paths, self.graph, question_intent=parsed.intent
+            question, paths, self.graph, question_intent=parsed.intent,
+            target_entity=target_entity,
         )
         prompt = build_prompt(question, evidence_json)
 

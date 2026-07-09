@@ -445,6 +445,7 @@ def run_nexus_pipeline(
         "parsed_entity_ids": (
             result["parsed_query"].entity_ids if result.get("parsed_query") else []
         ),
+        "post_edit_changes": result.get("post_edit_changes"),
     }
 
 
@@ -509,6 +510,17 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
     nexus_hall_rates = [r["nexus"]["hallucination_rate"] for r in results if not r["nexus"].get("error")]
     nexus_latencies = [r["nexus"]["latency_s"] for r in results if not r["nexus"].get("error")]
     nexus_paths = [r["nexus"]["path_count"] for r in results if not r["nexus"].get("error")]
+
+    # Post-edit statistics
+    post_edit_fixed = sum(
+        (r["nexus"].get("post_edit_changes") or {}).get("numbers_fixed", 0)
+        for r in results if not r["nexus"].get("error")
+    )
+    post_edit_removed = sum(
+        (r["nexus"].get("post_edit_changes") or {}).get("numbers_removed", 0)
+        for r in results if not r["nexus"].get("error")
+    )
+    post_edit_total = post_edit_fixed + post_edit_removed
 
     baseline_latencies = [r["baseline"]["latency_s"] for r in results if not r["baseline"].get("error")]
     baseline_insufficient = sum(1 for r in results if r["baseline"]["is_insufficient"])
@@ -750,6 +762,11 @@ def compute_summary(results: list[dict[str, Any]]) -> dict[str, Any]:
         },
         "accuracy_by_resolution_method": accuracy_by_resolution_method,
         "conciseness": conciseness_summary,
+        "post_edit": {
+            "numbers_fixed": post_edit_fixed,
+            "numbers_removed": post_edit_removed,
+            "total_interventions": post_edit_total,
+        },
     }
 
 
@@ -805,6 +822,15 @@ def print_comparison(summary: dict[str, Any]):
     # Hallucination rate
     hall_str = f"{n['avg_hallucination_rate']:.2%}"
     print(f"  {'Avg hallucination rate':<38} {hall_str:>10} {'N/A':>12}")
+
+    # Post-edit statistics
+    if summary.get("post_edit"):
+        pe = summary["post_edit"]
+        if pe["total_interventions"] > 0:
+            pe_str = f"{pe['numbers_fixed']} fixed, {pe['numbers_removed']} removed ({pe['total_interventions']} total)"
+            print(f"  {'Post-edit interventions':<38} {pe_str:>10}")
+        else:
+            print(f"  {'Post-edit interventions':<38} {'none':>10}")
     
     # Verification pass rate
     ver_p_str = f"{n['verification_pass_rate']:.1%} ({n['verification_passed']}/{total})"

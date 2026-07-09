@@ -143,7 +143,7 @@ def _find_question_entity(
                 continue
 
         # Word-level overlap between node ID parts and question words
-        nid_words = set(re.findall(r'\w+', nid_lower))
+        nid_words = set(re.findall(r"[a-zA-Z0-9]+", nid_lower))
         # Remove common prefix words like "Exp_", "Decision_", "Concept_"
         meaningful = {w for w in nid_words if len(w) > 2}
         overlap = len(meaningful & q_words)
@@ -267,6 +267,8 @@ def build_prompt(question: str, evidence_json: str) -> str:
     paths = evidence.get("paths", [])
     facts = evidence.get("facts", [])
     sources = evidence.get("sources", [])
+    numbers = evidence.get("numbers", [])
+    neighbor_facts = evidence.get("neighbor_facts", [])
 
     node_facts = evidence.get("node_facts", [])
 
@@ -385,6 +387,28 @@ def build_prompt(question: str, evidence_json: str) -> str:
                     text = nf.get("text", "")
                     if text:
                         parts.append(f"  - {text}")
+
+        # ── KEY NUMBERS section: flat, scannable number table ──
+        if numbers:
+            parts.append("\n  KEY NUMBERS (from evidence):")
+            for num_entry in numbers:
+                entity = num_entry.get("entity", "")
+                kv_pairs = [
+                    f"{k}: {v}" for k, v in num_entry.items()
+                    if k != "entity"
+                ]
+                if kv_pairs:
+                    parts.append(f"  - [{entity}] {' | '.join(kv_pairs)}")
+
+        # ── Neighbor facts: key_findings from directly connected nodes ──
+        if neighbor_facts:
+            parts.append("\n  Connected entity facts:")
+            for nf in neighbor_facts:
+                entity = nf.get("entity", "")
+                etype = nf.get("type", "")
+                text = nf.get("text", "")
+                if text:
+                    parts.append(f"  - [{etype}] {entity}: {text}")
 
         # For factual questions with a target entity, skip dependency chains,
         # supporting evidence, and relation facts — they're irrelevant noise.

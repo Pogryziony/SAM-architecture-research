@@ -21,7 +21,7 @@ if str(_project_root) not in sys.path:
 
 from nexus.graph import Node, Edge
 from nexus.graph.store import InMemoryGraphStore
-from nexus.ingestion.entity_extractor import extract_from_markdown, _is_valid_entity
+from nexus.ingestion.entity_extractor import extract_from_markdown, _is_valid_entity, _extract_auto_aliases
 from nexus.ingestion.relation_extractor import extract_relations
 from nexus.ingestion.normalizer import canonicalize, normalize_entity_name
 from nexus.ingestion.deduplicator import merge_entity_lists

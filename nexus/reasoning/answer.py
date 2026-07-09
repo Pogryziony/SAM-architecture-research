@@ -22,6 +22,7 @@ from nexus.reasoning.model_interface import (
     DummyModel, ModelInterface, get_available_model,
 )
 from nexus.reasoning.verifier import Verifier, VerificationResult
+from nexus.reasoning.post_edit import edit_answer
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
 
@@ -78,10 +79,12 @@ def answer_question(
     result: dict[str, Any] = {
         "question": question,
         "answer": "",
+        "raw_answer": "",
         "evidence_pack": {},
         "verification": None,
         "parsed_query": None,
         "path_count": 0,
+        "post_edit_changes": None,
     }
 
     # Per-step timing breakdown
@@ -182,9 +185,21 @@ def answer_question(
 
     # ── Step 5: Generate answer ──
     t0 = time.perf_counter()
-    answer = model.generate(prompt)
+    raw_answer = model.generate(prompt)
     timing["generate_time"] = round(time.perf_counter() - t0, 6)
+    result["raw_answer"] = raw_answer
+
+    # ── Step 5.5: Post-edit — fix hallucinated numbers ──
+    t0 = time.perf_counter()
+    post_edit_result = edit_answer(raw_answer, evidence_pack)
+    timing["post_edit_time"] = round(time.perf_counter() - t0, 6)
+    answer = post_edit_result["answer"]
     result["answer"] = answer
+    result["post_edit_changes"] = {
+        "numbers_fixed": post_edit_result["numbers_fixed"],
+        "numbers_removed": post_edit_result["numbers_removed"],
+        "changes": post_edit_result["changes"],
+    }
 
     # ── Step 6: Verify ──
     t0 = time.perf_counter()

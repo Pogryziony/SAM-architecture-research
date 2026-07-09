@@ -22,6 +22,7 @@ from nexus.reasoning.verifier import (
     extract_factual_claims,
     _is_factual_claim,
 )
+from nexus.reasoning.post_edit import edit_answer
 from nexus.reasoning.answer import answer_question
 
 __all__ = [
@@ -36,5 +37,6 @@ __all__ = [
     "extract_claims",
     "extract_factual_claims",
     "_is_factual_claim",
+    "edit_answer",
     "answer_question",
 ]

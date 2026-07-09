@@ -207,6 +207,51 @@ def _get_ollama_rss_mb() -> float | str:
     return "unavailable: psutil not installed"
 
 
+def _measure_ollama_during_generation(
+    host: str = "http://localhost:11434",
+    model_name: str = "qwen2.5:latest",
+) -> dict[str, Any]:
+    """
+    Measure Ollama process RSS during active generation.
+    Runs a single generation with concurrent Ollama RSS polling.
+    Returns dict with ollama_generating_rss_mb (peak during generation).
+    """
+    import threading
+
+    ollama_rss_samples: list[float] = []
+    stop_polling = threading.Event()
+
+    def _poll_ollama():
+        """Poll Ollama RSS at ~200ms intervals while generation runs."""
+        while not stop_polling.is_set():
+            rss = _get_ollama_rss_mb()
+            if isinstance(rss, (int, float)):
+                ollama_rss_samples.append(rss)
+            time.sleep(0.2)
+
+    # Start polling thread
+    poll_thread = threading.Thread(target=_poll_ollama, daemon=True)
+    poll_thread.start()
+
+    try:
+        prompt = PROMPT_TEMPLATES[200]
+        result = _ollama_generate(host, model_name, prompt, max_tokens=256)
+    finally:
+        stop_polling.set()
+        poll_thread.join(timeout=2.0)
+
+    generating_rss = max(ollama_rss_samples) if ollama_rss_samples else 0.0
+
+    return {
+        "ollama_generating_rss_mb": round(generating_rss, 1),
+        "num_samples": len(ollama_rss_samples),
+        "min_rss_mb": round(min(ollama_rss_samples), 1) if ollama_rss_samples else 0.0,
+        "max_rss_mb": round(max(ollama_rss_samples), 1),
+        "generation_tps": result["tokens_per_second"],
+        "generation_ttft_s": result["ttft_s"],
+    }
+
+
 # ── Ollama API ──
 
 def _check_ollama(model_name: str) -> tuple[bool, str]:
@@ -804,7 +849,15 @@ def benchmark_warmed_throughput(
         }
 
     # ── Ollama process RAM ──
-    ollama_rss = _get_ollama_rss_mb()
+    # Idle RSS (post-measurement, model still loaded but not generating)
+    ollama_idle_rss = _get_ollama_rss_mb()
+
+    # Generating RSS: measure Ollama RSS during a dedicated generation run
+    print("\n  Measuring Ollama RSS during generation...")
+    gen_rss_data = _measure_ollama_during_generation(host, model_name)
+    ollama_generating_rss = gen_rss_data.get("ollama_generating_rss_mb", 0.0)
+    print(f"    Generating RSS: {ollama_generating_rss:.1f} MB "
+          f"(n={gen_rss_data.get('num_samples', 0)} samples)")
 
     _banner("WARMED THROUGHPUT RESULTS")
     for prompt_len, stats in sorted(by_length.items()):
@@ -815,7 +868,8 @@ def benchmark_warmed_throughput(
     print(f"\n  OVERALL ({len(all_measured)} measured runs):")
     print(f"    Tokens/sec:  p50={_p50(all_tps):.1f}  p95={_p95(all_tps):.1f}  mean={statistics.mean(all_tps):.1f}")
     print(f"    TTFT:        p50={_p50(all_ttft):.3f}s  p95={_p95(all_ttft):.3f}s")
-    print(f"    Ollama RSS:  {ollama_rss}")
+    print(f"    Ollama idle RSS:       {ollama_idle_rss}")
+    print(f"    Ollama generating RSS: {ollama_generating_rss}")
 
     return {
         "model": model_name,
@@ -824,7 +878,9 @@ def benchmark_warmed_throughput(
             "runs_per_length": measurement_runs,
             "tokens_per_completion": measurement_tokens,
         },
-        "ollama_rss": ollama_rss,
+        "ollama_idle_rss_mb": ollama_idle_rss,
+        "ollama_generating_rss_mb": ollama_generating_rss,
+        "ollama_rss": ollama_idle_rss,  # backward compat: alias to idle
         "p50_tps": round(_p50(all_tps), 2),
         "p95_tps": round(_p95(all_tps), 2),
         "mean_tps": round(statistics.mean(all_tps), 2),
@@ -916,11 +972,18 @@ def main():
 
     print(f"  Model info: {model_info}")
 
+    # ── Measure Ollama idle RSS (model loaded, no generation in progress) ──
+    ollama_idle_rss = "unavailable"
+    if ollama_available:
+        ollama_idle_rss = _get_ollama_rss_mb()
+        print(f"\n  Ollama idle RSS: {ollama_idle_rss}")
+
     # ── Collect results ──
     results: dict[str, Any] = {
         "timestamp": _utc_timestamp(),
         "machine": machine_info,
         "model": model_info,
+        "ollama_idle_rss_mb": ollama_idle_rss,
     }
 
     if not args.throughput_only:
@@ -971,6 +1034,10 @@ def main():
             print(f"\n  ERROR: {throughput_data['error']}")
         else:
             results["warmed_throughput"] = throughput_data
+            # Propagate generating RSS to top level
+            gen_rss = throughput_data.get("ollama_generating_rss_mb")
+            if gen_rss is not None:
+                results["ollama_generating_rss_mb"] = gen_rss
 
     # ── Compute cost estimates ──
     if "warmed_throughput" in results and "error" not in results["warmed_throughput"]:

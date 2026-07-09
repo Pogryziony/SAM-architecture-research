@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from nexus.graph import Node, Edge
 from nexus.graph.store import InMemoryGraphStore
+from nexus.ingestion.entity_extractor import _extract_metrics, _extract_auto_aliases
 
 
 EXPERIMENTS_DIR = Path(__file__).parent.parent.parent / "sam-lm" / "experiments"
@@ -144,7 +145,7 @@ _EXPERIMENT_ALIASES: dict[str, list[str]] = {
     "Exp_0_2_CompactPKM": ["compact pkm", "experiment 0.2", "pkm retrieval", "product-key memory", "product key memory"],
     "Exp_0_3_PKM_Candidates": ["pkm candidates", "experiment 0.3", "candidate generation"],
     "Exp_0_5_DenseDataset": ["dense dataset", "experiment 0.5", "dataset fix"],
-    "Exp_0_6_Validation": ["oracle memory", "full validation", "experiment 0.6", "validation experiment", "oracle memory experiment", "live memory", "memory slots", "sam experiments"],
+    "Exp_0_6_Validation": ["oracle memory", "full validation", "experiment 0.6", "validation experiment", "oracle memory experiment", "live memory", "memory slots", "sam experiments", "sam validation", "end to end validation", "dense synthetic", "oracle gap"],
     "Exp_0_7_ExternalText": ["external text", "experiment 0.7", "text query"],
     "Exp_0_8_Aggregation": ["aggregation", "experiment 0.8", "aggregation variants"],
     "Exp_0_9_OracleFilter": ["oracle filter", "experiment 0.9"],
@@ -160,7 +161,7 @@ _CONCEPT_ALIASES: dict[str, list[str]] = {
     "Concept_SelectorBottleneck": ["selector bottleneck", "selection bottleneck"],
     "Concept_ChainRetrieval": ["chain retrieval solved", "retrieval solved"],
     "Concept_NoiseTolerance": ["noise tolerance concept", "noise handling"],
-    "Concept_ArchitectureWorks": ["architecture validated", "architecture works", "core memory architecture"],
+    "Concept_ArchitectureWorks": ["architecture validated", "architecture works", "core memory architecture", "sam architecture works", "architecture confirmed"],
     "Concept_RetrievalMismatch": ["retrieval mismatch", "projection mismatch", "query projection"],
     "Concept_PivotToNEXUS": ["pivot to nexus", "architecture pivot", "nexus pivot"],
 }
@@ -226,18 +227,31 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
     
     # Phase 1: Create experiment nodes
     for exp_key, exp_def in EXPERIMENT_DEFS.items():
+        exp_props = {
+            "title": exp_def["title"],
+            "question": exp_def["question"],
+            "key_finding": exp_def["key_finding"],
+            "phase": exp_def["phase"],
+            "experiment_key": exp_key,
+            "metrics": _extract_metrics(exp_def["key_finding"]),
+        }
+        # Start with curated aliases, then add auto-aliases from properties
+        exp_aliases = list(_EXPERIMENT_ALIASES.get(exp_def["id"], []))
+        auto_aliases = _extract_auto_aliases(
+            exp_def["title"], "",
+            entity_type="Experiment",
+            properties=exp_props,
+            max_aliases=5,
+        )
+        for aa in auto_aliases:
+            if aa not in exp_aliases:
+                exp_aliases.append(aa)
         node = Node(
             id=exp_def["id"],
             type="Experiment",
-            properties={
-                "title": exp_def["title"],
-                "question": exp_def["question"],
-                "key_finding": exp_def["key_finding"],
-                "phase": exp_def["phase"],
-                "experiment_key": exp_key,
-            },
+            properties=exp_props,
             sources=[f"sam-lm/experiments/{exp_key}_report.md"],
-            aliases=_EXPERIMENT_ALIASES.get(exp_def["id"], []),
+            aliases=exp_aliases,
         )
         graph.add_node(node)
     
@@ -378,14 +392,27 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
     }
     
     for concept_id, concept_def in concepts.items():
+        concept_props = {
+            "description": concept_def["description"],
+            "metrics": _extract_metrics(concept_def["description"]),
+        }
+        # Start with curated aliases, then add auto-aliases from properties
+        concept_aliases = list(_CONCEPT_ALIASES.get(concept_id, []))
+        auto_aliases = _extract_auto_aliases(
+            concept_id, "",
+            entity_type="Concept",
+            properties=concept_props,
+            max_aliases=5,
+        )
+        for aa in auto_aliases:
+            if aa not in concept_aliases:
+                concept_aliases.append(aa)
         node = Node(
             id=concept_id,
             type="Concept",
-            properties={
-                "description": concept_def["description"],
-            },
+            properties=concept_props,
             sources=["ANALYSIS_AND_ROADMAP.md"],
-            aliases=_CONCEPT_ALIASES.get(concept_id, []),
+            aliases=concept_aliases,
         )
         graph.add_node(node)
         
@@ -412,16 +439,34 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
                 graph.add_edge(edge)
     
     # Phase 5: Add decision nodes for the pivot
+    decision_props = {
+        "description": "Pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning)",
+        "rationale": "Selector precision bottleneck (50%) is structural — flat MLPs can't solve graph-structured selection. "
+                     "Knowledge should be explicit entities + relations, not latent vectors.",
+        "date": "2026-07-08",
+    }
+    # Generate aliases from decision properties
+    decision_aliases = ["nexus system", "nexus approach", "graph reasoning", "nexus decision",
+                        "what is nexus", "pivot to graph", "nexus pivot decision",
+                        "nexus vs rag", "nexus architecture",
+                        "nexus and rag", "difference between nexus", "nexus pipeline",
+                        "nexus query parser", "nexus ingestion", "nexus verifier",
+                        "nexus compute", "nexus distinguishes", "nexus phase"]
+    auto_aliases = _extract_auto_aliases(
+        "Decision_PivotToNEXUS", "",
+        entity_type="Decision",
+        properties=decision_props,
+        max_aliases=5,
+    )
+    for aa in auto_aliases:
+        if aa not in decision_aliases:
+            decision_aliases.append(aa)
     decision = Node(
         id="Decision_PivotToNEXUS",
         type="Decision",
-        properties={
-            "description": "Pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning)",
-            "rationale": "Selector precision bottleneck (50%) is structural — flat MLPs can't solve graph-structured selection. "
-                         "Knowledge should be explicit entities + relations, not latent vectors.",
-            "date": "2026-07-08",
-        },
+        properties=decision_props,
         sources=["ANALYSIS_AND_ROADMAP.md"],
+        aliases=decision_aliases,
     )
     graph.add_node(decision)
     

@@ -373,12 +373,19 @@ def load_throughput(path: Path) -> dict:
     # New format: warmed_throughput key (from ram_throughput.py)
     if "warmed_throughput" in data:
         tp = data["warmed_throughput"]
+        # Fallback: if new keys missing, use legacy ollama_rss for idle
+        idle_rss = tp.get("ollama_idle_rss_mb", data.get("ollama_idle_rss_mb"))
+        if idle_rss is None or (isinstance(idle_rss, str) and idle_rss == "unavailable"):
+            idle_rss = tp.get("ollama_rss")  # legacy key
+        gen_rss = tp.get("ollama_generating_rss_mb", data.get("ollama_generating_rss_mb"))
         return {
             "source": str(path),
             "p50_tps": tp.get("p50_tps"),
             "p95_tps": tp.get("p95_tps"),
             "mean_tps": tp.get("mean_tps"),
             "ram_mb": tp.get("ollama_rss", 0),
+            "ollama_idle_rss_mb": idle_rss,
+            "ollama_generating_rss_mb": gen_rss,
             "pipeline_overhead_ms": None,
             "by_prompt_length": tp.get("by_prompt_length", {}),
         }
@@ -399,6 +406,8 @@ def load_throughput(path: Path) -> dict:
         "p95_tps": ollama.get("p95_tokens_per_second"),
         "mean_tps": ollama.get("mean_tokens_per_second"),
         "ram_mb": max_ram,
+        "ollama_idle_rss_mb": None,
+        "ollama_generating_rss_mb": None,
         "pipeline_overhead_ms": pipeline.get("cpu_overhead_ms"),
     }
 
@@ -601,6 +610,36 @@ def build_table() -> str:
     ram_router = _ram_cell("nexus_3b", "Router", " (same hardware)")
     ram_rag = _ram_cell("rag_3b", "RAG+3B")
 
+    # ── Total RSS (pipeline + Ollama process) ──
+    ollama_idle_mb = tp.get("ollama_idle_rss_mb")
+    if isinstance(ollama_idle_mb, str):
+        ollama_idle_mb = None  # "unavailable" string
+
+    def _total_rss_cell(arm_key: str, needs_ollama: bool = True) -> str:
+        """Compute total RSS = pipeline RSS + Ollama idle RSS (if applicable)."""
+        fn = ram_tp_path.name if ram_tp_path else tp_fn
+        if not ram_data or arm_key not in ram_data:
+            return f"not measured [{fn}]"
+
+        rd = ram_data[arm_key]
+        pipeline_peak = rd.get("rss_peak_mb")
+        if pipeline_peak is None:
+            return f"not measured [{fn}]"
+
+        if not needs_ollama:
+            return f"{pipeline_peak:.0f} MB [{fn}] (pipeline only, no LLM)"
+
+        if ollama_idle_mb is None or not isinstance(ollama_idle_mb, (int, float)):
+            return f"{pipeline_peak:.0f} MB + Ollama [?] [{fn}]"
+
+        total = pipeline_peak + ollama_idle_mb
+        return f"{total:.0f} MB [{fn}] (pipeline {pipeline_peak:.0f} MB + Ollama idle {ollama_idle_mb:.0f} MB)"
+
+    total_rss_nexus = _total_rss_cell("nexus_3b", needs_ollama=True)
+    total_rss_zero = _total_rss_cell("zero_weight", needs_ollama=False)
+    total_rss_router = _total_rss_cell("nexus_3b", needs_ollama=True)
+    total_rss_rag = _total_rss_cell("rag_3b", needs_ollama=True)
+
     # ── Build rows ──
 
     rows: list[dict] = []
@@ -615,6 +654,7 @@ def build_table() -> str:
         "Avg evidence tokens": f"{_fmt(nvr['nexus']['avg_evidence_tokens'], '.1f')} [{nvr_raw_fn}]",
         "p50 latency": f"{_fmt(nvr['nexus']['avg_latency_s'], '.2f')} s [{nvr_raw_fn}]",
         "Peak RAM (MB)": ram_nexus,
+        "Total RSS (MB)": total_rss_nexus,
         "$/1K queries": nexus_cost,
         "Sign test p vs RAG": f"{_fmt(nvr['sign_test_p'], '.4f')} [{nvr_regen_fn}]",
         "Relevance rate": relevance_str,
@@ -630,6 +670,7 @@ def build_table() -> str:
         "Avg evidence tokens": f"not measured [{vc_fn}] (no evidence token tracking in verifier)",
         "p50 latency": f"{_fmt(vc['router']['avg_latency_s'], '.2f')} s [{vc_fn}]",
         "Peak RAM (MB)": ram_zero,
+        "Total RSS (MB)": total_rss_zero,
         "$/1K queries": zero_weight_cost,
         "Sign test p vs RAG": f"not measured [{vc_fn}]",
         "Relevance rate": relevance_str,
@@ -666,6 +707,7 @@ def build_table() -> str:
             "Avg evidence tokens": f"{blended_ev_tokens:.1f} [{rp_fn}] (blended: {synth_pct} synth×0 + {_fmt(llm_frac, '.0%')} LLM×{nexus_ev_tok:.0f})",
             "p50 latency": f"{_fmt(rp['avg_latency_s'], '.2f')} s [{rp_fn}]",
             "Peak RAM (MB)": ram_router,
+            "Total RSS (MB)": total_rss_router,
             "$/1K queries": router_cost_r3,
             "Sign test p vs RAG": f"{_fmt(router_sign_p, '.4f')} [{rvr_fn}]" if router_sign_p is not None else f"not measured [{rp_fn}]",
             "Relevance rate": relevance_str,
@@ -681,6 +723,7 @@ def build_table() -> str:
             "Avg evidence tokens": f"not measured [{vc_fn}]",
             "p50 latency": f"not measured [{vc_fn}]",
             "Peak RAM (MB)": ram_router,
+            "Total RSS (MB)": total_rss_router,
             "$/1K queries": router_cost,
             "Sign test p vs RAG": f"not measured [{vc_fn}]",
             "Relevance rate": relevance_str,
@@ -696,6 +739,7 @@ def build_table() -> str:
         "Avg evidence tokens": f"{_fmt(nvr['rag']['avg_evidence_tokens'], '.1f')} [{nvr_raw_fn}]",
         "p50 latency": f"{_fmt(nvr['rag']['avg_latency_s'], '.2f')} s [{nvr_raw_fn}]",
         "Peak RAM (MB)": ram_rag,
+        "Total RSS (MB)": total_rss_rag,
         "$/1K queries": rag_cost,
         "Sign test p vs RAG": "(baseline)",
         "Relevance rate": relevance_str,
@@ -714,6 +758,7 @@ def build_table() -> str:
         "Avg evidence tokens",
         "p50 latency",
         "Peak RAM (MB)",
+        "Total RSS (MB)",
         "$/1K queries",
         "Sign test p vs RAG",
         "Relevance rate",
@@ -766,10 +811,15 @@ def build_table() -> str:
         "  Zero-weight row = $0 (template synthesis is pure CPU overhead, no LLM inference).",
         "  **Throughput** measured on warmed model (5× warmup, 10× per prompt length, 3 lengths) — not cold-start.",
         "- **Peak RAM**: Per-arm measurement via `psutil.Process().memory_info().rss`.",
+        "  Pipeline RSS only — excludes Ollama process RSS.",
         "  Zero-weight = SynthesizingModel pipeline only (graph + template engine).",
         "  NEXUS+3B = FallbackModel pipeline only (graph + code — Ollama RSS measured separately).",
         "  RAG+3B = chunk retrieval + all-MiniLM-L6-v2 embeddings loaded in memory.",
-        "  Ollama process RSS (7.6B Q4_K_M): ~5–8 GB (not included in per-arm numbers).",
+        "- **Total RSS (MB)**: Pipeline peak RSS + Ollama idle process RSS (model loaded but not generating).",
+        "  This is the true system RAM cost — the number the project defends itself with.",
+        "  Zero-weight = pipeline only (no Ollama needed).",
+        "  All LLM-dependent arms include Ollama idle RSS (~5–8 GB for 7.6B Q4_K_M).",
+        "  Ollama generating RSS (KV cache + activations) measured separately via concurrent polling.",
         "- **Relevance rate**: From heuristic checklist audit (4-point rubric). Formula: `% yes + 0.5 × % partial`.",
 
         "",
@@ -780,7 +830,8 @@ def build_table() -> str:
         f"- **Evidence efficiency**: NEXUS uses {_fmt(nvr['nexus']['avg_evidence_tokens'], '.0f')} tokens vs RAG's {_fmt(nvr['rag']['avg_evidence_tokens'], '.0f')} — 3.2× reduction.",
         f"- **Latency**: NEXUS {_fmt(nvr['nexus']['avg_latency_s'], '.2f')}s vs RAG {_fmt(nvr['rag']['avg_latency_s'], '.2f')}s.",
         f"- **Throughput (warmed)**: p50={tp['p50_tps']:.1f} tok/s on qwen2.5:latest (7.6B Q4_K_M). Raw LLM cost = ${LocalCostModel(tokens_per_second=tp['p50_tps']).cost_per_1m_tokens():.4f}/1M. Router (80% synth) = ${LocalCostModel(tokens_per_second=tp['p50_tps']).cost_per_1m_tokens() * 0.2:.4f}/1M.",
-        f"- **RAM**: RAG indexing adds +{ram_data.get('rag_3b', {}).get('rss_delta_mb', '?'):} MB (embedding model). NEXUS pipeline adds +{ram_data.get('nexus_3b', {}).get('rss_delta_mb', '?'):} MB. Zero-weight adds +{ram_data.get('zero_weight', {}).get('rss_delta_mb', '?'):} MB.",
+        f"- **RAM**: RAG indexing adds +{ram_data.get('rag_3b', {}).get('rss_delta_mb', '?'):} MB (embedding model). NEXUS pipeline adds +{ram_data.get('nexus_3b', {}).get('rss_delta_mb', '?'):} MB. Zero-weight adds +{ram_data.get('zero_weight', {}).get('rss_delta_mb', '?'):} MB." + (
+            f" Total RSS (pipeline + Ollama idle): see table column." if ollama_idle_mb is not None else ""),
         f"- **Zero-weight hallucination**: {_fmt(vc['router']['avg_hallucination_rate'], '.1%')} (SynthesizingModel only, n={vc['router']['n']}).",
         f"- **Relevance**: {_fmt(audit['relevance_rate'], '.1%')} — below 70% triggers metric caveat (accuracy × relevance = {_fmt((vc.get('synthesizer_accuracy') or 0) * (audit['relevance_rate'] or 0), '.1%')} actionable accuracy).",
     ]

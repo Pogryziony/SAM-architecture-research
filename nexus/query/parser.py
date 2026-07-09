@@ -428,10 +428,12 @@ def _find_alias_matches(
     alias_index: dict[str, str] = getattr(graph, "_alias_index", {})
 
     max_ngram = min(len(words), 8)
-    for ngram_size in range(max_ngram, 1, -1):  # Skip 1-word (too noisy)
+    for ngram_size in range(max_ngram, 1, -1):  # Skip 1-word (too noisy, causes first_30 regression)
         for i in range(len(words) - ngram_size + 1):
             chunk = " ".join(words[i:i + ngram_size])
             chunk_stripped = chunk.strip(".,;:?!\"'()[]{}")
+            if len(chunk_stripped) < 2:
+                continue
             normalized = chunk_stripped.replace(" ", "_").replace("-", "_")
             if normalized in alias_index:
                 alias_matched.add(alias_index[normalized])

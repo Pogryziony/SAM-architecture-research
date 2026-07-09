@@ -12,6 +12,7 @@ Each evidence pack contains:
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from nexus.graph import Path, Node
@@ -269,6 +270,284 @@ def _extract_node_facts(
     return raw_facts
 
 
+# ── Confidence signals for routing ──
+
+_NUMERIC_INTENT_PATTERNS: dict[str, list[str]] = {
+    "accuracy": [r"%", r"\d+(?:\.\d+)?\s*%"],
+    "parameter": [r"\bmillion\b", r"\d{5,}"],
+    "slot": [r"\d+\s*slot"],
+    "layer": [r"\d+\s*layer", r"\d+"],
+    "dimension": [r"\d+"],
+    "size": [r"\d+"],
+    "token": [r"\d+\s*token", r"\d+[kKmM]"],
+    "batch": [r"\d+\s*batch", r"\d+"],
+    "head": [r"\d+\s*head", r"\d+"],
+    "rate": [r"%", r"\d+(?:\.\d+)?\s*%"],
+}
+
+
+def _compute_numeric_match(question: str, node_facts: list[dict[str, Any]], facts: list[str]) -> float:
+    """Score 0-1: how well evidence numbers match the question's numeric intent.
+
+    Parses the question for numeric intent signals (accuracy→%, parameters→million,
+    slots→slot-numbers) and checks whether the evidence text contains numbers
+    in the matching category.
+
+    Returns:
+        1.0 = evidence has matching numbers for all detected intents
+        0.5 = evidence has some numbers or partial match
+        0.0 = no numbers or no matching numbers
+    """
+    q_lower = question.lower()
+
+    # Combine all evidence text into one searchable string
+    evidence_text = " ".join(
+        [nf.get("text", "") for nf in node_facts] + [str(f) for f in facts]
+    )
+
+    # Check if evidence has any numbers at all
+    has_any_numbers = bool(re.search(r"\d", evidence_text))
+    if not has_any_numbers:
+        return 0.0
+
+    # Detect which specific numeric intents are present in the question
+    detected_intents: list[tuple[str, list[str]]] = []
+    for keyword, patterns in _NUMERIC_INTENT_PATTERNS.items():
+        if keyword in q_lower:
+            detected_intents.append((keyword, patterns))
+
+    if not detected_intents:
+        # No specific numeric intent detected, but evidence has numbers → partial
+        return 0.5
+
+    # For each detected intent, check if evidence has matching numbers
+    match_count = 0
+    for _keyword, patterns in detected_intents:
+        for pat in patterns:
+            if re.search(pat, evidence_text, re.IGNORECASE):
+                match_count += 1
+                break
+
+    if match_count == len(detected_intents):
+        return 1.0
+    elif match_count > 0:
+        return 0.5
+    else:
+        return 0.0
+
+
+def _compute_has_key_finding(
+    target_entity: str | None,
+    graph: InMemoryGraphStore,
+) -> float:
+    """Check whether the target entity has a key_finding property.
+
+    Returns 1.0 if the entity has key_finding, 0.0 otherwise.
+    Falls back to 0.5 if no target_entity is specified (unknown).
+    """
+    if target_entity is None:
+        return 0.5  # Unknown — neutral signal
+    node = graph.get_node(target_entity)
+    if node is None:
+        return 0.0
+    props = node.properties
+    if props.get("key_finding") and isinstance(props["key_finding"], str) and props["key_finding"].strip():
+        return 1.0
+    return 0.0
+
+
+def _compute_confidence_signals(
+    question: str,
+    paths: list[Path],
+    graph: InMemoryGraphStore,
+    evidence: dict[str, Any],
+    target_entity: str | None,
+    question_intent: str,
+) -> dict[str, float]:
+    """Compute confidence signals for routing decisions.
+
+    These signals are available BEFORE generation and indicate how
+    likely the evidence is to contain a correct answer.
+    """
+    node_facts = evidence.get("node_facts", [])
+    all_facts = evidence.get("facts", [])
+
+    # 1. Numeric match score — does evidence contain numbers relevant to the question?
+    numeric_match = _compute_numeric_match(question, node_facts, all_facts)
+
+    # 2. Key finding presence — does the target entity have curated key_finding?
+    #    If target_entity is not provided, try to find it from the evidence paths.
+    resolved_target = target_entity
+    if resolved_target is None:
+        resolved_target = _resolve_target_entity_from_evidence(question, evidence)
+
+    has_key_finding = _compute_has_key_finding(resolved_target, graph)
+
+    # 3. Path count signal — more paths = more evidence context
+    path_count_signal = min(len(paths) / 5.0, 1.0)
+
+    return {
+        "numeric_match": round(numeric_match, 2),
+        "has_key_finding": round(has_key_finding, 2),
+        "path_count_signal": round(path_count_signal, 2),
+    }
+
+
+def _resolve_target_entity_from_evidence(
+    question: str,
+    evidence: dict[str, Any],
+) -> str | None:
+    """Find the target entity from evidence paths without graph access.
+
+    Uses word overlap between question words and node IDs in the evidence paths.
+    Splits node IDs on both word boundaries and underscores for compound IDs
+    like Exp_0_6_Validation_oracle_memory.
+    """
+    q_lower = question.lower()
+    q_words = set(re.findall(r"\w+", q_lower))
+
+    best_match: str | None = None
+    best_score = 0
+
+    all_node_ids: set[str] = set()
+    for path_data in evidence.get("paths", []):
+        for node in path_data.get("nodes", []):
+            nid = node.get("id", "")
+            if nid:
+                all_node_ids.add(nid)
+
+    for nid in all_node_ids:
+        nid_lower = nid.lower()
+        # Direct match: node ID appears as substring in question
+        if nid_lower in q_lower:
+            score = len(nid_lower)
+            if score > best_score:
+                best_score = score
+                best_match = nid
+                continue
+
+        # Word-level overlap: split on underscores AND word boundaries
+        nid_words = set(re.findall(r"[a-zA-Z0-9]+", nid_lower))
+        meaningful = {w for w in nid_words if len(w) > 2}
+        overlap = len(meaningful & q_words)
+        if overlap > 0 and overlap > best_score:
+            best_score = overlap
+            best_match = nid
+
+    return best_match
+
+
+def _collect_numbers(
+    paths: list[Path],
+    graph: InMemoryGraphStore,
+) -> list[dict[str, Any]]:
+    """
+    Collect all structured metric→value pairs from all nodes in the evidence.
+
+    For each unique node across all paths, extracts the 'metrics' property
+    (if present) and returns a flat list of {entity, metric_name: value} entries.
+
+    This creates a machine-readable NUMBERS table that the prompt template
+    can render as simple key-value pairs for the model.
+    """
+    numbers: list[dict[str, Any]] = []
+    seen_entities: set[str] = set()
+
+    for path in paths:
+        for step in path.steps:
+            for node_id in (step.from_node, step.to_node):
+                if node_id in seen_entities:
+                    continue
+                seen_entities.add(node_id)
+                node = graph.get_node(node_id)
+                if node is None:
+                    continue
+                metrics = node.properties.get("metrics")
+                if metrics and isinstance(metrics, dict) and metrics:
+                    entry: dict[str, Any] = {"entity": node_id}
+                    entry.update(metrics)
+                    numbers.append(entry)
+
+    return numbers
+
+
+def _collect_neighbor_key_findings(
+    paths: list[Path],
+    graph: InMemoryGraphStore,
+    target_entity: str | None = None,
+) -> list[dict[str, Any]]:
+    """
+    Include key_findings/descriptions from 1-hop neighbor nodes.
+
+    For each unique node that appears in the paths, look at all
+    directly connected neighbors (nodes connected by a single edge).
+    If a neighbor is an Experiment or Concept with key_finding/description,
+    include it — this catches cases where the answer lives in a
+    connected node, not the target entity directly.
+
+    Returns a list of {entity, type, text} dicts.
+    """
+    neighbor_facts: list[dict[str, Any]] = []
+    seen_neighbors: set[str] = set()
+    # Track all nodes that are already IN the paths (don't repeat them)
+    in_path_nodes: set[str] = set()
+    for path in paths:
+        for step in path.steps:
+            in_path_nodes.add(step.from_node)
+            in_path_nodes.add(step.to_node)
+
+    # Map entity_id to its node for faster lookup
+    entity_map: dict[str, Node] = {}
+    for path in paths:
+        for step in path.steps:
+            for node_id in (step.from_node, step.to_node):
+                if node_id not in entity_map:
+                    node = graph.get_node(node_id)
+                    if node:
+                        entity_map[node_id] = node
+
+    # Also include the target_entity if it's not already in the paths
+    if target_entity and target_entity not in in_path_nodes:
+        node = graph.get_node(target_entity)
+        if node:
+            entity_map[target_entity] = node
+
+    # For each entity in evidence, look at 1-hop neighbors
+    for entity_id in list(entity_map.keys()):
+        for edge in graph.get_edges(entity_id, "both"):
+            neighbor_id = edge.target if edge.source == entity_id else edge.source
+            if (neighbor_id in seen_neighbors 
+                or neighbor_id in in_path_nodes 
+                or neighbor_id == entity_id):
+                continue
+            # Apply target_entity filter: if set, neighbor must relate to it
+            if target_entity and target_entity.lower() not in neighbor_id.lower():
+                # Also check if the edge itself connects to target_entity
+                if (target_entity.lower() not in edge.source.lower() 
+                    and target_entity.lower() not in edge.target.lower()):
+                    continue
+
+            neighbor = graph.get_node(neighbor_id)
+            if neighbor is None:
+                continue
+            # Only include Experiment and Concept neighbors with key info
+            if neighbor.type not in ("Experiment", "Concept"):
+                continue
+            props = neighbor.properties
+            text = props.get("key_finding") or props.get("description")
+            if not text or not isinstance(text, str) or not text.strip():
+                continue
+
+            seen_neighbors.add(neighbor_id)
+            neighbor_facts.append({
+                "entity": neighbor_id,
+                "type": neighbor.type,
+                "text": text,
+            })
+
+    return neighbor_facts
+
+
 def build_evidence(
     question: str,
     paths: list[Path],
@@ -300,6 +579,8 @@ def build_evidence(
         "node_facts": [],
         "facts": [],
         "sources": [],
+        "numbers": [],
+        "neighbor_facts": [],
     }
 
     all_sources: set[str] = set()
@@ -348,6 +629,19 @@ def build_evidence(
 
     evidence["facts"] = all_facts
     evidence["sources"] = sorted(all_sources)
+
+    # ── NUMBERS section: flat, machine-readable table of all numbers ──
+    evidence["numbers"] = _collect_numbers(paths, graph)
+
+    # ── Neighbor key_findings: 1-hop neighbor facts for enriched context ──
+    evidence["neighbor_facts"] = _collect_neighbor_key_findings(
+        paths, graph, target_entity
+    )
+
+    # ── Add confidence signals for routing ──
+    evidence["confidence_signals"] = _compute_confidence_signals(
+        question, paths, graph, evidence, target_entity, question_intent,
+    )
 
     return json.dumps(evidence, indent=2, ensure_ascii=False)
 

@@ -1,0 +1,1509 @@
+{
+  "config": {
+    "limit": 30,
+    "llm_backend": "OllamaModel(qwen2.5-coder:3b)",
+    "synthesizer": "SynthesizingModel",
+    "verification_threshold": 0.2
+  },
+  "graph_provenance": {
+    "node_count": 1866,
+    "edge_count": 2104,
+    "build_command": "python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results.json",
+    "build_steps": [
+      "1. populate_from_experiments(EXPERIMENTS_DIR, graph)",
+      "2. ingest_directory('docs/', graph)",
+      "3. ingest_directory('sam-lm/docs/', graph)",
+      "4. ingest_directory('sam-lm/experiments/', graph)"
+    ],
+    "fixes_applied": [
+      "P0: entity filter, relations constrained 10K->116 edges, entity ranking",
+      "P1: key_findings surfaced as evidence in evidence_builder",
+      "P2: double-gate with corpus metric (honest hallucination measurement)"
+    ],
+    "timestamp": "2026-07-08T22:25:38.034354+00:00"
+  },
+  "summary": {
+    "total_questions": 30,
+    "route_split": {
+      "synthesizer": 10,
+      "llm": 20
+    },
+    "synthesizer_accuracy": 0.0714,
+    "llm_accuracy": 0.2685,
+    "nexus_3b_accuracy": 0.2533,
+    "synthesis_count": 7,
+    "llm_count": 18
+  },
+  "results": [
+    {
+      "question_id": "q001",
+      "question": "What was the overall accuracy of the SAM oracle memory experiment?",
+      "ground_truth": "99.87% overall accuracy, with 99.5% on 1-hop, 100% on 2-hop, and 100% on 3-hop.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "The overall accuracy of the SAM oracle memory experiment was 99.87%.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 4,
+        "is_insufficient": false,
+        "latency_s": 4.5485,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_6_Validation",
+          "Sam_Oracle_Memory",
+          "Exp_0_13A_NoisyMemory",
+          "Exp_0_6_Validation_oracle_text_memory",
+          "Exp_0_9_OracleFilter_oracle_filter"
+        ],
+        "accuracy": 0.3333
+      },
+      "router": {
+        "answer": "The overall accuracy of the SAM oracle memory experiment was 99.87%.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 4,
+        "is_insufficient": false,
+        "latency_s": 2.3327,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.56 (num=1.0, kf=0.0, paths=0.8)",
+        "generation_latency_s": 2.3013,
+        "accuracy": 0.3333
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: overall accuracy of the SAM oracle memory experiment.\n- The concept 'oracle memory' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0004,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q002",
+      "question": "What accuracy did the SAM core-only baseline achieve?",
+      "ground_truth": "68.74% overall accuracy, identical to the dense baseline at equal parameters.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "The SAM core-only baseline achieved 99.87% accuracy.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 2.381,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_11_ChainRetrieval",
+          "Exp_0_6_Validation",
+          "Exp_0_6_Validation_core_only",
+          "Exp_0_9_OracleFilter_baseline",
+          "Concept_OracleMemory"
+        ],
+        "accuracy": 0.0
+      },
+      "router": {
+        "answer": "The SAM core-only baseline achieved 99.87% accuracy.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 2.3117,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.52 (num=1.0, kf=0.0, paths=0.6)",
+        "generation_latency_s": 2.2953,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q003",
+      "question": "What was the breakthrough result of the chain-set BCE retriever?",
+      "ground_truth": "all_required@32 = 100% — it finds ALL required slots for EVERY example at K=32.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "The breakthrough result of the chain-set BCE retriever was achieving 100% all_required@32.",
+        "passed": false,
+        "hallucination_rate": 1.0,
+        "supported_count": 0,
+        "unsupported_count": 1,
+        "path_count": 4,
+        "is_insufficient": false,
+        "latency_s": 2.4163,
+        "error": null,
+        "parsed_entity_ids": [
+          "Chain_Set_Bce",
+          "Chain_Set_Bce_Retriever_(experiment_0.11)",
+          "Exp_0_11_ChainRetrieval",
+          "Concept_ChainRetrieval",
+          "Chain_Set_Bce_Retriever_—_Retrieval_Solved_At_K=32"
+        ],
+        "accuracy": 1.0
+      },
+      "router": {
+        "answer": "The breakthrough result of the chain-set BCE retriever was achieving 100% all_required@32.",
+        "passed": false,
+        "hallucination_rate": 1.0,
+        "supported_count": 0,
+        "unsupported_count": 1,
+        "path_count": 4,
+        "is_insufficient": false,
+        "latency_s": 2.3406,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.36 (num=0.5, kf=0.0, paths=0.8)",
+        "generation_latency_s": 2.3335,
+        "accuracy": 1.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: breakthrough result of the chain-set BCE retriever.\n- The concept 'retriever' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q004",
+      "question": "What was the precision of the learned slot selector in experiment 0.12?",
+      "ground_truth": "50% precision, with 96.6% recall — meaning it finds nearly all required slots but picks about twice as many distractors.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "The learned slot selector in experiment 0.12 had a precision of 50%.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 2.3835,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_12_Selection",
+          "Slot_Selector",
+          "Concept_SelectorBottleneck",
+          "Exp_0_12_Selection_learned_selector",
+          "Implement_Learned_Slot_Selector_Or_Score_Threshold_Filtering"
+        ],
+        "accuracy": 0.5
+      },
+      "router": {
+        "answer": "The learned slot selector in experiment 0.12 had a precision of 50%.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 2.341,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.12 (num=0.0, kf=0.0, paths=0.6)",
+        "generation_latency_s": 2.326,
+        "accuracy": 0.5
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: precision of the learned slot selector in experiment 0.12.\n- This relates to experiment experiment 0.12.\n- The concept 'selector' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q005",
+      "question": "How many random distractors can SAM tolerate while maintaining over 90% accuracy?",
+      "ground_truth": "Up to 8 random distractors, achieving 91.58% overall accuracy.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "SAM can tolerate 8 random distractors while maintaining over 90% accuracy.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.4002,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_13A_NoisyMemory",
+          "Concept_NoiseTolerance",
+          "Concept_OracleMemory",
+          "Exp_0_6_Validation_random_memory",
+          "Exp_0_13B_RealisticDistractors"
+        ],
+        "accuracy": 1.0
+      },
+      "router": {
+        "answer": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.0167,
+        "error": null,
+        "routed_to": "synthesizer",
+        "route_reason": "conf=0.60 (num=1.0, kf=0.0, paths=1.0)",
+        "generation_latency_s": 0.0006,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q006",
+      "question": "At what noise level does 3-hop reasoning collapse in SAM?",
+      "ground_truth": "Between 8 and 16 distractors — 3-hop accuracy drops from 79.3% at +8 to 39.0% at +16.",
+      "question_type": "factual",
+      "difficulty": "medium",
+      "hops": 1,
+      "llm": {
+        "answer": "The noise level at which 3-hop reasoning collapses in SAM is +16.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.4702,
+        "error": null,
+        "parsed_entity_ids": [
+          "Hop_Reasoning",
+          "Exp_0_13A_NoisyMemory",
+          "Exp_0_12_Selection_fixed_top_by_hop",
+          "Gate_4:_Reasoning**:_If_Sam_Improves_Single_Hop_But_Not_Multi_Hop,_Do_Not_Scale",
+          "Sam_Does_Not_Collapse_With_One_Distractor"
+        ],
+        "accuracy": 0.0
+      },
+      "router": {
+        "answer": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.014,
+        "error": null,
+        "routed_to": "synthesizer",
+        "route_reason": "conf=0.60 (num=0.5, kf=0.5, paths=1.0)",
+        "generation_latency_s": 0.0002,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q007",
+      "question": "What accuracy did SAM achieve with the oracle-filter from chain candidates in experiment 0.12?",
+      "ground_truth": "100% accuracy on all hop categories, matching oracle_memory and proving the chain candidates are sufficient.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "Insufficient evidence to answer.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": true,
+        "latency_s": 2.3444,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_12_Selection",
+          "Exp_0_12_Selection_oracle_filter_top64",
+          "Exp_0_12_Selection_oracle_filter_top32",
+          "Exp_0_6_Validation",
+          "Exp_0_11_ChainRetrieval"
+        ],
+        "accuracy": 0.0
+      },
+      "router": {
+        "answer": "Insufficient evidence to answer.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": true,
+        "latency_s": 2.2717,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.52 (num=1.0, kf=0.0, paths=0.6)",
+        "generation_latency_s": 2.2432,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- This relates to experiment experiment 0.12.\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q008",
+      "question": "What was the all_required@64 result for the dual encoder retriever in experiment 0.10?",
+      "ground_truth": "Only 27% — 73% of examples had required slots completely absent from the top-64 results.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "The all_required@64 result for the dual encoder retriever in experiment 0.10 was 27%.",
+        "passed": false,
+        "hallucination_rate": 1.0,
+        "supported_count": 0,
+        "unsupported_count": 1,
+        "path_count": 4,
+        "is_insufficient": false,
+        "latency_s": 2.5164,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_10_RequiredSet",
+          "Dual_Encoder",
+          "Exp_0_11_ChainRetrieval",
+          "Exp_0_6_Validation_retrieval_dual_encoder",
+          "Dual_Encoder_(experiment_0.6)"
+        ],
+        "accuracy": 0.5
+      },
+      "router": {
+        "answer": "The all_required@64 result for the dual encoder retriever in experiment 0.10 was 27%.",
+        "passed": false,
+        "hallucination_rate": 1.0,
+        "supported_count": 0,
+        "unsupported_count": 1,
+        "path_count": 4,
+        "is_insufficient": false,
+        "latency_s": 2.3666,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.56 (num=0.5, kf=0.5, paths=0.8)",
+        "generation_latency_s": 2.3496,
+        "accuracy": 0.5
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: all_required@64 result for the dual encoder retriever in experiment 0.10.\n- This relates to experiment experiment 0.10.\n- The concept 'retriever' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q009",
+      "question": "What Rec@8 did the dual encoder achieve on the dense dataset in experiment 0.5?",
+      "ground_truth": "99.0% val Rec@8, up from 6.9% on the original sparse dataset.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "The dual encoder achieved a Rec@8 of 99.0% on the dense dataset in experiment 0.5.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.4702,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_5_DenseDataset",
+          "Dual_Encoder",
+          "Exp_0_6_Validation_retrieval_dual_encoder",
+          "Exp_0_10_RequiredSet",
+          "Exp_0_6_Validation_retrieved_memory"
+        ],
+        "accuracy": 0.5
+      },
+      "router": {
+        "answer": "The dual encoder achieved a Rec@8 of 99.0% on the dense dataset in experiment 0.5.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.3872,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.40 (num=0.5, kf=0.0, paths=1.0)",
+        "generation_latency_s": 2.3695,
+        "accuracy": 0.5
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- This relates to experiment experiment 0.5.\n- The concept 'dual encoder' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q010",
+      "question": "What was the key finding of the pipeline diagnosis experiment?",
+      "ground_truth": "Three critical bugs were found and fixed — retrieval was identified as the bottleneck with only 6.9% Rec@8.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "The key finding of the pipeline diagnosis experiment was that it found and fixed 3 critical bugs, with retrieval being identified as the bottleneck.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.5123,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_Diagnosis",
+          "Experiment_0_—_Pipeline_Diagnosis",
+          "Exp_0_3_PKM_Candidates",
+          "Exp_0_13A_NoisyMemory",
+          "Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair"
+        ],
+        "accuracy": 0.0
+      },
+      "router": {
+        "answer": "Found and fixed 3 critical bugs. Retrieval is the bottleneck.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 2,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.0077,
+        "error": null,
+        "routed_to": "synthesizer",
+        "route_reason": "conf=0.80 (num=0.5, kf=1.0, paths=1.0)",
+        "generation_latency_s": 0.0001,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: key finding of the pipeline diagnosis experiment.\n- The concept 'pipeline' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q011",
+      "question": "How many parameters does the SAM core model have?",
+      "ground_truth": "Approximately 15.7 million parameters total, with 15.6M in the core and 117K in memory.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+        "passed": false,
+        "hallucination_rate": 1.0,
+        "supported_count": 0,
+        "unsupported_count": 2,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.5362,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_13A_NoisyMemory",
+          "Exp_0_6_Validation",
+          "Exp_0_11_ChainRetrieval",
+          "sam/model/sam_core.py",
+          "Exp_0_6_Validation_core_only"
+        ],
+        "accuracy": 0.0
+      },
+      "router": {
+        "answer": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+        "passed": false,
+        "hallucination_rate": 1.0,
+        "supported_count": 0,
+        "unsupported_count": 2,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.2969,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.40 (num=0.0, kf=0.5, paths=1.0)",
+        "generation_latency_s": 2.2818,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q012",
+      "question": "What is the 3-hop accuracy of SAM without memory (core_only)?",
+      "ground_truth": "22.00% — showing that multi-hop reasoning is very hard for the small core without external memory.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "Insufficient evidence to answer.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": true,
+        "latency_s": 2.3323,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_11_ChainRetrieval",
+          "Exp_0_13A_NoisyMemory",
+          "Exp_0_6_Validation",
+          "Concept_OracleMemory",
+          "Exp_0_6_Validation_oracle_text_memory"
+        ],
+        "accuracy": 0.0
+      },
+      "router": {
+        "answer": "Insufficient evidence to answer.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": true,
+        "latency_s": 2.2897,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.52 (num=1.0, kf=0.0, paths=0.6)",
+        "generation_latency_s": 2.2672,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: 3-hop accuracy of SAM without memory (core_only).\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q013",
+      "question": "What dataset size was used for the dense synthetic experiments?",
+      "ground_truth": "19,000 training examples, 3,800 validation, 3,800 test, with 1,650 slots and 853 vocabulary tokens.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "Exp_0_5_DenseDataset uses a dense dataset with 21.8 ex/slot.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 2.3958,
+        "error": null,
+        "parsed_entity_ids": [
+          "Dense_Dataset_(data/synthetic_Dense)",
+          "Exp_0_5_DenseDataset",
+          "Experiment_0.6:_Validation_(dense_Dataset)",
+          "Exp_0_6_Validation_dense_openbook",
+          "Exp_0_6_Validation"
+        ],
+        "accuracy": 0.0
+      },
+      "router": {
+        "answer": "Exp_0_5_DenseDataset uses a dense dataset with 21.8 ex/slot.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 2.3502,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.52 (num=1.0, kf=0.0, paths=0.6)",
+        "generation_latency_s": 2.3417,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q014",
+      "question": "What accuracy did random memory injection achieve in SAM?",
+      "ground_truth": "68.74% — identical to core_only, confirming the placebo control works and the gate suppresses useless memory.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "Insufficient evidence to answer.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 4,
+        "is_insufficient": true,
+        "latency_s": 2.3575,
+        "error": null,
+        "parsed_entity_ids": [
+          "Random_Memory",
+          "Exp_0_13A_NoisyMemory",
+          "Exp_0_6_Validation_random_memory",
+          "Concept_OracleMemory",
+          "Metric_Exp_0_6_Validation_random_memory_val_accuracy_single_hop"
+        ],
+        "accuracy": 0.0
+      },
+      "router": {
+        "answer": "Insufficient evidence to answer.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 4,
+        "is_insufficient": true,
+        "latency_s": 2.3469,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.56 (num=1.0, kf=0.0, paths=0.8)",
+        "generation_latency_s": 2.3257,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q015",
+      "question": "What was the 2-hop all_required@32 for the dual encoder vs chain-set BCE retriever?",
+      "ground_truth": "Dual encoder: 0.9% — essentially zero. Chain-set BCE: 100%. The improvement was from 0.9% to 100%.",
+      "question_type": "comparative",
+      "difficulty": "medium",
+      "hops": 2,
+      "llm": {
+        "answer": "The dual encoder achieved a higher all_required@32 score of 100% compared to the chain-set BCE retriever, which also achieved 100%.",
+        "passed": false,
+        "hallucination_rate": 1.0,
+        "supported_count": 0,
+        "unsupported_count": 1,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.9005,
+        "error": null,
+        "parsed_entity_ids": [
+          "Chain_Set_Bce",
+          "Dual_Encoder",
+          "Exp_0_11_ChainRetrieval",
+          "Exp_0_10_RequiredSet",
+          "Concept_ChainRetrieval"
+        ],
+        "accuracy": 0.5
+      },
+      "router": {
+        "answer": "Chain-set BCE retriever achieved 100.00%, while Dual encoder achieved 27.00%.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.0145,
+        "error": null,
+        "routed_to": "synthesizer",
+        "route_reason": "conf=0.60 (num=0.5, kf=0.5, paths=1.0)",
+        "generation_latency_s": 0.0004,
+        "accuracy": 0.5
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: 2-hop all_required@32 for the dual encoder vs chain-set BCE retriever.\n- The concept 'retriever' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q016",
+      "question": "What did experiment 0.13A prove about the SAM gate?",
+      "ground_truth": "The gate is NOT the bottleneck — SAM tolerates 1-2 distractors with 99.4-99.8% accuracy. The problem is selector noise QUALITY, not quantity.",
+      "question_type": "factual",
+      "difficulty": "medium",
+      "hops": 1,
+      "llm": {
+        "answer": "Experiment 0.13A proved that the SAM gate does not act as a bottleneck in the system.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 2.4095,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_13A_NoisyMemory",
+          "Sam_Lm_Experiment_0.5_—_Gate_1_Passed:_Retrieval_Solved",
+          "Exp_0_11_ChainRetrieval",
+          "Exp_0_13A_NoisyMemory_noise_+16",
+          "Exp_0_13A_NoisyMemory_noise_+8"
+        ],
+        "accuracy": 0.0
+      },
+      "router": {
+        "answer": "Experiment 0.13A proved that the SAM gate does not act as a bottleneck in the system.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 2.3589,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.32 (num=0.5, kf=0.0, paths=0.6)",
+        "generation_latency_s": 2.3439,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: experiment 0.13A prove about the SAM gate.\n- This relates to experiment experiment 0.13A.\n- The concept 'gate' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q017",
+      "question": "How many live memory slots did the SAM experiments use?",
+      "ground_truth": "1,650 live slots, addressed via product-key memory with 64 subkeys and key_dim=64.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.501,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_6_Validation",
+          "Exp_0_13A_NoisyMemory",
+          "Exp_0_12_Selection",
+          "Exp_0_12_Selection_oracle_filter_top64",
+          "Exp_0_12_Selection_oracle_filter_top32"
+        ],
+        "accuracy": 0.0
+      },
+      "router": {
+        "answer": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.3086,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.40 (num=0.0, kf=0.5, paths=1.0)",
+        "generation_latency_s": 2.2838,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q018",
+      "question": "What were the three critical bugs found in the pipeline diagnosis?",
+      "ground_truth": "(1) best_val_loss was Infinity because validation never ran, (2) InfoNCE loss used dead slots as negatives, (3) Evaluation used wrong checkpoints for SAM modes.",
+      "question_type": "factual",
+      "difficulty": "medium",
+      "hops": 1,
+      "llm": {
+        "answer": "The three critical bugs found in the pipeline diagnosis were retrieval is the bottleneck.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.4298,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_Diagnosis",
+          "Experiment_0_—_Pipeline_Diagnosis",
+          "Exp_0_3_PKM_Candidates",
+          "Full_Experiment_Pipeline",
+          "Selectivity_Is_The_Critical_Factor"
+        ],
+        "accuracy": null
+      },
+      "router": {
+        "answer": "Found and fixed 3 critical bugs. Retrieval is the bottleneck.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 2,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.0103,
+        "error": null,
+        "routed_to": "synthesizer",
+        "route_reason": "conf=0.80 (num=0.5, kf=1.0, paths=1.0)",
+        "generation_latency_s": 0.0001,
+        "accuracy": null
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: three critical bugs found in the pipeline diagnosis.\n- The concept 'pipeline' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": null
+      }
+    },
+    {
+      "question_id": "q019",
+      "question": "What was the accuracy of oracle text memory compared to oracle latent memory?",
+      "ground_truth": "Oracle text memory achieved 100% accuracy. Oracle latent memory achieved 99.87%. Both prove the core CAN use memory.",
+      "question_type": "comparative",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "Oracle text memory: 99.87%",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 4,
+        "is_insufficient": false,
+        "latency_s": 2.465,
+        "error": null,
+        "parsed_entity_ids": [
+          "Oracle_Text_Memory",
+          "Latent_Memory",
+          "Exp_0_2_CompactPKM",
+          "Exp_0_6_Validation_oracle_text_memory",
+          "Exp_0_9_OracleFilter_oracle_filter"
+        ],
+        "accuracy": 0.5
+      },
+      "router": {
+        "answer": "Oracle text memory: 99.87%",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 4,
+        "is_insufficient": false,
+        "latency_s": 2.3443,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.56 (num=1.0, kf=0.0, paths=0.8)",
+        "generation_latency_s": 2.3112,
+        "accuracy": 0.5
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: accuracy of oracle text memory compared to oracle latent memory.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q020",
+      "question": "What accuracy does SAM achieve with exactly 1 distractor in controlled noisy memory?",
+      "ground_truth": "99.82% overall with 99.50% on 3-hop — effectively no degradation from clean oracle memory.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "SAM achieves an accuracy of 91.6% with exactly 8 distractors in controlled noisy memory.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 2.5354,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_13A_NoisyMemory",
+          "Exp_0_6_Validation",
+          "Exp_0_13A_NoisyMemory_noise_+16",
+          "Exp_0_13A_NoisyMemory_noise_+8",
+          "Exp_0_13A_NoisyMemory_noise_+4"
+        ],
+        "accuracy": 0.0
+      },
+      "router": {
+        "answer": "Experiment 0.13A — Controlled Noisy Memory Tolerance — noise_+4.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 0.0224,
+        "error": null,
+        "routed_to": "synthesizer",
+        "route_reason": "conf=0.72 (num=1.0, kf=0.5, paths=0.6)",
+        "generation_latency_s": 0.0002,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q021",
+      "question": "Why did the dual encoder retriever fail to retrieve complete multi-hop chains?",
+      "ground_truth": "The dual encoder maps question text to slot similarity. For chains, question -> Slot A (similar to question) works, but question -> Slot B (similar to Slot A's content, not the question) fails. Intermediate chain slots are not similar enough to the original question text.",
+      "question_type": "diagnostic",
+      "difficulty": "medium",
+      "hops": 2,
+      "llm": {
+        "answer": "The dual encoder retriever failed to retrieve complete multi-hop chains due to the fact that it missed intermediate chain slots, which is evident from the evidence provided. Specifically, Exp_0_10_RequiredSet shows that only 27% of required slots were correctly retrieved, indicating a significant gap in its ability to capture and reconstruct complex multi-hop relationships.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 2,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.9064,
+        "error": null,
+        "parsed_entity_ids": [
+          "Dual_Encoder",
+          "Exp_0_10_RequiredSet",
+          "Exp_0_11_ChainRetrieval",
+          "Add_Retrieve()_Support_For_Dual_Encoder",
+          "dual_encoder_recall_the"
+        ],
+        "accuracy": null
+      },
+      "router": {
+        "answer": "all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem. Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+        "passed": false,
+        "hallucination_rate": 0.6,
+        "supported_count": 2,
+        "unsupported_count": 3,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.0156,
+        "error": null,
+        "routed_to": "synthesizer",
+        "route_reason": "conf=0.60 (num=0.5, kf=0.5, paths=1.0)",
+        "generation_latency_s": 0.0002,
+        "accuracy": null
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The concept 'retriever' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": null
+      }
+    },
+    {
+      "question_id": "q022",
+      "question": "How did the dense dataset fix enable successful retrieval?",
+      "ground_truth": "The original dataset had only 1.5 examples per slot with 30% unseen slots in validation. The dense dataset provided 21.8 examples per slot with all 1,650 slots shared across splits, giving the retriever enough data to learn slot embeddings.",
+      "question_type": "diagnostic",
+      "difficulty": "medium",
+      "hops": 2,
+      "llm": {
+        "answer": "The dense dataset fix enabled successful retrieval by addressing the bottleneck in retrieval performance. The dense dataset, which contains more examples per slot, significantly improved recall at position 8 to 99%, indicating that the model could now effectively retrieve relevant information from the dataset. This improvement was achieved through the Dense Dataset Fix experiment, which focused on optimizing the dataset structure and improving its capacity for efficient retrieval.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 3,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.9278,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_5_DenseDataset",
+          "Experiment_0.5_—_Dense_Dataset_Fix",
+          "dense_dataset_fix",
+          "Exp_0_Diagnosis",
+          "Exp_0_13A_NoisyMemory"
+        ],
+        "accuracy": 0.0
+      },
+      "router": {
+        "answer": "Found and fixed 3 critical bugs. Retrieval is the bottleneck. 16K PKM: 25.8% Rec@8. Oracle text: 100% — core CAN use memory.",
+        "passed": false,
+        "hallucination_rate": 0.25,
+        "supported_count": 3,
+        "unsupported_count": 1,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.0116,
+        "error": null,
+        "routed_to": "synthesizer",
+        "route_reason": "conf=0.60 (num=0.5, kf=0.5, paths=1.0)",
+        "generation_latency_s": 0.0001,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: dense dataset fix enable successful retrieval.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q023",
+      "question": "What chain of experiments led from the discovery of the retriever problem to solving it?",
+      "ground_truth": "Exp 0.6 discovered retrieved_memory = core_only. Exp 0.10 diagnosed that multi-hop required slots were absent from dual encoder results (all_required@64 = 27%). Exp 0.11 solved it with chain-set BCE retriever (all_required@32 = 100%).",
+      "question_type": "multi-hop",
+      "difficulty": "medium",
+      "hops": 3,
+      "llm": {
+        "answer": "Exp_0_10_RequiredSet → Exp_0_11_ChainRetrieval → Exp_0_12_Selection",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 2.5406,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_10_RequiredSet",
+          "Exp_0_12_Selection",
+          "Chain_Set_Bce_Retriever_(experiment_0.11)",
+          "Exp_0_11_ChainRetrieval",
+          "Sam_Lm_Experiment_0.8_—_Retriever_Interface_Consistency_&_Injection_Audit"
+        ],
+        "accuracy": 0.0
+      },
+      "router": {
+        "answer": "Exp_0_10_RequiredSet → Exp_0_11_ChainRetrieval → Exp_0_12_Selection",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 0,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 2.4108,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.52 (num=0.5, kf=0.5, paths=0.6)",
+        "generation_latency_s": 2.3944,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The concept 'retriever' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q024",
+      "question": "Why does chain-set retrieval achieve 100% all_required@32 but SAM still equals core_only?",
+      "ground_truth": "Because the chain-set retriever returns 32+ candidates with all required slots present, but SAM receives all 32 slots averaged together. Without a selector, the signal from 1-3 required slots is diluted by ~29 distractors, causing the gate to suppress memory entirely.",
+      "question_type": "diagnostic",
+      "difficulty": "medium",
+      "hops": 2,
+      "llm": {
+        "answer": "Chain-set retrieval achieves 100% all_required@32 because it successfully retrieves the required information from the chain, while SAM still equals core_only due to the bottleneck in the learned selector. The learned selector has a precision of 50%, which is not sufficient for achieving 100% accuracy.",
+        "passed": false,
+        "hallucination_rate": 0.5,
+        "supported_count": 1,
+        "unsupported_count": 1,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.8786,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_11_ChainRetrieval",
+          "Concept_ChainRetrieval",
+          "Exp_0_6_Validation",
+          "Exp_0_10_RequiredSet",
+          "Exp_0_9_OracleFilter"
+        ],
+        "accuracy": 0.0
+      },
+      "router": {
+        "answer": "all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem. Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+        "passed": false,
+        "hallucination_rate": 0.6,
+        "supported_count": 2,
+        "unsupported_count": 3,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.0255,
+        "error": null,
+        "routed_to": "synthesizer",
+        "route_reason": "conf=0.60 (num=0.5, kf=0.5, paths=1.0)",
+        "generation_latency_s": 0.0001,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q025",
+      "question": "What is the relationship between the selector bottleneck and the pivot to NEXUS?",
+      "ground_truth": "The selector achieves 96.6% recall but only 50% precision, picking semantically misleading distractors. This is a structural problem: a flat MLP cannot solve graph-structured selection. This failure directly motivated the pivot to NEXUS, where knowledge is an explicit graph and selection becomes graph traversal.",
+      "question_type": "multi-hop",
+      "difficulty": "hard",
+      "hops": 3,
+      "llm": {
+        "answer": "The selector bottleneck is validated by Experiment 0.12, which shows that the learned selector has a precision of 50% and recall of 96.6%, making it the critical bottleneck in the system. This experiment also supports the pivot to NEXUS architecture, as flat latent-vector memory cannot solve selection quality issues.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 2,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 2.6976,
+        "error": null,
+        "parsed_entity_ids": [
+          "Concept_SelectorBottleneck",
+          "Concept_PivotToNEXUS",
+          "Decision_PivotToNEXUS",
+          "Exp_0_Diagnosis",
+          "Exp_0_12_Selection"
+        ],
+        "accuracy": 1.0
+      },
+      "router": {
+        "answer": "The selector bottleneck is validated by Experiment 0.12, which shows that the learned selector has a precision of 50% and recall of 96.6%, making it the critical bottleneck in the system. This experiment also supports the pivot to NEXUS decision, as flat latent-vector memory cannot solve selection quality, necessitating a graph-first architecture.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 2,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 2.6176,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.52 (num=0.5, kf=0.5, paths=0.6)",
+        "generation_latency_s": 2.603,
+        "accuracy": 1.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: relationship between the selector bottleneck and the pivot to NEXUS.\n- The concept 'selector' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q026",
+      "question": "Walk through the evolution from experiment 0.6 to the architecture pivot.",
+      "ground_truth": "Exp 0.6 proved oracle memory works (99.87%) but retrieved memory fails (68.74%). Exp 0.7-0.9 tried various retrieval interfaces without success. Exp 0.10 discovered multi-hop slots were missing from retrieval. Exp 0.11 solved retrieval with chain-set BCE (100%). Exp 0.12 showed the selector is the new bottleneck (50% precision). Exp 0.13A proved the architecture tolerates noise — the problem is selector quality, not integration brittleness. This chain of evidence led to the pivot: flat latent vectors cannot solve graph-structured selection.",
+      "question_type": "multi-hop",
+      "difficulty": "hard",
+      "hops": 4,
+      "llm": {
+        "answer": "The evolution from experiment 0.6 to the architecture pivot can be traced through several key steps and evidence points:\n\n1. **Experiment 0.12 Selection & Memory-Use Training**: This experiment focused on candidate selection and memory-use training, which is a dependency for Experiment 0.13A Controlled Noisy Memory Tolerance.\n\n2. **Concept_PivotToNEXUS Validation**: Both Experiment 0.12 and Experiment 0.13A validate the concept of pivoting to NEXUS architecture. This suggests that the pivot was validated by both experiments, indicating a robustness in the findings.\n\n3. **Experiment 0.13A Controlled Noisy Memory Tolerance**: This experiment builds on Experiment 0.12 and validates Concept_PivotToNEXUS. It also demonstrates that SAM can tolerate controlled random noise (+8 distractors) with an accuracy of 91.6%, indicating a significant improvement over the core-only architecture.\n\n4. **Experiment 0.13B Realistic Distractors**: This experiment is currently in progress, suggesting further refinement and validation of the pivot to NEXUS architecture.\n\nIn summary, the evolution from Experiment 0.6 to the architecture pivot involves several experiments that validate",
+        "passed": false,
+        "hallucination_rate": 0.7143,
+        "supported_count": 2,
+        "unsupported_count": 5,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 4.5733,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_6_Validation",
+          "Concept_PivotToNEXUS",
+          "Exp_0_12_Selection",
+          "Exp_0_13A_NoisyMemory",
+          "Exp_0_Diagnosis"
+        ],
+        "accuracy": 0.5
+      },
+      "router": {
+        "answer": "The evolution from experiment 0.6 to the architecture pivot can be traced through several key steps and evidence points:\n\n1. **Experiment 0.12 Selection & Memory-Use Training**: This experiment focused on candidate selection and memory-use training, which is a dependency for Experiment 0.13A Controlled Noisy Memory Tolerance.\n\n2. **Concept_PivotToNEXUS Validation by Exp_0.12**: The concept of pivoting to the NEXUS architecture was validated in Experiment 0.12 through Candidate Selection & Memory-Use Training.\n\n3. **Experiment 0.13A Controlled Noisy Memory Tolerance**: This experiment built on Experiment 0.12 and focused on controlled noisy memory tolerance, which is validated by Concept_PivotToNEXUS.\n\n4. **Concept_PivotToNEXUS Validation by Exp_0.13A**: The concept of pivoting to the NEXUS architecture was also validated in Experiment 0.13A through Controlled Noisy Memory Tolerance.\n\n5. **Experiment 0.12 Selection & Memory-Use Training Dependency on Exp_0.13A**: Experiment 0.12 is a dependency for Experiment 0.13A",
+        "passed": false,
+        "hallucination_rate": 0.5,
+        "supported_count": 3,
+        "unsupported_count": 3,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 3.5883,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.52 (num=0.5, kf=0.5, paths=0.6)",
+        "generation_latency_s": 3.5729,
+        "accuracy": 0.5
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- This relates to experiment experiment 0.6.\n- The concept 'pivot' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.25
+      }
+    },
+    {
+      "question_id": "q027",
+      "question": "What are the six memory modes in SAM?",
+      "ground_truth": "core_only (no memory), oracle_memory (correct slots injected directly), retrieved_memory (learned PKM lookup), random_memory (random slots as placebo), retrieved_memory_external_text_query (standalone retriever), and oracle_text_memory (facts as text tokens).",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "The six memory modes in SAM are not explicitly mentioned in the provided evidence.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 2.3694,
+        "error": null,
+        "parsed_entity_ids": [
+          "Memory_Modes",
+          "Exp_0_13A_NoisyMemory",
+          "Exp_0_6_Validation",
+          "Exp_0_6_Validation_oracle_text_memory",
+          "Exp_0_6_Validation_retrieved_memory"
+        ],
+        "accuracy": 0.0
+      },
+      "router": {
+        "answer": "The six memory modes in SAM are not explicitly mentioned in the provided evidence.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 3,
+        "is_insufficient": false,
+        "latency_s": 2.3335,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.32 (num=0.5, kf=0.0, paths=0.6)",
+        "generation_latency_s": 2.319,
+        "accuracy": 0.0
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: six memory modes in SAM.\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": 0.0
+      }
+    },
+    {
+      "question_id": "q028",
+      "question": "How does SAM differ from RAG?",
+      "ground_truth": "RAG prepends retrieved text to the model input. SAM injects memory into the model's internal computation via learned gating at specific layers. SAM uses latent vectors combined mathematically, not text. SAM's memory is trained together with the core.",
+      "question_type": "comparative",
+      "difficulty": "medium",
+      "hops": 1,
+      "llm": {
+        "answer": "SAM differs from RAG in that SAM can tolerate controlled random noise (+8 distractors) with an accuracy of 91.6%, while RAG cannot. Additionally, SAM uses external memory and does not rely on gate as a bottleneck, whereas RAG relies on gate for selection quality.",
+        "passed": false,
+        "hallucination_rate": 1.0,
+        "supported_count": 0,
+        "unsupported_count": 1,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.8805,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_13A_NoisyMemory",
+          "Exp_0_6_Validation",
+          "Sam_Lm_Experiment_0.2_—_Compact_Live_Slot_Retrieval_And_Oracle_Diagnostics",
+          "Sam_Lm_Experiment_0.8_—_Retriever_Interface_Consistency_&_Injection_Audit",
+          "Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair"
+        ],
+        "accuracy": null
+      },
+      "router": {
+        "answer": "Oracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid. SAM tolerates controlled random noise (+8 distractors -> 91.6%), gate is NOT the bottleneck.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 0.0137,
+        "error": null,
+        "routed_to": "synthesizer",
+        "route_reason": "conf=0.60 (num=0.5, kf=0.5, paths=1.0)",
+        "generation_latency_s": 0.0001,
+        "accuracy": null
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: SAM differ from RAG.\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": null
+      }
+    },
+    {
+      "question_id": "q029",
+      "question": "What is product-key memory and why does SAM use it?",
+      "ground_truth": "PKM enables O(sqrt(N)) lookup by splitting a query into two sub-keys, scoring each against a codebook, and using the Cartesian product to find slots. This makes billion-slot memories tractable. It's differentiable, enabling end-to-end training.",
+      "question_type": "factual",
+      "difficulty": "medium",
+      "hops": 1,
+      "llm": {
+        "answer": "Product-key memory refers to a compact pattern matching key-memory architecture used in the SAM model. This architecture allows the model to use external memory for retrieval, which improves its performance by reducing the need for dense datasets and improving query projection accuracy.\n\nSAM uses product-key memory because it has been shown that this architecture can achieve 100% accuracy when using Oracle text, indicating that the core of the model can effectively utilize external memory. Additionally, the validation experiments show that using Oracle memory results in a higher retrieval accuracy (99.87%) compared to other methods, further supporting the use of product-key memory in SAM.",
+        "passed": false,
+        "hallucination_rate": 0.5,
+        "supported_count": 2,
+        "unsupported_count": 2,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 3.2248,
+        "error": null,
+        "parsed_entity_ids": [
+          "Exp_0_2_CompactPKM",
+          "Exp_0_6_Validation",
+          "Experiment_0.12_Report_—_Candidate_Selection_And_Memory_Use_Training",
+          "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+          "Exp_0_12_Selection_oracle_filter_top64"
+        ],
+        "accuracy": null
+      },
+      "router": {
+        "answer": "Product-key memory refers to a compact pattern matching key-memory architecture used in the SAM model. This architecture allows the model to use external memory for retrieval, which improves its performance by reducing the need for dense datasets and improving query projection accuracy.\n\nSAM uses product-key memory because it has been shown that this architecture can achieve 100% accuracy when using Oracle text, indicating that the core of the model can effectively utilize external memory. Additionally, the validation experiments show that using Oracle memory results in a higher retrieval accuracy compared to other methods, further supporting the use of product-key memory in SAM.",
+        "passed": false,
+        "hallucination_rate": 0.5,
+        "supported_count": 2,
+        "unsupported_count": 2,
+        "path_count": 5,
+        "is_insufficient": false,
+        "latency_s": 2.8868,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.40 (num=0.5, kf=0.0, paths=1.0)",
+        "generation_latency_s": 2.8659,
+        "accuracy": null
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: product-key memory and why does SAM use it.\n- The concept 'SAM' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": null
+      }
+    },
+    {
+      "question_id": "q030",
+      "question": "What is the role of the gate in SAM's memory integration?",
+      "ground_truth": "The gate is a learned sigmoid scalar (0-1) that controls how much retrieved memory influences the output: output = core_computation + gate * memory_vector. It learns when to use or suppress memory during training.",
+      "question_type": "factual",
+      "difficulty": "easy",
+      "hops": 1,
+      "llm": {
+        "answer": "The gate is NOT the bottleneck in SAM's memory integration.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 4,
+        "is_insufficient": false,
+        "latency_s": 2.4518,
+        "error": null,
+        "parsed_entity_ids": [
+          "Memory_Integration",
+          "Exp_0_13A_NoisyMemory",
+          "Concept_NoiseTolerance",
+          "Through_The_Same_Memory_Integration_Code",
+          "Memory_Integration_Modes_(gate_Stress)"
+        ],
+        "accuracy": null
+      },
+      "router": {
+        "answer": "The gate is NOT the bottleneck in SAM's memory integration.",
+        "passed": true,
+        "hallucination_rate": 0.0,
+        "supported_count": 1,
+        "unsupported_count": 0,
+        "path_count": 4,
+        "is_insufficient": false,
+        "latency_s": 2.3198,
+        "error": null,
+        "routed_to": "llm",
+        "route_reason": "low conf=0.56 (num=0.5, kf=0.5, paths=0.8)",
+        "generation_latency_s": 2.3024,
+        "accuracy": null
+      },
+      "blind": {
+        "answer": "Based on general knowledge:\n- The question asks about: role of the gate in SAM's memory integration.\n- The concept 'gate' is involved.\n- Without access to specific experiment data, I cannot provide exact numbers. The information exists in SAM experiment reports but is not available in this context.",
+        "is_insufficient": false,
+        "latency_s": 0.0,
+        "error": null,
+        "accuracy": null
+      }
+    }
+  ]
+}
