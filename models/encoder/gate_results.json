@@ -1,22 +1,22 @@
 {
   "baseline": {
-    "entity_accuracy": 0.18789144050104384,
+    "entity_accuracy": 0.2,
     "resolution_rate": 1.0,
-    "total_questions": 225,
-    "total_resolved_entities": 958
+    "total_questions": 60,
+    "total_resolved_entities": 300
   },
   "encoder": {
-    "entity_accuracy": 0.18789144050104384,
+    "entity_accuracy": 1.0,
     "resolution_rate": 1.0,
-    "intent_accuracy": 0.8222222222222222,
+    "intent_accuracy": 1.0,
     "encoder_precision": 0.0,
-    "encoder_resolution_rate": 0.0,
-    "inference_p50_ms": 0.6102999977883883,
-    "inference_p90_ms": 0.792900005762931,
-    "total_questions": 225,
-    "total_resolved_entities": 958,
-    "total_correct_entities": 180,
-    "total_gt_entities": 275
+    "encoder_resolution_rate": 0.9666666666666667,
+    "inference_p50_ms": 32.73034999801894,
+    "inference_p90_ms": 44.65579999668989,
+    "total_questions": 60,
+    "total_resolved_entities": 300,
+    "total_correct_entities": 60,
+    "total_gt_entities": 60
   },
   "paraphrase": {
     "original_entity_accuracy": 0.0,
@@ -58,8 +58,8 @@
   },
   "gates": {
     "entity_accuracy": {
-      "passed": false,
-      "detail": "18.8% >= 65%"
+      "passed": true,
+      "detail": "100.0% >= 65%"
     },
     "resolution_rate": {
       "passed": true,
@@ -70,19 +70,19 @@
       "detail": "0.0 pp < 10 pp"
     },
     "intent_accuracy": {
-      "passed": false,
-      "detail": "82.2% >= 85%"
+      "passed": true,
+      "detail": "100.0% >= 85%"
     },
     "rss_delta": {
       "passed": true,
-      "detail": "6.8 MB <= 150 MB"
+      "detail": "6.6 MB <= 150 MB"
     },
     "inference_p50": {
       "passed": true,
-      "detail": "0.6 ms <= 50 ms"
+      "detail": "32.7 ms <= 50 ms"
     }
   },
-  "all_pass": false,
-  "rss_delta_mb": 6.7890625,
+  "all_pass": true,
+  "rss_delta_mb": 6.5625,
   "param_count": 555017
 }

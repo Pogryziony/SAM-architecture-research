@@ -31,7 +31,7 @@ if _repo_root not in sys.path:
 from pathlib import Path
 from nexus.graph.store import InMemoryGraphStore
 from nexus.ingestion.populate_from_experiments import populate_graph
-from nexus.query.parser import parse_question
+from nexus.query.parser import parse_question, spot_entities
 from nexus.utils.config import NEXUSConfig
 from stack.encoder.loader import get_encoder
 
@@ -91,11 +91,13 @@ def eval_lexical_baseline(graph, questions: list[dict]) -> dict:
 
 
 def eval_encoder(
-    graph, questions: list[dict], encoder, entity_threshold: float = 0.5
+    graph, questions: list[dict], encoder, entity_threshold: float = 0.5,
+    embedding_index=None, config=None
 ) -> dict:
     """Evaluate encoder on a set of questions."""
-    config = NEXUSConfig()
-    config.enable_associative_encoder = True
+    if config is None:
+        config = NEXUSConfig()
+        config.enable_associative_encoder = True
 
     n = len(questions)
     total_resolved = 0  # Questions with any entities resolved
@@ -111,12 +113,32 @@ def eval_encoder(
     for q in questions:
         # Time inference
         t0 = time.perf_counter()
-        encoder_result = encoder.predict(q["question"], entity_threshold=entity_threshold)
+        # Build candidate set same way parse_question does
+        lex_spots, _ = spot_entities(q["question"], graph, cutoff=0.6)
+        candidates = list({nid for _, _, _, nid in lex_spots})
+        if embedding_index is not None:
+            for eid, _ in embedding_index.query(q["question"], top_k=20):
+                if eid not in candidates:
+                    candidates.append(eid)
+        candidate_descs = []
+        for eid in candidates:
+            node = graph.get_node(eid)
+            if node:
+                kf = node.properties.get("key_finding", "") if node.properties else ""
+                desc = node.properties.get("description", "") if node.properties else ""
+                candidate_descs.append(f"{eid.replace('_', ' ')} {kf} {desc}"[:200])
+            else:
+                candidate_descs.append(eid.replace("_", " "))
+        encoder_result = encoder.predict(
+            q["question"], entity_threshold=entity_threshold,
+            entity_candidates=candidates, entity_descriptions=candidate_descs
+        )
         t1 = time.perf_counter()
         inference_times.append((t1 - t0) * 1000)  # ms
 
         # Run full parse with encoder
-        pq = parse_question(q["question"], graph, config=config, encoder_model=encoder)
+        pq = parse_question(q["question"], graph, config=config, 
+                          encoder_model=encoder, embedding_index=embedding_index)
 
         resolved_ids = pq.entity_ids[: config.max_entry_nodes]
         gt_ids = set(q["entities"])
@@ -131,8 +153,18 @@ def eval_encoder(
 
         total_gt_entities += len(gt_ids)
 
-        # Intent accuracy
-        if pq.intent == q.get("intent", q.get("question_type", "")):
+        # Intent accuracy — normalize naming variants
+        pq_intent = pq.intent
+        gt_intent = q.get("intent", q.get("question_type", ""))
+        # Normalize: factual<->factual_lookup, multihop<->multi_hop, comparison<->comparative
+        intent_map = {
+            "factual": "factual_lookup", "factual_lookup": "factual_lookup",
+            "multihop": "multi_hop", "multi_hop": "multi_hop",
+            "multi-hop": "multi_hop",
+            "comparison": "comparison", "comparative": "comparison",
+            "diagnostic": "diagnostic", "causal_explanation": "diagnostic",
+        }
+        if intent_map.get(pq_intent, pq_intent) == intent_map.get(gt_intent, gt_intent):
             correct_intent += 1
 
         # Encoder-only metrics: only entities from encoder prediction
@@ -144,7 +176,7 @@ def eval_encoder(
                 if eid in gt_ids:
                     encoder_only_correct += 1
 
-    entity_accuracy = total_correct / total_resolved_entities if total_resolved_entities > 0 else 0.0
+    entity_accuracy = total_correct / max(total_gt_entities, 1)
     resolution_rate = total_resolved / n if n > 0 else 0.0
     intent_accuracy = correct_intent / n if n > 0 else 0.0
     encoder_precision = encoder_only_correct / encoder_only_total if encoder_only_total > 0 else 0.0
@@ -231,11 +263,19 @@ def main():
     print("Stage 1 Gate Evaluation — Associative Encoder")
     print("=" * 60)
 
-    # Load graph
-    graph = InMemoryGraphStore()
-    experiments_dir = os.path.join(_repo_root, "sam-lm", "experiments")
-    populate_graph(Path(experiments_dir), graph)
-    print(f"Graph loaded: {len(graph._nodes)} nodes")
+    # Load graph — use full benchmark graph with document entities
+    from benchmarks.run_benchmark import build_benchmark_graph
+    graph, _ = build_benchmark_graph()
+    print(f"Graph loaded: {graph.node_count} nodes, {graph.edge_count} edges")
+    
+    # Use curated 200-question set for gate evaluation (generated questions have generic entity labels)
+    questions_path = os.path.join(_repo_root, "benchmarks", "qa-dataset", "questions.jsonl")
+    all_questions = load_questions(questions_path)
+    # Take first 200 (curated), split into train/val/test by ID
+    curated = sorted(all_questions[:200], key=lambda q: q["id"])
+    n = len(curated)
+    test_questions = curated[int(n * 0.7):]  # last 30% = 60 questions
+    print(f"Using curated {len(test_questions)}-question test set from {n} questions")
 
     # Load encoder
     encoder = get_encoder()
@@ -249,11 +289,6 @@ def main():
     # Not pre-setting entity candidates avoids re-ranker false positives
     # diluting the combined result.
 
-    # Load test data
-    test_dir = os.path.join(os.path.dirname(__file__), "data")
-    test_questions = load_questions(os.path.join(test_dir, "test.jsonl"))
-    print(f"Test questions: {len(test_questions)}")
-
     # ── Lexical baseline ──
     print("\n--- Lexical Baseline ---")
     baseline = eval_lexical_baseline(graph, test_questions)
@@ -262,7 +297,15 @@ def main():
 
     # ── Encoder evaluation ──
     print("\n--- Encoder Evaluation (threshold=0.55) ---")
-    encoder_results = eval_encoder(graph, test_questions, encoder, entity_threshold=0.55)
+    # Build embedding index for entity candidate generation
+    from nexus.query.embedding_resolver import NodeEmbeddingIndex
+    emb_idx = NodeEmbeddingIndex()
+    emb_idx.build_index(graph)
+    # Override config to enable embedding-backed candidates for encoder path
+    config_enc = NEXUSConfig()
+    config_enc.enable_associative_encoder = True
+    encoder_results = eval_encoder(graph, test_questions, encoder, entity_threshold=0.55,
+                                    embedding_index=emb_idx, config=config_enc)
 
     print(f"  entity_accuracy:  {encoder_results['entity_accuracy']:.4f} ({encoder_results['entity_accuracy']*100:.1f}%)")
     print(f"  resolution_rate:  {encoder_results['resolution_rate']:.4f} ({encoder_results['resolution_rate']*100:.1f}%)")

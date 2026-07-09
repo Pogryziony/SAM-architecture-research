@@ -242,12 +242,40 @@ def parse_question(
         cutoff = config.fuzzy_cutoff
 
     # ── Stage 1: Associative encoder path ──
+    # First run lexical spotting to build candidate set for the encoder re-ranker
     encoder_entities: list[str] = []
     encoder_intent: str | None = None
     encoder_scores: dict[str, float] = {}
     if config.enable_associative_encoder and encoder_model is not None:
+        # Run a quick lexical pass first to get candidates
+        expanded_temp = question
+        lowered_q = question.lower()
+        for acronym, expansion in _ACRONYMS.items():
+            if acronym in lowered_q:
+                expanded_temp = f"{expanded_temp} ({expansion})"
+        lex_spots, _ = spot_entities(expanded_temp, graph, cutoff=cutoff)
+        encoder_candidates = [nid for _, _, _, nid in lex_spots]
+        # Add embedding candidates for semantic matches (Decision/Concept nodes)
+        if embedding_index is not None:
+            emb_candidates = embedding_index.query(question, top_k=20)
+            for eid, _ in emb_candidates:
+                if eid not in encoder_candidates:
+                    encoder_candidates.append(eid)
+        # Get descriptions for all candidates
+        candidate_descs = []
+        for eid in encoder_candidates:
+            node = graph.get_node(eid)
+            if node:
+                kf = node.properties.get("key_finding", "") if node.properties else ""
+                desc = node.properties.get("description", "") if node.properties else ""
+                candidate_descs.append(f"{eid.replace('_', ' ')} {kf} {desc}"[:200])
+            else:
+                candidate_descs.append(eid.replace("_", " "))
+        
         encoder_result = encoder_model.predict(
-            question, entity_threshold=0.5
+            question, entity_threshold=0.5,
+            entity_candidates=encoder_candidates,
+            entity_descriptions=candidate_descs,
         )
         encoder_entities = encoder_result["entity_ids"]
         encoder_intent = encoder_result["intent"]

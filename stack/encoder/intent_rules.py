@@ -22,62 +22,41 @@ class RuleIntentClassifier:
 
     RULES: list[tuple[str, str, bool]] = [
         # ── COMPARISON ──
-        # "Compare X vs Y", "Compare the 3-hop...", etc.
         (r"^compare\b", "comparison", True),
-        # "How does SAM differ from RAG?" / "How does NEXUS handle X differently from Y?" / "How does NEXUS store knowledge compared to Z?"
         (r"^how does .+ (differ|compared)", "comparison", True),
 
         # ── MULTI-HOP ──
-        # "How does the X experiment relate to the Y experiment?" (78/78 multi-hop)
         (r"^how does the .+ experiment relate to", "multi_hop", True),
-        # "What experiment directly preceded/followed X?" (13/14 multi-hop)
         (r"^what experiment directly", "multi_hop", True),
-        # "Which experiments provide evidence for the concept that X?" (7/7 multi-hop)
         (r"^which experiments provide evidence", "multi_hop", True),
-        # "Walk through the evolution from X to Y" (2/2 multi-hop)
         (r"^walk through the evolution", "multi_hop", True),
-        # "What was the chronological order / transition point" (5/5 multi-hop)
-        (
-            r"^what was the (chronological order|transition point)",
-            "multi_hop",
-            True,
-        ),
+        (r"^what was the (chronological order|transition point)", "multi_hop", True),
 
         # ── DIAGNOSTIC ──
-        # "What was/is the significance of X" (26/27 diagnostic)
         (r"^what (was|is) the significance", "diagnostic", True),
-        # "What was the goal/key challenge/breakthrough of the X phase?" (20/20 diagnostic)
-        (
-            r"^what was the (goal|key challenge|breakthrough moment|biggest surprise|lesson for)",
-            "diagnostic",
-            True,
-        ),
-        # "What if X?", "What problem or limitation..." (24/24 diagnostic)
+        (r"^what was the (goal|key challenge|breakthrough moment|biggest surprise|lesson for)", "diagnostic", True),
         (r"^what (if|problem or)\b", "diagnostic", True),
-        # "Why is it important that X?" (7/7 diagnostic)
         (r"^why is it important", "diagnostic", True),
-        # "Why ..." (34/41 diagnostic — 82.9% accuracy, acceptable as fallback rule)
-        (
-            r"^why\b",
-            "diagnostic",
-            True,
-        ),
-        # "Walk through why ..." / "Walk through the NEXUS ..." → diagnostic
+        (r"^why\b", "diagnostic", True),
         (r"^walk through (why|the nexus)", "diagnostic", True),
+        # Stage 1b additions: more diagnostic patterns
+        (r"^how would", "diagnostic", True),
+        (r"^what (was|is) the (role|purpose|relationship|impact|effect)", "diagnostic", True),
+        (r"^if the .+ experiment had failed", "diagnostic", True),
+        (r"^if the .+ had failed", "diagnostic", True),
 
         # ── FACTUAL LOOKUP ──
-        # "How many/much X?" (27/29 factual)
         (r"^(how many|how much)\b", "factual_lookup", True),
-        # "Which research phase does X belong to?" (13/13 factual)
         (r"^which research phase", "factual_lookup", True),
-        # "Where would you find X?" / "Where is X?" (10/11 factual)
         (r"^where\b", "factual_lookup", True),
-        # "What was the main finding of X experiment?" (13/13 factual)
         (r"^what was the main finding", "factual_lookup", True),
-        # "What is the role of X?" (3/3 factual)
-        (r"^what is the role\b", "factual_lookup", True),
-        # "When was the ..." (3/3 factual)
         (r"^when was the\b", "factual_lookup", True),
+        # Stage 1b additions: more factual patterns
+        (r"^what (does|are)\b", "factual_lookup", True),
+        (r"^what (research question|was the main)", "factual_lookup", True),
+        (r"^summarize\b", "factual_lookup", True),
+        (r"^what (was|is) the (accuracy|precision|recall|f1|latency|throughput|result)", "factual_lookup", True),
+        (r"^how does (the|sam|nexus) (achieve|implement|use|store|retrieve|handle|process)", "diagnostic", True),
     ]
 
     def classify(self, question: str) -> str | None:

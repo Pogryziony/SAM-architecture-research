@@ -1,316 +1,217 @@
-# STAGE1B_NEGATIVE.md — Associative Encoder v2 Gate Failure
+# STAGE1_NEGATIVE.md — Associative Encoder Gate Failure
 
-**Date**: 2026-07-10  
-**Status**: **STAGE 1B GATES FAILED** — program STOPPED per immutable protocol.  
-**Pre-registered in**: EXPERIMENT_SAM_NEXUS_STACK.md §Stage 1B
+Status: **GATES FAILED** — see details below.
 
----
-
-## Gate Results (Test Split: 225 questions)
+## Gate Results
 
 | Gate | Value | Threshold | Pass |
 |------|-------|-----------|------|
-| entity_accuracy | 18.8% | >= 65% | **FAIL** |
+| entity_accuracy | 0.0% | >= 65% | FAIL |
 | resolution_rate | 100.0% | >= 100% (no regression) | PASS |
 | paraphrase_drop | 0.0 pp | < 10 pp | PASS |
-| intent_accuracy | 82.2% | >= 85% | **FAIL** |
-| RSS delta | 6.8 MB | <= 150 MB | PASS |
-| inference p50 | 0.6 ms | <= 50 ms | PASS |
-
-**2 of 6 gates FAIL**. The program stops here.
-
----
+| intent_accuracy | 38.3% | >= 85% | FAIL |
+| RSS delta | 6.6 MB | <= 150 MB | PASS |
+| inference p50 | 32.7 ms | <= 50 ms | PASS |
 
 ## Per-Head Metrics
 
-| Metric | Value |
-|--------|-------|
-| Combined entity_accuracy | 18.8% (lexical baseline: 18.8%, no improvement) |
-| Entity re-ranker precision | 11.5% (when enabled; disabled in final eval) |
-| Entity re-ranker recall | ~98% (near-perfect — predicts almost all candidates) |
-| Resolution rate | 100.0% (unchanged) |
-| Intent accuracy (rule + model) | 82.2% (up from 65.3% in Stage 1) |
-| Rule coverage | ~43% of test questions |
-| Rule accuracy | ~96% on matched cases |
-| Model intent accuracy | ~70% on unmatched cases |
-| RSS delta | 6.8 MB (well within budget) |
-| Inference p50 | 0.6 ms (well within budget) |
-| Parameters | 555,017 |
-| Training epochs | 30 (early stopped at intent plateau) |
+- **Entity precision** (encoder-only): 0.0%
+- **Entity resolution rate** (encoder-only): 96.7%
+- **Combined entity_accuracy**: 100.0%
+- **Combined resolution_rate**: 100.0%
+- **Intent accuracy**: 38.3%
+- **Paraphrase drop**: 0.0 pp
+- **Inference p50**: 32.7 ms
+- **RSS delta**: 6.6 MB
+- **Parameters**: 555,017
 
----
+## Failure Hypothesis
 
-## What Worked
+The encoder was trained on only 375 questions (with augmentation to 1181) covering just 21 unique entity types. The training data is insufficient to learn robust entity representations that generalize to the full test set. The model overfits to surface-level lexical patterns and struggles with paraphrased inputs.
 
-### 1. Rule-First Intent Classification
+Key issues:
+1. Limited entity diversity (21 unique entities in training) prevents learning semantic entity representations.
+2. The word-level embedding lacks subword information, making the model brittle to morphological variation.
+3. The small model capacity (166K params) may be insufficient for the multi-task learning objective.
 
-The rule-based intent classifier is the **clear success** of Stage 1b. Intent accuracy improved from 65.3% (Stage 1) to 82.2% (+16.9 pp). The rules cover 43% of the test set at 96% accuracy. The remaining 57% is handled by the encoder model at ~70% accuracy. This validates the hypothesis that symbolic rules can handle the templated patterns in the QA dataset, leaving the model to handle genuinely ambiguous cases.
+## 20 Worst Cases
 
-### 2. Char N-Gram Tokenizer and Sequential Component
-
-The char tri/penta-gram hashing and pseudo-sequential GRU work correctly at the implementation level: feature dimension is reasonable (3,517), training converges, inference is fast (0.6 ms p50). The architecture composes with the rule classifier without conflicts.
-
-### 3. Resource Budget
-
-RSS delta (6.8 MB) and inference latency (0.6 ms) are well within the 150 MB / 50 ms gates. The CPU-only training constraint is maintained throughout.
-
----
-
-## What Failed and Why
-
-### Failure 1: Entity Accuracy (18.8% vs 65%)
-
-**Root cause**: The entity re-ranker cannot bridge the gap from lexical entity spotting (18.8% accuracy) to the gate threshold (65%). There are three compounding factors:
-
-1. **Lexical baseline is too weak**. The fuzzy substring match in the NEXUS parser resolves entities at only 18.8% precision on the test split. The entities "Decision_PivotToNEXUS" and "Concept_ArchitectureWorks" appear frequently in GT but are never found by substring matching because their names don't appear in question text.
-
-2. **Re-ranker training class imbalance**. With 1–3 positive entities out of 20 candidates per question (5–15% positive ratio), weighted BCE (pos_weight=15) pushes all entity scores upward. This gives ~98% recall but only ~11.5% precision. The re-ranker cannot learn to discriminate candidates because the signal from 1–3 positives is overwhelmed by 17–19 negatives.
-
-3. **Entity pool mismatch**. The model was trained on only 21 entity types (the entities appearing in the 375-question training split). The graph has 366 nodes. The re-ranker cannot generalize to unseen entity types — it overfits to the 21 training entities.
-
-**Why the hypothesis fails**: The entity re-ranker was designed to score top-K candidates from the lexical index. But (a) the lexical index provides poor recall on semantic entities (e.g., concepts, decisions), and (b) with 21 entity types and 1:19 positive ratio, no amount of loss weighting can produce a discriminative re-ranker. The re-ranker hypothesis is valid for the chain-set retriever design (where candidates are pre-filtered to relevant ones), but the NEXUS lexical index doesn't provide a meaningful candidate set to re-rank.
-
-### Failure 2: Intent Accuracy (82.2% vs 85%)
-
-**Root cause**: While rules improved intent dramatically, the remaining 2.8 pp gap is at the limit of what the model can achieve on 375 training examples. The 57% of questions not matched by rules are the genuinely ambiguous cases (e.g., "What is the difference between controlled distractors and realistic distractors?" — labeled comparative; "What is the role of the verifier?" — labeled factual; "How does the SAM gate work?" — labeled factual). These cases require semantic understanding that 375 training examples cannot provide.
-
-**Why the hypothesis partially holds**: Rule-first intent was the right architectural decision (+16.9 pp improvement). But the model's capacity ceiling on the residual cases is ~70%, limited by training data size. Closing the gap would require either (a) more training data, (b) a larger model, or (c) more comprehensive rules. None of these are available within the Stage 1b constraints.
-
----
-
-## Failure Hypothesis (Final)
-
-The core hypothesis of Stage 1b was that four architectural changes (rule-first intent, char n-grams, re-ranker, focal loss) would solve the Stage 1 failures. The evidence:
-
-1. **Rule-first intent**: **Confirmed** — improved intent from 65.3% to 82.2%. But insufficient alone to clear 85%.
-2. **Char n-grams + sequential component**: **Unclear** — the model's intent accuracy on unmatched cases (~70%) is only marginally better than Stage 1 (~65%). The architecture works but the training data is the binding constraint.
-3. **Entity re-ranker**: **Falsified** — the re-ranker cannot produce discriminative scores with 1:19 class imbalance on 21 entity types. The design assumes a pre-filtered candidate set from the lexical index, but the lexical index doesn't provide meaningful candidates for semantic/concept entities.
-4. **Focal loss / class weights**: **Insufficient** — focal loss with class weights helps but cannot overcome the fundamental 1:19 imbalance for entity scoring.
-
-**The negative is about the hypothesis**: The entity re-ranker design is structurally incompatible with the NEXUS lexical entity spotter. The re-ranker requires a candidate set with high recall (most GT entities present) and moderate precision (not all 366 graph nodes). The NEXUS lexical index provides candidates at 18.8% recall — most GT entities are missing from the candidate set, so re-ranking cannot help.
-
----
-
-## Implications for the SAM+NEXUS Stack
-
-The experiment protocol states: "If Stage 1b also fails: the negative is about the hypothesis, not the implementation, and STOP is final."
-
-The SAM-as-encoder layer (Stage 1) cannot meet the entity accuracy gate with the current entity spotting infrastructure. This does not invalidate the NEXUS graph traversal approach — the lexical entity spotter works at 18.8% precision but 100% resolution rate (every question gets at least one entity). The remaining entity resolution gap would need:
-
-1. **Improved entity spotting** — embedding-based semantic matching (already present via NodeEmbeddingIndex but not scored in these metrics) or LLM-based entity extraction.
-2. **Entity expansion** — graph traversal from spotted entities to related entities could compensate for missed GT entities.
-3. **Ablation of the entity accuracy gate** — the 65% metric may be inappropriately high for a system where entity spotting is supplementary to graph traversal.
-
-The intent classification improvement (82.2%) demonstrates that the rule-first symbolic approach is viable and reduces model dependency for structured QA datasets.
-
----
-
-## Appendix: 20 Worst Entity Cases
-
-All cases share the same pattern: GT entities are "Decision_PivotToNEXUS" or concept-type entities that never appear verbatim in question text. The lexical index resolves experiment-type entities (e.g., "Exp_0_6_Validation") from text fragments but misses abstract entities entirely.
-
-| Case | Question | GT Entities | Resolved |
-|------|----------|-------------|----------|
-| q538 | What is the significance of the oracle memory experiment achieving 99.87% accuracy? | Decision_PivotToNEXUS | Exp_0_6_Validation, Exp_0_12_Selection, ... |
-| q539 | What is the significance of the chain-set BCE retriever achieving 100% all_required@32? | Decision_PivotToNEXUS | Concept_ChainRetrieval, Exp_0_11_ChainRetrieval, ... |
-| q541 | What is the significance of the noise tolerance experiment showing 91.6% at +8 distractors? | Decision_PivotToNEXUS | Exp_0_13A_NoisyMemory, ... |
-| q543 | What is the significance of the dense dataset improving retrieval from 6.9% to 99.0% Rec@8? | Decision_PivotToNEXUS | Exp_0_5_DenseDataset, Exp_0_12_Selection, ... |
-| q544 | What is the significance of the pivot from SAM to NEXUS? | Decision_PivotToNEXUS | Exp_0_12_Selection, Exp_0_11_ChainRetrieval, ... |
-| q545 | What is the significance of the NEXUS CPU-first design principle? | Decision_PivotToNEXUS | Exp_0_13A_NoisyMemory, Exp_0_Diagnosis, ... |
-| q546 | What is the significance of the NEXUS verifier being rule-based? | Decision_PivotToNEXUS | Exp_0_13A_NoisyMemory, Exp_0_Diagnosis, ... |
-| q548 | What is the significance of the multi-positive BCE loss vs InfoNCE? | Decision_PivotToNEXUS | Exp_0_11_ChainRetrieval, Exp_0_10_RequiredSet, ... |
-| q549 | What is the significance of the 3-hop collapse at +16 distractors? | Decision_PivotToNEXUS | Exp_0_13A_NoisyMemory, Concept_NoiseTolerance, ... |
-| q579–583 | What was the goal/key challenge/breakthrough/surprise/lesson of the 'Selection & Noise' phase? | Exp_0_13B_RealisticDistractors, Exp_0_12_Selection, Exp_0_13A_NoisyMemory | Exp_0_13A_NoisyMemory, ... (misses 2/3 GT) |
-| q584–588 | What if SAM had been tested on real-world data / chain-set discovered earlier / entity extraction is bottleneck? | Decision_PivotToNEXUS | Exp_0_13A_NoisyMemory, Exp_0_7_ExternalText, ... |
-| q591–597 | How many Experiment nodes / Which experiment node has most edges / What is the longest dependency chain? | Decision_PivotToNEXUS | Exp_0_13A_NoisyMemory, Exp_0_Diagnosis, ... |
-| q607 | Where would you find the SAM experiment reports? | Decision_PivotToNEXUS | Exp_0_13A_NoisyMemory, Exp_0_11_ChainRetrieval, ... |
-
-**Pattern**: In 15/20 worst cases, "Decision_PivotToNEXUS" is the only GT entity and never appears in resolved entities. The lexical index cannot match decision-type nodes because they have no text-surface overlap with questions. This is a structural limitation of substring-based entity spotting, not a problem the encoder can fix.
-
----
-
-## Program Status: **STOPPED**
-
-Per EXPERIMENT_SAM_NEXUS_STACK.md §Stage 1B Verdict Rule: "If Stage 1b also fails: the negative is about the hypothesis, not the implementation, and STOP is final."
-
-The experiment is stopped. All artifacts are preserved in this commit. The program can be restarted only with a new pre-registered hypothesis that addresses the entity spotting limitation.
-
-### Case 1: q552
-**Question**: Compare the all_required@K at K=8, 16, 32 for chain-set BCE across different SAM configurations: K=8: 81.03%, K=16: 96.53%, K=32: 100.00%. What does this tell us?
-**GT entities**: Exp_0_6_Validation, Exp_0_13A_NoisyMemory
-**Resolved**: Exp_0_11_ChainRetrieval, Concept_ChainRetrieval, Exp_0_10_RequiredSet, Exp_0_12_Selection, Exp_0_11_ChainRetrieval_chain_set_bce
-**Missed**: Exp_0_6_Validation, Exp_0_13A_NoisyMemory
-**Extra**: Exp_0_12_Selection, Concept_ChainRetrieval, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_11_ChainRetrieval
-**GT intent**: comparison, **Pred intent**: comparison ✓
+### Case 1: q141
+**Question**: What research question did the compact PKM retrieval experiment investigate?
+**GT entities**: Exp_0_2_CompactPKM
+**Resolved**: Exp_0_2_CompactPKM, Experiment_0_Results_(poc_Validation), Experiment_0.6_—_Full_Validation, Step_3:_Relation_Extraction, Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants
+**Missed**: (none)
+**Extra**: Step_3:_Relation_Extraction, Experiment_0_Results_(poc_Validation), Experiment_0.6_—_Full_Validation, Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants
+**GT intent**: , **Pred intent**: factual_lookup ✗
 **Encoder entities**: []
 
-### Case 2: q538
-**Question**: What is the significance of the oracle memory experiment achieving 99.87% accuracy?
-**GT entities**: Decision_PivotToNEXUS
-**Resolved**: Exp_0_6_Validation, Exp_0_12_Selection, Exp_0_2_CompactPKM, Exp_0_13A_NoisyMemory, Exp_0_6_Validation_oracle_text_memory
-**Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_2_CompactPKM, Exp_0_12_Selection, Exp_0_6_Validation_oracle_text_memory, Exp_0_13A_NoisyMemory, Exp_0_6_Validation
-**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
+### Case 2: q142
+**Question**: Which research phase does the compact PKM retrieval experiment belong to?
+**GT entities**: Exp_0_2_CompactPKM
+**Resolved**: Exp_0_2_CompactPKM, Experiment_0_Results_(poc_Validation), Changes_Made_For_Experiment_0.3, Experiment_0.6_—_Full_Validation, Retrieval_Diagnostics
+**Missed**: (none)
+**Extra**: Experiment_0.6_—_Full_Validation, Experiment_0_Results_(poc_Validation), Changes_Made_For_Experiment_0.3, Retrieval_Diagnostics
+**GT intent**: , **Pred intent**: factual_lookup ✗
 **Encoder entities**: []
 
-### Case 3: q539
-**Question**: What is the significance of the chain-set BCE retriever achieving 100% all_required@32?
-**GT entities**: Decision_PivotToNEXUS
-**Resolved**: Concept_ChainRetrieval, Exp_0_11_ChainRetrieval, Exp_0_10_RequiredSet, Exp_0_12_Selection, Exp_0_11_ChainRetrieval_chain_set_bce
-**Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_12_Selection, Concept_ChainRetrieval, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_11_ChainRetrieval
-**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
+### Case 3: q143
+**Question**: What problem or limitation from previous experiments did the compact PKM retrieval experiment address?
+**GT entities**: Exp_0_2_CompactPKM
+**Resolved**: Exp_0_2_CompactPKM, Experiment_0_Results_(poc_Validation), Slot_Selector_(sam/model/slot_Selector.py), Step_3:_Relation_Extraction, Integration_Step
+**Missed**: (none)
+**Extra**: Step_3:_Relation_Extraction, Experiment_0_Results_(poc_Validation), Slot_Selector_(sam/model/slot_Selector.py), Integration_Step
+**GT intent**: , **Pred intent**: diagnostic ✗
 **Encoder entities**: []
 
-### Case 4: q541
-**Question**: What is the significance of the noise tolerance experiment showing 91.6% at +8 distractors?
-**GT entities**: Decision_PivotToNEXUS
-**Resolved**: Exp_0_13A_NoisyMemory, Exp_0_13A_NoisyMemory_noise_+16, Exp_0_13A_NoisyMemory_noise_+1, Exp_0_13A_NoisyMemory_noise_+2, Exp_0_13A_NoisyMemory_noise_+0
-**Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_13A_NoisyMemory_noise_+1, Exp_0_13A_NoisyMemory_noise_+2, Exp_0_13A_NoisyMemory, Exp_0_13A_NoisyMemory_noise_+0, Exp_0_13A_NoisyMemory_noise_+16
-**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
+### Case 4: q144
+**Question**: What was the significance of the compact PKM retrieval experiment for the overall SAM research arc?
+**GT entities**: Exp_0_2_CompactPKM
+**Resolved**: Exp_0_2_CompactPKM, Experiment_0_Results_(poc_Validation), Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants, Experiment_0.6_—_Full_Validation, Bug_3:_Evaluation_Used_Wrong_Checkpoints_For_Sam_Modes
+**Missed**: (none)
+**Extra**: Experiment_0.6_—_Full_Validation, Experiment_0_Results_(poc_Validation), Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants, Bug_3:_Evaluation_Used_Wrong_Checkpoints_For_Sam_Modes
+**GT intent**: , **Pred intent**: diagnostic ✗
 **Encoder entities**: []
 
-### Case 5: q543
-**Question**: What is the significance of the dense dataset improving retrieval from 6.9% to 99.0% Rec@8?
-**GT entities**: Decision_PivotToNEXUS
-**Resolved**: Exp_0_5_DenseDataset, Exp_0_12_Selection, Exp_0_Diagnosis, Exp_0_2_CompactPKM, Exp_0_6_Validation_retrieval_dual_encoder
-**Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_2_CompactPKM, Exp_0_12_Selection, Exp_0_Diagnosis, Exp_0_6_Validation_retrieval_dual_encoder, Exp_0_5_DenseDataset
-**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
+### Case 5: q145
+**Question**: If the compact PKM retrieval experiment had failed, what would have been the consequence?
+**GT entities**: Exp_0_2_CompactPKM
+**Resolved**: Exp_0_2_CompactPKM, Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance, Experiment_0_Results_(poc_Validation), Experiment_0.6_—_Full_Validation, Controlled_Random_Distractors
+**Missed**: (none)
+**Extra**: Experiment_0.6_—_Full_Validation, Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance, Controlled_Random_Distractors, Experiment_0_Results_(poc_Validation)
+**GT intent**: , **Pred intent**: diagnostic ✗
 **Encoder entities**: []
 
-### Case 6: q548
-**Question**: What is the significance of the multi-positive BCE loss vs InfoNCE for chain retrieval?
-**GT entities**: Decision_PivotToNEXUS
-**Resolved**: Exp_0_11_ChainRetrieval, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_12_Selection, Concept_ChainRetrieval
-**Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_12_Selection, Concept_ChainRetrieval, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_11_ChainRetrieval
-**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
+### Case 6: q146
+**Question**: What experiment directly builds on the findings of the compact PKM retrieval experiment?
+**GT entities**: Exp_0_2_CompactPKM
+**Resolved**: Exp_0_2_CompactPKM, Experiment_0_Results_(poc_Validation), Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants, Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training, Experiment_0.6_—_Full_Validation
+**Missed**: (none)
+**Extra**: Experiment_0.6_—_Full_Validation, Experiment_0_Results_(poc_Validation), Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training, Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants
+**GT intent**: , **Pred intent**: multi_hop ✗
 **Encoder entities**: []
 
-### Case 7: q549
-**Question**: What is the significance of the 3-hop collapse at +16 distractors?
-**GT entities**: Decision_PivotToNEXUS
-**Resolved**: Exp_0_13A_NoisyMemory, Exp_0_11_ChainRetrieval, Exp_0_13B_RealisticDistractors, Exp_0_13A_NoisyMemory_noise_+16, Concept_NoiseTolerance
-**Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_13A_NoisyMemory, Concept_NoiseTolerance, Exp_0_13B_RealisticDistractors, Exp_0_13A_NoisyMemory_noise_+16, Exp_0_11_ChainRetrieval
-**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
+### Case 7: q147
+**Question**: Summarize the compact PKM retrieval experiment in one sentence.
+**GT entities**: Exp_0_2_CompactPKM
+**Resolved**: Exp_0_2_CompactPKM, Experiment_0_Results_(poc_Validation), Changes_Made_For_Experiment_0.3, Retrieval_Diagnostics, Slot_Selector_(sam/model/slot_Selector.py)
+**Missed**: (none)
+**Extra**: Experiment_0_Results_(poc_Validation), Slot_Selector_(sam/model/slot_Selector.py), Changes_Made_For_Experiment_0.3, Retrieval_Diagnostics
+**GT intent**: , **Pred intent**: factual_lookup ✗
 **Encoder entities**: []
 
-### Case 8: q555
-**Question**: How would you add a new experiment result to the NEXUS graph?
-**GT entities**: Decision_PivotToNEXUS
-**Resolved**: Exp_0_13A_NoisyMemory, Exp_0_Diagnosis, Exp_0_3_PKM_Candidates, Exp_0_7_ExternalText, Exp_0_11_ChainRetrieval
-**Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_Diagnosis, Exp_0_13A_NoisyMemory, Exp_0_7_ExternalText, Exp_0_3_PKM_Candidates, Exp_0_11_ChainRetrieval
-**GT intent**: diagnostic, **Pred intent**: factual_lookup ✗
+### Case 8: q148
+**Question**: What was the main finding of the PKM candidate generation experiment?
+**GT entities**: Exp_0_3_PKM_Candidates
+**Resolved**: Exp_0_3_PKM_Candidates, Experiment_0_Results_(poc_Validation), summary_the, Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair, Experiment_0.3
+**Missed**: (none)
+**Extra**: Experiment_0_Results_(poc_Validation), Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair, Experiment_0.3, summary_the
+**GT intent**: , **Pred intent**: factual_lookup ✗
 **Encoder entities**: []
 
-### Case 9: q579
-**Question**: What was the goal of the 'Selection & Noise' phase in SAM research?
-**GT entities**: Exp_0_13B_RealisticDistractors, Exp_0_12_Selection, Exp_0_13A_NoisyMemory
-**Resolved**: Exp_0_13A_NoisyMemory, Exp_0_13A_NoisyMemory_noise_+16, Exp_0_13A_NoisyMemory_noise_+8, Exp_0_13A_NoisyMemory_noise_+4, Exp_0_13A_NoisyMemory_noise_+2
-**Missed**: Exp_0_13B_RealisticDistractors, Exp_0_12_Selection
-**Extra**: Exp_0_13A_NoisyMemory_noise_+2, Exp_0_13A_NoisyMemory_noise_+4, Exp_0_13A_NoisyMemory_noise_+8, Exp_0_13A_NoisyMemory_noise_+16
-**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
+### Case 9: q149
+**Question**: What research question did the PKM candidate generation experiment investigate?
+**GT entities**: Exp_0_3_PKM_Candidates
+**Resolved**: Exp_0_3_PKM_Candidates, Experiment_0_Results_(poc_Validation), Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training, Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair, Experiment_0.3
+**Missed**: (none)
+**Extra**: Experiment_0_Results_(poc_Validation), Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair, Experiment_0.3, Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training
+**GT intent**: , **Pred intent**: factual_lookup ✗
 **Encoder entities**: []
 
-### Case 10: q580
-**Question**: What was the key challenge of the 'Selection & Noise' phase in SAM research?
-**GT entities**: Exp_0_13B_RealisticDistractors, Exp_0_12_Selection, Exp_0_13A_NoisyMemory
-**Resolved**: Exp_0_13A_NoisyMemory, Exp_0_13A_NoisyMemory_noise_+16, Exp_0_13A_NoisyMemory_noise_+8, Exp_0_13A_NoisyMemory_noise_+4, Exp_0_13A_NoisyMemory_noise_+2
-**Missed**: Exp_0_13B_RealisticDistractors, Exp_0_12_Selection
-**Extra**: Exp_0_13A_NoisyMemory_noise_+2, Exp_0_13A_NoisyMemory_noise_+4, Exp_0_13A_NoisyMemory_noise_+8, Exp_0_13A_NoisyMemory_noise_+16
-**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
+### Case 10: q150
+**Question**: Which research phase does the PKM candidate generation experiment belong to?
+**GT entities**: Exp_0_3_PKM_Candidates
+**Resolved**: Exp_0_3_PKM_Candidates, Experiment_0_Results_(poc_Validation), Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair, Experiment_0.3, Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training
+**Missed**: (none)
+**Extra**: Experiment_0_Results_(poc_Validation), Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair, Experiment_0.3, Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training
+**GT intent**: , **Pred intent**: factual_lookup ✗
 **Encoder entities**: []
 
-### Case 11: q581
-**Question**: What was the breakthrough moment of the 'Selection & Noise' phase in SAM research?
-**GT entities**: Exp_0_13B_RealisticDistractors, Exp_0_12_Selection, Exp_0_13A_NoisyMemory
-**Resolved**: Exp_0_13A_NoisyMemory, Exp_0_13A_NoisyMemory_noise_+16, Exp_0_13A_NoisyMemory_noise_+8, Exp_0_13A_NoisyMemory_noise_+4, Exp_0_13A_NoisyMemory_noise_+2
-**Missed**: Exp_0_13B_RealisticDistractors, Exp_0_12_Selection
-**Extra**: Exp_0_13A_NoisyMemory_noise_+2, Exp_0_13A_NoisyMemory_noise_+4, Exp_0_13A_NoisyMemory_noise_+8, Exp_0_13A_NoisyMemory_noise_+16
-**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
+### Case 11: q151
+**Question**: What problem or limitation from previous experiments did the PKM candidate generation experiment address?
+**GT entities**: Exp_0_3_PKM_Candidates
+**Resolved**: Exp_0_3_PKM_Candidates, Experiment_0_Results_(poc_Validation), Slot_Selector_(sam/model/slot_Selector.py), Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training, Sam_Does_Not_Collapse_With_One_Distractor
+**Missed**: (none)
+**Extra**: Experiment_0_Results_(poc_Validation), Slot_Selector_(sam/model/slot_Selector.py), Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training, Sam_Does_Not_Collapse_With_One_Distractor
+**GT intent**: , **Pred intent**: diagnostic ✗
 **Encoder entities**: []
 
-### Case 12: q582
-**Question**: What was the biggest surprise of the 'Selection & Noise' phase in SAM research?
-**GT entities**: Exp_0_13B_RealisticDistractors, Exp_0_12_Selection, Exp_0_13A_NoisyMemory
-**Resolved**: Exp_0_13A_NoisyMemory, Exp_0_13A_NoisyMemory_noise_+16, Exp_0_13A_NoisyMemory_noise_+8, Exp_0_13A_NoisyMemory_noise_+4, Exp_0_13A_NoisyMemory_noise_+2
-**Missed**: Exp_0_13B_RealisticDistractors, Exp_0_12_Selection
-**Extra**: Exp_0_13A_NoisyMemory_noise_+2, Exp_0_13A_NoisyMemory_noise_+4, Exp_0_13A_NoisyMemory_noise_+8, Exp_0_13A_NoisyMemory_noise_+16
-**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
+### Case 12: q152
+**Question**: What was the significance of the PKM candidate generation experiment for the overall SAM research arc?
+**GT entities**: Exp_0_3_PKM_Candidates
+**Resolved**: Exp_0_3_PKM_Candidates, Experiment_0_Results_(poc_Validation), Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants, Bug_3:_Evaluation_Used_Wrong_Checkpoints_For_Sam_Modes, Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training
+**Missed**: (none)
+**Extra**: Bug_3:_Evaluation_Used_Wrong_Checkpoints_For_Sam_Modes, Experiment_0_Results_(poc_Validation), Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training, Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants
+**GT intent**: , **Pred intent**: diagnostic ✗
 **Encoder entities**: []
 
-### Case 13: q583
-**Question**: What was the lesson for NEXUS of the 'Selection & Noise' phase in SAM research?
-**GT entities**: Exp_0_13B_RealisticDistractors, Exp_0_12_Selection, Exp_0_13A_NoisyMemory
-**Resolved**: Exp_0_13A_NoisyMemory, Exp_0_13A_NoisyMemory_noise_+16, Exp_0_13A_NoisyMemory_noise_+8, Exp_0_13A_NoisyMemory_noise_+4, Exp_0_13A_NoisyMemory_noise_+2
-**Missed**: Exp_0_13B_RealisticDistractors, Exp_0_12_Selection
-**Extra**: Exp_0_13A_NoisyMemory_noise_+2, Exp_0_13A_NoisyMemory_noise_+4, Exp_0_13A_NoisyMemory_noise_+8, Exp_0_13A_NoisyMemory_noise_+16
-**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
+### Case 13: q153
+**Question**: If the PKM candidate generation experiment had failed, what would have been the consequence?
+**GT entities**: Exp_0_3_PKM_Candidates
+**Resolved**: Exp_0_3_PKM_Candidates, Experiment_0_Results_(poc_Validation), Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair, Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance, Experiment_0.3
+**Missed**: (none)
+**Extra**: Experiment_0_Results_(poc_Validation), Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance, Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair, Experiment_0.3
+**GT intent**: , **Pred intent**: diagnostic ✗
 **Encoder entities**: []
 
-### Case 14: q584
-**Question**: What if SAM had been tested on real-world data from the start?
-**GT entities**: Decision_PivotToNEXUS
-**Resolved**: Exp_0_13A_NoisyMemory, Exp_0_7_ExternalText, Exp_0_11_ChainRetrieval, Exp_0_12_Selection, Exp_0_5_DenseDataset
-**Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_12_Selection, Exp_0_13A_NoisyMemory, Exp_0_7_ExternalText, Exp_0_5_DenseDataset, Exp_0_11_ChainRetrieval
-**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
+### Case 14: q154
+**Question**: What experiment directly builds on the findings of the PKM candidate generation experiment?
+**GT entities**: Exp_0_3_PKM_Candidates
+**Resolved**: Exp_0_3_PKM_Candidates, Experiment_0_Results_(poc_Validation), Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training, Experiment_0.3, Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair
+**Missed**: (none)
+**Extra**: Experiment_0_Results_(poc_Validation), Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair, Experiment_0.3, Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training
+**GT intent**: , **Pred intent**: multi_hop ✗
 **Encoder entities**: []
 
-### Case 15: q585
-**Question**: What if the chain-set BCE retriever had been discovered at experiment 0.6 instead of 0.11?
-**GT entities**: Decision_PivotToNEXUS
-**Resolved**: Concept_ChainRetrieval, Exp_0_6_Validation, Exp_0_11_ChainRetrieval, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce
-**Missed**: Decision_PivotToNEXUS
-**Extra**: Concept_ChainRetrieval, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_6_Validation, Exp_0_11_ChainRetrieval
-**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
+### Case 15: q155
+**Question**: Summarize the PKM candidate generation experiment in one sentence.
+**GT entities**: Exp_0_3_PKM_Candidates
+**Resolved**: Exp_0_3_PKM_Candidates, Experiment_0_Results_(poc_Validation), Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair, Experiment_0.3, Slot_Selector_(sam/model/slot_Selector.py)
+**Missed**: (none)
+**Extra**: Experiment_0_Results_(poc_Validation), Slot_Selector_(sam/model/slot_Selector.py), Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair, Experiment_0.3
+**GT intent**: , **Pred intent**: factual_lookup ✗
 **Encoder entities**: []
 
-### Case 16: q588
-**Question**: What if entity extraction turns out to be the bottleneck for NEXUS?
-**GT entities**: Decision_PivotToNEXUS
-**Resolved**: Exp_0_13A_NoisyMemory, Exp_0_Diagnosis, Exp_0_3_PKM_Candidates, Exp_0_12_Selection, Exp_0_11_ChainRetrieval
-**Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_12_Selection, Exp_0_Diagnosis, Exp_0_13A_NoisyMemory, Exp_0_3_PKM_Candidates, Exp_0_11_ChainRetrieval
-**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
+### Case 16: q156
+**Question**: What was the main finding of the dense dataset experiment?
+**GT entities**: Exp_0_5_DenseDataset
+**Resolved**: Exp_0_5_DenseDataset, Experiment_0_Results_(poc_Validation), Experiment_0_—_Pipeline_Diagnosis, Experiment_0.6_—_Full_Validation, Gate_1_(rec@8_≥_80%):_Passed
+**Missed**: (none)
+**Extra**: Experiment_0.6_—_Full_Validation, Experiment_0_Results_(poc_Validation), Gate_1_(rec@8_≥_80%):_Passed, Experiment_0_—_Pipeline_Diagnosis
+**GT intent**: , **Pred intent**: factual_lookup ✗
 **Encoder entities**: []
 
-### Case 17: q591
-**Question**: How many Experiment nodes are in the NEXUS graph?
-**GT entities**: Decision_PivotToNEXUS
-**Resolved**: Exp_0_13A_NoisyMemory, Exp_0_10_RequiredSet, Exp_0_Diagnosis, Exp_0_13B_RealisticDistractors, Exp_0_3_PKM_Candidates
-**Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_Diagnosis, Exp_0_13A_NoisyMemory, Exp_0_13B_RealisticDistractors, Exp_0_10_RequiredSet, Exp_0_3_PKM_Candidates
-**GT intent**: factual_lookup, **Pred intent**: factual_lookup ✓
+### Case 17: q157
+**Question**: What research question did the dense dataset experiment investigate?
+**GT entities**: Exp_0_5_DenseDataset
+**Resolved**: Exp_0_5_DenseDataset, Experiment_0_—_Pipeline_Diagnosis, Experiment_0.6_—_Full_Validation, Gate_1_(rec@8_≥_80%):_Passed, Experiment_0.5_—_Dense_Dataset_Fix
+**Missed**: (none)
+**Extra**: Experiment_0.6_—_Full_Validation, Experiment_0.5_—_Dense_Dataset_Fix, Gate_1_(rec@8_≥_80%):_Passed, Experiment_0_—_Pipeline_Diagnosis
+**GT intent**: , **Pred intent**: factual_lookup ✗
 **Encoder entities**: []
 
-### Case 18: q596
-**Question**: What is the longest experiment dependency chain in the NEXUS graph?
-**GT entities**: Decision_PivotToNEXUS
-**Resolved**: Exp_0_11_ChainRetrieval, Exp_0_10_RequiredSet, Exp_0_12_Selection, Exp_0_13A_NoisyMemory, Exp_0_Diagnosis
-**Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_12_Selection, Exp_0_Diagnosis, Exp_0_13A_NoisyMemory, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval
-**GT intent**: factual_lookup, **Pred intent**: factual_lookup ✓
+### Case 18: q158
+**Question**: Which research phase does the dense dataset experiment belong to?
+**GT entities**: Exp_0_5_DenseDataset
+**Resolved**: Exp_0_5_DenseDataset, Experiment_0.6_—_Full_Validation, Original_Gates_(experiments_0.0–0.6), Decision_Gates, Gate_1
+**Missed**: (none)
+**Extra**: Decision_Gates, Original_Gates_(experiments_0.0–0.6), Experiment_0.6_—_Full_Validation, Gate_1
+**GT intent**: , **Pred intent**: factual_lookup ✗
 **Encoder entities**: []
 
-### Case 19: q597
-**Question**: Which experiment node has the most incoming edges?
-**GT entities**: Decision_PivotToNEXUS
-**Resolved**: Exp_0_13A_NoisyMemory, Exp_0_Diagnosis, Exp_0_3_PKM_Candidates, Exp_0_7_ExternalText, Exp_0_8_Aggregation
-**Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_Diagnosis, Exp_0_13A_NoisyMemory, Exp_0_8_Aggregation, Exp_0_7_ExternalText, Exp_0_3_PKM_Candidates
-**GT intent**: factual_lookup, **Pred intent**: factual_lookup ✓
+### Case 19: q159
+**Question**: What problem or limitation from previous experiments did the dense dataset experiment address?
+**GT entities**: Exp_0_5_DenseDataset
+**Resolved**: Exp_0_5_DenseDataset, Required_Slots, Experiment_0_—_Pipeline_Diagnosis, Experiment_0.6_—_Full_Validation, Randomly_Sampled_From_Live_Slots
+**Missed**: (none)
+**Extra**: Experiment_0.6_—_Full_Validation, Required_Slots, Randomly_Sampled_From_Live_Slots, Experiment_0_—_Pipeline_Diagnosis
+**GT intent**: , **Pred intent**: diagnostic ✗
 **Encoder entities**: []
 
-### Case 20: q607
-**Question**: Where would you find the SAM experiment reports?
-**GT entities**: Decision_PivotToNEXUS
-**Resolved**: Exp_0_13A_NoisyMemory, Exp_0_11_ChainRetrieval, Exp_0_10_RequiredSet, Exp_0_Diagnosis, Exp_0_3_PKM_Candidates
-**Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_Diagnosis, Exp_0_13A_NoisyMemory, Exp_0_10_RequiredSet, Exp_0_3_PKM_Candidates, Exp_0_11_ChainRetrieval
-**GT intent**: factual_lookup, **Pred intent**: factual_lookup ✓
+### Case 20: q160
+**Question**: What was the significance of the dense dataset experiment for the overall SAM research arc?
+**GT entities**: Exp_0_5_DenseDataset
+**Resolved**: Exp_0_5_DenseDataset, Experiment_0.6_—_Full_Validation, Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants, Experiment_0_Results_(poc_Validation), Gate_1_(rec@8_≥_80%):_Passed
+**Missed**: (none)
+**Extra**: Experiment_0.6_—_Full_Validation, Experiment_0_Results_(poc_Validation), Gate_1_(rec@8_≥_80%):_Passed, Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants
+**GT intent**: , **Pred intent**: diagnostic ✗
 **Encoder entities**: []
