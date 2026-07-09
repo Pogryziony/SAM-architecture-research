@@ -581,6 +581,153 @@ class TestAnswerQuestionEdgeCases:
             "Cascade should not trigger when first answer is sufficient"
         )
 
+    def test_is_insufficient_answer_detects_all_paraphrases(self):
+        """is_insufficient_answer() must detect every known refusal pattern."""
+        from nexus.reasoning.answer import is_insufficient_answer
+
+        refusals = [
+            "Insufficient evidence to answer.",
+            "Not enough evidence in the graph.",
+            "Cannot answer from the evidence provided.",
+            "No evidence available for this query.",
+            "Unable to determine from the data.",
+            # Mixed case / embedded
+            "The model finds INSUFFICIENT EVIDENCE for this claim.",
+            "There is no evidence to support that.",
+        ]
+        for refusal in refusals:
+            assert is_insufficient_answer(refusal), (
+                f"is_insufficient_answer() should detect: {refusal!r}"
+            )
+
+        # Non-refusals should NOT trigger
+        real_answers = [
+            "The oracle filter improves accuracy by 12%.",
+            "Chain retrieval achieved 92.3% precision on the benchmark.",
+            "NEXUS unified the graph layers and improved query resolution.",
+        ]
+        for answer in real_answers:
+            assert not is_insufficient_answer(answer), (
+                f"is_insufficient_answer() should NOT trigger on: {answer!r}"
+            )
+
+    def test_build_zero_hop_pack_no_traversal(self, populated_graph):
+        """build_zero_hop_pack extracts entity properties without traversal."""
+        from nexus.reasoning.evidence_builder import build_zero_hop_pack
+
+        pack = build_zero_hop_pack(
+            populated_graph,
+            ["Exp_0_11_ChainRetrieval", "concept_pivottonexus"],
+            question="What is the pivot?",
+        )
+
+        assert pack, "Should produce a non-empty pack"
+        assert pack["question"] == "What is the pivot?"
+        assert pack["paths"] == []
+        assert len(pack["node_facts"]) > 0
+        # Each node_fact should have text, source, confidence
+        for nf in pack["node_facts"]:
+            assert "text" in nf
+            assert "source" in nf
+            assert "confidence" in nf
+            # Text should reference the entity ID
+            assert any(eid in nf["text"] for eid in [
+                "Exp_0_11_ChainRetrieval", "concept_pivottonexus",
+            ])
+
+    def test_tier3_cascade_routes_to_synthesizer(self, populated_graph):
+        """Tier 3 cascade must route to SynthesizingModel, not the standard LLM."""
+        import json
+
+        from nexus.reasoning.evidence_builder import build_zero_hop_pack
+        from nexus.reasoning.model_interface import SynthesizingModel
+
+        # Verify that SynthesizingModel can produce an answer from a 0-hop pack
+        direct_pack = build_zero_hop_pack(
+            populated_graph,
+            ["Exp_0_11_ChainRetrieval", "concept_pivottonexus"],
+            question="What is the key finding?",
+        )
+        assert direct_pack, "Should produce a non-empty pack"
+
+        # Build a synth-compatible prompt
+        prompt_lines = [
+            "QUESTION: What is the key finding?",
+            "",
+            "Key findings from evidence nodes:",
+        ]
+        for nf in direct_pack["node_facts"]:
+            prompt_lines.append(f"- {nf['text']}")
+        prompt_lines.extend(["", "Extracted facts:", "", "Knowledge graph paths:",
+                               "(No paths available)", "", "ANSWER:"])
+        prompt_text = "\n".join(prompt_lines)
+
+        synth = SynthesizingModel()
+        answer = synth.generate(prompt_text)
+        assert answer, "Synthesizer should produce an answer"
+        assert not answer.lower().startswith("insufficient"), (
+            f"Synthesizer should never refuse, got: {answer!r}"
+        )
+
+    def test_tier3_cascade_end_to_end_synth_backend(self, populated_graph):
+        """End-to-end: when tier1+tier2 refuse, tier3 uses synth backend."""
+        with mock.patch(
+            "nexus.reasoning.answer.get_available_model",
+            return_value=mock.MagicMock(),
+        ) as mock_get_model:
+            mock_model = mock_get_model.return_value
+            # tier 1 + tier 2 both refuse
+            mock_model.generate.side_effect = [
+                "Insufficient evidence to answer.",
+                "Insufficient evidence to answer.",
+            ]
+
+            result = answer_question(
+                "What is the pivot to NEXUS?",
+                populated_graph,
+                max_depth=4,
+            )
+
+        # tier 3 should have been triggered
+        assert result["cascade_level"] == 3, (
+            f"Expected cascade_level 3, got {result['cascade_level']}"
+        )
+        # Answer should NOT be a refusal
+        assert "Insufficient evidence" not in result["answer"], (
+            f"Tier 3 answer must not be a refusal: {result['answer']!r}"
+        )
+        assert len(result["answer"]) > 0, "Tier 3 answer should not be empty"
+
+    def test_tier3_cascade_llm_no_refusal_backend(self, populated_graph):
+        """Tier 3 with llm_no_refusal backend falls back to the standard LLM."""
+        from nexus.utils.config import NEXUSConfig
+
+        config = NEXUSConfig(tier3_backend="llm_no_refusal")
+
+        real_answer = "Chain retrieval achieved high precision on the benchmark."
+
+        with mock.patch(
+            "nexus.reasoning.answer.get_available_model",
+            return_value=mock.MagicMock(),
+        ) as mock_get_model:
+            mock_model = mock_get_model.return_value
+            # tier 1 + tier 2 refuse, tier 3 (llm_no_refusal) gives real answer
+            mock_model.generate.side_effect = [
+                "Insufficient evidence to answer.",
+                "Insufficient evidence to answer.",
+                real_answer,
+            ]
+
+            result = answer_question(
+                "What is the pivot to NEXUS?",
+                populated_graph,
+                max_depth=4,
+                config=config,
+            )
+
+        assert result["cascade_level"] == 3
+        assert result["answer"] == real_answer
+
 
 # ═══════════════════════════════════════════════════════════════════
 # 6. Sensitivity — config perturbation should not break entity resolution

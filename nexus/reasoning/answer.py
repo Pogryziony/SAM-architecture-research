@@ -17,14 +17,117 @@ from typing import Any
 from nexus.graph.store import InMemoryGraphStore
 from nexus.graph.traversal import traverse_with_intent
 from nexus.query.parser import parse_question
-from nexus.reasoning.evidence_builder import build_evidence, build_evidence_pack
+from nexus.reasoning.evidence_builder import (
+    build_evidence, build_evidence_pack, build_zero_hop_pack,
+)
 from nexus.reasoning.prompt_template import build_prompt, _find_question_entity
 from nexus.reasoning.model_interface import (
-    DummyModel, ModelInterface, get_available_model,
+    DummyModel, ModelInterface, SynthesizingModel, get_available_model,
 )
 from nexus.reasoning.verifier import Verifier, VerificationResult
 from nexus.reasoning.post_edit import edit_answer
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
+
+# ── Insufficiency detection patterns ────────────────────────────────
+_INSUFFICIENCY_PATTERNS = [
+    "insufficient evidence",
+    "not enough evidence",
+    "cannot answer from the evidence",
+    "no evidence",
+    "unable to determine",
+]
+
+
+def is_insufficient_answer(answer: str) -> bool:
+    """Detect refusal / insufficiency in a model answer using known patterns."""
+    lower = answer.lower()
+    return any(pat in lower for pat in _INSUFFICIENCY_PATTERNS)
+
+
+def _tier3_generate_answer(
+    question: str,
+    direct_pack: dict[str, Any],
+    model: ModelInterface,
+    verifier: Verifier,
+    config: NEXUSConfig,
+) -> str:
+    """Generate a Tier 3 answer from a 0-hop evidence pack.
+
+    Routes to the configured tier3_backend:
+      - "synth" (default): SynthesizingModel — template-based, never refuses.
+      - "llm_no_refusal": Standard LLM model (passed as ``model``).
+    """
+    if config.tier3_backend == "synth":
+        # Build a prompt the synthesizer can parse.
+        # Include metric term from question for metric-aware selection.
+        try:
+            from nexus.query.parser import extract_metric_term
+            metric_term = extract_metric_term(question) or ""
+        except ImportError:
+            metric_term = ""
+        prompt_direct = _build_synth_prompt(question, direct_pack, metric_term)
+        synth = SynthesizingModel()
+        return synth.generate(prompt_direct)
+    else:
+        # llm_no_refusal: standard LLM with the evidence pack.
+        # For A/B testing later — currently uses the same build_prompt
+        # but a future prompt template variant can omit the insufficiency
+        # instruction.
+        evidence_json_direct = json.dumps(direct_pack, indent=2)
+        prompt_direct = build_prompt(question, evidence_json_direct)
+        if config.post_edit_enabled:
+            post_edit_direct = edit_answer(model.generate(prompt_direct), direct_pack)
+            return post_edit_direct["answer"]
+        else:
+            return model.generate(prompt_direct)
+
+
+def _build_synth_prompt(
+    question: str,
+    pack: dict[str, Any],
+    metric_term: str = "",
+) -> str:
+    """Build a prompt the SynthesizingModel can parse from a 0-hop evidence pack.
+
+    Formats node_facts, numbers, and (if metric_term is given) numbers_by_metric
+    into sections the synthesizer's section extractors already understand.
+    """
+    lines: list[str] = []
+    lines.append(f"QUESTION: {question}")
+    lines.append("")
+
+    # Key findings (maps to "Key findings from evidence nodes:" section)
+    node_facts = pack.get("node_facts", [])
+    if node_facts:
+        lines.append("Key findings from evidence nodes:")
+        for nf in node_facts:
+            lines.append(f"- {nf['text']}")
+        lines.append("")
+
+    # Numbers — include both raw and metric-keyed
+    numbers = pack.get("numbers", [])
+    if numbers:
+        lines.append("Extracted facts:")
+        for num in numbers:
+            parts = []
+            for k, v in num.items():
+                parts.append(f"{k}: {v}")
+            lines.append(f"- {', '.join(parts)}")
+        lines.append("")
+
+    # Metric-specific numbers (Phase 4 metric-aware selection)
+    if metric_term and metric_term in pack.get("numbers_by_metric", {}):
+        values = pack["numbers_by_metric"][metric_term]
+        lines.append(f"Metric: {metric_term} = {values}")
+        lines.append("")
+
+    # Paths — empty for 0-hop
+    lines.append("Knowledge graph paths:")
+    lines.append("(No paths available — evidence extracted directly from entity nodes)")
+    lines.append("")
+
+    lines.append("ANSWER:")
+    return "\n".join(lines)
 
 
 def answer_question(
@@ -148,70 +251,14 @@ def answer_question(
     # outgoing edges).  Build a 0-hop evidence pack directly from entity nodes
     # instead of refusing.
     if not paths and parsed.entity_ids:
-        node_facts_direct: list[dict[str, Any]] = []
-        numbers_direct: list[dict[str, Any]] = []
-        metrics_direct: dict[str, Any] = {}
-        sources_direct: list[str] = []
-
-        for eid in parsed.entity_ids:
-            node = graph.get_node(eid)
-            if node is None:
-                continue
-            props = node.properties or {}
-            kf = props.get("key_finding", "")
-            desc = props.get("description", "")
-            if kf:
-                src = node.sources[0] if node.sources else ""
-                node_facts_direct.append({
-                    "text": f"[{eid}] {kf}",
-                    "source": src,
-                    "confidence": 0.8,
-                })
-                if src:
-                    sources_direct.append(src)
-            elif desc:
-                src = node.sources[0] if node.sources else ""
-                node_facts_direct.append({
-                    "text": f"[{eid}] {desc}",
-                    "source": src,
-                    "confidence": 0.5,
-                })
-                if src:
-                    sources_direct.append(src)
-            node_metrics = props.get("metrics", {})
-            if node_metrics and isinstance(node_metrics, dict):
-                entry: dict[str, Any] = {"entity": eid}
-                entry.update(node_metrics)
-                numbers_direct.append(entry)
-                metrics_direct = node_metrics
-
-        if node_facts_direct or numbers_direct:
-            direct_pack: dict[str, Any] = {
-                "question": question,
-                "node_facts": node_facts_direct,
-                "numbers": numbers_direct,
-                "numbers_by_metric": (
-                    {k: [v] for k, v in metrics_direct.items()} if metrics_direct else {}
-                ),
-                "paths": [],
-                "facts": [],
-                "neighbor_facts": [],
-                "sources": sorted(set(sources_direct)),
-            }
-            evidence_json_direct = json.dumps(direct_pack, indent=2)
-            prompt_direct = build_prompt(question, evidence_json_direct)
-            raw_answer_direct = model.generate(prompt_direct)
-
-            if config.post_edit_enabled:
-                post_edit_direct = edit_answer(raw_answer_direct, direct_pack)
-                answer_direct = post_edit_direct["answer"]
-            else:
-                answer_direct = raw_answer_direct
-
+        direct_pack = build_zero_hop_pack(graph, parsed.entity_ids, question=question)
+        if direct_pack:
+            answer_direct = _tier3_generate_answer(
+                question, direct_pack, model, verifier, config,
+            )
             result["answer"] = answer_direct
-            result["raw_answer"] = raw_answer_direct
+            result["raw_answer"] = answer_direct
             result["evidence_pack"] = direct_pack
-            result["prompt_text"] = prompt_direct
             result["cascade_level"] = 3
             result["verification"] = verifier.verify(answer_direct, direct_pack)
             result["timing"] = timing
@@ -290,12 +337,12 @@ def answer_question(
     result["answer"] = answer
 
     # Cascade level tracking: tier 1 (filtered evidence) succeeded
-    if "insufficient evidence" not in answer.lower():
+    if not is_insufficient_answer(answer):
         result["cascade_level"] = 1
 
     # ── Step 5.6: Cascade fallback — if LLM refuses but we have paths,
     #               retry with unfiltered evidence (no target_entity filter) ──
-    if "insufficient evidence" in answer.lower() and len(paths) > 0:
+    if is_insufficient_answer(answer) and len(paths) > 0:
         t_retry = time.perf_counter()
         evidence_json_retry = build_evidence(
             question, paths, graph, max_paths=max_paths,
@@ -328,81 +375,27 @@ def answer_question(
         result["evidence_pack"] = evidence_pack
 
         # Cascade level tracking: tier 2 (unfiltered evidence) succeeded
-        if "insufficient evidence" not in answer.lower():
+        if not is_insufficient_answer(answer):
             result["cascade_level"] = 2
 
     # ── Step 5.7: Tier 3 cascade — 0-hop evidence from entity nodes ──
     # When both tier 1 (filtered) and tier 2 (unfiltered) produce refusals
     # AND path_count > 0 (Class A refusals), build evidence directly from
     # the resolved entity nodes' own properties — no traversal needed.
-    if "insufficient evidence" in answer.lower() and len(paths) > 0:
+    if is_insufficient_answer(answer) and len(paths) > 0:
         t_level3 = time.perf_counter()
-        node_facts_direct: list[dict[str, Any]] = []
-        numbers_direct: list[dict[str, Any]] = []
-        metrics_aggregated: dict[str, Any] = {}
+        direct_pack = build_zero_hop_pack(graph, parsed.entity_ids, question=question)
 
-        for eid in parsed.entity_ids:
-            node = graph.get_node(eid)
-            if node is None:
-                continue
-            props = node.properties or {}
-            kf = props.get("key_finding", "")
-            desc = props.get("description", "")
-            if kf:
-                src = node.sources[0] if node.sources else ""
-                node_facts_direct.append({
-                    "text": f"[{eid}] {kf}",
-                    "source": src,
-                    "confidence": 0.8,
-                })
-            elif desc:
-                src = node.sources[0] if node.sources else ""
-                node_facts_direct.append({
-                    "text": f"[{eid}] {desc}",
-                    "source": src,
-                    "confidence": 0.5,
-                })
-            node_metrics = props.get("metrics", {})
-            if node_metrics and isinstance(node_metrics, dict):
-                entry: dict[str, Any] = {"entity": eid}
-                entry.update(node_metrics)
-                numbers_direct.append(entry)
-                # Aggregate latest metrics for numbers_by_metric
-                for mk, mv in node_metrics.items():
-                    if mk not in metrics_aggregated:
-                        metrics_aggregated[mk] = []
-                    metrics_aggregated[mk].append(mv)
-
-        if node_facts_direct or numbers_direct:
-            direct_pack: dict[str, Any] = {
-                "question": question,
-                "node_facts": node_facts_direct,
-                "numbers": numbers_direct,
-                "numbers_by_metric": (
-                    {k: v for k, v in metrics_aggregated.items()} if metrics_aggregated else {}
-                ),
-                "paths": [],
-                "facts": [],
-                "neighbor_facts": [],
-                "sources": sorted(set(
-                    f["source"] for f in node_facts_direct if f.get("source")
-                )),
-            }
-            evidence_json_direct = json.dumps(direct_pack, indent=2)
-            prompt_direct = build_prompt(question, evidence_json_direct)
-
-            if config.post_edit_enabled:
-                post_edit_direct = edit_answer(model.generate(prompt_direct), direct_pack)
-                answer = post_edit_direct["answer"]
-            else:
-                answer = model.generate(prompt_direct)
+        if direct_pack:
+            answer = _tier3_generate_answer(
+                question, direct_pack, model, verifier, config,
+            )
 
             timing["cascade_level3_time"] = round(time.perf_counter() - t_level3, 6)
 
             result["answer"] = answer
             result["raw_answer"] = answer
             result["evidence_pack"] = direct_pack
-            result["prompt_text"] = prompt_direct
             result["cascade_level"] = 3
         else:
             timing["cascade_level3_time"] = round(time.perf_counter() - t_level3, 6)

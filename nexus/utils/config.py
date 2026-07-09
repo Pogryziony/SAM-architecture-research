@@ -85,5 +85,11 @@ class NEXUSConfig:
     # Post-edit — disabled by default; masks model's true accuracy
     post_edit_enabled: bool = False
 
+    # Tier-3 cascade backend — which answer generator to use for 0-hop evidence.
+    #   "synth" (default): SynthesizingModel — template-based, never refuses.
+    #   "llm_no_refusal": LLM with a prompt template that omits the
+    #       insufficiency instruction (for A/B testing later).
+    tier3_backend: str = "synth"
+
 
 DEFAULT_CONFIG = NEXUSConfig()

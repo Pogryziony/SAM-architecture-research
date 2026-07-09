@@ -942,3 +942,74 @@ def build_evidence_pack(
         question_intent=question_intent, target_entity=target_entity,
     )
     return json.loads(raw)
+
+
+def build_zero_hop_pack(
+    graph: InMemoryGraphStore,
+    entity_ids: list[str],
+    question: str = "",
+) -> dict[str, Any]:
+    """Build a minimal evidence pack from resolved entity nodes — no traversal.
+
+    For each entity, extracts key_finding, description, and metrics directly
+    from the node properties.  Used by the Tier 3 cascade fallback when both
+    filtered (tier 1) and unfiltered (tier 2) evidence produce LLM refusals.
+
+    Returns a dict matching the evidence_pack schema (node_facts, numbers,
+    numbers_by_metric, paths, facts, neighbour_facts, sources).
+    """
+    node_facts: list[dict[str, Any]] = []
+    numbers: list[dict[str, Any]] = []
+    metrics_aggregated: dict[str, Any] = {}
+    sources: list[str] = []
+
+    for eid in entity_ids:
+        node = graph.get_node(eid)
+        if node is None:
+            continue
+        props = node.properties or {}
+        kf = props.get("key_finding", "")
+        desc = props.get("description", "")
+        if kf:
+            src = node.sources[0] if node.sources else ""
+            node_facts.append({
+                "text": f"[{eid}] {kf}",
+                "source": src,
+                "confidence": 0.8,
+            })
+            if src:
+                sources.append(src)
+        elif desc:
+            src = node.sources[0] if node.sources else ""
+            node_facts.append({
+                "text": f"[{eid}] {desc}",
+                "source": src,
+                "confidence": 0.5,
+            })
+            if src:
+                sources.append(src)
+        node_metrics = props.get("metrics", {})
+        if node_metrics and isinstance(node_metrics, dict):
+            entry: dict[str, Any] = {"entity": eid}
+            entry.update(node_metrics)
+            numbers.append(entry)
+            for mk, mv in node_metrics.items():
+                if mk not in metrics_aggregated:
+                    metrics_aggregated[mk] = []
+                metrics_aggregated[mk].append(mv)
+
+    if not node_facts and not numbers:
+        return {}  # Caller should handle the empty-pack case
+
+    return {
+        "question": question,
+        "node_facts": node_facts,
+        "numbers": numbers,
+        "numbers_by_metric": (
+            {k: v for k, v in metrics_aggregated.items()} if metrics_aggregated else {}
+        ),
+        "paths": [],
+        "facts": [],
+        "neighbor_facts": [],
+        "sources": sorted(set(sources)),
+    }
