@@ -765,6 +765,54 @@ def _collect_neighbor_key_findings(
     return neighbor_facts
 
 
+def _collect_source_snippets(
+    paths: list[Path],
+    graph: InMemoryGraphStore,
+    question: str = "",
+) -> list[dict[str, Any]]:
+    """Collect source_snippets from the top-2 relevance-ranked nodes.
+
+    Iterates over all unique nodes in the traversal paths, scores each by
+    word overlap with the question text, and returns the top 2 snippets
+    (entity ID, snippet text, source path).
+    Nodes without a ``source_snippet`` property are silently skipped.
+    """
+    scored: list[tuple[Node, int]] = []
+    seen: set[str] = set()
+
+    for path in paths:
+        for step in path.steps:
+            for node_id in (step.from_node, step.to_node):
+                if node_id in seen:
+                    continue
+                seen.add(node_id)
+                node = graph.get_node(node_id)
+                if node is None:
+                    continue
+                snippet = node.properties.get("source_snippet", "")
+                if not snippet:
+                    continue
+                relevance = 0
+                if question:
+                    qw = set(re.findall(r'\w+', question.lower()))
+                    sw = set(re.findall(r'\w+', snippet.lower()))
+                    relevance = len(qw & sw)
+                scored.append((node, relevance))
+
+    scored.sort(key=lambda x: -x[1])
+
+    snippets: list[dict[str, Any]] = []
+    for node, _ in scored[:2]:
+        snippet = node.properties.get("source_snippet", "")
+        if snippet:
+            snippets.append({
+                "entity": node.id,
+                "text": snippet,
+                "source": node.sources[0] if node.sources else "",
+            })
+    return snippets
+
+
 def build_evidence(
     question: str,
     paths: list[Path],
@@ -865,6 +913,9 @@ def build_evidence(
     evidence["neighbor_facts"] = _collect_neighbor_key_findings(
         paths, graph, target_entity, question
     )
+
+    # ── Source snippets: top-2 relevance-ranked nodes with source_snippet ──
+    evidence["snippets"] = _collect_source_snippets(paths, graph, question)
 
     # ── Add confidence signals for routing ──
     evidence["confidence_signals"] = _compute_confidence_signals(

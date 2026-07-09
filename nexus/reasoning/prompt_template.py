@@ -497,6 +497,19 @@ def build_prompt(question: str, evidence_json: str) -> str:
                 if kv_pairs:
                     parts.append(f"  - [{entity}] {' | '.join(kv_pairs)}")
 
+        # ── SOURCE CONTEXT: paragraphs from source documents ──
+        snippets = evidence.get("snippets", [])
+        if snippets:
+            parts.append("\n  SOURCE CONTEXT (from source documents):")
+            for snip in snippets[:2]:
+                entity = snip.get("entity", "")
+                text = snip.get("text", "")
+                if text:
+                    # Truncate long snippets to keep total evidence under token budget
+                    if len(text) > 400:
+                        text = text[:397] + "..."
+                    parts.append(f"  [{entity}] {text}")
+
         # ── Edge-based facts (relation chains) ──
         if facts:
             parts.append("\n  Relation chains:")

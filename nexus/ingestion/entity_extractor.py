@@ -332,43 +332,67 @@ def extract_from_markdown(text: str, source_path: str) -> list[dict[str, Any]]:
         ctx_end = min(len(text_lines), line_num + 3)
         ctx_text = '\n'.join(text_lines[ctx_start:ctx_end])
         entity_metrics = _extract_metrics(ctx_text)
+        source_snippet = _extract_source_snippet(text, line_num, title)
+        props: dict[str, Any] = {}
+        if entity_metrics:
+            props["metrics"] = entity_metrics
+        if source_snippet:
+            props["source_snippet"] = source_snippet
         entities.append({
             "name": title,
             "type": _infer_type_from_header(title),
             "source": source_path,
             "line": line_num,
-            "properties": {"metrics": entity_metrics} if entity_metrics else {},
+            "properties": props,
         })
 
     # ---- Backtick-wrapped code references ----
     for match in re.finditer(r'`([A-Za-z_][A-Za-z0-9_\.@\-]+)`', text):
         ref = match.group(1)
         if len(ref) >= 3 and not ref.startswith("http"):
+            line_num = text[:match.start()].count('\n') + 1
+            source_snippet = _extract_source_snippet(text, line_num, ref)
+            props: dict[str, Any] = {}
+            if source_snippet:
+                props["source_snippet"] = source_snippet
             entities.append({
                 "name": ref,
                 "type": _infer_type_from_name(ref),
                 "source": source_path,
-                "line": text[:match.start()].count('\n') + 1,
+                "line": line_num,
+                "properties": props,
             })
 
     # Extended: dotted access like `slot_ids.clamp` or `model.memory_mode`
     for match in re.finditer(r'`([A-Za-z_][A-Za-z0-9_]+\.[A-Za-z_][A-Za-z0-9_]+)`', text):
         ref = match.group(1)
+        line_num = text[:match.start()].count('\n') + 1
+        source_snippet = _extract_source_snippet(text, line_num, ref)
+        props: dict[str, Any] = {}
+        if source_snippet:
+            props["source_snippet"] = source_snippet
         entities.append({
             "name": ref,
             "type": _infer_type_from_name(ref),
             "source": source_path,
-            "line": text[:match.start()].count('\n') + 1,
+            "line": line_num,
+            "properties": props,
         })
 
     # Extended: identifiers with parens like `read_slot_values()`
     for match in re.finditer(r'`([A-Za-z_][A-Za-z0-9_]+\(\))`', text):
         ref = match.group(1)
+        line_num = text[:match.start()].count('\n') + 1
+        source_snippet = _extract_source_snippet(text, line_num, ref)
+        props: dict[str, Any] = {}
+        if source_snippet:
+            props["source_snippet"] = source_snippet
         entities.append({
             "name": ref,
             "type": _infer_type_from_name(ref),
             "source": source_path,
-            "line": text[:match.start()].count('\n') + 1,
+            "line": line_num,
+            "properties": props,
         })
 
     # ---- Plain-text entity mentions ----
@@ -699,6 +723,100 @@ def _filter_noise_entities(entities: list[dict[str, Any]]) -> list[dict[str, Any
     return clean
 
 
+def _extract_table_snippet(text_lines: list[str], match_line_idx: int) -> str:
+    """Extract table header row + entity row for table context snippets."""
+    parts: list[str] = []
+
+    # Find table header row — look backwards for the column-header row
+    # (the line just above the separator `|---|---|` or the first non-separator |...| row)
+    header_idx: int | None = None
+    for i in range(match_line_idx - 1, max(match_line_idx - 10, -1), -1):
+        line = text_lines[i].strip()
+        if not line:
+            break
+        if re.match(r'^\|[\s\-:]+\|', line):
+            # This is a separator row — header is above it
+            header_idx = i - 1
+            break
+        if line.startswith('|') and line.endswith('|'):
+            header_idx = i
+
+    # Build snippet: header + separator + entity row
+    if header_idx is not None and header_idx >= 0:
+        parts.append(text_lines[header_idx].strip())
+        sep_idx = header_idx + 1
+        if sep_idx < len(text_lines) and re.match(r'^\|[\s\-:]+\|', text_lines[sep_idx].strip()):
+            parts.append(text_lines[sep_idx].strip())
+    parts.append(text_lines[match_line_idx].strip())
+
+    return '\n'.join(parts)
+
+
+def _extract_source_snippet(text: str, line_num: int, entity_name: str = "") -> str:
+    """Extract ±3 sentences of surrounding context for an entity match.
+
+    If the entity appears in a markdown table row, the table header and
+    entity row are returned instead.  Falls back to ±3 raw lines when
+    sentence splitting produces no match.
+    """
+    if not text or line_num <= 0:
+        return ""
+
+    text_lines = text.split('\n')
+    if line_num > len(text_lines):
+        return ""
+
+    match_line_idx = line_num - 1  # 0-indexed
+
+    # -- Detect table context (lines containing | as table-cell markers) --
+    is_table = False
+    for offset in range(-5, 6):
+        idx = match_line_idx + offset
+        if 0 <= idx < len(text_lines):
+            stripped = text_lines[idx].strip()
+            if stripped.startswith('|') and stripped.endswith('|'):
+                is_table = True
+                break
+
+    if is_table:
+        return _extract_table_snippet(text_lines, match_line_idx)
+
+    # -- Sentence-based extraction (±3 sentences) --
+    # Compute character offset of the match line
+    char_pos = 0
+    for i in range(match_line_idx):
+        char_pos += len(text_lines[i]) + 1  # +1 for '\n'
+
+    # Split into sentences (handles . ! ? as sentence boundaries)
+    sentences: list[str] = re.split(r'(?<=[.!?])\s+', text)
+    if not sentences:
+        return ""
+
+    # Find which sentence contains the match position
+    target_sent_idx = -1
+    sent_pos = 0
+    for i, sent in enumerate(sentences):
+        sent_end = sent_pos + len(sent)
+        if sent_pos <= char_pos < sent_end:
+            target_sent_idx = i
+            break
+        sent_pos = sent_end + 1  # +1 for the split separator space
+
+    if target_sent_idx < 0:
+        # Fallback: return ±3 raw lines around the match
+        start = max(0, match_line_idx - 3)
+        end = min(len(text_lines), match_line_idx + 4)
+        return '\n'.join(text_lines[start:end]).strip()
+
+    # Take ±3 sentences
+    start_sent = max(0, target_sent_idx - 3)
+    end_sent = min(len(sentences), target_sent_idx + 4)
+
+    snippet = ' '.join(sentences[start_sent:end_sent]).strip()
+    snippet = re.sub(r'\s+', ' ', snippet)
+    return snippet
+
+
 def _extract_plain_text_entities(text: str, source_path: str) -> list[dict[str, Any]]:
     """
     Extract entity mentions that the backtick-based extractor misses.
@@ -726,11 +844,17 @@ def _extract_plain_text_entities(text: str, source_path: str) -> list[dict[str, 
         if norm in seen:
             return
         seen.add(norm)
+        line = _line_of(pos)
+        source_snippet = _extract_source_snippet(text, line, name)
+        props: dict[str, Any] = {}
+        if source_snippet:
+            props["source_snippet"] = source_snippet
         entities.append({
             "name": name,
             "type": etype,
             "source": source_path,
-            "line": _line_of(pos),
+            "line": line,
+            "properties": props,
         })
 
     # --- Experiment references: "Experiment 0.X", "Exp 0.XY" ---
