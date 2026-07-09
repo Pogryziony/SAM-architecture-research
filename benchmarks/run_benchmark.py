@@ -1002,7 +1002,7 @@ def print_comparison(summary: dict[str, Any]):
         for line in lines:
             print(line)
 
-        print(f"\n  NEXUS + Router blended cost (80% synth → $0):")
+        print(f"\n  NEXUS + Router blended cost (80% synth -> $0):")
         # Auto-load from newest throughput results — no hardcoded throughput
         router_model = BlendedRouterCost.from_latest_throughput(synth_ratio=0.8)
         if router_model is not None:
