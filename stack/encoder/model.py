@@ -96,8 +96,10 @@ class AssociativeEncoderV2(nn.Module):
         hidden_dim: int = 256,
         num_intents: int = 4,
         num_categories: int = 4,
+        dropout: float = 0.3,
     ):
         super().__init__()
+        self.dropout = nn.Dropout(dropout)
         # EmbeddingBag for efficiency (handles variable-length feature lists)
         self.embedding = nn.EmbeddingBag(feature_dim, embed_dim, mode="mean")
         # Sequential component: 1-layer bidirectional GRU
@@ -114,9 +116,19 @@ class AssociativeEncoderV2(nn.Module):
         # Combined representation
         combined_dim = embed_dim + gru_output  # 128 + 128 = 256
         # Intent head (classifier)
-        self.intent_head = nn.Linear(combined_dim, num_intents)
+        self.intent_head = nn.Sequential(
+            nn.Linear(combined_dim, combined_dim // 2),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(combined_dim // 2, num_intents),
+        )
         # Category head
-        self.category_head = nn.Linear(combined_dim, num_categories)
+        self.category_head = nn.Sequential(
+            nn.Linear(combined_dim, combined_dim // 2),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(combined_dim // 2, num_categories),
+        )
         # Entity re-ranker: score each candidate entity independently
         self.entity_scorer = nn.Linear(combined_dim + embed_dim, 1)
 
@@ -197,24 +209,35 @@ class AssociativeEncoderV2(nn.Module):
         return result
 
     def embed_entities(
-        self, entity_descriptions: list[str], tokenizer: CharNgramTokenizer
+        self, entity_descriptions: list[str], tokenizer
     ) -> torch.Tensor:
-        """Embed entity descriptions using the same EmbeddingBag.
+        """Embed entity descriptions using the shared EmbeddingBag.
+
+        Gradients flow through the embedding during training.
 
         Args:
             entity_descriptions: List of entity description strings
-            tokenizer: CharNgramTokenizer instance
+            tokenizer: CharNgramTokenizer or WordTokenizer instance
 
         Returns:
             [1, K, embed_dim] tensor of entity embeddings
         """
         if not entity_descriptions:
-            return torch.empty(1, 0, self.embedding.embedding_dim)
-        offsets_list, indices_list = tokenizer.tokenize_batch(entity_descriptions)
-        offsets_t = torch.tensor(offsets_list, dtype=torch.long)
-        indices_t = torch.tensor(indices_list, dtype=torch.long)
-        with torch.no_grad():
-            emb = self.embedding(indices_t, offsets_t)  # [K, embed_dim]
+            return torch.empty(
+                1, 0, self.embedding.embedding_dim,
+                device=next(self.parameters()).device,
+            )
+        from stack.encoder.char_tokenizer import CharNgramTokenizer
+        if isinstance(tokenizer, CharNgramTokenizer):
+            offsets_list, indices_list = tokenizer.tokenize_batch(
+                entity_descriptions,
+            )
+            # tokenize_batch returns offsets with B+1 elements; EmbeddingBag needs B
+            offsets_t = torch.tensor(offsets_list[:-1], dtype=torch.long)
+            indices_t = torch.tensor(indices_list, dtype=torch.long)
+        else:
+            offsets_t, indices_t = tokenizer.encode_batch(entity_descriptions)
+        emb = self.embedding(indices_t, offsets_t)  # [K, embed_dim]
         return emb.unsqueeze(0)  # [1, K, embed_dim]
 
     def count_parameters(self) -> int:
@@ -321,8 +344,8 @@ def save_model_v2(
             "feature_dim": model.embedding.num_embeddings,
             "embed_dim": model.embedding.embedding_dim,
             "hidden_dim": model.gru.hidden_size * 4,
-            "num_intents": model.intent_head.out_features,
-            "num_categories": model.category_head.out_features,
+            "num_intents": model.intent_head[-1].out_features,
+            "num_categories": model.category_head[-1].out_features,
         },
         os.path.join(output_dir, "best.pt"),
     )

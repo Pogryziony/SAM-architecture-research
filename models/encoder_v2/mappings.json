@@ -1,0 +1,72 @@
+{
+  "entity_map": {
+    "Concept_ArchitectureWorks": 0,
+    "Concept_ChainRetrieval": 1,
+    "Concept_NoiseTolerance": 2,
+    "Concept_OracleMemory": 3,
+    "Concept_PivotToNEXUS": 4,
+    "Concept_RetrievalMismatch": 5,
+    "Concept_SelectorBottleneck": 6,
+    "Decision_PivotToNEXUS": 7,
+    "Exp_0_10_RequiredSet": 8,
+    "Exp_0_11_ChainRetrieval": 9,
+    "Exp_0_12_Selection": 10,
+    "Exp_0_13A_NoisyMemory": 11,
+    "Exp_0_13B_RealisticDistractors": 12,
+    "Exp_0_2_CompactPKM": 13,
+    "Exp_0_3_PKM_Candidates": 14,
+    "Exp_0_5_DenseDataset": 15,
+    "Exp_0_6_Validation": 16,
+    "Exp_0_7_ExternalText": 17,
+    "Exp_0_8_Aggregation": 18,
+    "Exp_0_9_OracleFilter": 19,
+    "Exp_0_Diagnosis": 20
+  },
+  "intent_map": {
+    "factual_lookup": 0,
+    "comparison": 1,
+    "multi_hop": 2,
+    "diagnostic": 3
+  },
+  "category_map": {
+    "factual": 0,
+    "comparative": 1,
+    "multi-hop": 2,
+    "diagnostic": 3
+  },
+  "inv_entity_map": {
+    "0": "Concept_ArchitectureWorks",
+    "1": "Concept_ChainRetrieval",
+    "2": "Concept_NoiseTolerance",
+    "3": "Concept_OracleMemory",
+    "4": "Concept_PivotToNEXUS",
+    "5": "Concept_RetrievalMismatch",
+    "6": "Concept_SelectorBottleneck",
+    "7": "Decision_PivotToNEXUS",
+    "8": "Exp_0_10_RequiredSet",
+    "9": "Exp_0_11_ChainRetrieval",
+    "10": "Exp_0_12_Selection",
+    "11": "Exp_0_13A_NoisyMemory",
+    "12": "Exp_0_13B_RealisticDistractors",
+    "13": "Exp_0_2_CompactPKM",
+    "14": "Exp_0_3_PKM_Candidates",
+    "15": "Exp_0_5_DenseDataset",
+    "16": "Exp_0_6_Validation",
+    "17": "Exp_0_7_ExternalText",
+    "18": "Exp_0_8_Aggregation",
+    "19": "Exp_0_9_OracleFilter",
+    "20": "Exp_0_Diagnosis"
+  },
+  "inv_intent_map": {
+    "0": "factual_lookup",
+    "1": "comparison",
+    "2": "multi_hop",
+    "3": "diagnostic"
+  },
+  "inv_category_map": {
+    "0": "factual",
+    "1": "comparative",
+    "2": "multi-hop",
+    "3": "diagnostic"
+  }
+}

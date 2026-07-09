@@ -137,6 +137,9 @@ class QuestionDatasetV2(Dataset):
             sampled = []
         candidates = gt_candidates + sampled
 
+        # Convert entity IDs to human-readable descriptions for tokenization
+        candidate_descriptions = [e.replace("_", " ") for e in candidates]
+
         # Entity labels: 1 for GT, 0 for distractors
         entity_labels = [1.0 if e in gt_entities else 0.0 for e in candidates]
 
@@ -147,6 +150,7 @@ class QuestionDatasetV2(Dataset):
             "offsets": offsets_list,
             "indices": indices_list,
             "candidate_ids": candidates,
+            "candidate_descriptions": candidate_descriptions,
             "entity_labels": entity_labels,
             "intent_label": intent_label,
             "category_label": category_label,
@@ -168,8 +172,7 @@ def collate_fn_v2(batch: list[dict]) -> dict:
         all_entity_labels.append(torch.tensor(item["entity_labels"], dtype=torch.float32))
         all_intent_labels.append(item["intent_label"])
         all_category_labels.append(item["category_label"])
-        # Resolve candidate descriptions from tokenizer vocab
-        all_candidate_descriptions.append(item["candidate_ids"])
+        all_candidate_descriptions.append(item["candidate_descriptions"])
 
     offsets = torch.tensor(all_offsets[:-1], dtype=torch.long)
     indices = torch.tensor(all_indices, dtype=torch.long)
@@ -294,25 +297,29 @@ def compute_loss_v2(
     intent_focal: FocalLoss,
     entity_focal: FocalLoss | None = None,
     entity_weight: float = 2.0,
+    pos_weight: float = 15.0,
 ) -> torch.Tensor:
-    """Combined loss: focal on intent, CE on category, focal on entity re-ranker."""
+    """Combined loss: focal on intent, CE on category, weighted BCE on entity re-ranker."""
     loss_intent = intent_focal(intent_logits, intent_labels)
     loss_category = F.cross_entropy(category_logits, category_labels)
 
     total_loss = loss_intent + loss_category
 
     if entity_scores is not None and entity_labels_batch:
-        # Entity re-ranker loss: per-example binary focal loss on candidates
+        # Entity re-ranker loss: per-example weighted BCE
+        # With ~1:19 pos:neg ratio, use high pos_weight
         entity_losses = []
         for i in range(len(entity_labels_batch)):
             gt = entity_labels_batch[i]
             valid_len = len(gt)
             if valid_len > 0:
                 scores_i = entity_scores[i, :valid_len]
-                if entity_focal is not None:
-                    loss_e = entity_focal(scores_i, gt)
-                else:
-                    loss_e = F.binary_cross_entropy_with_logits(scores_i, gt)
+                # Weighted BCE: positives get pos_weight multiplier
+                loss_e = F.binary_cross_entropy_with_logits(
+                    scores_i, gt, reduction="none",
+                )
+                weight = torch.where(gt == 1, pos_weight, 1.0)
+                loss_e = (weight * loss_e).mean()
                 entity_losses.append(loss_e)
         if entity_losses:
             loss_entity = torch.stack(entity_losses).mean()
@@ -329,10 +336,13 @@ class TrainingConfigV2:
     batch_size: int = 32
     learning_rate: float = 1e-3
     max_epochs: int = 150
-    patience: int = 10
-    entity_threshold: float = 0.5
+    patience: int = 20
+    entity_threshold: float = 0.3
     entity_weight: float = 2.0
     focal_gamma: float = 2.0
+    pos_weight: float = 15.0
+    weight_decay: float = 1e-4
+    dropout: float = 0.3
     seed: int = 42
     output_dir: str = "models/encoder_v2"
     max_candidates: int = 20
@@ -437,6 +447,7 @@ def train_v2(config: TrainingConfigV2 | None = None) -> dict:
         hidden_dim=256,
         num_intents=len(intent_map),
         num_categories=len(category_map),
+        dropout=config.dropout,
     )
     param_count = model.count_parameters()
     print(f"Model parameters: {param_count:,}")
@@ -461,9 +472,12 @@ def train_v2(config: TrainingConfigV2 | None = None) -> dict:
     entity_focal = FocalLoss(gamma=config.focal_gamma)
 
     # ── Optimizer ──
-    optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
+    optimizer = torch.optim.AdamW(
+        model.parameters(), lr=config.learning_rate,
+        weight_decay=config.weight_decay,
+    )
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode="max", factor=0.5, patience=5,
+        optimizer, mode="max", factor=0.5, patience=7,
     )
 
     # ── Training state ──
@@ -519,6 +533,7 @@ def train_v2(config: TrainingConfigV2 | None = None) -> dict:
                 batch["intent_labels"], batch["category_labels"],
                 batch["entity_labels"],
                 intent_focal, entity_focal, config.entity_weight,
+                pos_weight=config.pos_weight,
             )
             loss.backward()
             optimizer.step()
