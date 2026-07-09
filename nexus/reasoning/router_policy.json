@@ -1,44 +1,47 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "phase": 5,
-  "description": "Learned router decision table mapping (intent, has_matching_metric, estimated_hops) → best_arm",
+  "description": "Learned router decision table with hold-out validation. Trained on first N questions, validated on held-out N.",
+  "_comment": "Trained on first 15 questions, validated on held-out 15.",
+  "_train_n": 15,
+  "_test_n": 15,
   "training_config": {
-    "limit": 30,
-    "questions": 30,
-    "table_entries": 7
+    "total_questions": 30,
+    "train_questions": 15,
+    "test_questions": 15,
+    "table_entries": 3,
+    "limitation": "Training data limited to 30 oracle-test questions. Split 15 train / 15 test. Expanding to 200 questions requires running paired-arm accuracy on the full QA dataset."
   },
-  "metrics": {
-    "router_accuracy": 0.39,
-    "oracle_accuracy": 0.4133,
-    "routing_quality": 0.9435
+  "train_metrics": {
+    "router_accuracy": 0.55,
+    "oracle_accuracy": 0.55,
+    "routing_quality": 1.0,
+    "all_llm_accuracy": 0.55,
+    "all_synth_accuracy": 0.2889
+  },
+  "test_metrics": {
+    "router_accuracy": 0.1967,
+    "oracle_accuracy": 0.2767,
+    "routing_quality": 0.7108,
+    "all_llm_accuracy": 0.2133,
+    "all_synth_accuracy": 0.1767
   },
   "decision_table": {
     "factual_lookup|1|1": {
       "intent": "factual_lookup",
       "has_matching_metric": true,
       "estimated_hops": 1,
-      "count": 18,
-      "synth_wins": 11,
-      "llm_wins": 7,
-      "synth_accuracy": 0.2352,
-      "llm_accuracy": 0.4417,
+      "count": 12,
+      "synth_wins": 6,
+      "llm_wins": 6,
+      "synth_accuracy": 0.2778,
+      "llm_accuracy": 0.6042,
       "best_arm": "llm"
     },
     "factual_lookup|0|1": {
       "intent": "factual_lookup",
       "has_matching_metric": false,
       "estimated_hops": 1,
-      "count": 3,
-      "synth_wins": 2,
-      "llm_wins": 1,
-      "synth_accuracy": 0.1667,
-      "llm_accuracy": 0.3333,
-      "best_arm": "llm"
-    },
-    "comparison|1|2": {
-      "intent": "comparison",
-      "has_matching_metric": true,
-      "estimated_hops": 2,
       "count": 2,
       "synth_wins": 2,
       "llm_wins": 0,
@@ -46,48 +49,15 @@
       "llm_accuracy": 0.25,
       "best_arm": "synthesizer"
     },
-    "diagnostic|1|1": {
-      "intent": "diagnostic",
-      "has_matching_metric": true,
-      "estimated_hops": 1,
-      "count": 2,
-      "synth_wins": 2,
-      "llm_wins": 0,
-      "synth_accuracy": 0.125,
-      "llm_accuracy": 0.0,
-      "best_arm": "synthesizer"
-    },
-    "comparison|1|1": {
+    "comparison|1|2": {
       "intent": "comparison",
-      "has_matching_metric": true,
-      "estimated_hops": 1,
-      "count": 1,
-      "synth_wins": 0,
-      "llm_wins": 1,
-      "synth_accuracy": 0.5,
-      "llm_accuracy": 1.0,
-      "best_arm": "llm"
-    },
-    "causal_explanation|1|2": {
-      "intent": "causal_explanation",
-      "has_matching_metric": true,
-      "estimated_hops": 2,
-      "count": 3,
-      "synth_wins": 3,
-      "llm_wins": 0,
-      "synth_accuracy": 0.0,
-      "llm_accuracy": 0.0,
-      "best_arm": "synthesizer"
-    },
-    "factual_lookup|1|2": {
-      "intent": "factual_lookup",
       "has_matching_metric": true,
       "estimated_hops": 2,
       "count": 1,
       "synth_wins": 1,
       "llm_wins": 0,
-      "synth_accuracy": 1.0,
-      "llm_accuracy": 1.0,
+      "synth_accuracy": 0.5,
+      "llm_accuracy": 0.5,
       "best_arm": "synthesizer"
     }
   },
