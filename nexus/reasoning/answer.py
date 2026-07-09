@@ -207,6 +207,40 @@ def answer_question(
         result["post_edit_changes"] = None
     result["answer"] = answer
 
+    # ── Step 5.6: Cascade fallback — if LLM refuses but we have paths,
+    #               retry with unfiltered evidence (no target_entity filter) ──
+    if "insufficient evidence" in answer.lower() and len(paths) > 0:
+        t_retry = time.perf_counter()
+        evidence_json_retry = build_evidence(
+            question, paths, graph, max_paths=max_paths,
+            question_intent=parsed.intent, target_entity=None,
+        )
+        evidence_pack_retry = build_evidence_pack(
+            question, paths, graph,
+            question_intent=parsed.intent, target_entity=None,
+        )
+        prompt_retry = build_prompt(question, evidence_json_retry)
+        raw_answer_retry = model.generate(prompt_retry)
+
+        if config.post_edit_enabled:
+            post_edit_retry = edit_answer(raw_answer_retry, evidence_pack_retry)
+            answer_retry = post_edit_retry["answer"]
+        else:
+            answer_retry = raw_answer_retry
+
+        timing["cascade_retry_time"] = round(time.perf_counter() - t_retry, 6)
+
+        # Use the retry answer, updating evidence_pack and prompt
+        evidence_pack = evidence_pack_retry
+        evidence_json = evidence_json_retry
+        prompt = prompt_retry
+        raw_answer = raw_answer_retry
+        answer = answer_retry
+
+        result["answer"] = answer
+        result["raw_answer"] = raw_answer
+        result["evidence_pack"] = evidence_pack
+
     # ── Step 6: Verify ──
     t0 = time.perf_counter()
     verification = verifier.verify(answer, evidence_pack)

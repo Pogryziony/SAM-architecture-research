@@ -9,6 +9,8 @@ All tests are self-contained — they create their own small graphs, no ingestio
 
 from __future__ import annotations
 
+from unittest import mock
+
 import pytest
 
 from nexus.graph import Node, Edge, Path, PathStep
@@ -518,6 +520,66 @@ class TestAnswerQuestionEdgeCases:
         assert result["path_count"] > 0
         assert len(result["answer"]) > 0
         assert "Insufficient evidence" not in result["answer"]
+
+    def test_cascade_fallback_on_insufficient_evidence(self, populated_graph):
+        """When the model returns insufficient evidence but paths exist, cascade
+        to unfiltered evidence and regenerate the answer."""
+        # Use a question that triggers factual_lookup intent so that
+        # target_entity filtering is applied in the first round.
+        question = "What is the pivot to NEXUS?"
+
+        # Mock model.generate: first call → insufficient, second call → real answer
+        real_answer = "The pivot to NEXUS moved the project from isolated components to a unified knowledge graph."
+
+        # We need to patch the *instance* method, not the class.
+        # answer_question calls model.generate() — we'll use mock.patch.object.
+        with mock.patch(
+            "nexus.reasoning.answer.get_available_model",
+            return_value=mock.MagicMock(),
+        ) as mock_get_model:
+            mock_model = mock_get_model.return_value
+            mock_model.generate.side_effect = [
+                "Insufficient evidence to answer.",
+                real_answer,
+            ]
+
+            result = answer_question(
+                question,
+                populated_graph,
+                max_depth=4,
+            )
+
+        # Verify the cascade triggered and we got the retry answer
+        assert result["path_count"] > 0
+        assert result["answer"] == real_answer
+        timing = result.get("timing", {})
+        assert "cascade_retry_time" in timing, (
+            f"Expected cascade_retry_time in timing keys: {list(timing.keys())}"
+        )
+
+    def test_cascade_fallback_no_retry_when_answer_sufficient(self, populated_graph):
+        """When the model gives a real answer first try, cascade should NOT trigger."""
+        real_answer = "The pivot to NEXUS unified the graph layers."
+
+        with mock.patch(
+            "nexus.reasoning.answer.get_available_model",
+            return_value=mock.MagicMock(),
+        ) as mock_get_model:
+            mock_model = mock_get_model.return_value
+            mock_model.generate.return_value = real_answer
+
+            result = answer_question(
+                "What is the pivot to NEXUS?",
+                populated_graph,
+                max_depth=4,
+            )
+
+        assert result["answer"] == real_answer
+        # Cascade should NOT have triggered — no retry time
+        timing = result.get("timing", {})
+        assert "cascade_retry_time" not in timing, (
+            "Cascade should not trigger when first answer is sufficient"
+        )
 
 
 # ═══════════════════════════════════════════════════════════════════
