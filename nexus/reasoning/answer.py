@@ -9,6 +9,7 @@ Handles edge cases: empty graph, no entities found, no paths, etc.
 
 from __future__ import annotations
 
+import json
 import re
 import time
 from typing import Any
@@ -85,6 +86,8 @@ def answer_question(
         "parsed_query": None,
         "path_count": 0,
         "post_edit_changes": None,
+        "cascade_level": 0,
+        "resolution_confidence": 0.0,
     }
 
     # Per-step timing breakdown
@@ -108,6 +111,12 @@ def answer_question(
 
     result["parsed_query"] = parsed
     result["entity_resolution_method"] = parsed.resolution_method
+
+    # Map resolution method to a confidence score
+    _resolution_confidence_map = {"alias": 1.0, "fuzzy": 0.6, "none": 0.0}
+    result["resolution_confidence"] = _resolution_confidence_map.get(
+        parsed.resolution_method, 0.0,
+    )
 
     # Edge case: no entities found
     if not parsed.entity_ids:
@@ -134,6 +143,79 @@ def answer_question(
     )
     timing["traverse_time"] = round(time.perf_counter() - t0, 6)
     result["path_count"] = len(paths)
+
+    # Class B fix: path_count == 0 but entities resolved (e.g., fuzzy match, no
+    # outgoing edges).  Build a 0-hop evidence pack directly from entity nodes
+    # instead of refusing.
+    if not paths and parsed.entity_ids:
+        node_facts_direct: list[dict[str, Any]] = []
+        numbers_direct: list[dict[str, Any]] = []
+        metrics_direct: dict[str, Any] = {}
+        sources_direct: list[str] = []
+
+        for eid in parsed.entity_ids:
+            node = graph.get_node(eid)
+            if node is None:
+                continue
+            props = node.properties or {}
+            kf = props.get("key_finding", "")
+            desc = props.get("description", "")
+            if kf:
+                src = node.sources[0] if node.sources else ""
+                node_facts_direct.append({
+                    "text": f"[{eid}] {kf}",
+                    "source": src,
+                    "confidence": 0.8,
+                })
+                if src:
+                    sources_direct.append(src)
+            elif desc:
+                src = node.sources[0] if node.sources else ""
+                node_facts_direct.append({
+                    "text": f"[{eid}] {desc}",
+                    "source": src,
+                    "confidence": 0.5,
+                })
+                if src:
+                    sources_direct.append(src)
+            node_metrics = props.get("metrics", {})
+            if node_metrics and isinstance(node_metrics, dict):
+                entry: dict[str, Any] = {"entity": eid}
+                entry.update(node_metrics)
+                numbers_direct.append(entry)
+                metrics_direct = node_metrics
+
+        if node_facts_direct or numbers_direct:
+            direct_pack: dict[str, Any] = {
+                "question": question,
+                "node_facts": node_facts_direct,
+                "numbers": numbers_direct,
+                "numbers_by_metric": (
+                    {k: [v] for k, v in metrics_direct.items()} if metrics_direct else {}
+                ),
+                "paths": [],
+                "facts": [],
+                "neighbor_facts": [],
+                "sources": sorted(set(sources_direct)),
+            }
+            evidence_json_direct = json.dumps(direct_pack, indent=2)
+            prompt_direct = build_prompt(question, evidence_json_direct)
+            raw_answer_direct = model.generate(prompt_direct)
+
+            if config.post_edit_enabled:
+                post_edit_direct = edit_answer(raw_answer_direct, direct_pack)
+                answer_direct = post_edit_direct["answer"]
+            else:
+                answer_direct = raw_answer_direct
+
+            result["answer"] = answer_direct
+            result["raw_answer"] = raw_answer_direct
+            result["evidence_pack"] = direct_pack
+            result["prompt_text"] = prompt_direct
+            result["cascade_level"] = 3
+            result["verification"] = verifier.verify(answer_direct, direct_pack)
+            result["timing"] = timing
+            return result
 
     # Edge case: no paths found
     if not paths:
@@ -207,6 +289,10 @@ def answer_question(
         result["post_edit_changes"] = None
     result["answer"] = answer
 
+    # Cascade level tracking: tier 1 (filtered evidence) succeeded
+    if "insufficient evidence" not in answer.lower():
+        result["cascade_level"] = 1
+
     # ── Step 5.6: Cascade fallback — if LLM refuses but we have paths,
     #               retry with unfiltered evidence (no target_entity filter) ──
     if "insufficient evidence" in answer.lower() and len(paths) > 0:
@@ -241,6 +327,86 @@ def answer_question(
         result["raw_answer"] = raw_answer
         result["evidence_pack"] = evidence_pack
 
+        # Cascade level tracking: tier 2 (unfiltered evidence) succeeded
+        if "insufficient evidence" not in answer.lower():
+            result["cascade_level"] = 2
+
+    # ── Step 5.7: Tier 3 cascade — 0-hop evidence from entity nodes ──
+    # When both tier 1 (filtered) and tier 2 (unfiltered) produce refusals
+    # AND path_count > 0 (Class A refusals), build evidence directly from
+    # the resolved entity nodes' own properties — no traversal needed.
+    if "insufficient evidence" in answer.lower() and len(paths) > 0:
+        t_level3 = time.perf_counter()
+        node_facts_direct: list[dict[str, Any]] = []
+        numbers_direct: list[dict[str, Any]] = []
+        metrics_aggregated: dict[str, Any] = {}
+
+        for eid in parsed.entity_ids:
+            node = graph.get_node(eid)
+            if node is None:
+                continue
+            props = node.properties or {}
+            kf = props.get("key_finding", "")
+            desc = props.get("description", "")
+            if kf:
+                src = node.sources[0] if node.sources else ""
+                node_facts_direct.append({
+                    "text": f"[{eid}] {kf}",
+                    "source": src,
+                    "confidence": 0.8,
+                })
+            elif desc:
+                src = node.sources[0] if node.sources else ""
+                node_facts_direct.append({
+                    "text": f"[{eid}] {desc}",
+                    "source": src,
+                    "confidence": 0.5,
+                })
+            node_metrics = props.get("metrics", {})
+            if node_metrics and isinstance(node_metrics, dict):
+                entry: dict[str, Any] = {"entity": eid}
+                entry.update(node_metrics)
+                numbers_direct.append(entry)
+                # Aggregate latest metrics for numbers_by_metric
+                for mk, mv in node_metrics.items():
+                    if mk not in metrics_aggregated:
+                        metrics_aggregated[mk] = []
+                    metrics_aggregated[mk].append(mv)
+
+        if node_facts_direct or numbers_direct:
+            direct_pack: dict[str, Any] = {
+                "question": question,
+                "node_facts": node_facts_direct,
+                "numbers": numbers_direct,
+                "numbers_by_metric": (
+                    {k: v for k, v in metrics_aggregated.items()} if metrics_aggregated else {}
+                ),
+                "paths": [],
+                "facts": [],
+                "neighbor_facts": [],
+                "sources": sorted(set(
+                    f["source"] for f in node_facts_direct if f.get("source")
+                )),
+            }
+            evidence_json_direct = json.dumps(direct_pack, indent=2)
+            prompt_direct = build_prompt(question, evidence_json_direct)
+
+            if config.post_edit_enabled:
+                post_edit_direct = edit_answer(model.generate(prompt_direct), direct_pack)
+                answer = post_edit_direct["answer"]
+            else:
+                answer = model.generate(prompt_direct)
+
+            timing["cascade_level3_time"] = round(time.perf_counter() - t_level3, 6)
+
+            result["answer"] = answer
+            result["raw_answer"] = answer
+            result["evidence_pack"] = direct_pack
+            result["prompt_text"] = prompt_direct
+            result["cascade_level"] = 3
+        else:
+            timing["cascade_level3_time"] = round(time.perf_counter() - t_level3, 6)
+
     # ── Step 6: Verify ──
     t0 = time.perf_counter()
     verification = verifier.verify(answer, evidence_pack)
@@ -249,7 +415,8 @@ def answer_question(
 
     # Store timing breakdown and prompt tokens for cost estimation
     result["timing"] = timing
-    result["prompt_text"] = prompt
+    if "prompt_text" not in result:
+        result["prompt_text"] = prompt
 
     return result
 

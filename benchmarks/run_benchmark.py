@@ -402,7 +402,12 @@ def run_nexus_pipeline(
             "prompt_tokens": 0,
             "completion_tokens": 0,
             "error": str(exc),
+            "entity_resolution_method": "none",
+            "cascade_level": 0,
+            "resolution_confidence": 0.0,
             "parsed_entity_ids": [],
+            "post_edit_changes": None,
+            "evidence_raw": "",
         }
     elapsed = time.perf_counter() - t0
 
@@ -468,6 +473,8 @@ def run_nexus_pipeline(
         "completion_tokens": completion_tokens,
         "error": None,
         "entity_resolution_method": result.get("entity_resolution_method", "none"),
+        "cascade_level": result.get("cascade_level", 0),
+        "resolution_confidence": result.get("resolution_confidence", 0.0),
         "parsed_entity_ids": (
             result["parsed_query"].entity_ids if result.get("parsed_query") else []
         ),
