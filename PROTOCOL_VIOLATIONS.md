@@ -126,4 +126,4 @@ Commands and artifacts:
 
 ## Stage 1C/1D decision
 
-Stage 1C was executed as a separate graph-only data-expansion experiment and remains an honest FAIL at 50.55%; its artifact is preserved. Stage 1D was then separately preregistered and executed using validation-only parser-cap selection. The current validated frozen artifact passes at 65.45% entity recall with all six gates enabled and unchanged. No gate threshold was modified or disabled.
+Stage 1C was executed as a separate graph-only data-expansion experiment and remains an honest FAIL at 50.55%; its artifact is preserved. Stage 1D was then separately preregistered and executed using validation-only parser-cap selection. The current validated frozen artifact passes at 65.82% entity recall with all six gates enabled and unchanged. No gate threshold was modified or disabled.
