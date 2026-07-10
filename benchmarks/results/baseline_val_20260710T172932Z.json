@@ -1,0 +1,60 @@
+{
+  "artifact": "trivial_lexical_baseline",
+  "created_at": "2026-07-10T17:29:32.649039+00:00",
+  "metrics": {
+    "exact_match@1": 0.12666666666666668,
+    "exact_match@10": 0.36,
+    "exact_match@5": 0.3,
+    "gold_entities": 182,
+    "hit_rate@1": 0.12666666666666668,
+    "hit_rate@10": 0.43333333333333335,
+    "hit_rate@5": 0.37333333333333335,
+    "questions": 150,
+    "recall@1": 0.1043956043956044,
+    "recall@10": 0.35714285714285715,
+    "recall@5": 0.3076923076923077
+  },
+  "provenance": {
+    "candidate_pipeline": [
+      "stage1_exact_name_alias",
+      "stage2_spot_entities",
+      "stage1c_property_overlap",
+      "stage4_graph_expansion"
+    ],
+    "graph_metadata": {
+      "build_command": "python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results/TIMESTAMPED_FILE.json",
+      "build_steps": [
+        "1. populate_from_experiments(EXPERIMENTS_DIR, graph)",
+        "2. ingest_directory('docs/', graph)",
+        "3. ingest_directory('sam-lm/docs/', graph)",
+        "4. ingest_directory('sam-lm/experiments/', graph)"
+      ],
+      "edge_count": 563,
+      "edge_type_counts": {
+        "contradicts": 1,
+        "depends_on": 204,
+        "derived_from": 348,
+        "validates": 10
+      },
+      "effective_config": {
+        "enable_associative_encoder": false,
+        "enable_cooccurrence_edges": false,
+        "enable_embedding_er": false,
+        "enable_normalization": false
+      },
+      "fixes_applied": [
+        "P0: entity filter, relations constrained 10K->116 edges, entity ranking",
+        "P1: key_findings surfaced as evidence in evidence_builder",
+        "P2: double-gate with corpus metric (honest hallucination measurement)"
+      ],
+      "node_count": 1866,
+      "timestamp": "2026-07-10T17:29:32.544536+00:00"
+    },
+    "learned_components": false,
+    "ranking": "fixed lexical overlap score; ties by total node degree; final tie by node_id",
+    "split": "stack/encoder/data/val.jsonl",
+    "split_sha256": "f95e212502c7c5ad5a615a3e1921e62ef7e1e961a229f44be63e3f829fdacd09",
+    "validation_only": true
+  },
+  "source_sha": "6be28b130a17894a3fc5b707cd8a78936ba73fe4"
+}
