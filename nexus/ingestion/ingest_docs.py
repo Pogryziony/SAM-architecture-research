@@ -299,7 +299,10 @@ def ingest_directory(
                             existing.aliases.append(alias)
 
         # Extract relations (also returns newly discovered entities)
-        relations, new_entities = extract_relations(text, rel_path, entities)
+        relations, new_entities = extract_relations(
+            text, rel_path, entities,
+            include_cooccurrence=config.enable_cooccurrence_edges,
+        )
         
         # Clean experiment names in relation-discovered entities
         for entity in new_entities:

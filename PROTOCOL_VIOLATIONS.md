@@ -75,7 +75,7 @@ Encoder-only precision: 1.1%. Pipeline entity accuracy dominated by lexical fall
 
 ## R3: Baseline Fix + Benchmark Guards (2026-07-10)
 
-**Result**: Complete. Clean 200-question paired baseline with all experimental flags OFF.
+**Result**: **INVALID / RETRACTED**. The historical 200-question artifact was labeled as clean, but its serialized RAG summary is empty/incomplete. It must not be used as a passing Stage 0 baseline.
 
 | Metric | Value |
 |--------|-------|
@@ -97,7 +97,8 @@ Encoder-only precision: 1.1%. Pipeline entity accuracy dominated by lexical fall
 **File**: `benchmarks/results/stack_baseline_v2_20260710_091759Z.json`
 
 **Guard status**:
-- Empty RAG arm: PASS (baseline has data, avg_accuracy=8.7%)
+- Empty RAG arm: **FAIL / RETRACTED** when validating the serialized artifact (summary.baseline is empty or incomplete)
+- The prior in-memory guard result was insufficient because it did not re-read the published JSON.
 - paired_n == 0: PASS (paired_n=89)
 - Row count: PASS (400 = 200×2)
 - Config integrity: PASS (all experimental OFF)
@@ -119,5 +120,9 @@ The frozen split was re-run with stage-presence diagnostics. The original report
 
 Commands and artifacts:
 - `python stack/encoder/eval_gates.py` → `benchmarks/results/stage1b_honest_20260710_115848Z.json` → FAIL (frozen IDs match).
-- `python experiments/relation-extraction/evaluate_relations.py` → `benchmarks/results/relation_eval_20260710T115856Z.json` → completed. Relation metrics are separate from Stage 1B: precision 6.74%, recall 89.29%, F1 12.53%; dominant false positives are `derived_from`, while the three false negatives are one each of `blocked_by`, `caused_by`, and `implements`. The evaluator excludes only `related_to` co-occurrence edges at confidence 0.3; no valid gold semantic edge is hidden by that exclusion.
-- `python -m pytest tests/ -q` → initial run exposed an existing `sub_experiment` edge vocabulary use; runtime validation now accepts that supported relation and the suite was rerun.
+- `python experiments/relation-extraction/evaluate_relations.py` → `benchmarks/results/relation_eval_20260710T122730Z.json` → completed. Relation metrics are separate from Stage 1B: precision 6.74%, recall 89.29%, F1 12.53%; dominant false positives are `derived_from`, while the three false negatives are one each of `blocked_by`, `caused_by`, and `implements`. Co-occurrence edges are now actually disabled when the flag is false.
+- `python -m pytest tests/ -q` → 290 passed after the serialized-artifact and optional-PyTorch fixes.
+
+## Stage 1C decision
+
+No Stage 1C experiment has been started. Stage 1B remains a genuine FAIL; any future data-expansion experiment must be separately preregistered with generated alias/key-finding pairs, weak supervision rules, a calibration split, and the unchanged frozen test split and 65% gate.

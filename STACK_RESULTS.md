@@ -11,7 +11,7 @@
 | Stage | Name | Gates | Status |
 |-------|------|-------|--------|
 | P | Pre-registration | EXPERIMENT_SAM_NEXUS_STACK.md committed | ✅ PASS |
-| 0 | Canonical Baseline | Guards, paired_n>0, RAG populated, COMPARISON.md | ✅ PASS |
+| 0 | Canonical Baseline | Historical R3 artifact is incomplete for serialized-artifact validation (missing effective graph config/edge counts); prior PASS is retracted | ❌ INVALID / RETRACTED |
 | 1 | Associative Encoder v1 | Failed: intent 65.3% < 85% | ❌ STOP |
 | 1b | Associative Encoder v2 | Current: entity_recall 50.5% < 65% (FAIL); encoder-only 50.5% with calibrated threshold 0.10. Intent 85.3%, RSS 6.7MB, 26.4ms | ❌ FAIL |
 | 2 | Realization L1 | 3/4: naturalness +38.5, hallucination, accuracy. Relevance 60% pre-existing. Built on unvalidated Stage 1b foundation. | ⚠️ UNVALIDATED |

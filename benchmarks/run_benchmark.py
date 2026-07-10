@@ -307,7 +307,7 @@ def compute_key_fact_score(
 # ---- Graph construction ----
 
 
-def build_benchmark_graph() -> tuple[InMemoryGraphStore, dict[str, Any]]:
+def build_benchmark_graph(config: NEXUSConfig = DEFAULT_CONFIG) -> tuple[InMemoryGraphStore, dict[str, Any]]:
     """Build the benchmark knowledge graph deterministically.
     
     Runs BOTH populate_from_experiments AND ingest_docs in a fixed,
@@ -331,17 +331,29 @@ def build_benchmark_graph() -> tuple[InMemoryGraphStore, dict[str, Any]]:
     # Step 2: Ingest documents for additional entity/relation extraction
     docs_dir = _project_root / "docs"
     if docs_dir.exists():
-        ingest_directory(docs_dir, graph)
+        ingest_directory(docs_dir, graph, config=config)
     sam_docs_dir = _project_root / "sam-lm" / "docs"
     if sam_docs_dir.exists():
-        ingest_directory(sam_docs_dir, graph)
+        ingest_directory(sam_docs_dir, graph, config=config)
     sam_exp_dir = _project_root / "sam-lm" / "experiments"
     if sam_exp_dir.exists():
-        ingest_directory(sam_exp_dir, graph)
-    
+        ingest_directory(sam_exp_dir, graph, config=config)
+
+    edge_type_counts: dict[str, int] = {}
+    for node_id in graph._nodes:
+        for edge in graph.get_outgoing(node_id):
+            edge_type_counts[edge.type] = edge_type_counts.get(edge.type, 0) + 1
+
     provenance = {
         "node_count": graph.node_count,
         "edge_count": graph.edge_count,
+        "edge_type_counts": edge_type_counts,
+        "effective_config": {
+            "enable_cooccurrence_edges": config.enable_cooccurrence_edges,
+            "enable_embedding_er": config.enable_embedding_er,
+            "enable_associative_encoder": config.enable_associative_encoder,
+            "enable_normalization": config.enable_normalization,
+        },
         "build_command": "python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results/TIMESTAMPED_FILE.json",
         "build_steps": [
             "1. populate_from_experiments(EXPERIMENTS_DIR, graph)",
@@ -736,6 +748,59 @@ def validate_benchmark_results(
     if nexus_models and rag_models and nexus_models != rag_models:
         errors.append(f"Model mismatch: NEXUS={nexus_models}, RAG={rag_models}")
 
+    return errors, warnings
+
+
+def validate_benchmark_artifact(path: str | Path) -> tuple[list[str], list[str]]:
+    """Validate the exact JSON artifact emitted by a benchmark run.
+
+    This is intentionally separate from validating in-memory rows: publication
+    status must be based on the serialized artifact that reviewers will inspect.
+    """
+    artifact_path = Path(path)
+    errors: list[str] = []
+    warnings: list[str] = []
+    try:
+        with artifact_path.open(encoding="utf-8") as handle:
+            artifact = json.load(handle)
+    except (OSError, json.JSONDecodeError) as exc:
+        return [f"Artifact unreadable: {exc}"], []
+
+    required = {"config", "graph_provenance", "summary", "paired_comparison", "results"}
+    missing = sorted(required - set(artifact))
+    if missing:
+        return [f"Artifact missing required keys: {missing}"], []
+
+    config = artifact["config"]
+    provenance = artifact["graph_provenance"]
+    if "effective_config" not in provenance or "edge_type_counts" not in provenance:
+        errors.append("Artifact provenance incomplete: effective graph configuration and edge counts are required")
+    summary = artifact["summary"]
+    if not summary.get("nexus") or not summary.get("baseline"):
+        errors.append("Artifact summary incomplete: both summary.nexus and summary.baseline are required")
+    effective = provenance.get("effective_config", {})
+    for flag in (
+        "enable_cooccurrence_edges", "enable_embedding_er",
+        "enable_associative_encoder", "enable_normalization",
+    ):
+        if flag in config and flag in effective and config[flag] != effective[flag]:
+            errors.append(f"Artifact config mismatch for {flag}: header={config[flag]} graph={effective[flag]}")
+    if config.get("enable_cooccurrence_edges") is False:
+        related_count = provenance.get("edge_type_counts", {}).get("related_to", 0)
+        if related_count:
+            errors.append(
+                f"Artifact config mismatch: cooccurrence disabled but graph has {related_count} related_to edges"
+            )
+
+    expected_questions = artifact["summary"].get("total_questions")
+    row_errors, row_warnings = validate_benchmark_results(
+        artifact["results"], config,
+        question_count=expected_questions,
+        summary=artifact["summary"],
+        paired_comparison=artifact["paired_comparison"],
+    )
+    errors.extend(row_errors)
+    warnings.extend(row_warnings)
     return errors, warnings
 
 
@@ -1350,6 +1415,10 @@ def main():
     total = len(questions)
     print(f"Loaded {total} questions (limit={args.limit})")
 
+    # Configuration must be established before graph construction so graph
+    # feature flags affect ingestion rather than only the result header.
+    config = DEFAULT_CONFIG
+
     # Build graph deterministically
     if args.no_populate:
         print("\nSkipping graph population (--no-populate)")
@@ -1357,12 +1426,11 @@ def main():
         graph_provenance = {"node_count": 0, "edge_count": 0, "build_command": "skipped (--no-populate)"}
     else:
         print("\nBuilding benchmark graph (deterministic)...")
-        graph, graph_provenance = build_benchmark_graph()
+        graph, graph_provenance = build_benchmark_graph(config)
     print(f"Graph ready: {graph_provenance['node_count']} nodes, {graph_provenance['edge_count']} edges")
 
     # ── Embedding index for semantic entity resolution ──
     # Gated behind enable_embedding_er — Stage 1 candidate.
-    config = DEFAULT_CONFIG
     embedding_index = None
     if config.enable_embedding_er:
         from nexus.query.embedding_resolver import NodeEmbeddingIndex
@@ -1628,6 +1696,14 @@ def main():
     print(f"\nResults saved to: {final_output_path}")
     if not is_valid:
         print(f"  (original requested path: {output_path})")
+
+    # Re-read and validate the exact artifact before publishing its status.
+    artifact_errors, artifact_warnings = validate_benchmark_artifact(final_output_path)
+    if artifact_errors:
+        print("\n*** SERIALIZED ARTIFACT VALIDATION FAILED ***", file=sys.stderr)
+        for err in artifact_errors:
+            print(f"  ERROR: {err}", file=sys.stderr)
+        sys.exit(1)
 
     # Print comparison table
     print_comparison(summary)

@@ -82,6 +82,7 @@ def extract_relations(
     text: str,
     source_path: str,
     entities: list[dict[str, Any]],
+    include_cooccurrence: bool = False,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """
     Extract typed edges from markdown text using rule-based patterns.
@@ -206,7 +207,8 @@ def extract_relations(
     # ── Pattern 5: Co-occurrence in same document section ──
     # Entities appearing close together (same/adjacent lines) likely relate.
     # Confidence 0.50 — moderate, enables traversal without overwhelming noise.
-    _add_cooccurrence_edges(text, source_path, entities, add_edge, entity_names)
+    if include_cooccurrence:
+        _add_cooccurrence_edges(text, source_path, entities, add_edge, entity_names)
 
     # ── Pattern 6: Cross-document markdown references ──
     # DROPPED: low precision — generic cross-reference noise

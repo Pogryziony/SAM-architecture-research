@@ -11,8 +11,6 @@ import sys
 import time
 from typing import Optional
 
-import torch
-
 from stack.encoder.intent_rules import get_rule_classifier
 
 # Cache the loaded model to avoid reloading
@@ -168,6 +166,8 @@ class EncoderLoader:
         Returns:
             dict with entity_ids, entity_scores, intent, category, etc.
         """
+        import torch
+
         # ── Rule-based intent first ──
         rule_intent, rule_conf = self._rule_classifier.classify_with_confidence(
             question,

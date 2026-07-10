@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import pytest
 
+pytest.importorskip("torch")
+
 from nexus.graph import Node, Edge
 from nexus.graph.store import InMemoryGraphStore
 from stack.encoder.eval_gates import _stage1_exact_name_alias, _stage4_graph_expansion

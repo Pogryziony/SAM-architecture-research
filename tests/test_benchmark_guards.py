@@ -11,6 +11,7 @@ Tests:
 from __future__ import annotations
 
 import sys
+import json
 from pathlib import Path
 
 import pytest
@@ -20,7 +21,11 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from benchmarks.run_benchmark import validate_benchmark_results  # noqa: E402
+from benchmarks.run_benchmark import (  # noqa: E402
+    validate_benchmark_results,
+    validate_benchmark_artifact,
+    build_benchmark_graph,
+)
 from benchmarks.compare_arms import compare_paired  # noqa: E402
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG  # noqa: E402
 
@@ -180,6 +185,35 @@ def test_validator_empty_results():
     """Empty results list should produce no errors (no arm configured)."""
     errors, _warnings = validate_benchmark_results([], {"arm_rag": "evidence_blind"})
     assert errors == []
+
+
+def test_real_r3_artifact_is_retracted_when_rag_summary_is_empty():
+    """The published R3 artifact must be judged from its serialized contents."""
+    artifact = _PROJECT_ROOT / "benchmarks" / "results" / "stack_baseline_v2_20260710_091759Z.json"
+    errors, _warnings = validate_benchmark_artifact(artifact)
+    assert any("provenance incomplete" in error or "summary incomplete" in error for error in errors)
+
+
+def test_disabled_cooccurrence_flag_produces_no_related_edges():
+    graph, provenance = build_benchmark_graph(_make_default_nexus_config())
+    assert provenance["effective_config"]["enable_cooccurrence_edges"] is False
+    assert provenance["edge_type_counts"].get("related_to", 0) == 0
+    assert all(edge.type != "related_to" for node_id in graph._nodes for edge in graph.get_outgoing(node_id))
+
+
+def test_graph_config_mismatch_is_rejected(tmp_path):
+    artifact = {
+        "config": {"arm_rag": "evidence_blind", "enable_cooccurrence_edges": False},
+        "graph_provenance": {
+            "effective_config": {"enable_cooccurrence_edges": True},
+            "edge_type_counts": {"related_to": 2},
+        },
+        "summary": {}, "paired_comparison": {}, "results": [],
+    }
+    path = tmp_path / "artifact.json"
+    path.write_text(json.dumps(artifact), encoding="utf-8")
+    errors, _warnings = validate_benchmark_artifact(path)
+    assert any("config mismatch" in error for error in errors)
 
 
 def test_validator_none_tokens_handled():

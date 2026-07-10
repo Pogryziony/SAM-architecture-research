@@ -245,7 +245,10 @@ def ingest_generic(
                             existing.aliases.append(alias)
 
         # Extract relations
-        relations, new_entities = extract_relations(text, rel_path, entities)
+        relations, new_entities = extract_relations(
+            text, rel_path, entities,
+            include_cooccurrence=config.enable_cooccurrence_edges,
+        )
 
         # Add any entities discovered during relation extraction
         for entity in new_entities:
