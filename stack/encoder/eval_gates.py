@@ -56,11 +56,21 @@ def _get_gt_intent_canonical(q: dict) -> str:
 
 
 def eval_lexical_baseline(graph, questions: list[dict]) -> dict:
-    """Evaluate the existing lexical path as baseline."""
+    """Evaluate the existing lexical path as baseline.
+
+    Returns properly named, consistent metrics:
+      - entity_precision: correct predictions / total predictions
+      - entity_recall:    correct GT matches / total GT entities
+      - entity_f1:        harmonic mean of precision and recall
+      - exact_entity_accuracy: fraction of questions where ALL GT entities matched
+      - resolution_rate:  fraction of questions with at least one entity resolved
+    """
     config = NEXUSConfig()  # default, no encoder
     total_resolved = 0
     total_correct = 0
     total_resolved_entities = 0
+    total_gt_entities = 0
+    questions_with_all_gt_matched = 0
 
     for q in questions:
         pq = parse_question(q["question"], graph, config=config)
@@ -71,19 +81,34 @@ def eval_lexical_baseline(graph, questions: list[dict]) -> dict:
             total_resolved += 1
 
         total_resolved_entities += len(resolved_ids)
+        total_gt_entities += len(gt_ids)
         for eid in resolved_ids:
             if eid in gt_ids:
                 total_correct += 1
 
+        # Exact match: every GT entity appears in resolved
+        if gt_ids and gt_ids.issubset(set(resolved_ids)):
+            questions_with_all_gt_matched += 1
+
     n = len(questions)
-    entity_accuracy = total_correct / total_resolved_entities if total_resolved_entities > 0 else 0.0
+    entity_precision = total_correct / max(total_resolved_entities, 1)
+    entity_recall = total_correct / max(total_gt_entities, 1)
+    entity_f1 = (
+        2 * entity_precision * entity_recall / max(entity_precision + entity_recall, 1e-8)
+    )
     resolution_rate = total_resolved / n if n > 0 else 0.0
+    exact_entity_accuracy = questions_with_all_gt_matched / n if n > 0 else 0.0
 
     return {
-        "entity_accuracy": entity_accuracy,
+        "entity_precision": entity_precision,
+        "entity_recall": entity_recall,
+        "entity_f1": entity_f1,
+        "exact_entity_accuracy": exact_entity_accuracy,
         "resolution_rate": resolution_rate,
         "total_questions": n,
         "total_resolved_entities": total_resolved_entities,
+        "total_gt_entities": total_gt_entities,
+        "total_correct": total_correct,
     }
 
 
@@ -107,12 +132,14 @@ def eval_encoder(
     pipeline_correct = 0
     pipeline_resolved_entities = 0
     pipeline_gt_entities = 0
+    pipeline_exact_matches = 0
     correct_intent = 0
 
     # Encoder-only accumulators  
     encoder_only_resolved = 0
     encoder_only_correct = 0
     encoder_only_total = 0
+    encoder_only_exact_matches = 0
 
     inference_times: list[float] = []
 
@@ -164,6 +191,9 @@ def eval_encoder(
         for eid in resolved_ids:
             if eid in gt_ids:
                 pipeline_correct += 1
+        # Pipeline exact match: every GT entity appears in resolved
+        if gt_ids and gt_ids.issubset(set(resolved_ids)):
+            pipeline_exact_matches += 1
 
         # Intent accuracy — use canonical labels
         gt_intent_canon = _get_gt_intent_canonical(q)
@@ -181,6 +211,9 @@ def eval_encoder(
                 encoder_only_total += 1
                 if eid in gt_ids:
                     encoder_only_correct += 1
+            # Encoder-only exact match: every GT entity in encoder predictions
+            if gt_ids and gt_ids.issubset(enc_ids):
+                encoder_only_exact_matches += 1
 
         # Per-intent-class tracking
         per_intent[gt_intent_canon]["total"] += 1
@@ -207,11 +240,26 @@ def eval_encoder(
             "encoder_total": len(enc_ids),
         })
 
-    # Compute aggregate metrics
-    pipeline_entity_accuracy = pipeline_correct / max(pipeline_gt_entities, 1)
+    # Compute aggregate metrics — consistently named precision/recall/f1
+    # Pipeline-with-fallback metrics
+    pipeline_entity_precision = pipeline_correct / max(pipeline_resolved_entities, 1)
+    pipeline_entity_recall = pipeline_correct / max(pipeline_gt_entities, 1)
+    pipeline_entity_f1 = (
+        2 * pipeline_entity_precision * pipeline_entity_recall
+        / max(pipeline_entity_precision + pipeline_entity_recall, 1e-8)
+    )
+    pipeline_exact_entity_accuracy = pipeline_exact_matches / n if n > 0 else 0.0
     pipeline_resolution_rate = pipeline_resolved / n if n > 0 else 0.0
     intent_accuracy = correct_intent / n if n > 0 else 0.0
-    encoder_precision = encoder_only_correct / encoder_only_total if encoder_only_total > 0 else 0.0
+
+    # Encoder-only metrics
+    encoder_entity_precision = encoder_only_correct / encoder_only_total if encoder_only_total > 0 else 0.0
+    encoder_entity_recall = encoder_only_correct / max(pipeline_gt_entities, 1)
+    encoder_entity_f1 = (
+        2 * encoder_entity_precision * encoder_entity_recall
+        / max(encoder_entity_precision + encoder_entity_recall, 1e-8)
+    )
+    encoder_exact_entity_accuracy = encoder_only_exact_matches / n if n > 0 else 0.0
     encoder_resolution_rate = encoder_only_resolved / n if n > 0 else 0.0
 
     p50 = statistics.median(inference_times) if inference_times else 0
@@ -234,11 +282,17 @@ def eval_encoder(
         }
 
     return {
-        # Pipeline-with-fallback metrics
-        "entity_accuracy": pipeline_entity_accuracy,
+        # Pipeline-with-fallback metrics (consistent naming)
+        "entity_precision": pipeline_entity_precision,
+        "entity_recall": pipeline_entity_recall,
+        "entity_f1": pipeline_entity_f1,
+        "exact_entity_accuracy": pipeline_exact_entity_accuracy,
         "resolution_rate": pipeline_resolution_rate,
         # Encoder-only metrics
-        "encoder_precision": encoder_precision,
+        "encoder_precision": encoder_entity_precision,
+        "encoder_recall": encoder_entity_recall,
+        "encoder_f1": encoder_entity_f1,
+        "encoder_exact_entity_accuracy": encoder_exact_entity_accuracy,
         "encoder_resolution_rate": encoder_resolution_rate,
         # Intent
         "intent_accuracy": intent_accuracy,
@@ -250,6 +304,7 @@ def eval_encoder(
         "pipeline_resolved_entities": pipeline_resolved_entities,
         "pipeline_correct_entities": pipeline_correct,
         "pipeline_gt_entities": pipeline_gt_entities,
+        "pipeline_exact_matches": pipeline_exact_matches,
         # Per-intent breakdown
         "per_intent_breakdown": per_intent_breakdown,
         # Per-question details
@@ -340,8 +395,11 @@ def main():
     # ── Lexical baseline ──
     print("\n--- Lexical Baseline ---")
     baseline = eval_lexical_baseline(graph, test_questions)
-    print(f"  entity_accuracy: {baseline['entity_accuracy']:.4f} ({baseline['entity_accuracy']*100:.1f}%)")
-    print(f"  resolution_rate: {baseline['resolution_rate']:.4f} ({baseline['resolution_rate']*100:.1f}%)")
+    print(f"  entity_precision:   {baseline['entity_precision']:.4f} ({baseline['entity_precision']*100:.1f}%)")
+    print(f"  entity_recall:      {baseline['entity_recall']:.4f} ({baseline['entity_recall']*100:.1f}%)")
+    print(f"  entity_f1:          {baseline['entity_f1']:.4f} ({baseline['entity_f1']*100:.1f}%)")
+    print(f"  exact_entity_acc:   {baseline['exact_entity_accuracy']:.4f} ({baseline['exact_entity_accuracy']*100:.1f}%)")
+    print(f"  resolution_rate:    {baseline['resolution_rate']:.4f} ({baseline['resolution_rate']*100:.1f}%)")
 
     # ── Encoder evaluation ──
     print("\n--- Encoder Evaluation (threshold=0.55) ---")
@@ -354,13 +412,19 @@ def main():
                                     embedding_index=emb_idx, config=config_enc)
 
     print("\n--- Pipeline-with-fallback (encoder + lexical) ---")
-    print(f"  entity_accuracy:  {encoder_results['entity_accuracy']:.4f} ({encoder_results['entity_accuracy']*100:.1f}%)")
-    print(f"  resolution_rate:  {encoder_results['resolution_rate']:.4f} ({encoder_results['resolution_rate']*100:.1f}%)")
-    print(f"  intent_accuracy:  {encoder_results['intent_accuracy']:.4f} ({encoder_results['intent_accuracy']*100:.1f}%)")
+    print(f"  entity_precision:   {encoder_results['entity_precision']:.4f} ({encoder_results['entity_precision']*100:.1f}%)")
+    print(f"  entity_recall:      {encoder_results['entity_recall']:.4f} ({encoder_results['entity_recall']*100:.1f}%)")
+    print(f"  entity_f1:          {encoder_results['entity_f1']:.4f} ({encoder_results['entity_f1']*100:.1f}%)")
+    print(f"  exact_entity_acc:   {encoder_results['exact_entity_accuracy']:.4f} ({encoder_results['exact_entity_accuracy']*100:.1f}%)")
+    print(f"  resolution_rate:    {encoder_results['resolution_rate']:.4f} ({encoder_results['resolution_rate']*100:.1f}%)")
+    print(f"  intent_accuracy:    {encoder_results['intent_accuracy']:.4f} ({encoder_results['intent_accuracy']*100:.1f}%)")
 
     print("\n--- Encoder-only entity metrics ---")
-    print(f"  encoder_precision:     {encoder_results['encoder_precision']:.4f} ({encoder_results['encoder_precision']*100:.1f}%)")
-    print(f"  enc_resolution_rate:   {encoder_results['encoder_resolution_rate']:.4f} ({encoder_results['encoder_resolution_rate']*100:.1f}%)")
+    print(f"  encoder_precision:  {encoder_results['encoder_precision']:.4f} ({encoder_results['encoder_precision']*100:.1f}%)")
+    print(f"  encoder_recall:     {encoder_results['encoder_recall']:.4f} ({encoder_results['encoder_recall']*100:.1f}%)")
+    print(f"  encoder_f1:         {encoder_results['encoder_f1']:.4f} ({encoder_results['encoder_f1']*100:.1f}%)")
+    print(f"  enc_exact_acc:      {encoder_results['encoder_exact_entity_accuracy']:.4f} ({encoder_results['encoder_exact_entity_accuracy']*100:.1f}%)")
+    print(f"  enc_resolution:     {encoder_results['encoder_resolution_rate']:.4f} ({encoder_results['encoder_resolution_rate']*100:.1f}%)")
 
     print("\n--- Latency & Resources ---")
     print(f"  inference_p50:    {encoder_results['inference_p50_ms']:.1f} ms")
@@ -396,11 +460,14 @@ def main():
 
     gates: dict[str, tuple[bool, str]] = {}
 
-    # Gate 1: entity_accuracy >= 65% (pipeline-with-fallback)
-    gate1 = encoder_results["entity_accuracy"] >= 0.65
-    gates["entity_accuracy"] = (
+    # Gate 1: entity_recall >= 65% (pipeline-with-fallback)
+    # NOTE: The pre-registered threshold of 65% was set against what was historically
+    # called "entity_accuracy" which measured recall (correct GT matches / total GT entities).
+    # We now use the consistent metric name "entity_recall" for this.
+    gate1 = encoder_results["entity_recall"] >= 0.65
+    gates["entity_recall"] = (
         gate1,
-        f"{encoder_results['entity_accuracy']*100:.1f}% >= 65%",
+        f"{encoder_results['entity_recall']*100:.1f}% >= 65%",
     )
 
     # Gate 2: resolution_rate >= baseline (no regression)
@@ -495,7 +562,10 @@ def main():
         },
         "baseline": baseline,
         "pipeline_with_fallback": {
-            "entity_accuracy": encoder_results["entity_accuracy"],
+            "entity_precision": encoder_results["entity_precision"],
+            "entity_recall": encoder_results["entity_recall"],
+            "entity_f1": encoder_results["entity_f1"],
+            "exact_entity_accuracy": encoder_results["exact_entity_accuracy"],
             "resolution_rate": encoder_results["resolution_rate"],
             "intent_accuracy": encoder_results["intent_accuracy"],
             "pipeline_correct_entities": encoder_results["pipeline_correct_entities"],
@@ -503,6 +573,9 @@ def main():
         },
         "encoder_only": {
             "encoder_precision": encoder_results["encoder_precision"],
+            "encoder_recall": encoder_results["encoder_recall"],
+            "encoder_f1": encoder_results["encoder_f1"],
+            "encoder_exact_entity_accuracy": encoder_results["encoder_exact_entity_accuracy"],
             "encoder_resolution_rate": encoder_results["encoder_resolution_rate"],
         },
         "latency": {
@@ -585,7 +658,7 @@ def write_negative_report(
     lines.append("")
 
     # Determine which gates passed/failed
-    entity_passed = encoder_results["entity_accuracy"] >= 0.65
+    entity_passed = encoder_results["entity_recall"] >= 0.65
     intent_passed = encoder_results["intent_accuracy"] >= 0.85
     rss_passed = encoder.rss_delta_mb <= 150
     p50_passed = encoder_results["inference_p50_ms"] <= 50
@@ -595,7 +668,13 @@ def write_negative_report(
     lines.append("| Gate | Value | Threshold | Pass |")
     lines.append("|------|-------|-----------|------|")
     lines.append(
-        f"| entity_accuracy (pipeline) | {encoder_results['entity_accuracy']*100:.1f}% | >= 65% | {'PASS' if entity_passed else 'FAIL'} |"
+        f"| entity_recall (pipeline) | {encoder_results['entity_recall']*100:.1f}% | >= 65% | {'PASS' if entity_passed else 'FAIL'} |"
+    )
+    lines.append(
+        f"| entity_precision (pipeline) | {encoder_results['entity_precision']*100:.1f}% | measured | — |"
+    )
+    lines.append(
+        f"| entity_f1 (pipeline) | {encoder_results['entity_f1']*100:.1f}% | measured | — |"
     )
     lines.append(
         f"| resolution_rate | {encoder_results['resolution_rate']*100:.1f}% | >= baseline | {'PASS' if encoder_results['resolution_rate'] >= 1.0 else 'FAIL'} |"
@@ -615,10 +694,14 @@ def write_negative_report(
     lines.append("")
     lines.append("## Per-Head Metrics")
     lines.append("")
-    lines.append(f"- **Entity precision** (encoder-only): {encoder_results['encoder_precision']*100:.1f}%")
-    lines.append(f"- **Entity resolution rate** (encoder-only): {encoder_results['encoder_resolution_rate']*100:.1f}%")
-    lines.append(f"- **Combined pipeline entity_accuracy**: {encoder_results['entity_accuracy']*100:.1f}%")
-    lines.append(f"- **Combined pipeline resolution_rate**: {encoder_results['resolution_rate']*100:.1f}%")
+    lines.append(f"- **Entity precision** (pipeline): {encoder_results['entity_precision']*100:.1f}%")
+    lines.append(f"- **Entity recall** (pipeline): {encoder_results['entity_recall']*100:.1f}%")
+    lines.append(f"- **Entity F1** (pipeline): {encoder_results['entity_f1']*100:.1f}%")
+    lines.append(f"- **Exact entity accuracy** (all GT matched): {encoder_results['exact_entity_accuracy']*100:.1f}%")
+    lines.append(f"- **Encoder-only precision**: {encoder_results['encoder_precision']*100:.1f}%")
+    lines.append(f"- **Encoder-only recall**: {encoder_results['encoder_recall']*100:.1f}%")
+    lines.append(f"- **Encoder-only F1**: {encoder_results['encoder_f1']*100:.1f}%")
+    lines.append(f"- **Resolution rate**: {encoder_results['resolution_rate']*100:.1f}%")
     lines.append(f"- **Intent accuracy** (canonical labels): {encoder_results['intent_accuracy']*100:.1f}%")
     lines.append(f"- **Paraphrase drop**: {para_results['drop_pp']:.1f} pp")
     lines.append(f"- **Inference p50**: {encoder_results['inference_p50_ms']:.1f} ms")

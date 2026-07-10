@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import re
 
+from nexus.utils.canonical_labels import canonicalize_intent
+
 
 class RuleIntentClassifier:
     """Rule-based intent classification using prefix/pattern matching.

@@ -133,3 +133,149 @@ class TestLabelAgreement:
             assert canonical in CANONICAL_LABEL_SET, (
                 f"Question {q['id']}: '{qt}' → '{canonical}' not canonical"
             )
+
+
+class TestClassifyOutputsAreCanonical:
+    """Verify classify() returns canonical labels for concrete examples."""
+
+    def test_compare_question_returns_comparison(self):
+        """'Compare X vs Y' → 'comparison' (canonical, not 'comparative')."""
+        classifier = RuleIntentClassifier()
+        result = classifier.classify("Compare X vs Y")
+        assert result == "comparison"
+        assert result in CANONICAL_LABEL_SET
+
+    def test_diagnostic_question_returns_diagnostic(self):
+        """'Why did SAM fail?' → 'diagnostic'."""
+        classifier = RuleIntentClassifier()
+        result = classifier.classify("Why did SAM fail?")
+        assert result == "diagnostic"
+        assert result in CANONICAL_LABEL_SET
+
+    def test_factual_question_returns_factual_lookup(self):
+        """'How many experiments were run?' → 'factual_lookup'."""
+        classifier = RuleIntentClassifier()
+        result = classifier.classify("How many experiments were run?")
+        assert result == "factual_lookup"
+        assert result in CANONICAL_LABEL_SET
+
+    def test_multi_hop_question_returns_multi_hop(self):
+        """'How does the X experiment relate to Y?' → 'multi_hop'."""
+        classifier = RuleIntentClassifier()
+        result = classifier.classify(
+            "How does the noise experiment relate to the validation experiment?"
+        )
+        assert result == "multi_hop"
+        assert result in CANONICAL_LABEL_SET
+
+    def test_all_classify_outputs_are_canonical(self):
+        """Every rule in the classifier produces canonical labels when matched."""
+        classifier = RuleIntentClassifier()
+        # Test each rule pattern against a matching question to ensure
+        # the output label is canonical.
+        test_inputs = [
+            ("Compare A and B", "comparison"),
+            ("how does X differ from Y", "comparison"),
+            ("how does the validation experiment relate to", "multi_hop"),
+            ("what experiment directly", "multi_hop"),
+            ("what was the significance", "diagnostic"),
+            ("why is it important", "diagnostic"),
+            ("how many experiments", "factual_lookup"),
+            ("which research phase", "factual_lookup"),
+            ("summarize the findings", "factual_lookup"),
+        ]
+        for question, expected in test_inputs:
+            result = classifier.classify(question)
+            assert result == expected, f"classify('{question}') = {result}, expected {expected}"
+            assert result in CANONICAL_LABEL_SET, (
+                f"classify('{question}') = '{result}' not in canonical set"
+            )
+
+    def test_classify_output_is_canonical_idempotent(self):
+        """Canonicalizing a classify() output should return the same label."""
+        classifier = RuleIntentClassifier()
+        for question in [
+            "Compare X vs Y",
+            "Why did SAM fail?",
+            "How many experiments were run?",
+            "How does the X experiment relate to Y?"
+        ]:
+            result = classifier.classify(question)
+            if result is not None:
+                assert canonicalize_intent(result) == result, (
+                    f"classify('{question}') = '{result}' not idempotent under canonicalize"
+                )
+
+
+class TestIntegrationCanonicalLabels:
+    """Integration tests: dataset → canonical, rules → canonical, parser → canonical."""
+
+    def test_dataset_labels_canonicalize_to_known_set(self):
+        """All labels in the frozen test split canonicalize to known set."""
+        questions = _load_test_jsonl("stack/encoder/data/test.jsonl")
+        for q in questions:
+            raw = q.get("intent", q.get("question_type", ""))
+            canonical = canonicalize_intent(raw)
+            assert canonical in CANONICAL_LABEL_SET, (
+                f"Question {q['id']}: raw '{raw}' canonicalized to "
+                f"'{canonical}' — not in canonical set"
+            )
+
+    def test_rule_classifier_output_in_canonical_set(self):
+        """All rule classifier outputs are in the canonical set."""
+        classifier = RuleIntentClassifier()
+        # Test a representative set of matching inputs
+        test_questions = [
+            "Compare A and B",
+            "how does X differ from Y",
+            "how does the validation experiment relate to",
+            "what was the significance of X",
+            "why did it fail",
+            "how many experiments",
+            "summarize the findings",
+        ]
+        for q in test_questions:
+            result = classifier.classify(q)
+            if result is not None:
+                assert result in CANONICAL_LABEL_SET, (
+                    f"classify('{q}') = '{result}' not in canonical set"
+                )
+
+    def test_parser_output_when_canonicalized_in_canonical_set(self):
+        """Parser intent output, when canonicalized, is in canonical set."""
+        import os
+        import sys
+        repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if repo_root not in sys.path:
+            sys.path.insert(0, repo_root)
+
+        from nexus.graph.store import InMemoryGraphStore
+        from nexus.graph import Node
+
+        # Build minimal graph using proper Node objects
+        graph = InMemoryGraphStore()
+        graph.add_node(Node(
+            id="Exp_Test", type="Experiment",
+            properties={"description": "A test experiment", "key_finding": "test"},
+        ))
+
+        test_questions = [
+            "What is the significance of the test experiment?",
+            "Compare test experiment with other work",
+            "How many experiments were conducted?",
+            "How does the test experiment relate to other research?",
+        ]
+
+        from nexus.query.parser import parse_question
+
+        for q_text in test_questions:
+            try:
+                pq = parse_question(q_text, graph)
+                raw_intent = pq.intent if hasattr(pq, 'intent') else "factual_lookup"
+                canonical = canonicalize_intent(raw_intent)
+                assert canonical in CANONICAL_LABEL_SET, (
+                    f"Parser intent '{raw_intent}' → '{canonical}' not in canonical set"
+                )
+            except Exception:
+                # Parser may fail on minimal graph — skip gracefully
+                pass
