@@ -611,9 +611,31 @@ def run_rag_retrieval(
     }
 
 
-def validate_benchmark_results(results: list[dict], config: dict, question_count: int | None = None) -> list[str]:
-    """Validate benchmark results. Returns list of error messages (empty = valid)."""
-    errors = []
+def validate_benchmark_results(
+    results: list[dict],
+    config: dict,
+    question_count: int | None = None,
+    summary: dict | None = None,
+    paired_comparison: dict | None = None,
+    nexus_config_obj: Any = None,
+    allow_experimental: bool = False,
+) -> tuple[list[str], list[str]]:
+    """Validate benchmark results. Returns (hard_errors, warnings).
+
+    Hard errors cause the run to be marked INVALID (exit code 1).
+    Warnings are written into the output file as suspect flags.
+
+    Args:
+        results: List of per-question result dicts (two rows per question).
+        config: Config header dict (arm_rag, arm_nexus, etc.).
+        question_count: Expected number of unique questions.
+        summary: Computed summary dict (from compute_summary).
+        paired_comparison: Paired comparison dict (from compare_paired).
+        nexus_config_obj: NEXUSConfig dataclass for config integrity checks.
+        allow_experimental: If True, skip experimental flag guard.
+    """
+    errors: list[str] = []
+    warnings: list[str] = []
 
     # Check NEXUS arm
     nexus_results = [r for r in results if r.get("arm_mode") == "nexus"]
@@ -635,6 +657,16 @@ def validate_benchmark_results(results: list[dict], config: dict, question_count
             f"({len(results)} total rows)"
         )
 
+    # ── Guard 1b: Empty RAG summary ──
+    # When rag_retrieval is configured, summary.baseline must be non-empty.
+    if rag_arm_mode == "rag_retrieval" and summary is not None:
+        rag_summary = summary.get("baseline")
+        if not rag_summary:
+            errors.append(
+                "Empty RAG arm: summary.baseline is empty or missing — "
+                "RAG arm produced no meaningful data"
+            )
+
     # ── Guard 2: Row count mismatch ──
     if question_count is not None:
         arm_count = 2  # nexus + rag/baseline
@@ -646,13 +678,65 @@ def validate_benchmark_results(results: list[dict], config: dict, question_count
                 f"got {len(results)}"
             )
 
+    # ── Guard 3: paired_n == 0 or absent ──
+    if paired_comparison is not None:
+        paired_n = paired_comparison.get("paired_n", 0)
+        if paired_n == 0:
+            errors.append(
+                "paired_n == 0: no question has both arms scored — "
+                "paired comparison is impossible"
+            )
+
+    # ── Guard 4: Any arm answered count == 0 ──
+    if summary is not None:
+        nexus_answered = summary.get("nexus", {}).get("answered", -1)
+        baseline_answered = summary.get("baseline", {})
+        if not baseline_answered or baseline_answered.get("insufficient_evidence") is None:
+            # evidence_blind arm has no "answered" — skip
+            pass
+        else:
+            # For rag_retrieval, check that baseline has data (avg_accuracy present)
+            if rag_arm_mode == "rag_retrieval" and baseline_answered.get("avg_accuracy") is None:
+                errors.append(
+                    "RAG arm answered count is effectively 0 — no scorable answers produced"
+                )
+        if nexus_answered == 0:
+            errors.append(
+                "NEXUS arm answered 0 questions — all questions had insufficient evidence or errors"
+            )
+
+    # ── Guard 5: Config integrity assertion ──
+    if nexus_config_obj is not None and not allow_experimental:
+        if nexus_config_obj.enable_cooccurrence_edges:
+            errors.append(
+                "Config integrity FAIL: enable_cooccurrence_edges is True. "
+                "Re-run with --allow-experimental if this is intentional."
+            )
+        if nexus_config_obj.enable_embedding_er:
+            errors.append(
+                "Config integrity FAIL: enable_embedding_er is True. "
+                "Re-run with --allow-experimental if this is intentional."
+            )
+
+    # ── Guard 6: Sanity band on avg_paths (WARNING only, not hard failure) ──
+    # With experimental flags off, avg_paths_found >= 8 is flagged as "suspect"
+    # (warning only — could be legitimate high-path graph from beam_width).
+    if summary is not None and not allow_experimental:
+        avg_paths = summary.get("nexus", {}).get("avg_paths_found", 0)
+        if avg_paths >= 8:
+            warnings.append(
+                f"Suspect: avg_paths_found={avg_paths} >= 8 with experimental "
+                f"flags off. This is suspicious — verify co-occurrence edges "
+                f"and beam_width settings. Run flagged as suspect."
+            )
+
     # Check both arms used same model backend
     nexus_models = set(r.get("nexus", {}).get("model", "") for r in results)
     rag_models = set(r.get("baseline", {}).get("model", "") for r in results)
     if nexus_models and rag_models and nexus_models != rag_models:
         errors.append(f"Model mismatch: NEXUS={nexus_models}, RAG={rag_models}")
 
-    return errors
+    return errors, warnings
 
 
 # ---- Metrics computation ----
@@ -1246,6 +1330,11 @@ def main():
         choices=["evidence_blind", "rag_retrieval"],
         help="RAG arm mode: evidence_blind (no graph access) or rag_retrieval (keyword search)"
     )
+    parser.add_argument(
+        "--allow-experimental", action="store_true",
+        help="Allow experimental flags (enable_cooccurrence_edges, enable_embedding_er) — "
+             "disables config integrity guard"
+    )
     args = parser.parse_args()
 
     # Resolve paths
@@ -1439,7 +1528,7 @@ def main():
         new_pairs = log_distillation_pairs(results)
         total_pairs = get_pair_count()
         if new_pairs > 0:
-            print(f"\nDistillation: +{new_pairs} new pairs → data/distillation/pairs.jsonl (total: {total_pairs})")
+            print(f"\nDistillation: +{new_pairs} new pairs -> data/distillation/pairs.jsonl (total: {total_pairs})")
     except ImportError:
         pass  # Distillation logger not available — ok on old branches
 
@@ -1461,6 +1550,10 @@ def main():
         "limit": args.limit,
         "verification_threshold": 0.2,
         "local_inference": True,
+        "enable_cooccurrence_edges": config.enable_cooccurrence_edges,
+        "enable_embedding_er": config.enable_embedding_er,
+        "enable_associative_encoder": config.enable_associative_encoder,
+        "enable_normalization": config.enable_normalization,
         "local_cost_model": {
             "type": "LocalCostModel",
             "watts_at_load": 65,
@@ -1470,12 +1563,7 @@ def main():
         },
     }
 
-    # ── Validation ──
-    validation_errors = validate_benchmark_results(
-        results, config_header, question_count=total,
-    )
-
-    # ── Guard 3: paired_n == 0 — compute paired comparison ──
+    # ── Paired comparison (compute before validation) ──
     # Group results by question_id, extract NEXUS/RAG scores
     nexus_by_q: dict[str, float | None] = {}
     rag_by_q: dict[str, float | None] = {}
@@ -1494,10 +1582,15 @@ def main():
     rag_aligned = [rag_by_q.get(qid) for qid in all_qids]
     paired_comparison = compare_paired(nexus_aligned, rag_aligned, "NEXUS", "RAG")
 
-    if paired_comparison["paired_n"] == 0:
-        validation_errors.append(
-            "paired_n == 0: no question has both arms scored — paired comparison is impossible"
-        )
+    # ── Validation (all guards) ──
+    validation_errors, validation_warnings = validate_benchmark_results(
+        results, config_header,
+        question_count=total,
+        summary=summary,
+        paired_comparison=paired_comparison,
+        nexus_config_obj=config,
+        allow_experimental=args.allow_experimental,
+    )
 
     is_valid = len(validation_errors) == 0
 
@@ -1510,10 +1603,16 @@ def main():
         print(f"\n*** BENCHMARK VALIDATION FAILED ***", file=sys.stderr)
         for err in validation_errors:
             print(f"  ERROR: {err}", file=sys.stderr)
+        for warn in validation_warnings:
+            print(f"  WARNING: {warn}", file=sys.stderr)
         print(f"  Writing results to: {invalid_path}", file=sys.stderr)
         final_output_path = invalid_path
     else:
         final_output_path = output_path
+        if validation_warnings:
+            print(f"\n*** WARNINGS ***", file=sys.stderr)
+            for warn in validation_warnings:
+                print(f"  WARNING: {warn}", file=sys.stderr)
 
     # Save results
     output_data = {
@@ -1521,6 +1620,7 @@ def main():
         "graph_provenance": graph_provenance,
         "summary": summary,
         "paired_comparison": paired_comparison,
+        "validation_warnings": validation_warnings,
         "results": results,
     }
     with open(final_output_path, "w", encoding="utf-8") as f:

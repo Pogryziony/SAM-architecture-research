@@ -70,3 +70,45 @@ Encoder-only precision: 1.1%. Pipeline entity accuracy dominated by lexical fall
 2. Negative artifacts are permanent — never deleted or edited.
 3. Config integrity is validated before any gated run.
 4. One measurement run per configuration — no re-running until passes.
+
+---
+
+## R3: Baseline Fix + Benchmark Guards (2026-07-10)
+
+**Result**: Complete. Clean 200-question paired baseline with all experimental flags OFF.
+
+| Metric | Value |
+|--------|-------|
+| Questions | 200 (limit=200) |
+| Arms | NEXUS + rag_retrieval |
+| Git commit | c8298284 |
+| NEXUS answered | 148 (74.0%) |
+| NEXUS avg accuracy | 23.7% (fuzzy) |
+| RAG avg accuracy | 8.7% (fuzzy) |
+| paired_n | 89 |
+| NEXUS wins / RAG wins / Ties | 32 / 5 / 52 |
+| sign_test_p | 7e-06 |
+| avg_paths_found | 12.55 (WARNING: suspect, >=8) |
+| enable_cooccurrence_edges | False |
+| enable_embedding_er | False |
+| enable_associative_encoder | False |
+| enable_normalization | False |
+
+**File**: `benchmarks/results/stack_baseline_v2_20260710_091759Z.json`
+
+**Guard status**:
+- Empty RAG arm: PASS (baseline has data, avg_accuracy=8.7%)
+- paired_n == 0: PASS (paired_n=89)
+- Row count: PASS (400 = 200×2)
+- Config integrity: PASS (all experimental OFF)
+- Sanity band: WARNING (avg_paths=12.55 ≥ 8 — beam_width=25 likely dominant factor)
+
+**Benchmark guards added** (6 guards + unit tests in `tests/test_benchmark_guards.py`):
+1. Empty RAG arm detection
+2. Row count mismatch detection
+3. paired_n == 0 detection
+4. Arm answered count == 0 detection
+5. Config integrity (experimental flag check)
+6. Sanity band on avg_paths (warning only)
+
+**Per decision tree**: R1 failed → R2 skipped → R3 fixes baseline → STOP. Do NOT proceed to R4.

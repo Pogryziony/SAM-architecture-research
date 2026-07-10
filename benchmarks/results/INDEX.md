@@ -1,9 +1,10 @@
 # Benchmarks Results Index
 
-*Auto-generated 2026-07-09 22:15 UTC from 26 result files.*
+*Auto-generated 2026-07-10 11:45 UTC from 27 result files.*
 
 | File | Date (UTC) | Size | Key Metrics | Command to Reproduce |
 |---|---|---|---|---|
+| `stack_baseline_v2_20260710_091759Z.json` | 2026-07-10 11:41 UTC | 2.2 MB | Phase R3 clean baseline, N=200 paired, nexus_acc=23.7%, rag_acc=8.7%, paired_n=89, avg_paths=12.55 (suspect), all experimental OFF | `python benchmarks/run_benchmark.py --limit 200 --arm-rag rag_retrieval --output ...` |
 | `stage1b_honest_20260710_084841Z.json` | 2026-07-10 08:48 UTC | 3 KB | Phase R1 HONEST FAIL, 225q frozen split, entity=4.4%, intent=85.3%, 5/6 gates pass | `python stack/encoder/eval_gates.py` |
 | `confidence_router_2026-07-09.json` | 2026-07-08 22:27 UTC | 65 KB | questions=30, nodes=1866, edges=2104, model=OllamaModel(qwen2.5-coder:3b), limit=30 | `python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results.json` |
 | `extended_evidence_20260708T222811Z.json` | 2026-07-08 22:28 UTC | 93 KB | questions=30, nodes=1866, edges=2105, model=FallbackModel(OllamaModel(qwen2.5-coder:3b) + SynthesizingModel), limit=30 | `python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results.json` |

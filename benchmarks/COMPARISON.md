@@ -1,6 +1,6 @@
 # Canonical Comparison Table
 
-**Generated**: 2026-07-09 22:15:48 UTC
+**Generated**: 2026-07-10 09:44:55 UTC
 **Script**: `benchmarks/build_comparison.py`
 **Data sources**:
 - `nexus_vs_rag_20260709_151249Z.json` — NEXUS vs RAG paired comparison (n=88)

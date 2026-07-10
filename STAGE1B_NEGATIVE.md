@@ -334,3 +334,23 @@ The experiment is stopped. All artifacts are preserved in this commit. The progr
 - This file restored from commit 768b132 (original Stage 1b negative content) on 2026-07-10.
 - The PASS declared at dcfe780 is **retracted** pending honest re-evaluation on the frozen test split (Phase R1 of protocol repair).
 - Protocol violations documented in PROTOCOL_VIOLATIONS.md.
+
+---
+
+## Phase R1 — Honest Re-evaluation (2026-07-10)
+
+**Commit**: 45a774f (frozen 225-question split, canonical label normalization)  
+**Result**: **HONEST FAIL**
+
+| Gate | Value | Threshold | Status |
+|------|-------|-----------|--------|
+| entity_accuracy | 4.4% | ≥65% | **FAIL** |
+| resolution_rate | 100% | no regression | PASS |
+| paraphrase_drop | 0.0pp | <10pp | PASS |
+| intent_accuracy | 85.3% | ≥85% | PASS |
+| RSS delta | 6.7 MB | ≤150 MB | PASS |
+| inference p50 | 18.0 ms | ≤50 ms | PASS |
+
+5/6 gates passed. Pipeline entity accuracy dominated by lexical fallback (1.3%). Encoder-only precision: 1.1%.
+
+Per decision tree: R1 failed → R2 skipped → R3 (baseline fix) executed → program STOPPED after R3.
