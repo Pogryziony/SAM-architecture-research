@@ -1,7 +1,9 @@
 # STAGE1B_NEGATIVE.md — Associative Encoder v2 Gate Failure
 
 **Date**: 2026-07-10  
-**Status**: **STAGE 1B GATES FAILED** — program STOPPED per immutable protocol.  
+**Status**: **STAGE 1B GATES FAILED** — program STOPPED per immutable protocol.
+
+The metrics in this document are the historical pre-R1 artifact. The current frozen-split reference is `benchmarks/results/stage1b_honest_20260710_102235Z.json`; the post-fix diagnostic rerun is `stage1b_honest_20260710_105503Z.json`. Historical result files are preserved.  
 **Pre-registered in**: EXPERIMENT_SAM_NEXUS_STACK.md §Stage 1B
 
 ---

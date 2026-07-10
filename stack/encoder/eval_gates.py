@@ -220,9 +220,11 @@ def eval_encoder(
         lambda: {"total": 0, "correct_intent": 0, "encoder_correct": 0, "encoder_total": 0}
     )
 
-    # Aggregate pipeline stage tracking
+    # Aggregate pipeline stage tracking. These are question-level counts kept
+    # for compatibility; per-entity diagnostics below identify the exact loss.
     missed_rerank_count = 0
     impossible_count = 0
+    stage_diagnostic_counts: dict[str, int] = defaultdict(int)
 
     # Per-question details for debugging
     question_details: list[dict] = []
@@ -291,8 +293,14 @@ def eval_encoder(
         inference_times.append((t1 - t0) * 1000)
 
         # Run full parse with encoder (pipeline-with-fallback)
-        pq = parse_question(question_text, graph, config=config,
-                          encoder_model=encoder, embedding_index=embedding_index)
+        pq = parse_question(
+            question_text,
+            graph,
+            config=config,
+            encoder_model=encoder,
+            embedding_index=embedding_index,
+            encoder_entity_threshold=entity_threshold,
+        )
 
         resolved_ids = pq.entity_ids[: config.max_entry_nodes]
 
@@ -317,7 +325,11 @@ def eval_encoder(
             correct_intent += 1
 
         # Encoder-only entity metrics
-        enc_ids = set(encoder_result["entity_ids"])
+        raw_enc_ids = set(encoder_result["entity_ids"])
+        # Compare the encoder baseline at the same entry-node cap used by the
+        # full pipeline. Uncapped re-ranker output is retained for diagnostics,
+        # but is not a valid baseline for capped graph traversal.
+        enc_ids = set(encoder_result["entity_ids"][: config.max_entry_nodes])
         if enc_ids:
             encoder_only_resolved += 1
             for eid in enc_ids:
@@ -338,6 +350,33 @@ def eval_encoder(
                 per_intent[gt_intent_canon]["encoder_correct"] += 1
 
         # ── Per-stage candidate pipeline tracking ──
+        # Diagnose each gold entity independently so a multi-entity question
+        # cannot hide whether loss occurred in retrieval, reranking, or fallback.
+        candidate_set = set(candidates)
+        pipeline_set = set(resolved_ids)
+        gold_diagnostics = {}
+        for gold_id in sorted(gt_ids):
+            if gold_id not in candidate_set:
+                status = "absent_from_candidates"
+            elif gold_id not in raw_enc_ids:
+                status = "present_but_ranked_incorrectly"
+            elif gold_id not in pipeline_set:
+                status = "rejected_by_fallback_or_threshold"
+            else:
+                status = "resolved"
+            stage_diagnostic_counts[status] += 1
+            gold_diagnostics[gold_id] = {
+                "status": status,
+                "stage_presence": {
+                    "exact": gold_id in stage1_candidates,
+                    "fuzzy": gold_id in stage2_candidates,
+                    "semantic": gold_id in stage3_candidates,
+                    "graph_expansion": gold_id in stage4_candidates,
+                    "reranker_selected": gold_id in raw_enc_ids,
+                    "final_pipeline": gold_id in pipeline_set,
+                },
+            }
+
         # Stage 5 metrics: encoder re-ranking
         final_candidates = sorted(enc_ids)
         final_hits = sum(1 for eid in final_candidates if eid in gt_ids)
@@ -348,7 +387,7 @@ def eval_encoder(
         )
 
         # Aggregate: GT in candidate pool but encoder missed it (missed re-rank)
-        if gt_in_candidate_pool and not gt_ids.issubset(enc_ids):
+        if gt_in_candidate_pool and not gt_ids.issubset(raw_enc_ids):
             missed_rerank_count += 1
         # Aggregate: GT NOT in any stage (impossible to select)
         if not gt_in_candidate_pool:
@@ -382,8 +421,9 @@ def eval_encoder(
                 },
             },
             "gt_in_candidate_pool": gt_in_candidate_pool,
-            "missed_rerank": gt_in_candidate_pool and not gt_ids.issubset(enc_ids),
+            "missed_rerank": gt_in_candidate_pool and not gt_ids.issubset(raw_enc_ids),
             "impossible": not gt_in_candidate_pool,
+            "gold_entity_diagnostics": gold_diagnostics,
         })
 
     # Compute aggregate metrics — consistently named precision/recall/f1
@@ -458,6 +498,7 @@ def eval_encoder(
         # Candidate pipeline aggregate diagnostics
         "missed_rerank_count": missed_rerank_count,
         "impossible_count": impossible_count,
+        "stage_diagnostic_counts": dict(sorted(stage_diagnostic_counts.items())),
     }
 
 
@@ -580,6 +621,9 @@ def main():
     impossible = encoder_results.get("impossible_count", 0)
     print(f"  missed_rerank:     {missed} questions (GT in pool but encoder missed)")
     print(f"  impossible:        {impossible} questions (GT not in any candidate stage)")
+    print("  per-entity outcomes:")
+    for status, count in encoder_results.get("stage_diagnostic_counts", {}).items():
+        print(f"    {status}: {count}")
 
     print("\n--- Latency & Resources ---")
     print(f"  inference_p50:    {encoder_results['inference_p50_ms']:.1f} ms")
@@ -739,6 +783,11 @@ def main():
         },
         "paraphrase": para_results,
         "per_intent_breakdown": encoder_results["per_intent_breakdown"],
+        "candidate_diagnostics": {
+            "missed_rerank_count": encoder_results["missed_rerank_count"],
+            "impossible_count": encoder_results["impossible_count"],
+            "stage_diagnostic_counts": encoder_results["stage_diagnostic_counts"],
+        },
         "gates": {k: {"passed": p, "detail": d} for k, (p, d) in gates.items()},
         "decision": "HONEST PASS" if all_pass else "HONEST FAIL",
         "all_pass": all_pass,

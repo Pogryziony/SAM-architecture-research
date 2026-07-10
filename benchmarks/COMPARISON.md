@@ -40,12 +40,12 @@
   Zero-weight = pipeline only (no Ollama needed).
   All LLM-dependent arms include Ollama idle RSS (~5–8 GB for 7.6B Q4_K_M).
   Ollama generating RSS (KV cache + activations) measured separately via concurrent polling.
-- **Relevance rate**: From heuristic checklist audit (4-point rubric). Formula: `% yes + 0.5 × % partial`.
+- **Relevance rate**: From heuristic checklist audit (4-point rubric). Formula: `% yes + 0.5 × % partial`. The preregistered relevance gate is **≥77.0%**; 70% is only the metric-caveat trigger, not the pass threshold.
 
 ## Key Findings
 
 - **NEXUS vs RAG accuracy**: 36.0% vs 33.6% (p = 1.000) — no significant difference.
-- **Hallucination**: NEXUS 19.2% vs RAG 32.8% — RAG hallucinates less.
+- **Hallucination**: NEXUS 19.2% vs RAG 32.8% — NEXUS has the lower measured hallucination rate (RAG is higher), not “RAG hallucinates less.”
 - **Evidence efficiency**: NEXUS uses 1566 tokens vs RAG's 2232 — 3.2× reduction.
 - **Latency**: NEXUS 4.34s vs RAG 3.35s.
 - **Throughput (warmed)**: p50=116.8 tok/s on qwen2.5:latest (7.6B Q4_K_M). Raw LLM cost = $0.0232/1M. Router (80% synth) = $0.0046/1M.
@@ -62,3 +62,19 @@
 - **Router latency**: 0.05s (97% synth-routed, 3% LLM-routed).
 - **Router verification pass**: 70.5%.
 - **Router answer rate**: 97.5%.
+
+## R3 Clean Benchmark Accounting
+
+The latest clean R3 benchmark is `benchmarks/results/stack_baseline_v2_20260710_091759Z.json` (200 questions, all experimental flags OFF). It must not be conflated with the smaller LLM measurements above:
+
+| Measurement | N / paired_n | Result | Source |
+|---|---:|---|---|
+| R3 clean per-arm benchmark | n=200 | NEXUS 23.7% fuzzy accuracy; RAG 8.7% | `stack_baseline_v2_20260710_091759Z.json` |
+| NEXUS vs RAG paired comparison | paired_n=89 | wins/ties/losses = 32/52/5; sign-test p=7e-06 | same R3 artifact |
+| Earlier full-arm LLM measurement | n=200 | hallucination/latency/token rows only; not the R3 gate | `nexus_vs_rag_200.json` |
+| Router evaluation | n=30 | separate router diagnostic; not comparable to R3 accuracy | `router_paired_20260708.json` |
+| Paired router-vs-RAG | paired_n=89 | p=0.0237; separate router run | `router_vs_rag_paired_20260708T215707Z.json` |
+
+### Model and memory accounting
+
+The model name is **Ollama `qwen2.5:latest`**, measured as a **7.6B-parameter Q4_K_M** model in `ram_throughput_20260708T212808Z.json`; it is not `qwen2.5-coder:3b`. Report pipeline RSS separately from LLM RSS: NEXUS pipeline 44 MB, RAG pipeline 456 MB, and Ollama idle RSS 8,165 MB. Thus the LLM-dependent path explicitly **violates the 500 MB total RSS budget** even though the NEXUS pipeline component alone is below budget. The zero-weight path has pipeline RSS 42 MB and no LLM RSS.

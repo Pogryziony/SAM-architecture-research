@@ -39,7 +39,7 @@ class Node:
 @dataclass
 class Edge:
     """A directed, typed edge between two nodes."""
-    type: str  # depends_on, caused_by, validates, contradicts, implements, mentioned_in, derived_from, related_to, replaces, blocked_by
+    type: str  # supported relation vocabulary is defined by EDGE_TYPES below
     source: str  # source node ID
     target: str  # target node ID
     confidence: float = 1.0  # [0.0, 1.0]
@@ -47,6 +47,16 @@ class Edge:
     created_at: str = ""
 
     def __post_init__(self):
+        if not isinstance(self.confidence, (int, float)) or isinstance(self.confidence, bool):
+            raise TypeError("Edge confidence must be a number in [0, 1]")
+        if not 0.0 <= self.confidence <= 1.0:
+            raise ValueError("Edge confidence must be within [0, 1]")
+        if self.type not in EDGE_TYPES:
+            raise ValueError(
+                f"Unsupported edge type '{self.type}'. Expected one of: {sorted(EDGE_TYPES)}"
+            )
+        if not self.source or not self.target:
+            raise ValueError("Edge source and target must be non-empty node IDs")
         if not self.created_at:
             self.created_at = datetime.now().isoformat()
 
@@ -121,6 +131,7 @@ EDGE_TYPE_WEIGHTS: dict[str, float] = {
     "replaces": 0.55,
     "related_to": 0.30,
     "mentioned_in": 0.20,
+    "sub_experiment": 0.50,
 }
 
 # Valid node types

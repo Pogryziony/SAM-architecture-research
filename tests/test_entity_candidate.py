@@ -11,6 +11,8 @@ from __future__ import annotations
 from nexus.graph import Node, Edge
 from nexus.graph.store import InMemoryGraphStore
 from stack.encoder.eval_gates import _stage1_exact_name_alias, _stage4_graph_expansion
+from nexus.query.parser import _rank_entities
+from nexus.utils.config import NEXUSConfig
 
 
 def _make_decision_graph():
@@ -176,6 +178,19 @@ class TestAbstractEntityCoverage:
         assert "Concept_OracleMemory" in expanded, (
             f"Stage 4 should add Concept_OracleMemory as neighbor. Got: {expanded}"
         )
+
+    def test_encoder_selected_entity_is_not_displaced_by_final_cap(self):
+        """The full parser must preserve a selected encoder baseline entity."""
+        g = _make_decision_graph()
+        config = NEXUSConfig(max_entry_nodes=1)
+        ranked = _rank_entities(
+            g,
+            ["Exp_0_6_Validation", "Decision_PivotToNEXUS"],
+            question="What is the significance of the result?",
+            config=config,
+            protected_ids={"Decision_PivotToNEXUS"},
+        )
+        assert ranked == ["Decision_PivotToNEXUS"]
 
     def test_stage4_respects_max_neighbors(self):
         """Stage 4 should respect the max_neighbors limit."""

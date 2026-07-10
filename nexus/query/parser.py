@@ -224,6 +224,7 @@ def parse_question(
     embedding_index=None,
     encoder_model=None,
     dialogue_state=None,
+    encoder_entity_threshold: float = 0.5,
 ) -> ParsedQuery:
     """
     Parse a natural language question into structured query intent.
@@ -275,7 +276,7 @@ def parse_question(
                 candidate_descs.append(eid.replace("_", " "))
         
         encoder_result = encoder_model.predict(
-            question, entity_threshold=0.5,
+            question, entity_threshold=encoder_entity_threshold,
             entity_candidates=encoder_candidates,
             entity_descriptions=candidate_descs,
         )
@@ -385,7 +386,8 @@ def parse_question(
                                 keyword_scores=keyword_scores, wb_matched=wb_matched,
                                 alias_matched=alias_matched, config=config,
                                 embedding_scores=embedding_scores,
-                                dialogue_active_ids=dialogue_active_ids)
+                                dialogue_active_ids=dialogue_active_ids,
+                                protected_ids=set(encoder_entities))
 
     # ── Determine resolution method ──
     if not entity_ids:
@@ -665,6 +667,7 @@ def _rank_entities(
     config: NEXUSConfig = DEFAULT_CONFIG,
     embedding_scores: dict[str, float] | None = None,
     dialogue_active_ids: set[str] | None = None,
+    protected_ids: set[str] | None = None,
 ) -> list[str]:
     """
     Rank entity IDs by quality and return the top candidates (capped).
@@ -706,6 +709,8 @@ def _rank_entities(
         embedding_scores = {}
     if dialogue_active_ids is None:
         dialogue_active_ids = set()
+    if protected_ids is None:
+        protected_ids = set()
     if not entity_ids:
         return []
 
@@ -787,11 +792,11 @@ def _rank_entities(
             + curated_boost + wb_boost + sub_run_penalty
         )
         name_len = (len(eid) if eid else 0) * 2
-        # Sort key: (base_score, type_prior, name_len)
-        #   - base_score: primary — determines inclusion under cap
-        #   - type_prior: secondary tie-breaker — order among same-base entities
-        #   - name_len:   tertiary tie-breaker
-        return (base_score, type_prior, name_len)
+        # Protected encoder selections are never displaced by lexical/embedding
+        # candidates during the final cap. This makes the parser handoff
+        # monotonic with respect to the selected encoder baseline.
+        protected = 1.0 if eid in protected_ids else 0.0
+        return (protected, base_score, type_prior, name_len)
 
     ranked = sorted(unique, key=_score, reverse=True)
     return ranked[:config.max_entry_nodes]

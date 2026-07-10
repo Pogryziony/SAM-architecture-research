@@ -35,7 +35,7 @@ comes from the graph.
 | Graph data model | ✅ Defined — node types, edge types, confidence scoring |
 | Reasoning pipeline | ✅ Designed — entity extraction → traversal → evidence → verify |
 | Graph store | ✅ Implemented — `InMemoryGraphStore` with 1,866 nodes |
-| Associative encoder (Stage 1b) | ❌ FAILED — entity_recall 4.4% < 65% gate. Stage STOPPED. |
+| Associative encoder (Stage 1b) | ❌ FAILED — latest frozen-split entity_recall 5.8% < 65% gate. Stage STOPPED. |
 | Realization L1 (Stage 2) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
 | Dialogue state (Stage 3) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
 | Realization L2 (Stage 4) | ⏭️ Skipped — entry conditions not met |
@@ -118,4 +118,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-10 (honest re-evaluation)*
+*Last updated: 2026-07-10 (honest frozen-split rerun; current reference: `benchmarks/results/stage1b_honest_20260710_102235Z.json`; diagnostic rerun: `stage1b_honest_20260710_105643Z.json`)*

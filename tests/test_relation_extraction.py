@@ -130,11 +130,18 @@ class TestConfidenceRange:
                     f"has confidence {edge.confidence} outside [0, 1]"
                 )
 
-    def test_negative_confidence_rejected(self):
-        """Creating an edge with negative confidence should still store it
-        (Edge is a dataclass, no validation), but it's discouraged."""
-        e = ng.Edge(type="depends_on", source="A", target="B", confidence=-0.5)
-        assert e.confidence == -0.5  # Stored as-is; eval tools should flag this
+    @pytest.mark.parametrize("confidence", [-0.01, 1.01])
+    def test_out_of_range_confidence_rejected_at_construction(self, confidence):
+        with pytest.raises(ValueError, match=r"within \[0, 1\]"):
+            ng.Edge(type="depends_on", source="A", target="B", confidence=confidence)
+
+    def test_non_numeric_confidence_rejected_at_construction(self):
+        with pytest.raises(TypeError, match="must be a number"):
+            ng.Edge(type="depends_on", source="A", target="B", confidence="high")
+
+    def test_invalid_edge_type_rejected_at_construction(self):
+        with pytest.raises(ValueError, match="Unsupported edge type"):
+            ng.Edge(type="fantasy_edge", source="A", target="B")
 
 
 # ---------------------------------------------------------------------------

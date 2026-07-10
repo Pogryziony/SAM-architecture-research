@@ -46,7 +46,9 @@
 | RSS delta | 7.0 MB | ≤150 MB | ✅ |
 | inference p50 | 18.2 ms | ≤50 ms | ✅ |
 
-**Result: 1 of 6 gates FAIL (entity_recall 4.4% < 65%). Stage 1B FAILED.**
+**Historical result: 1 of 6 gates FAIL (entity_recall 4.4% < 65%). Stage 1B remains FAILED.**
+
+The current diagnostic rerun on the same frozen split is `benchmarks/results/stage1b_honest_20260710_105643Z.json`: pipeline entity recall 5.8%, encoder baseline recall 4.7% at the shared entry-node cap, and the entity gate still fails. The explicitly indexed current reference remains `stage1b_honest_20260710_102235Z.json`. Diagnostics classify gold entities as absent from candidates, present but not selected by the reranker, selected but lost in final handling, or resolved.
 
 Model: 555K params, char n-gram hashing, 1-layer GRU, entity re-ranker over lexical+embedding candidates. Rule-first intent with 63% coverage at 100% accuracy.
 
