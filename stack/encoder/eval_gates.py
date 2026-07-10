@@ -112,11 +112,83 @@ def eval_lexical_baseline(graph, questions: list[dict]) -> dict:
     }
 
 
+def _stage1_exact_name_alias(question: str, graph) -> list[str]:
+    """Stage 1: Exact name + alias substring matching against the question text.
+
+    Checks individual word segments of normalized entity names and aliases for
+    substring matches in the question text. Returns deduplicated, ordered list
+    of candidate node IDs.
+    """
+    candidates: list[str] = []
+    seen: set[str] = set()
+    q_lower = question.lower()
+
+    for node_id, node in graph._nodes.items():
+        # Check normalized entity name segments as substrings
+        norm_name = graph._normalize(node_id)
+        name_segments = norm_name.replace("_", " ").split()
+        for seg in name_segments:
+            if len(seg) >= 3 and seg in q_lower:
+                if node_id not in seen:
+                    seen.add(node_id)
+                    candidates.append(node_id)
+                break
+        else:
+            # Check alias word segments individually against the question
+            if node.aliases:
+                for alias in node.aliases:
+                    norm_alias = graph._normalize(alias).replace("_", " ")
+                    alias_segments = norm_alias.split()
+                    for alias_seg in alias_segments:
+                        if len(alias_seg) >= 3 and alias_seg in q_lower:
+                            if node_id not in seen:
+                                seen.add(node_id)
+                                candidates.append(node_id)
+                            break
+                    else:
+                        continue
+                    break  # already added from this alias
+    return candidates
+
+
+def _stage4_graph_expansion(candidate_ids: list[str], graph, max_neighbors: int = 15) -> list[str]:
+    """Stage 4: Graph-based expansion — add 1-hop neighbors of current candidates."""
+    if max_neighbors <= 0:
+        return []
+    new_candidates: list[str] = []
+    seen: set[str] = set(candidate_ids)
+    for eid in candidate_ids:
+        # Outgoing edges
+        for edge in graph.get_outgoing(eid):
+            neighbor = edge.target
+            if neighbor not in seen:
+                seen.add(neighbor)
+                new_candidates.append(neighbor)
+                if len(new_candidates) >= max_neighbors:
+                    return new_candidates
+        # Incoming edges
+        for edge in graph.get_incoming(eid):
+            neighbor = edge.source
+            if neighbor not in seen:
+                seen.add(neighbor)
+                new_candidates.append(neighbor)
+                if len(new_candidates) >= max_neighbors:
+                    return new_candidates
+    return new_candidates
+
+
 def eval_encoder(
     graph, questions: list[dict], encoder, entity_threshold: float = 0.5,
     embedding_index=None, config=None
 ) -> dict:
     """Evaluate encoder on a set of questions.
+
+    Uses a multi-stage candidate pipeline:
+      Stage 1: Exact name + alias matching
+      Stage 2: Normalized/fuzzy matching (spot_entities)
+      Stage 3: Semantic retrieval (embedding index)
+      Stage 4: Graph-based expansion (1-hop neighbors)
+      Stage 5: Encoder re-ranking
 
     Returns both encoder-only metrics and pipeline-with-fallback metrics.
     Includes per-intent-class breakdown and per-question details.
@@ -148,18 +220,58 @@ def eval_encoder(
         lambda: {"total": 0, "correct_intent": 0, "encoder_correct": 0, "encoder_total": 0}
     )
 
+    # Aggregate pipeline stage tracking
+    missed_rerank_count = 0
+    impossible_count = 0
+
     # Per-question details for debugging
     question_details: list[dict] = []
 
     for q in questions:
         t0 = time.perf_counter()
-        # Build candidate set same way parse_question does
-        lex_spots, _ = spot_entities(q["question"], graph, cutoff=0.6)
-        candidates = list({nid for _, _, _, nid in lex_spots})
+        gt_ids = set(q["entities"])
+        question_text = q["question"]
+
+        # ── Stage 1: Exact name + alias matching ──
+        stage1_candidates = _stage1_exact_name_alias(question_text, graph)
+        stage1_hits = sum(1 for eid in stage1_candidates if eid in gt_ids)
+
+        # ── Stage 2: Normalized/fuzzy matching ──
+        lex_spots, _ = spot_entities(question_text, graph, cutoff=0.6)
+        stage2_candidates = list({nid for _, _, _, nid in lex_spots})
+        stage2_hits = sum(1 for eid in stage2_candidates if eid in gt_ids)
+
+        # ── Stage 3: Semantic retrieval ──
+        stage3_candidates: list[str] = []
+        stage3_hits = 0
         if embedding_index is not None:
-            for eid, _ in embedding_index.query(q["question"], top_k=20):
-                if eid not in candidates:
-                    candidates.append(eid)
+            for eid, _ in embedding_index.query(question_text, top_k=20):
+                if eid not in stage3_candidates:
+                    stage3_candidates.append(eid)
+            stage3_hits = sum(1 for eid in stage3_candidates if eid in gt_ids)
+
+        # ── Stage 4: Graph-based expansion ──
+        # Combine candidates from stages 1-3 (deduplicated, preserving order)
+        combined_pre_expansion: list[str] = []
+        seen_pre: set[str] = set()
+        for c in stage1_candidates + stage2_candidates + stage3_candidates:
+            if c not in seen_pre:
+                seen_pre.add(c)
+                combined_pre_expansion.append(c)
+        stage4_candidates = _stage4_graph_expansion(combined_pre_expansion, graph)
+        stage4_hits = sum(1 for eid in stage4_candidates if eid in gt_ids)
+
+        # ── Combine all candidates for Stage 5 re-ranking ──
+        candidates = list(combined_pre_expansion)
+        for eid in stage4_candidates:
+            if eid not in seen_pre:
+                seen_pre.add(eid)
+                candidates.append(eid)
+
+        # Track whether GT is in the combined candidate pool (before re-ranking)
+        gt_in_candidate_pool = gt_ids.issubset(set(candidates))
+
+        # Build candidate descriptions for the encoder
         candidate_descs = []
         for eid in candidates:
             node = graph.get_node(eid)
@@ -169,19 +281,20 @@ def eval_encoder(
                 candidate_descs.append(f"{eid.replace('_', ' ')} {kf} {desc}"[:200])
             else:
                 candidate_descs.append(eid.replace("_", " "))
+
+        # ── Stage 5: Encoder re-ranking ──
         encoder_result = encoder.predict(
-            q["question"], entity_threshold=entity_threshold,
+            question_text, entity_threshold=entity_threshold,
             entity_candidates=candidates, entity_descriptions=candidate_descs
         )
         t1 = time.perf_counter()
         inference_times.append((t1 - t0) * 1000)
 
         # Run full parse with encoder (pipeline-with-fallback)
-        pq = parse_question(q["question"], graph, config=config,
+        pq = parse_question(question_text, graph, config=config,
                           encoder_model=encoder, embedding_index=embedding_index)
 
         resolved_ids = pq.entity_ids[: config.max_entry_nodes]
-        gt_ids = set(q["entities"])
 
         # Pipeline metrics
         if resolved_ids:
@@ -224,10 +337,27 @@ def eval_encoder(
             if eid in gt_ids:
                 per_intent[gt_intent_canon]["encoder_correct"] += 1
 
+        # ── Per-stage candidate pipeline tracking ──
+        # Stage 5 metrics: encoder re-ranking
+        final_candidates = sorted(enc_ids)
+        final_hits = sum(1 for eid in final_candidates if eid in gt_ids)
+        final_precision = final_hits / len(final_candidates) if final_candidates else 0.0
+        final_recall = final_hits / len(gt_ids) if gt_ids else 0.0
+        final_f1 = (
+            2 * final_precision * final_recall / max(final_precision + final_recall, 1e-8)
+        )
+
+        # Aggregate: GT in candidate pool but encoder missed it (missed re-rank)
+        if gt_in_candidate_pool and not gt_ids.issubset(enc_ids):
+            missed_rerank_count += 1
+        # Aggregate: GT NOT in any stage (impossible to select)
+        if not gt_in_candidate_pool:
+            impossible_count += 1
+
         # Question details
         question_details.append({
             "id": q["id"],
-            "question": q["question"],
+            "question": question_text,
             "gt_intent": gt_intent_canon,
             "pred_intent": pq_intent_canon,
             "intent_match": intent_match,
@@ -238,6 +368,22 @@ def eval_encoder(
             "pipeline_total": len(resolved_ids),
             "encoder_correct": sum(1 for e in enc_ids if e in gt_ids),
             "encoder_total": len(enc_ids),
+            "candidate_pipeline": {
+                "stage1_exact": {"candidates": len(stage1_candidates), "hits": stage1_hits},
+                "stage2_fuzzy": {"candidates": len(stage2_candidates), "hits": stage2_hits},
+                "stage3_semantic": {"candidates": len(stage3_candidates), "hits": stage3_hits},
+                "stage4_graph_expansion": {"candidates": len(stage4_candidates), "hits": stage4_hits},
+                "final_after_reranker": {
+                    "candidates": len(final_candidates),
+                    "hits": final_hits,
+                    "precision": round(final_precision, 4),
+                    "recall": round(final_recall, 4),
+                    "f1": round(final_f1, 4),
+                },
+            },
+            "gt_in_candidate_pool": gt_in_candidate_pool,
+            "missed_rerank": gt_in_candidate_pool and not gt_ids.issubset(enc_ids),
+            "impossible": not gt_in_candidate_pool,
         })
 
     # Compute aggregate metrics — consistently named precision/recall/f1
@@ -309,6 +455,9 @@ def eval_encoder(
         "per_intent_breakdown": per_intent_breakdown,
         # Per-question details
         "question_details": question_details,
+        # Candidate pipeline aggregate diagnostics
+        "missed_rerank_count": missed_rerank_count,
+        "impossible_count": impossible_count,
     }
 
 
@@ -425,6 +574,12 @@ def main():
     print(f"  encoder_f1:         {encoder_results['encoder_f1']:.4f} ({encoder_results['encoder_f1']*100:.1f}%)")
     print(f"  enc_exact_acc:      {encoder_results['encoder_exact_entity_accuracy']:.4f} ({encoder_results['encoder_exact_entity_accuracy']*100:.1f}%)")
     print(f"  enc_resolution:     {encoder_results['encoder_resolution_rate']:.4f} ({encoder_results['encoder_resolution_rate']*100:.1f}%)")
+
+    print("\n--- Candidate Pipeline Diagnostics ---")
+    missed = encoder_results.get("missed_rerank_count", 0)
+    impossible = encoder_results.get("impossible_count", 0)
+    print(f"  missed_rerank:     {missed} questions (GT in pool but encoder missed)")
+    print(f"  impossible:        {impossible} questions (GT not in any candidate stage)")
 
     print("\n--- Latency & Resources ---")
     print(f"  inference_p50:    {encoder_results['inference_p50_ms']:.1f} ms")
