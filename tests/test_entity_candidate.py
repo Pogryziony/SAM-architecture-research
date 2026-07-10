@@ -11,7 +11,7 @@ from __future__ import annotations
 from nexus.graph import Node, Edge
 from nexus.graph.store import InMemoryGraphStore
 from stack.encoder.eval_gates import _stage1_exact_name_alias, _stage4_graph_expansion
-from nexus.query.parser import _rank_entities
+from nexus.query.parser import _rank_entities, parse_question
 from nexus.utils.config import NEXUSConfig
 
 
@@ -191,6 +191,30 @@ class TestAbstractEntityCoverage:
             protected_ids={"Decision_PivotToNEXUS"},
         )
         assert ranked == ["Decision_PivotToNEXUS"]
+
+    def test_final_pipeline_recall_is_not_lower_than_encoder_selection(self):
+        """A selected encoder entity must survive the complete parser handoff."""
+        class FakeEncoder:
+            def predict(self, question, entity_threshold, entity_candidates, entity_descriptions):
+                selected = "Decision_PivotToNEXUS"
+                return {
+                    "entity_ids": [selected],
+                    "entity_scores": [(selected, 0.99)],
+                    "candidate_scores": {selected: 0.99},
+                    "intent": "factual_lookup",
+                    "category": "factual",
+                }
+
+        g = _make_decision_graph()
+        config = NEXUSConfig(max_entry_nodes=1, enable_associative_encoder=True)
+        result = parse_question(
+            "What is the significance of the oracle memory experiment?",
+            g,
+            config=config,
+            encoder_model=FakeEncoder(),
+            encoder_entity_threshold=0.55,
+        )
+        assert result.entity_ids[:1] == ["Decision_PivotToNEXUS"]
 
     def test_stage4_respects_max_neighbors(self):
         """Stage 4 should respect the max_neighbors limit."""

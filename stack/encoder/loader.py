@@ -189,6 +189,7 @@ class EncoderLoader:
 
         entity_ids: list[str] = []
         entity_scores: list[tuple[str, float]] = []
+        candidate_scores: dict[str, float] = {}
 
         if entity_cands and entity_descs and len(entity_cands) == len(entity_descs):
             from stack.encoder.model import AssociativeEncoderV2
@@ -202,9 +203,11 @@ class EncoderLoader:
                 if entity_score_tensor is not None:
                     scores = entity_score_tensor[0].tolist()
                     for i, score in enumerate(scores):
-                        if score > entity_threshold and i < len(entity_cands):
-                            entity_ids.append(entity_cands[i])
-                            entity_scores.append((entity_cands[i], score))
+                        if i < len(entity_cands):
+                            candidate_scores[entity_cands[i]] = float(score)
+                            if score > entity_threshold:
+                                entity_ids.append(entity_cands[i])
+                                entity_scores.append((entity_cands[i], score))
                 entity_scores.sort(key=lambda x: x[1], reverse=True)
                 # Collect also the intent/category from model
                 model_intent_idx = result["intent_preds"][0].item()
@@ -227,6 +230,8 @@ class EncoderLoader:
                 return {
                     "entity_ids": entity_ids,
                     "entity_scores": entity_scores,
+                    "candidate_scores": candidate_scores,
+                    "entity_threshold": entity_threshold,
                     "intent": intent,
                     "intent_confidence": intent_conf,
                     "category": category,

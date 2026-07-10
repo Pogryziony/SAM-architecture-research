@@ -26,6 +26,7 @@ from __future__ import annotations
 import json
 import os
 import statistics
+import subprocess
 import sys
 import time
 from collections import defaultdict
@@ -225,6 +226,8 @@ def eval_encoder(
     missed_rerank_count = 0
     impossible_count = 0
     stage_diagnostic_counts: dict[str, int] = defaultdict(int)
+    stage_hit_counts: dict[str, int] = defaultdict(int)
+    stage_gold_total = 0
 
     # Per-question details for debugging
     question_details: list[dict] = []
@@ -289,6 +292,7 @@ def eval_encoder(
             question_text, entity_threshold=entity_threshold,
             entity_candidates=candidates, entity_descriptions=candidate_descs
         )
+        candidate_scores = encoder_result.get("candidate_scores", {})
         t1 = time.perf_counter()
         inference_times.append((t1 - t0) * 1000)
 
@@ -351,27 +355,53 @@ def eval_encoder(
 
         # ── Per-stage candidate pipeline tracking ──
         # Diagnose each gold entity independently so a multi-entity question
-        # cannot hide whether loss occurred in retrieval, reranking, or fallback.
+        # cannot hide whether loss occurred in retrieval, reranking, fallback,
+        # or final parsing.
         candidate_set = set(candidates)
         pipeline_set = set(resolved_ids)
         gold_diagnostics = {}
+        stage_gold_total += len(gt_ids)
+        for stage_name, stage_ids in (
+            ("exact", stage1_candidates),
+            ("fuzzy", stage2_candidates),
+            ("semantic", stage3_candidates),
+            ("graph_expansion", stage4_candidates),
+            ("candidate_pool", candidates),
+            ("reranker_selected", raw_enc_ids),
+            ("final_pipeline", pipeline_set),
+        ):
+            stage_hit_counts[stage_name] += sum(1 for eid in gt_ids if eid in stage_ids)
+
         for gold_id in sorted(gt_ids):
+            score = candidate_scores.get(gold_id)
             if gold_id not in candidate_set:
                 status = "absent_from_candidates"
+                reason = "gold entity was absent from every candidate stage"
             elif gold_id not in raw_enc_ids:
-                status = "present_but_ranked_incorrectly"
+                if score is not None and score <= entity_threshold:
+                    status = "present_but_rejected_by_reranker_threshold"
+                    reason = f"reranker score {score:.6f} <= threshold {entity_threshold:.6f}"
+                else:
+                    status = "present_but_misranked"
+                    reason = "candidate was scored but not selected by the reranker"
             elif gold_id not in pipeline_set:
-                status = "rejected_by_fallback_or_threshold"
+                status = "selected_but_lost_during_parsing"
+                reason = "reranker selected the entity, but final parser ranking/cap removed it"
             else:
                 status = "resolved"
+                reason = "gold entity survived all pipeline stages"
             stage_diagnostic_counts[status] += 1
             gold_diagnostics[gold_id] = {
                 "status": status,
+                "reason": reason,
+                "reranker_score": score,
+                "reranker_threshold": entity_threshold,
                 "stage_presence": {
                     "exact": gold_id in stage1_candidates,
                     "fuzzy": gold_id in stage2_candidates,
                     "semantic": gold_id in stage3_candidates,
                     "graph_expansion": gold_id in stage4_candidates,
+                    "candidate_pool": gold_id in candidate_set,
                     "reranker_selected": gold_id in raw_enc_ids,
                     "final_pipeline": gold_id in pipeline_set,
                 },
@@ -499,6 +529,12 @@ def eval_encoder(
         "missed_rerank_count": missed_rerank_count,
         "impossible_count": impossible_count,
         "stage_diagnostic_counts": dict(sorted(stage_diagnostic_counts.items())),
+        "stage_hit_counts": dict(sorted(stage_hit_counts.items())),
+        "stage_candidate_recall": {
+            stage: (hits / stage_gold_total if stage_gold_total else 0.0)
+            for stage, hits in sorted(stage_hit_counts.items())
+        },
+        "stage_gold_total": stage_gold_total,
     }
 
 
@@ -624,6 +660,9 @@ def main():
     print("  per-entity outcomes:")
     for status, count in encoder_results.get("stage_diagnostic_counts", {}).items():
         print(f"    {status}: {count}")
+    print("  per-stage candidate recall:")
+    for stage, recall in encoder_results.get("stage_candidate_recall", {}).items():
+        print(f"    {stage}: {recall:.4f}")
 
     print("\n--- Latency & Resources ---")
     print(f"  inference_p50:    {encoder_results['inference_p50_ms']:.1f} ms")
@@ -748,6 +787,18 @@ def main():
         "meta": {
             "phase": "R1",
             "description": "HONEST re-evaluation on frozen 225-question test split",
+            "evaluation_commit_sha": subprocess.check_output(
+                ["git", "rev-parse", "HEAD"], cwd=_repo_root, text=True
+            ).strip(),
+            "configuration": {
+                "entity_threshold": 0.55,
+                "max_entry_nodes": config_enc.max_entry_nodes,
+                "fuzzy_cutoff": config_enc.fuzzy_cutoff,
+                "embedding_top_k": 20,
+                "graph_expansion_max_neighbors": 15,
+                "encoder_model_dir": "models/encoder_v2",
+                "frozen_split_only": True,
+            },
             "frozen_split": "stack/encoder/data/test.jsonl",
             "frozen_commit": "34278d5 (Stage 1.0 split)",
             "canonical_labels": "nexus/utils/canonical_labels.py",
@@ -787,6 +838,9 @@ def main():
             "missed_rerank_count": encoder_results["missed_rerank_count"],
             "impossible_count": encoder_results["impossible_count"],
             "stage_diagnostic_counts": encoder_results["stage_diagnostic_counts"],
+            "stage_hit_counts": encoder_results["stage_hit_counts"],
+            "stage_candidate_recall": encoder_results["stage_candidate_recall"],
+            "stage_gold_total": encoder_results["stage_gold_total"],
         },
         "gates": {k: {"passed": p, "detail": d} for k, (p, d) in gates.items()},
         "decision": "HONEST PASS" if all_pass else "HONEST FAIL",

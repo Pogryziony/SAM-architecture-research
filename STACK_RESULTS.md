@@ -67,7 +67,7 @@ Naturalness exceeded target by 7.7×. Relevance failure is pre-existing (identic
 
 ---
 
-## Stage 3 — Dialogue State (Passed)
+## Stage 3 — Dialogue State (Unvalidated)
 
 | Gate | Value | Threshold |
 |------|-------|-----------|
@@ -75,7 +75,7 @@ Naturalness exceeded target by 7.7×. Relevance failure is pre-existing (identic
 | single-turn regression | 0.0pp | ≤2pp |
 | state latency p50 | 2.7 ms | ≤5 ms |
 
-50 dialogues, 110 turns. Recency decay 0.7, context window 5.
+50 dialogues, 110 turns. Recency decay 0.7, context window 5. These measurements are historical and remain unvalidated because Stage 1B failed.
 
 ---
 

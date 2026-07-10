@@ -4,9 +4,9 @@
 
 | File | Date (UTC) | Size | Key Metrics | Command to Reproduce |
 |---|---|---|---|---|
+| `stage1b_honest_20260710_102235Z.json` | 2026-07-10 10:22 UTC | 3 KB | Historical honest Stage 1B reference; 225q frozen split, pipeline entity=4.4%, FAIL | `python stack/encoder/eval_gates.py` |
+| `stage1b_honest_20260710_105643Z.json` | 2026-07-10 10:55 UTC | diagnostic artifact | Historical diagnostic rerun; 225q frozen split, pipeline entity=5.8%, honest FAIL | `python stack/encoder/eval_gates.py` |
 | `stack_baseline_v2_20260710_091759Z.json` | 2026-07-10 11:41 UTC | 2.2 MB | Phase R3 clean baseline, N=200 paired, nexus_acc=23.7%, rag_acc=8.7%, paired_n=89, avg_paths=12.55 (suspect), all experimental OFF | `python benchmarks/run_benchmark.py --limit 200 --arm-rag rag_retrieval --output ...` |
-| `stage1b_honest_20260710_102235Z.json` | 2026-07-10 10:22 UTC | 3 KB | **Current honest Stage 1B reference**; 225q frozen split, pipeline entity=4.4%, FAIL; superseded diagnostically by the later rerun | `python stack/encoder/eval_gates.py` |
-| `stage1b_honest_20260710_105643Z.json` | 2026-07-10 10:55 UTC | latest diagnostic artifact | Reproducible rerun after monotonic handoff fix; per-entity diagnostics, entity=5.8%, honest FAIL | `python stack/encoder/eval_gates.py` |
 | `stage1b_honest_20260710_084841Z.json` | 2026-07-10 08:48 UTC | 3 KB | Historical R1 HONEST FAIL, 225q frozen split, entity=4.4%, intent=85.3% | `python stack/encoder/eval_gates.py` |
 | `relation_eval_20260710T105429Z.json` | 2026-07-10 10:54 UTC | timestamped relation evaluation | 28 gold positives, semantic precision=6.74%, recall=89.29%, F1=12.53%; 3 false negatives | `python experiments/relation-extraction/evaluate_relations.py` |
 | `confidence_router_2026-07-09.json` | 2026-07-08 22:27 UTC | 65 KB | questions=30, nodes=1866, edges=2104, model=OllamaModel(qwen2.5-coder:3b), limit=30 | `python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results.json` |
