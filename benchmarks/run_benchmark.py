@@ -652,6 +652,8 @@ def validate_benchmark_results(
     # Check NEXUS arm
     nexus_results = [r for r in results if r.get("arm_mode") == "nexus"]
     nexus_tokens = [r.get("retrieval_tokens") or 0 for r in nexus_results]
+    if config.get("arm_nexus") == "nexus" and not nexus_results:
+        errors.append("NEXUS arm configured as 'nexus' but produced 0 result rows")
     if nexus_results and sum(nexus_tokens) == 0:
         errors.append("NEXUS arm: all retrieval_tokens == 0 — evidence pack empty")
 

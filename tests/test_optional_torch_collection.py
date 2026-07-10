@@ -13,7 +13,9 @@ def test_collection_and_nexus_tests_work_without_torch():
         "real=builtins.__import__; "
         "builtins.__import__=lambda name,*a,**k: (_ for _ in ()).throw(ImportError('torch unavailable')) "
         "if name == 'torch' else real(name,*a,**k); "
-        "import pytest; raise SystemExit(pytest.main(['tests/test_nexus_graph.py','-q']))"
+        "import pytest; from pathlib import Path; "
+        "paths=[str(p) for p in Path('tests').glob('test_nexus_*.py')]; "
+        "raise SystemExit(pytest.main(paths+['-q']))"
     )
     env = os.environ.copy()
     env["PYTHONPATH"] = str(root)
