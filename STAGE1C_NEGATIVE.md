@@ -26,3 +26,31 @@ Candidate generation improved only from the Stage 1B diagnostic (~82.97%) to 85.
 ## Concrete next proposal
 
 Run a separately preregistered Stage 1D experiment that trains a graph-only pairwise reranker on the generated pairs and adds a validation-calibrated, provenance-preserving top-k policy for the parser handoff. First measure this policy on `val.jsonl`; do not tune against `test.jsonl`. Keep `max_entry_nodes` and all gate thresholds unchanged, and stop if validation shows a resolution, latency, or precision regression.
+
+## Phase C4 final endpoint (2026-07-10)
+
+Artifact: `benchmarks/results/stage1c_final_20260710T180311Z.json`.
+The artifact was read back and validated with `validate_final_artifact`; all 225 frozen IDs were present and unique, and the recorded evaluation commit was `98169e8a23bb63d78a03c5f0dfa41eda6e01badf`.
+
+| Metric | Test result | Gate |
+|---|---:|---:|
+| Winner recall@1 | 9.45% | diagnostic |
+| Winner recall@5 | 37.82% | diagnostic |
+| Winner recall@10 | 53.45% | >=65% **FAIL** |
+| Winner precision@10 | 6.56% | reported |
+| Trivial baseline recall@10 | 35.64% | reported |
+| Intent accuracy | 90.67% | >=85% PASS |
+| Paraphrase drop at K=10 | -14.71 pp | absolute <10 pp **FAIL** |
+| Resolution rate | 100.0% | no regression PASS |
+| Inference p50 | 20.8 ms | <=50 ms PASS |
+| RSS | 47.3 MB | <=150 MB PASS |
+
+The validation control passed mechanically: baseline validation recall@10 was 35.71%, while the frozen selected winner validation recall@10 was 71.32%, a gap of 35.61 percentage points (at least 15 pp). The control also reports the baseline test metrics in the final artifact. Because the primary and paraphrase gates failed, the mechanical decision is **HONEST FAIL**. The feature-logistic winner is not integrated or enabled; integration readiness is documented by the tested in-path K=10 ranker, but protocol requires lexical-path closure with the encoder disabled.
+
+Exact non-frozen test commands run:
+- `python -m pytest -q tests/test_stage1c_final.py tests/test_c2_c3.py tests/test_trivial_baseline.py` — 9 passed.
+- `python -m py_compile benchmarks/stage1c_final.py tests/test_stage1c_final.py` — passed.
+- `python -m benchmarks.stage1c_final` — the sole command that read `stack/encoder/data/test.jsonl`.
+- Read-back validation command used `validate_final_artifact` and returned `validation_errors= []`.
+
+`eval_gates.py` and full pytest were not run because they can read the frozen test split. Historical artifacts remain unchanged.

@@ -1,0 +1,6320 @@
+{
+  "all_pass": false,
+  "artifact": "stage1c_final",
+  "baseline": {
+    "test": {
+      "gold_entities": 275,
+      "precision@10": 0.04375,
+      "questions": 225,
+      "recall@1": 0.05454545454545454,
+      "recall@10": 0.3563636363636364,
+      "recall@5": 0.23636363636363636,
+      "resolution_rate": 1.0
+    },
+    "validation": {
+      "exact_match@1": 0.12666666666666668,
+      "exact_match@10": 0.36,
+      "exact_match@5": 0.3,
+      "gold_entities": 182,
+      "hit_rate@1": 0.12666666666666668,
+      "hit_rate@10": 0.43333333333333335,
+      "hit_rate@5": 0.37333333333333335,
+      "questions": 150,
+      "recall@1": 0.1043956043956044,
+      "recall@10": 0.35714285714285715,
+      "recall@5": 0.3076923076923077
+    }
+  },
+  "calibration_selection": {
+    "selection": {
+      "baseline_recall@10": 0.3571428571,
+      "decision_rule": "recall@10, recall@5 tie-break",
+      "gate": true,
+      "required_recall@10": 0.5071428571,
+      "winner": "feature_logistic",
+      "winner_recall@10": 0.7132352941176471,
+      "winner_recall@5": 0.5661764705882353
+    },
+    "validation_baseline": {
+      "artifact": "trivial_lexical_baseline",
+      "created_at": "2026-07-10T17:29:32.649039+00:00",
+      "metrics": {
+        "exact_match@1": 0.12666666666666668,
+        "exact_match@10": 0.36,
+        "exact_match@5": 0.3,
+        "gold_entities": 182,
+        "hit_rate@1": 0.12666666666666668,
+        "hit_rate@10": 0.43333333333333335,
+        "hit_rate@5": 0.37333333333333335,
+        "questions": 150,
+        "recall@1": 0.1043956043956044,
+        "recall@10": 0.35714285714285715,
+        "recall@5": 0.3076923076923077
+      },
+      "provenance": {
+        "candidate_pipeline": [
+          "stage1_exact_name_alias",
+          "stage2_spot_entities",
+          "stage1c_property_overlap",
+          "stage4_graph_expansion"
+        ],
+        "graph_metadata": {
+          "build_command": "python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results/TIMESTAMPED_FILE.json",
+          "build_steps": [
+            "1. populate_from_experiments(EXPERIMENTS_DIR, graph)",
+            "2. ingest_directory('docs/', graph)",
+            "3. ingest_directory('sam-lm/docs/', graph)",
+            "4. ingest_directory('sam-lm/experiments/', graph)"
+          ],
+          "edge_count": 563,
+          "edge_type_counts": {
+            "contradicts": 1,
+            "depends_on": 204,
+            "derived_from": 348,
+            "validates": 10
+          },
+          "effective_config": {
+            "enable_associative_encoder": false,
+            "enable_cooccurrence_edges": false,
+            "enable_embedding_er": false,
+            "enable_normalization": false
+          },
+          "fixes_applied": [
+            "P0: entity filter, relations constrained 10K->116 edges, entity ranking",
+            "P1: key_findings surfaced as evidence in evidence_builder",
+            "P2: double-gate with corpus metric (honest hallucination measurement)"
+          ],
+          "node_count": 1866,
+          "timestamp": "2026-07-10T17:29:32.544536+00:00"
+        },
+        "learned_components": false,
+        "ranking": "fixed lexical overlap score; ties by total node degree; final tie by node_id",
+        "split": "stack/encoder/data/val.jsonl",
+        "split_sha256": "f95e212502c7c5ad5a615a3e1921e62ef7e1e961a229f44be63e3f829fdacd09",
+        "validation_only": true
+      },
+      "source_sha": "6be28b130a17894a3fc5b707cd8a78936ba73fe4"
+    }
+  },
+  "decision": "HONEST FAIL",
+  "gates": {
+    "control_validation": {
+      "baseline_validation_recall@10": 0.35714285714285715,
+      "passed": true,
+      "required_gap_pp": 15.0,
+      "winner_validation_recall@10": 0.7132352941176471
+    },
+    "intent_accuracy": {
+      "passed": true,
+      "threshold": 0.85,
+      "value": 0.9066666666666666
+    },
+    "latency_p50": {
+      "passed": true,
+      "threshold_ms": 50,
+      "value_ms": 20.798900004592724
+    },
+    "paraphrase_drop": {
+      "passed": false,
+      "threshold_pp": 10,
+      "value_pp": -14.70588235294118
+    },
+    "primary_recall": {
+      "passed": false,
+      "threshold": 0.65,
+      "value": 0.5345454545454545
+    },
+    "resolution_rate": {
+      "baseline": 1.0,
+      "passed": true,
+      "value": 1.0
+    },
+    "rss_delta": {
+      "passed": true,
+      "threshold_mb": 150,
+      "value_mb": 47.2734375
+    }
+  },
+  "meta": {
+    "calibration_artifact": "benchmarks/results/baseline_val_20260710T172932Z.json",
+    "evaluation_commit_sha": "98169e8a23bb63d78a03c5f0dfa41eda6e01badf",
+    "frozen_split": "stack/encoder/data/test.jsonl",
+    "frozen_split_identifier": "stage1.0:test.jsonl:34278d5",
+    "frozen_split_sha256": "ac7877084f2384d2e80ef3ce43d48c842eb4d404936d3139a1c7b06d41616c6a",
+    "graph": {
+      "build_command": "python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results/TIMESTAMPED_FILE.json",
+      "build_steps": [
+        "1. populate_from_experiments(EXPERIMENTS_DIR, graph)",
+        "2. ingest_directory('docs/', graph)",
+        "3. ingest_directory('sam-lm/docs/', graph)",
+        "4. ingest_directory('sam-lm/experiments/', graph)"
+      ],
+      "edge_count": 562,
+      "edge_type_counts": {
+        "contradicts": 1,
+        "depends_on": 203,
+        "derived_from": 348,
+        "validates": 10
+      },
+      "effective_config": {
+        "enable_associative_encoder": false,
+        "enable_cooccurrence_edges": false,
+        "enable_embedding_er": false,
+        "enable_normalization": false
+      },
+      "fixes_applied": [
+        "P0: entity filter, relations constrained 10K->116 edges, entity ranking",
+        "P1: key_findings surfaced as evidence in evidence_builder",
+        "P2: double-gate with corpus metric (honest hallucination measurement)"
+      ],
+      "node_count": 1866,
+      "timestamp": "2026-07-10T18:02:59.557035+00:00"
+    },
+    "k": 10,
+    "model_config": "models/encoder/stage1c/config.json",
+    "model_weights": "models/encoder/stage1c/weights.json",
+    "phase": "Stage 1C C4",
+    "question_count": 225,
+    "selection_artifact": "benchmarks/results/stage1c_full_selection_log.json",
+    "timestamp_utc": "20260710T180311Z",
+    "validated_ids_match": true,
+    "validation_only_selection": true
+  },
+  "metrics": {
+    "gold_entities": 275,
+    "intent_accuracy": 0.9066666666666666,
+    "latency_p50_ms": 20.798900004592724,
+    "latency_p90_ms": 37.769599992316216,
+    "precision@10": 0.065625,
+    "questions": 225,
+    "recall@1": 0.09454545454545454,
+    "recall@10": 0.5345454545454545,
+    "recall@5": 0.3781818181818182,
+    "resolution_rate": 1.0,
+    "rss_delta_mb": 47.2734375
+  },
+  "paraphrase": {
+    "drop_pp": -14.70588235294118,
+    "original_recall@10": 0.5588235294117647,
+    "pairs": 30,
+    "paraphrase_recall@10": 0.7058823529411765
+  },
+  "question_details": [
+    {
+      "candidate_count": 13,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q532",
+      "intent_match": true,
+      "latency_ms": 12.145800006692298,
+      "pred_intent": "factual_lookup",
+      "question": "What is relation extraction?",
+      "ranked_entities_at_k": [
+        "relation_extraction",
+        "Step_3:_Relation_Extraction",
+        "entity_extraction",
+        "Decision_PivotToNEXUS",
+        "Concept_PivotToNEXUS",
+        "Concept_SelectorBottleneck",
+        "Step_2:_Entity_Extraction",
+        "Concept_ArchitectureWorks",
+        "recommended_action",
+        "Next_Recommended_Action"
+      ]
+    },
+    {
+      "candidate_count": 13,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q533",
+      "intent_match": true,
+      "latency_ms": 10.557700006756932,
+      "pred_intent": "factual_lookup",
+      "question": "What is mmap?",
+      "ranked_entities_at_k": [
+        "roadmap_what",
+        "Decision_PivotToNEXUS",
+        "Mmap",
+        "Concept_ArchitectureWorks",
+        "current_status_what",
+        "Concept_PivotToNEXUS",
+        "Concept_SelectorBottleneck",
+        "repository_map_where",
+        "map_shared",
+        "repository_map"
+      ]
+    },
+    {
+      "candidate_count": 7,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q534",
+      "intent_match": true,
+      "latency_ms": 10.71119999687653,
+      "pred_intent": "factual_lookup",
+      "question": "What is KuzuDB?",
+      "ranked_entities_at_k": [
+        "Kuzudb",
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "roadmap_what",
+        "Concept_PivotToNEXUS",
+        "current_status_what",
+        "Concept_SelectorBottleneck"
+      ]
+    },
+    {
+      "candidate_count": 193,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q535",
+      "intent_match": true,
+      "latency_ms": 20.240799989551306,
+      "pred_intent": "factual_lookup",
+      "question": "What is the oracle gap?",
+      "ranked_entities_at_k": [
+        "Oracle",
+        "oracle",
+        "Concept_ArchitectureWorks",
+        "Oracle_Memory",
+        "Exp_0_9_OracleFilter_oracle_filter",
+        "Exp_0_6_Validation",
+        "Exp_0_12_Selection_oracle_filter_top32",
+        "Exp_0_12_Selection_oracle_filter_top64",
+        "Oracle_Gap",
+        "oracle_100"
+      ]
+    },
+    {
+      "candidate_count": 15,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q536",
+      "intent_match": true,
+      "latency_ms": 11.07209999463521,
+      "pred_intent": "factual_lookup",
+      "question": "What is a hard negative?",
+      "ranked_entities_at_k": [
+        "Hard_Negative",
+        "Decision_PivotToNEXUS",
+        "Hard_Negative_Training",
+        "the_problem_is_distractor_quality,_train_on_hard_negatives",
+        "Concept_ArchitectureWorks",
+        "Live_Slot_Only_Negative_Sampling",
+        "Concept_PivotToNEXUS",
+        "Concept_SelectorBottleneck",
+        "roadmap_what",
+        "current_status_what"
+      ]
+    },
+    {
+      "candidate_count": 38,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q537",
+      "intent_match": true,
+      "latency_ms": 12.403600005200133,
+      "pred_intent": "factual_lookup",
+      "question": "What is a controlled distractor?",
+      "ranked_entities_at_k": [
+        "Controlled_Distractor",
+        "Controlled_Random_Distractors",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_NoiseTolerance",
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Distractor_Quality",
+        "focus_on_distractor_quality_and_training_dynamics_|",
+        "controlled_noisy_memory_path",
+        "Concept_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 696,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q538",
+      "intent_match": true,
+      "latency_ms": 59.06230000255164,
+      "pred_intent": "diagnostic",
+      "question": "What is the significance of the oracle memory experiment achieving 99.87% accuracy?",
+      "ranked_entities_at_k": [
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_12_Selection",
+        "Exp_0_9_OracleFilter_top1",
+        "Exp_0_9_OracleFilter_oracle_filter",
+        "Exp_0_13A_NoisyMemory_noise_+0",
+        "Exp_0_13A_NoisyMemory_noise_+1"
+      ]
+    },
+    {
+      "candidate_count": 185,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q539",
+      "intent_match": true,
+      "latency_ms": 26.256200013449416,
+      "pred_intent": "diagnostic",
+      "question": "What is the significance of the chain-set BCE retriever achieving 100% all_required@32?",
+      "ranked_entities_at_k": [
+        "Exp_0_11_ChainRetrieval",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Concept_ChainRetrieval",
+        "Exp_0_12_Selection",
+        "Exp_0_9_OracleFilter",
+        "Exp_0_11_ChainRetrieval_chain_set_bce",
+        "all_required@k",
+        "Exp_0_10_RequiredSet",
+        "Metric_Exp_0_11_ChainRetrieval_chain_set_bce_total_wall_s",
+        "All_Required"
+      ]
+    },
+    {
+      "candidate_count": 117,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q540",
+      "intent_match": true,
+      "latency_ms": 21.02759999979753,
+      "pred_intent": "diagnostic",
+      "question": "What is the significance of the selector achieving only 50% precision?",
+      "ranked_entities_at_k": [
+        "Exp_0_12_Selection_learned_selector",
+        "Exp_0_12_Selection",
+        "Exp_0_6_Validation",
+        "Exp_0_12_Selection_equal_budget",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Exp_0_12_Selection_oracle_filter_top32",
+        "Exp_0_12_Selection_oracle_filter_top64",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation_core_only",
+        "selection"
+      ]
+    },
+    {
+      "candidate_count": 563,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q541",
+      "intent_match": true,
+      "latency_ms": 46.98559999815188,
+      "pred_intent": "diagnostic",
+      "question": "What is the significance of the noise tolerance experiment showing 91.6% at +8 distractors?",
+      "ranked_entities_at_k": [
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_13A_NoisyMemory_noise_+8",
+        "Exp_0_12_Selection",
+        "Exp_0_6_Validation",
+        "Exp_0_13A_NoisyMemory_noise_+0",
+        "Exp_0_13A_NoisyMemory_noise_+1",
+        "Exp_0_13A_NoisyMemory_noise_+2",
+        "Exp_0_13A_NoisyMemory_noise_+4",
+        "Exp_0_13A_NoisyMemory_noise_+16",
+        "Exp_0_12_Selection_learned_selector"
+      ]
+    },
+    {
+      "candidate_count": 91,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q542",
+      "intent_match": true,
+      "latency_ms": 16.114999991259538,
+      "pred_intent": "diagnostic",
+      "question": "What is the significance of the padding bug fix?",
+      "ranked_entities_at_k": [
+        "bug",
+        "Exp_0_6_Validation",
+        "migration",
+        "Exp_0_3_PKM_Candidates",
+        "fix_non",
+        "b_|_`bug",
+        "Significance_For_0.12_Results",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+        "bug_|",
+        "bug_elements_visibility"
+      ]
+    },
+    {
+      "candidate_count": 482,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q543",
+      "intent_match": true,
+      "latency_ms": 45.80320000241045,
+      "pred_intent": "diagnostic",
+      "question": "What is the significance of the dense dataset improving retrieval from 6.9% to 99.0% Rec@8?",
+      "ranked_entities_at_k": [
+        "Exp_0_6_Validation",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_12_Selection",
+        "Exp_0_6_Validation_dense_baseline_early",
+        "Exp_0_6_Validation_dense_openbook",
+        "Exp_0_12_Selection_equal_budget",
+        "Exp_0_6_Validation_pkm_retrieval_early",
+        "Exp_0_6_Validation_core_only"
+      ]
+    },
+    {
+      "candidate_count": 179,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q544",
+      "intent_match": true,
+      "latency_ms": 22.405900002922863,
+      "pred_intent": "diagnostic",
+      "question": "What is the significance of the pivot from SAM to NEXUS?",
+      "ranked_entities_at_k": [
+        "Exp_0_6_Validation",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation_dense_baseline_early",
+        "Exp_0_6_Validation_dense_openbook"
+      ]
+    },
+    {
+      "candidate_count": 80,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q545",
+      "intent_match": true,
+      "latency_ms": 16.71149999310728,
+      "pred_intent": "diagnostic",
+      "question": "What is the significance of the NEXUS CPU-first design principle?",
+      "ranked_entities_at_k": [
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_12_Selection",
+        "pack_design_principles",
+        "pack_design_principles_1",
+        "Recall",
+        "Significance_For_0.12_Results",
+        "blocked_by",
+        "Decision_PivotToNEXUS",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+        "Concept_ArchitectureWorks"
+      ]
+    },
+    {
+      "candidate_count": 73,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q546",
+      "intent_match": true,
+      "latency_ms": 19.885599991539493,
+      "pred_intent": "diagnostic",
+      "question": "What is the significance of the NEXUS verifier being rule-based rather than LLM-based?",
+      "ranked_entities_at_k": [
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_12_Selection",
+        "Recall",
+        "l_verifier",
+        "Decision_PivotToNEXUS",
+        "verification_rule",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+        "blocked_by",
+        "the_threshold_is_binary:_perfect_filtering",
+        "Significance_For_0.12_Results"
+      ]
+    },
+    {
+      "candidate_count": 88,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q547",
+      "intent_match": true,
+      "latency_ms": 18.502600010833703,
+      "pred_intent": "diagnostic",
+      "question": "What is the significance of the NEXUS evidence pack being only 1-2KB?",
+      "ranked_entities_at_k": [
+        "Exp_0_6_Validation",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_12_Selection",
+        "answer_|_read_structured_evidence",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+        "Significance_For_0.12_Results",
+        "blocked_by",
+        "the_threshold_is_binary:_perfect_filtering",
+        "0.11)._pkm_provides_supplementary_signal_._contrastive_loss_barely_changes,_confirming_pkm_is_not_the_primary_learning_signal"
+      ]
+    },
+    {
+      "candidate_count": 455,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q548",
+      "intent_match": true,
+      "latency_ms": 35.83829999843147,
+      "pred_intent": "diagnostic",
+      "question": "What is the significance of the multi-positive BCE loss vs InfoNCE for chain retrieval?",
+      "ranked_entities_at_k": [
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_12_Selection",
+        "Exp_0_11_ChainRetrieval",
+        "Exp_0_12_Selection_learned_selector",
+        "Exp_0_11_ChainRetrieval_chain_set_bce",
+        "Exp_0_12_Selection_equal_budget",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Exp_0_12_Selection_oracle_filter_top32"
+      ]
+    },
+    {
+      "candidate_count": 218,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q549",
+      "intent_match": true,
+      "latency_ms": 22.625400000833906,
+      "pred_intent": "diagnostic",
+      "question": "What is the significance of the 3-hop collapse at +16 distractors?",
+      "ranked_entities_at_k": [
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory_noise_+16",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_13A_NoisyMemory_noise_+0",
+        "Exp_0_13A_NoisyMemory_noise_+1",
+        "Exp_0_13A_NoisyMemory_noise_+2",
+        "Exp_0_13A_NoisyMemory_noise_+4",
+        "Exp_0_13A_NoisyMemory_noise_+8"
+      ]
+    },
+    {
+      "candidate_count": 618,
+      "gold_entities": [
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 1,
+      "hits_at_10": 2,
+      "hits_at_5": 2,
+      "id": "q550",
+      "intent_match": true,
+      "latency_ms": 77.58529999409802,
+      "pred_intent": "comparison",
+      "question": "Compare the 3-hop accuracy across different SAM configurations: core_only (22.00%) vs oracle_memory (100%) vs controlled noise +8 (79.33%) vs +16 (39.00%). What does this tell us?",
+      "ranked_entities_at_k": [
+        "Exp_0_13A_NoisyMemory",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation",
+        "Oracle_Memory",
+        "Exp_0_6_Validation_oracle_memory",
+        "Concept_OracleMemory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Decision_PivotToNEXUS",
+        "Exp_0_13A_NoisyMemory_noise_+16",
+        "Exp_0_6_Validation_core_only"
+      ]
+    },
+    {
+      "candidate_count": 841,
+      "gold_entities": [
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 1,
+      "hits_at_10": 2,
+      "hits_at_5": 2,
+      "id": "q551",
+      "intent_match": true,
+      "latency_ms": 116.31949999718927,
+      "pred_intent": "comparison",
+      "question": "Compare the overall accuracy across all memory modes at experiment 0.6 across different SAM configurations: core_only=68.74%, random_memory=68.74%, retrieved_memory=68.74%, oracle_memory=99.87%, oracle_text=100%. What does this tell us?",
+      "ranked_entities_at_k": [
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Oracle_Memory",
+        "Concept_OracleMemory",
+        "Concept_RetrievalMismatch"
+      ]
+    },
+    {
+      "candidate_count": 269,
+      "gold_entities": [
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q552",
+      "intent_match": true,
+      "latency_ms": 41.589200001908466,
+      "pred_intent": "comparison",
+      "question": "Compare the all_required@K at K=8, 16, 32 for chain-set BCE across different SAM configurations: K=8: 81.03%, K=16: 96.53%, K=32: 100.00%. What does this tell us?",
+      "ranked_entities_at_k": [
+        "Concept_ChainRetrieval",
+        "Exp_0_11_ChainRetrieval",
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Exp_0_12_Selection",
+        "all_required@k",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Chain_Set"
+      ]
+    },
+    {
+      "candidate_count": 250,
+      "gold_entities": [
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 2,
+      "hits_at_5": 1,
+      "id": "q553",
+      "intent_match": true,
+      "latency_ms": 41.08059999998659,
+      "pred_intent": "comparison",
+      "question": "Compare the all_required@K at K=8, 32, 64 for dual encoder across different SAM configurations: K=8: 26.34%, K=32: 26.84%, K=64: 27.29%. What does this tell us?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_RetrievalMismatch",
+        "dual_encoder",
+        "all_required@k",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_ArchitectureWorks",
+        "query_encoder",
+        "Dual_Encoder",
+        "Exp_0_12_Selection",
+        "Exp_0_6_Validation"
+      ]
+    },
+    {
+      "candidate_count": 412,
+      "gold_entities": [
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 1,
+      "hits_at_10": 2,
+      "hits_at_5": 2,
+      "id": "q554",
+      "intent_match": true,
+      "latency_ms": 54.362099996069446,
+      "pred_intent": "comparison",
+      "question": "Compare the 3-hop accuracy under noise at +1, +2, +4, +8, +16 distractors across different SAM configurations: +1: 99.50%, +2: 98.17%, +4: 95.00%, +8: 79.33%, +16: 39.00%. What does this tell us?",
+      "ranked_entities_at_k": [
+        "Exp_0_13A_NoisyMemory",
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation",
+        "Exp_0_13A_NoisyMemory_noise_+16",
+        "Concept_NoiseTolerance",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Concept_RetrievalMismatch",
+        "Exp_0_13A_NoisyMemory_noise_+0",
+        "Exp_0_13A_NoisyMemory_noise_+1"
+      ]
+    },
+    {
+      "candidate_count": 542,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q555",
+      "intent_match": true,
+      "latency_ms": 38.914199991268106,
+      "pred_intent": "diagnostic",
+      "question": "How would you add a new experiment result to the NEXUS graph?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation",
+        "Exp_0_12_Selection",
+        "Exp_0_9_OracleFilter_oracle_filter",
+        "Exp_0_9_OracleFilter_top1",
+        "Exp_0_13A_NoisyMemory_noise_+0",
+        "Exp_0_13A_NoisyMemory_noise_+1",
+        "Exp_0_13A_NoisyMemory_noise_+2",
+        "Exp_0_13A_NoisyMemory_noise_+4"
+      ]
+    },
+    {
+      "candidate_count": 96,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q556",
+      "intent_match": true,
+      "latency_ms": 20.680999994510785,
+      "pred_intent": "diagnostic",
+      "question": "How would you query NEXUS to find why a specific test is failing?",
+      "ranked_entities_at_k": [
+        "Exp_0_6_Validation",
+        "Exp_0_7_ExternalText_external_text_query",
+        "Exp_0_8_Aggregation_external_text_query",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_7_ExternalText_hidden_adapter",
+        "Exp_0_7_ExternalText",
+        "query_encoder",
+        "integrate",
+        "Exp_0_8_Aggregation"
+      ]
+    },
+    {
+      "candidate_count": 549,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q557",
+      "intent_match": true,
+      "latency_ms": 34.894900003564544,
+      "pred_intent": "diagnostic",
+      "question": "How would you compare two experiments using the NEXUS graph?",
+      "ranked_entities_at_k": [
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation",
+        "Exp_0_12_Selection",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "experiment",
+        "Experiment_0.12",
+        "migration",
+        "Exp_0_9_OracleFilter_oracle_filter",
+        "Exp_0_9_OracleFilter_top1",
+        "Exp_0_13A_NoisyMemory_noise_+0"
+      ]
+    },
+    {
+      "candidate_count": 83,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q558",
+      "intent_match": true,
+      "latency_ms": 20.2104999916628,
+      "pred_intent": "diagnostic",
+      "question": "How would you detect that the NEXUS graph is missing an important relationship?",
+      "ranked_entities_at_k": [
+        "Exp_0_6_Validation",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory",
+        "Recall",
+        "selection",
+        "Decision_PivotToNEXUS",
+        "blocked_by",
+        "slot_b",
+        "relation_extraction",
+        "the_threshold_is_binary:_perfect_filtering"
+      ]
+    },
+    {
+      "candidate_count": 82,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q559",
+      "intent_match": true,
+      "latency_ms": 14.78720000886824,
+      "pred_intent": "diagnostic",
+      "question": "How would you measure whether NEXUS outperforms RAG?",
+      "ranked_entities_at_k": [
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_12_Selection",
+        "blocked_by",
+        "slot_b",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+        "the_threshold_is_binary:_perfect_filtering",
+        "Concept_ArchitectureWorks",
+        "larger_mlps",
+        "selection",
+        "architecture_how"
+      ]
+    },
+    {
+      "candidate_count": 147,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q560",
+      "intent_match": false,
+      "latency_ms": 19.54759999352973,
+      "pred_intent": "factual_lookup",
+      "question": "What SAM concepts map directly to NEXUS concepts?",
+      "ranked_entities_at_k": [
+        "Concept_PivotToNEXUS",
+        "Concept",
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "sam",
+        "Concept_RetrievalMismatch",
+        "Exp_0_6_Validation",
+        "Concept_SelectorBottleneck",
+        "Concept_NoiseTolerance",
+        "Concept_OracleMemory"
+      ]
+    },
+    {
+      "candidate_count": 351,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q561",
+      "intent_match": false,
+      "latency_ms": 25.47979999508243,
+      "pred_intent": "factual_lookup",
+      "question": "What SAM concepts have NO equivalent in NEXUS?",
+      "ranked_entities_at_k": [
+        "Concept_PivotToNEXUS",
+        "Concept",
+        "Decision_PivotToNEXUS",
+        "Concept_RetrievalMismatch",
+        "Concept_ArchitectureWorks",
+        "sam",
+        "Exp_0_6_Validation",
+        "Concept_NoiseTolerance",
+        "Concept_SelectorBottleneck",
+        "Concept_ChainRetrieval"
+      ]
+    },
+    {
+      "candidate_count": 594,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q562",
+      "intent_match": false,
+      "latency_ms": 35.6677999952808,
+      "pred_intent": "factual_lookup",
+      "question": "What SAM experimental findings directly informed NEXUS design?",
+      "ranked_entities_at_k": [
+        "Experiment",
+        "experiment",
+        "migration",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation",
+        "Experiment_0_5_Report.md",
+        "experiment_0",
+        "Decision_PivotToNEXUS",
+        "experiment_index"
+      ]
+    },
+    {
+      "candidate_count": 530,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q563",
+      "intent_match": false,
+      "latency_ms": 40.40910000912845,
+      "pred_intent": "factual_lookup",
+      "question": "If you had to explain the NEXUS pivot to someone who only knows SAM, how would you do it?",
+      "ranked_entities_at_k": [
+        "migration",
+        "Concept_PivotToNEXUS",
+        "Decision_PivotToNEXUS",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation",
+        "one_memory_read,_do",
+        "integrate",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_9_OracleFilter_baseline"
+      ]
+    },
+    {
+      "candidate_count": 221,
+      "gold_entities": [
+        "Exp_0_2_CompactPKM",
+        "Exp_0_3_PKM_Candidates",
+        "Exp_0_5_DenseDataset",
+        "Exp_0_Diagnosis"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q564",
+      "intent_match": true,
+      "latency_ms": 27.833000000100583,
+      "pred_intent": "diagnostic",
+      "question": "What was the goal of the 'Pipeline Setup' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "sam",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation_dense_baseline_early",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Concept_RetrievalMismatch",
+        "Exp_0_6_Validation_retrieved_memory",
+        "The_Reasoning_Pipeline"
+      ]
+    },
+    {
+      "candidate_count": 259,
+      "gold_entities": [
+        "Exp_0_2_CompactPKM",
+        "Exp_0_3_PKM_Candidates",
+        "Exp_0_5_DenseDataset",
+        "Exp_0_Diagnosis"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q565",
+      "intent_match": true,
+      "latency_ms": 28.86679999937769,
+      "pred_intent": "diagnostic",
+      "question": "What was the key challenge of the 'Pipeline Setup' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "sam",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_dense_baseline_early",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Concept_RetrievalMismatch",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Chain_Set"
+      ]
+    },
+    {
+      "candidate_count": 219,
+      "gold_entities": [
+        "Exp_0_2_CompactPKM",
+        "Exp_0_3_PKM_Candidates",
+        "Exp_0_5_DenseDataset",
+        "Exp_0_Diagnosis"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q566",
+      "intent_match": true,
+      "latency_ms": 27.692100004060194,
+      "pred_intent": "diagnostic",
+      "question": "What was the breakthrough moment of the 'Pipeline Setup' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation",
+        "sam",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation_dense_baseline_early",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Concept_RetrievalMismatch",
+        "Exp_0_6_Validation_retrieved_memory",
+        "The_Reasoning_Pipeline"
+      ]
+    },
+    {
+      "candidate_count": 219,
+      "gold_entities": [
+        "Exp_0_2_CompactPKM",
+        "Exp_0_3_PKM_Candidates",
+        "Exp_0_5_DenseDataset",
+        "Exp_0_Diagnosis"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q567",
+      "intent_match": true,
+      "latency_ms": 26.470600001630373,
+      "pred_intent": "diagnostic",
+      "question": "What was the biggest surprise of the 'Pipeline Setup' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "sam",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation",
+        "Concept_NoiseTolerance",
+        "Exp_0_6_Validation_dense_baseline_early",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Concept_RetrievalMismatch",
+        "Exp_0_6_Validation_retrieved_memory"
+      ]
+    },
+    {
+      "candidate_count": 227,
+      "gold_entities": [
+        "Exp_0_2_CompactPKM",
+        "Exp_0_3_PKM_Candidates",
+        "Exp_0_5_DenseDataset",
+        "Exp_0_Diagnosis"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q568",
+      "intent_match": true,
+      "latency_ms": 28.88189999794122,
+      "pred_intent": "diagnostic",
+      "question": "What was the lesson for NEXUS of the 'Pipeline Setup' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Concept_PivotToNEXUS",
+        "sam",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation_dense_baseline_early",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Concept_RetrievalMismatch",
+        "Exp_0_6_Validation_retrieved_memory"
+      ]
+    },
+    {
+      "candidate_count": 457,
+      "gold_entities": [
+        "Exp_0_6_Validation",
+        "Exp_0_7_ExternalText",
+        "Exp_0_8_Aggregation",
+        "Exp_0_9_OracleFilter"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q569",
+      "intent_match": true,
+      "latency_ms": 36.14539999398403,
+      "pred_intent": "diagnostic",
+      "question": "What was the goal of the 'Core Validation' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_dense_baseline_early",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Exp_0_6_Validation_dense_openbook"
+      ]
+    },
+    {
+      "candidate_count": 494,
+      "gold_entities": [
+        "Exp_0_6_Validation",
+        "Exp_0_7_ExternalText",
+        "Exp_0_8_Aggregation",
+        "Exp_0_9_OracleFilter"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q570",
+      "intent_match": true,
+      "latency_ms": 37.42340000462718,
+      "pred_intent": "diagnostic",
+      "question": "What was the key challenge of the 'Core Validation' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation_dense_baseline_early",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Decision_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 455,
+      "gold_entities": [
+        "Exp_0_6_Validation",
+        "Exp_0_7_ExternalText",
+        "Exp_0_8_Aggregation",
+        "Exp_0_9_OracleFilter"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q571",
+      "intent_match": true,
+      "latency_ms": 38.8161000009859,
+      "pred_intent": "diagnostic",
+      "question": "What was the breakthrough moment of the 'Core Validation' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation_dense_baseline_early",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Exp_0_6_Validation_oracle_text_memory"
+      ]
+    },
+    {
+      "candidate_count": 454,
+      "gold_entities": [
+        "Exp_0_6_Validation",
+        "Exp_0_7_ExternalText",
+        "Exp_0_8_Aggregation",
+        "Exp_0_9_OracleFilter"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q572",
+      "intent_match": true,
+      "latency_ms": 37.769599992316216,
+      "pred_intent": "diagnostic",
+      "question": "What was the biggest surprise of the 'Core Validation' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation_dense_baseline_early",
+        "Exp_0_6_Validation",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Exp_0_6_Validation_oracle_text_memory"
+      ]
+    },
+    {
+      "candidate_count": 463,
+      "gold_entities": [
+        "Exp_0_6_Validation",
+        "Exp_0_7_ExternalText",
+        "Exp_0_8_Aggregation",
+        "Exp_0_9_OracleFilter"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q573",
+      "intent_match": true,
+      "latency_ms": 38.41919999103993,
+      "pred_intent": "diagnostic",
+      "question": "What was the lesson for NEXUS of the 'Core Validation' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation_core_only",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_dense_baseline_early",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Exp_0_6_Validation_oracle_text_memory"
+      ]
+    },
+    {
+      "candidate_count": 491,
+      "gold_entities": [
+        "Exp_0_10_RequiredSet",
+        "Exp_0_11_ChainRetrieval"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q574",
+      "intent_match": true,
+      "latency_ms": 39.211499999510124,
+      "pred_intent": "diagnostic",
+      "question": "What was the goal of the 'Retrieval Revolution' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation",
+        "Concept_RetrievalMismatch",
+        "Concept_ArchitectureWorks",
+        "sam_with_oracle_slot_selection_shows_that_even_perfect_retrieval",
+        "Decision_PivotToNEXUS",
+        "sam",
+        "Iterative/hierarchical_Retrieval",
+        "Exp_0_6_Validation_pkm_retrieval_early"
+      ]
+    },
+    {
+      "candidate_count": 527,
+      "gold_entities": [
+        "Exp_0_10_RequiredSet",
+        "Exp_0_11_ChainRetrieval"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q575",
+      "intent_match": true,
+      "latency_ms": 40.801099996315315,
+      "pred_intent": "diagnostic",
+      "question": "What was the key challenge of the 'Retrieval Revolution' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Concept_RetrievalMismatch",
+        "sam_with_oracle_slot_selection_shows_that_even_perfect_retrieval",
+        "sam",
+        "Exp_0_12_Selection",
+        "Iterative/hierarchical_Retrieval"
+      ]
+    },
+    {
+      "candidate_count": 489,
+      "gold_entities": [
+        "Exp_0_10_RequiredSet",
+        "Exp_0_11_ChainRetrieval"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q576",
+      "intent_match": true,
+      "latency_ms": 41.26080000423826,
+      "pred_intent": "diagnostic",
+      "question": "What was the breakthrough moment of the 'Retrieval Revolution' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation",
+        "Decision_PivotToNEXUS",
+        "Concept_RetrievalMismatch",
+        "Concept_ArchitectureWorks",
+        "sam_with_oracle_slot_selection_shows_that_even_perfect_retrieval",
+        "Exp_0_12_Selection",
+        "sam",
+        "Iterative/hierarchical_Retrieval"
+      ]
+    },
+    {
+      "candidate_count": 488,
+      "gold_entities": [
+        "Exp_0_10_RequiredSet",
+        "Exp_0_11_ChainRetrieval"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q577",
+      "intent_match": true,
+      "latency_ms": 39.97710000840016,
+      "pred_intent": "diagnostic",
+      "question": "What was the biggest surprise of the 'Retrieval Revolution' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation",
+        "Concept_ArchitectureWorks",
+        "Concept_RetrievalMismatch",
+        "sam_with_oracle_slot_selection_shows_that_even_perfect_retrieval",
+        "sam",
+        "Iterative/hierarchical_Retrieval",
+        "Exp_0_6_Validation_pkm_retrieval_early"
+      ]
+    },
+    {
+      "candidate_count": 495,
+      "gold_entities": [
+        "Exp_0_10_RequiredSet",
+        "Exp_0_11_ChainRetrieval"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q578",
+      "intent_match": true,
+      "latency_ms": 43.819800004712306,
+      "pred_intent": "diagnostic",
+      "question": "What was the lesson for NEXUS of the 'Retrieval Revolution' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation",
+        "Concept_RetrievalMismatch",
+        "Concept_ArchitectureWorks",
+        "sam_with_oracle_slot_selection_shows_that_even_perfect_retrieval",
+        "Concept_PivotToNEXUS",
+        "sam",
+        "Exp_0_12_Selection"
+      ]
+    },
+    {
+      "candidate_count": 329,
+      "gold_entities": [
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_13B_RealisticDistractors"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q579",
+      "intent_match": true,
+      "latency_ms": 31.73590000369586,
+      "pred_intent": "diagnostic",
+      "question": "What was the goal of the 'Selection & Noise' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "selection",
+        "Exp_0_12_Selection_learned_selector",
+        "Exp_0_12_Selection_equal_budget",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Exp_0_12_Selection_oracle_filter_top32",
+        "Exp_0_12_Selection_oracle_filter_top64",
+        "Decision_PivotToNEXUS",
+        "Concept_SelectorBottleneck",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation"
+      ]
+    },
+    {
+      "candidate_count": 366,
+      "gold_entities": [
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_13B_RealisticDistractors"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q580",
+      "intent_match": true,
+      "latency_ms": 33.127800008514896,
+      "pred_intent": "diagnostic",
+      "question": "What was the key challenge of the 'Selection & Noise' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "selection",
+        "Exp_0_12_Selection_learned_selector",
+        "Exp_0_12_Selection_equal_budget",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Exp_0_12_Selection_oracle_filter_top32",
+        "Exp_0_12_Selection_oracle_filter_top64",
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Concept_SelectorBottleneck",
+        "Exp_0_13A_NoisyMemory"
+      ]
+    },
+    {
+      "candidate_count": 327,
+      "gold_entities": [
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_13B_RealisticDistractors"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q581",
+      "intent_match": true,
+      "latency_ms": 32.98450000875164,
+      "pred_intent": "diagnostic",
+      "question": "What was the breakthrough moment of the 'Selection & Noise' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "selection",
+        "Exp_0_12_Selection_learned_selector",
+        "Exp_0_12_Selection_equal_budget",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Exp_0_12_Selection_oracle_filter_top32",
+        "Exp_0_12_Selection_oracle_filter_top64",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation",
+        "Concept_ArchitectureWorks",
+        "Exp_0_13A_NoisyMemory"
+      ]
+    },
+    {
+      "candidate_count": 326,
+      "gold_entities": [
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_13B_RealisticDistractors"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q582",
+      "intent_match": true,
+      "latency_ms": 31.758500001160428,
+      "pred_intent": "diagnostic",
+      "question": "What was the biggest surprise of the 'Selection & Noise' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "selection",
+        "Exp_0_12_Selection_learned_selector",
+        "Exp_0_12_Selection_equal_budget",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Decision_PivotToNEXUS",
+        "Exp_0_12_Selection_oracle_filter_top32",
+        "Exp_0_12_Selection_oracle_filter_top64",
+        "Concept_ArchitectureWorks",
+        "Concept_PivotToNEXUS",
+        "Exp_0_6_Validation"
+      ]
+    },
+    {
+      "candidate_count": 334,
+      "gold_entities": [
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_13B_RealisticDistractors"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q583",
+      "intent_match": true,
+      "latency_ms": 33.91949999786448,
+      "pred_intent": "diagnostic",
+      "question": "What was the lesson for NEXUS of the 'Selection & Noise' phase in SAM research?",
+      "ranked_entities_at_k": [
+        "selection",
+        "Exp_0_12_Selection_learned_selector",
+        "Decision_PivotToNEXUS",
+        "Exp_0_12_Selection_equal_budget",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Concept_PivotToNEXUS",
+        "Exp_0_12_Selection_oracle_filter_top32",
+        "Exp_0_12_Selection_oracle_filter_top64",
+        "Concept_SelectorBottleneck",
+        "Concept_ArchitectureWorks"
+      ]
+    },
+    {
+      "candidate_count": 194,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q584",
+      "intent_match": true,
+      "latency_ms": 25.135699994280003,
+      "pred_intent": "diagnostic",
+      "question": "What if SAM had been tested on real-world data from the start?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Questions_Tested",
+        "sam",
+        "Concept_RetrievalMismatch",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Test_On_Real_World_Tasks",
+        "Exp_0_8_Aggregation_external_text_query"
+      ]
+    },
+    {
+      "candidate_count": 595,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q585",
+      "intent_match": true,
+      "latency_ms": 50.48420000821352,
+      "pred_intent": "diagnostic",
+      "question": "What if the chain-set BCE retriever had been discovered at experiment 0.6 instead of 0.11?",
+      "ranked_entities_at_k": [
+        "Experiment",
+        "experiment",
+        "Exp_0_11_ChainRetrieval",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation",
+        "Concept_ChainRetrieval",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_13A_NoisyMemory",
+        "Decision_PivotToNEXUS",
+        "Chain_Set"
+      ]
+    },
+    {
+      "candidate_count": 33,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q586",
+      "intent_match": true,
+      "latency_ms": 14.873000007355586,
+      "pred_intent": "diagnostic",
+      "question": "What if GPU compute was unlimited and free?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "compress,_high",
+        "Exp_0_6_Validation",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_PivotToNEXUS",
+        "Exp_0_12_Selection",
+        "more_cost._knowledge_and_computation",
+        "keep\u2502_allocates_core_compute",
+        ">2\u00d7_The_Compute_Budget"
+      ]
+    },
+    {
+      "candidate_count": 183,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q587",
+      "intent_match": true,
+      "latency_ms": 23.169100008090027,
+      "pred_intent": "diagnostic",
+      "question": "What if a production LLM achieves perfect factual accuracy?",
+      "ranked_entities_at_k": [
+        "achieves",
+        "Exp_0_6_Validation",
+        "Decision_PivotToNEXUS",
+        "Exp_0_12_Selection_equal_budget",
+        "sam_with_oracle_slot_selection_shows_that_even_perfect_retrieval",
+        "Exp_0_12_Selection_oracle_filter_top32",
+        "Exp_0_12_Selection_oracle_filter_top64",
+        "Exp_0_12_Selection_learned_selector",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Exp_0_6_Validation_retrieved_memory"
+      ]
+    },
+    {
+      "candidate_count": 91,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q588",
+      "intent_match": true,
+      "latency_ms": 21.03230000648182,
+      "pred_intent": "diagnostic",
+      "question": "What if entity extraction turns out to be the bottleneck for NEXUS?",
+      "ranked_entities_at_k": [
+        "Entity",
+        "Exp_0_13A_NoisyMemory",
+        "entity_extraction",
+        "bottleneck_is_*retrieval*",
+        "Exp_0_12_Selection",
+        "Concept_PivotToNEXUS",
+        "Exp_0_6_Validation",
+        "Concept_SelectorBottleneck",
+        "Mentioned_In",
+        "Decision_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 95,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q589",
+      "intent_match": true,
+      "latency_ms": 17.026899993652478,
+      "pred_intent": "factual_lookup",
+      "question": "How many nodes are in the current NEXUS graph?",
+      "ranked_entities_at_k": [
+        "Concept_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Exp_0_13A_NoisyMemory",
+        "Node_Types",
+        "current_status",
+        "[node_ids]",
+        "Concept_SelectorBottleneck",
+        "Exp_0_12_Selection",
+        "Current_Status"
+      ]
+    },
+    {
+      "candidate_count": 100,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q590",
+      "intent_match": true,
+      "latency_ms": 17.00409999466501,
+      "pred_intent": "factual_lookup",
+      "question": "How many edges are in the current NEXUS graph?",
+      "ranked_entities_at_k": [
+        "Concept_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "incoming_edges",
+        "Exp_0_13A_NoisyMemory",
+        "current_status",
+        "outgoing_edges",
+        "Knowledge",
+        "Concept_SelectorBottleneck",
+        "Exp_0_12_Selection"
+      ]
+    },
+    {
+      "candidate_count": 552,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q591",
+      "intent_match": true,
+      "latency_ms": 34.650200002943166,
+      "pred_intent": "factual_lookup",
+      "question": "How many Experiment nodes are in the NEXUS graph?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "experiment_0",
+        "Concept_PivotToNEXUS",
+        "lm_experiment",
+        "Exp_0_13A_NoisyMemory",
+        "experiment_status",
+        "Concept_ArchitectureWorks",
+        "from_experiment",
+        "Decision_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 401,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q592",
+      "intent_match": true,
+      "latency_ms": 36.274300000513904,
+      "pred_intent": "factual_lookup",
+      "question": "How many Metric nodes are in the NEXUS graph?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Concept_PivotToNEXUS",
+        "Decision_PivotToNEXUS",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Metric",
+        "Node_Types",
+        "Exp_0_6_Validation_retrieved_memory",
+        "graph_store",
+        "model_uses_memory._any_imperfection",
+        "Exp_0_12_Selection_equal_budget"
+      ]
+    },
+    {
+      "candidate_count": 96,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q593",
+      "intent_match": true,
+      "latency_ms": 17.516499996418133,
+      "pred_intent": "factual_lookup",
+      "question": "How many Concept nodes are in the NEXUS graph?",
+      "ranked_entities_at_k": [
+        "Concept_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Concept",
+        "Exp_0_13A_NoisyMemory",
+        "Decision_PivotToNEXUS",
+        "Concept_SelectorBottleneck",
+        "Concept_NoiseTolerance",
+        "Node_Types",
+        "Concept_RetrievalMismatch",
+        "Entity"
+      ]
+    },
+    {
+      "candidate_count": 99,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q594",
+      "intent_match": true,
+      "latency_ms": 16.874299995834008,
+      "pred_intent": "factual_lookup",
+      "question": "How many Decision nodes are in the NEXUS graph?",
+      "ranked_entities_at_k": [
+        "Decision",
+        "Decision_PivotToNEXUS",
+        "Function",
+        "Concept_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Concept_SelectorBottleneck",
+        "Exp_0_13A_NoisyMemory",
+        "Node_Types",
+        "Exp_0_12_Selection",
+        "model_uses_memory._any_imperfection"
+      ]
+    },
+    {
+      "candidate_count": 149,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q595",
+      "intent_match": true,
+      "latency_ms": 20.903500000713393,
+      "pred_intent": "factual_lookup",
+      "question": "What is the total node count of the NEXUS graph?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_PivotToNEXUS",
+        "Total",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_12_Selection_equal_budget",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Exp_0_12_Selection_learned_selector",
+        "Exp_0_12_Selection_oracle_filter_top32",
+        "Exp_0_12_Selection_oracle_filter_top64",
+        "Exp_0_13A_NoisyMemory_noise_+0"
+      ]
+    },
+    {
+      "candidate_count": 573,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q596",
+      "intent_match": true,
+      "latency_ms": 41.287100000772625,
+      "pred_intent": "factual_lookup",
+      "question": "What is the longest experiment dependency chain in the NEXUS graph?",
+      "ranked_entities_at_k": [
+        "Experiment",
+        "experiment",
+        "dependency_chain",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation",
+        "Concept_PivotToNEXUS",
+        "experiment_0",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "experiment_index"
+      ]
+    },
+    {
+      "candidate_count": 533,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q597",
+      "intent_match": true,
+      "latency_ms": 31.60089999437332,
+      "pred_intent": "factual_lookup",
+      "question": "Which experiment node has the most incoming edges?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "incoming_edges",
+        "experiment_0",
+        "lm_experiment",
+        "Exp_0_6_Validation",
+        "from_experiment",
+        "experiment_index",
+        "Experiment_0_5_Report.md",
+        "Exp_0_13A_NoisyMemory"
+      ]
+    },
+    {
+      "candidate_count": 317,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q598",
+      "intent_match": true,
+      "latency_ms": 23.28069999930449,
+      "pred_intent": "factual_lookup",
+      "question": "How many edges use the 'validates' relation type?",
+      "ranked_entities_at_k": [
+        "Validates",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation_core_only",
+        "use",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_random_memory",
+        "validates",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation_dense_baseline"
+      ]
+    },
+    {
+      "candidate_count": 119,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q599",
+      "intent_match": true,
+      "latency_ms": 18.74320000933949,
+      "pred_intent": "factual_lookup",
+      "question": "What instructions does the NEXUS reasoning model receive?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "reasoning_model_the",
+        "model_uses_memory._any_imperfection",
+        "Code_Symbol_Reasoning",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+        "Exp_0_6_Validation",
+        "Api_Usage_Reasoning",
+        "hop_reasoning",
+        "selection",
+        "Concept_SelectorBottleneck"
+      ]
+    },
+    {
+      "candidate_count": 66,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q600",
+      "intent_match": true,
+      "latency_ms": 14.5419999898877,
+      "pred_intent": "factual_lookup",
+      "question": "What does the evidence-to-prompt template contain?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "answer_|_read_structured_evidence",
+        "Concept_ArchitectureWorks",
+        "Concept_PivotToNEXUS",
+        "articulate",
+        "Evidence",
+        "Concept_SelectorBottleneck",
+        "connect",
+        "blocked_by",
+        "the_problem_is_distractor_quality,_train_on_hard_negatives"
+      ]
+    },
+    {
+      "candidate_count": 488,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q601",
+      "intent_match": false,
+      "latency_ms": 33.116699996753596,
+      "pred_intent": "diagnostic",
+      "question": "Why is the reasoning model explicitly told not to invent facts?",
+      "ranked_entities_at_k": [
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation",
+        "Exp_0_12_Selection",
+        "Exp_0_9_OracleFilter_oracle_filter",
+        "Exp_0_9_OracleFilter_top1",
+        "Exp_0_13A_NoisyMemory_noise_+0",
+        "Exp_0_13A_NoisyMemory_noise_+1",
+        "Exp_0_13A_NoisyMemory_noise_+2",
+        "Exp_0_13A_NoisyMemory_noise_+4",
+        "Exp_0_13A_NoisyMemory_noise_+8"
+      ]
+    },
+    {
+      "candidate_count": 116,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q602",
+      "intent_match": true,
+      "latency_ms": 20.771800001966767,
+      "pred_intent": "factual_lookup",
+      "question": "What happens if the reasoning model says 'Insufficient evidence to answer'?",
+      "ranked_entities_at_k": [
+        "answer_|_read_structured_evidence",
+        "answer",
+        "reasoning_model_the",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation",
+        "Concept_ArchitectureWorks",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+        "Code_Symbol_Reasoning",
+        "Concept_PivotToNEXUS",
+        "Api_Usage_Reasoning"
+      ]
+    },
+    {
+      "candidate_count": 113,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q603",
+      "intent_match": true,
+      "latency_ms": 18.331200000829995,
+      "pred_intent": "factual_lookup",
+      "question": "Where would you find the NEXUS graph data model specification?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation",
+        "Concept_PivotToNEXUS",
+        "model_uses_memory._any_imperfection",
+        "Concept_SelectorBottleneck",
+        "Exp_0_12_Selection",
+        "selection",
+        "Exp_0_13A_NoisyMemory",
+        "Data_Model"
+      ]
+    },
+    {
+      "candidate_count": 88,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q604",
+      "intent_match": true,
+      "latency_ms": 17.631900002015755,
+      "pred_intent": "factual_lookup",
+      "question": "Where would you find the NEXUS reasoning pipeline specification?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "The_Reasoning_Pipeline",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation",
+        "reasoning_aspect",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+        "Api_Usage_Reasoning",
+        "Concept_PivotToNEXUS",
+        "hop_reasoning",
+        "Code_Symbol_Reasoning"
+      ]
+    },
+    {
+      "candidate_count": 87,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q605",
+      "intent_match": true,
+      "latency_ms": 15.44869999634102,
+      "pred_intent": "factual_lookup",
+      "question": "Where would you find the RAG vs NEXUS comparison?",
+      "ranked_entities_at_k": [
+        "comparison",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "comparison_table",
+        "mode_comparison",
+        "model_comparison",
+        "memory_comparison",
+        "retriever_comparison",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 65,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q606",
+      "intent_match": true,
+      "latency_ms": 13.40619999973569,
+      "pred_intent": "factual_lookup",
+      "question": "Where would you find the NEXUS roadmap?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Concept_PivotToNEXUS",
+        "Exp_0_13A_NoisyMemory",
+        "roadmap_what",
+        "Concept_SelectorBottleneck",
+        "Exp_0_12_Selection",
+        "blocked_by",
+        "[roadmap](roadmap.md)",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix"
+      ]
+    },
+    {
+      "candidate_count": 606,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q607",
+      "intent_match": true,
+      "latency_ms": 34.7891000128584,
+      "pred_intent": "factual_lookup",
+      "question": "Where would you find the SAM experiment reports?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "Experiment_0_5_Report.md",
+        "Experiment_Reports",
+        "Exp_0_6_Validation",
+        "experiment_0",
+        "experiment_index",
+        "lm_experiment",
+        "Concept_ArchitectureWorks",
+        "Exp_0_13A_NoisyMemory"
+      ]
+    },
+    {
+      "candidate_count": 171,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q608",
+      "intent_match": true,
+      "latency_ms": 18.718999999691732,
+      "pred_intent": "factual_lookup",
+      "question": "Where is the SAM architecture documented?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Sam_Architecture",
+        "Architecture",
+        "Document",
+        "final_architecture",
+        "architecture_how",
+        "Decision_PivotToNEXUS",
+        "Concept_PivotToNEXUS",
+        "final_architecture_this",
+        "sam"
+      ]
+    },
+    {
+      "candidate_count": 603,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q609",
+      "intent_match": true,
+      "latency_ms": 34.22410000348464,
+      "pred_intent": "factual_lookup",
+      "question": "Where would you find the SAM experiment index?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "experiment_index",
+        "Exp_0_6_Validation",
+        "experiment_0",
+        "lm_experiment",
+        "Concept_ArchitectureWorks",
+        "Exp_0_13A_NoisyMemory",
+        "from_experiment",
+        "sam"
+      ]
+    },
+    {
+      "candidate_count": 80,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q610",
+      "intent_match": true,
+      "latency_ms": 15.843900007894263,
+      "pred_intent": "factual_lookup",
+      "question": "Where is the NEXUS graph store implementation?",
+      "ranked_entities_at_k": [
+        "Implementation_Summary",
+        "Decision_PivotToNEXUS",
+        "Concept_PivotToNEXUS",
+        "graph_store",
+        "Concept_ArchitectureWorks",
+        "Concept_SelectorBottleneck",
+        "implement_slot_wise_memory_reader",
+        "Exp_0_12_Selection",
+        "Implementation_Prepared_But_Not_Run",
+        "Exp_0_13A_NoisyMemory"
+      ]
+    },
+    {
+      "candidate_count": 68,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q611",
+      "intent_match": true,
+      "latency_ms": 15.272000004188158,
+      "pred_intent": "factual_lookup",
+      "question": "Where is the NEXUS traversal implementation?",
+      "ranked_entities_at_k": [
+        "Implementation_Summary",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "graph_traversal",
+        "Concept_SelectorBottleneck",
+        "implement_slot_wise_memory_reader",
+        "Implementation_Prepared_But_Not_Run",
+        "Concept_PivotToNEXUS",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_12_Selection"
+      ]
+    },
+    {
+      "candidate_count": 120,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q612",
+      "intent_match": true,
+      "latency_ms": 14.26490000449121,
+      "pred_intent": "factual_lookup",
+      "question": "Where is the QA dataset?",
+      "ranked_entities_at_k": [
+        "dataset.py",
+        "Dataset",
+        "Decision_PivotToNEXUS",
+        "dense_dataset",
+        "Dataset_Design",
+        "Exp_0_6_Validation",
+        "sam/data/dataset.py",
+        "Exp_0_12_Selection",
+        "dense_dataset_fix",
+        "Dataset_Evolution"
+      ]
+    },
+    {
+      "candidate_count": 266,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q613",
+      "intent_match": true,
+      "latency_ms": 24.847000007866882,
+      "pred_intent": "factual_lookup",
+      "question": "What is the SAM core model size in parameters?",
+      "ranked_entities_at_k": [
+        "more_parameters",
+        "Concept_ArchitectureWorks",
+        "sam",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation",
+        "core",
+        "model_uses_memory._any_imperfection",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "\u22653b_Parameter",
+        "Concept_RetrievalMismatch"
+      ]
+    },
+    {
+      "candidate_count": 212,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q614",
+      "intent_match": true,
+      "latency_ms": 21.071099996333942,
+      "pred_intent": "factual_lookup",
+      "question": "What is the d_model of the SAM transformer?",
+      "ranked_entities_at_k": [
+        "sam/model/transformer.py",
+        "[core_transformer_with_memory_layers]",
+        "sam",
+        "dense_transformer",
+        "Concept_ArchitectureWorks",
+        "switch_transformer",
+        "universal_transformer",
+        "byte_latent_transformer",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation"
+      ]
+    },
+    {
+      "candidate_count": 141,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q615",
+      "intent_match": true,
+      "latency_ms": 18.018500006292015,
+      "pred_intent": "factual_lookup",
+      "question": "How many attention heads does SAM use?",
+      "ranked_entities_at_k": [
+        "sam",
+        "Concept_RetrievalMismatch",
+        "use",
+        "Exp_0_6_Validation",
+        "model_uses_memory._any_imperfection",
+        "Decision_PivotToNEXUS",
+        "Attention_Visualization",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Concept_ArchitectureWorks",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware"
+      ]
+    },
+    {
+      "candidate_count": 150,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q616",
+      "intent_match": true,
+      "latency_ms": 15.495200001168996,
+      "pred_intent": "factual_lookup",
+      "question": "How many transformer layers in SAM?",
+      "ranked_entities_at_k": [
+        "[core_transformer_with_memory_layers]",
+        "dense_transformer",
+        "universal_transformer",
+        "switch_transformer",
+        "byte_latent_transformer",
+        "sam",
+        "Same_Active_Compute_Dense_Transformer",
+        "Intermediate_Transformer_Hidden_States",
+        "Concept_ArchitectureWorks",
+        "evidence_building_transform"
+      ]
+    },
+    {
+      "candidate_count": 179,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q617",
+      "intent_match": true,
+      "latency_ms": 19.464199998765253,
+      "pred_intent": "factual_lookup",
+      "question": "What is the d_ff of the SAM transformer?",
+      "ranked_entities_at_k": [
+        "[core_transformer_with_memory_layers]",
+        "dense_transformer",
+        "sam",
+        "Concept_ArchitectureWorks",
+        "switch_transformer",
+        "universal_transformer",
+        "byte_latent_transformer",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation",
+        "evidence_building_transform"
+      ]
+    },
+    {
+      "candidate_count": 191,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q618",
+      "intent_match": true,
+      "latency_ms": 16.480599995702505,
+      "pred_intent": "factual_lookup",
+      "question": "How many subkeys in SAM's PKM?",
+      "ranked_entities_at_k": [
+        "sam",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation",
+        "Concept_ArchitectureWorks",
+        "Exp_0_3_PKM_Candidates_subkey_loss",
+        "Decision_PivotToNEXUS",
+        "config:_yaml/json_keys",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Concept_RetrievalMismatch",
+        "model_uses_memory._any_imperfection"
+      ]
+    },
+    {
+      "candidate_count": 317,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q619",
+      "intent_match": true,
+      "latency_ms": 20.51740000024438,
+      "pred_intent": "factual_lookup",
+      "question": "What is the PKM value dimension?",
+      "ranked_entities_at_k": [
+        "Exp_0_6_Validation",
+        "Decision_PivotToNEXUS",
+        "pkm",
+        "Exp_0_6_Validation_retrieved_memory",
+        "|_value_precision_|_bf16_train",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_12_Selection_learned_selector",
+        "Exp_0_12_Selection_equal_budget",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_12_Selection_fixed_top_by_hop"
+      ]
+    },
+    {
+      "candidate_count": 219,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q620",
+      "intent_match": true,
+      "latency_ms": 21.754400004283525,
+      "pred_intent": "factual_lookup",
+      "question": "What is the default top_k for SAM PKM?",
+      "ranked_entities_at_k": [
+        "sam",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Concept_RetrievalMismatch",
+        "Exp_0_6_Validation_retrieved_memory",
+        "def_verify",
+        "def_score_path"
+      ]
+    },
+    {
+      "candidate_count": 617,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q621",
+      "intent_match": true,
+      "latency_ms": 32.61129999009427,
+      "pred_intent": "factual_lookup",
+      "question": "How many training epochs for SAM experiments?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "experiments",
+        "Experiment_0_5_Report.md",
+        "experiments_0.0",
+        "experiment_0",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation",
+        "Experiment_Reports",
+        "Exp_0_12_Selection"
+      ]
+    },
+    {
+      "candidate_count": 172,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q622",
+      "intent_match": true,
+      "latency_ms": 17.820000008214265,
+      "pred_intent": "factual_lookup",
+      "question": "What batch size for SAM training?",
+      "ranked_entities_at_k": [
+        "batch_size",
+        "sam",
+        "Training",
+        "use_training",
+        "0)_during_training",
+        "Batch_Size",
+        "Concept_RetrievalMismatch",
+        "training_objective",
+        "Decision_PivotToNEXUS",
+        "focus_on_distractor_quality_and_training_dynamics_|"
+      ]
+    },
+    {
+      "candidate_count": 174,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q623",
+      "intent_match": true,
+      "latency_ms": 18.17759999539703,
+      "pred_intent": "factual_lookup",
+      "question": "What learning rate for SAM training?",
+      "ranked_entities_at_k": [
+        "no_learning",
+        "Learning_Rate",
+        "sam",
+        "Training",
+        "use_training",
+        "Decision_PivotToNEXUS",
+        "0)_during_training",
+        "training_objective",
+        "Concept_ArchitectureWorks",
+        "focus_on_distractor_quality_and_training_dynamics_|"
+      ]
+    },
+    {
+      "candidate_count": 160,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q624",
+      "intent_match": true,
+      "latency_ms": 15.879800004768185,
+      "pred_intent": "factual_lookup",
+      "question": "How many warmup steps for SAM?",
+      "ranked_entities_at_k": [
+        "steps",
+        "Warmup",
+        "sam",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "steps_1",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation",
+        "step_1:_embed_question",
+        "step_1:_parse_question",
+        "Exp_0_6_Validation_retrieved_memory"
+      ]
+    },
+    {
+      "candidate_count": 576,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q625",
+      "intent_match": true,
+      "latency_ms": 31.353400001535192,
+      "pred_intent": "factual_lookup",
+      "question": "What device were SAM experiments run on?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "experiments",
+        "Exp_0_6_Validation",
+        "experiments_0.0",
+        "experiment_0",
+        "Experiment_0_5_Report.md",
+        "Exp_0_13A_NoisyMemory",
+        "Experiment_Reports",
+        "experiment_index"
+      ]
+    },
+    {
+      "candidate_count": 306,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q626",
+      "intent_match": true,
+      "latency_ms": 20.743200002470985,
+      "pred_intent": "factual_lookup",
+      "question": "How many validation examples?",
+      "ranked_entities_at_k": [
+        "Validation",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation_dense_openbook",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "full_validation",
+        "Exp_0_6_Validation_dense_baseline_early"
+      ]
+    },
+    {
+      "candidate_count": 36,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q627",
+      "intent_match": true,
+      "latency_ms": 11.804399997345172,
+      "pred_intent": "factual_lookup",
+      "question": "How many test examples?",
+      "ranked_entities_at_k": [
+        "Test",
+        "Validates",
+        "Failure_Examples",
+        "Exp_0_6_Validation",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Exp_0_13A_NoisyMemory",
+        "Test_Results",
+        "Prediction_Comparison_(50_Test_Examples)",
+        "Exp_0_12_Selection"
+      ]
+    },
+    {
+      "candidate_count": 19,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q628",
+      "intent_match": true,
+      "latency_ms": 10.993300005793571,
+      "pred_intent": "factual_lookup",
+      "question": "What tokenizer vocabulary size?",
+      "ranked_entities_at_k": [
+        "tokenizer",
+        "Decision_PivotToNEXUS",
+        "Concept_PivotToNEXUS",
+        "token_chain",
+        "Set_Tokenizer()",
+        "Concept_ArchitectureWorks",
+        "Vocab",
+        "header",
+        "more_flops_per_token",
+        "larger_mlps"
+      ]
+    },
+    {
+      "candidate_count": 74,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q629",
+      "intent_match": true,
+      "latency_ms": 15.660999997635372,
+      "pred_intent": "factual_lookup",
+      "question": "How many possible answers in the synthetic QA task?",
+      "ranked_entities_at_k": [
+        "answer",
+        "answer_|_read_structured_evidence",
+        "Exp_0_6_Validation",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "synthetic_facts.py",
+        "Synthetic_Dataset",
+        "dataset_design_synthetic",
+        "Concept_SelectorBottleneck",
+        "natural_language_answer"
+      ]
+    },
+    {
+      "candidate_count": 191,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q630",
+      "intent_match": true,
+      "latency_ms": 20.777099998667836,
+      "pred_intent": "factual_lookup",
+      "question": "What normalization does the SAM transformer use?",
+      "ranked_entities_at_k": [
+        "[core_transformer_with_memory_layers]",
+        "Name_Normalization",
+        "dense_transformer",
+        "switch_transformer",
+        "Concept_ArchitectureWorks",
+        "sam",
+        "universal_transformer",
+        "Exp_0_6_Validation",
+        "use",
+        "Exp_0_6_Validation_retrieved_memory"
+      ]
+    },
+    {
+      "candidate_count": 320,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q631",
+      "intent_match": true,
+      "latency_ms": 31.3973000011174,
+      "pred_intent": "factual_lookup",
+      "question": "What is the SAM memory block injection frequency?",
+      "ranked_entities_at_k": [
+        "Concept_RetrievalMismatch",
+        "Memory_Injection_Path",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Concept_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 299,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q632",
+      "intent_match": true,
+      "latency_ms": 33.35329999390524,
+      "pred_intent": "factual_lookup",
+      "question": "What is the difference between the dense baseline and SAM core_only in parameters?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "more_parameters",
+        "Exp_0_9_OracleFilter_baseline",
+        "the_core_difference",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_6_Validation_dense_baseline_early",
+        "Concept_ArchitectureWorks",
+        "Dense_Baseline"
+      ]
+    },
+    {
+      "candidate_count": 452,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q633",
+      "intent_match": true,
+      "latency_ms": 34.97500000230502,
+      "pred_intent": "factual_lookup",
+      "question": "What does SAM oracle_memory accuracy converge to?",
+      "ranked_entities_at_k": [
+        "Oracle_Memory",
+        "oracle_memory",
+        "Exp_0_6_Validation_oracle_memory",
+        "Concept_OracleMemory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Sam_Oracle_Memory",
+        "Concept_ArchitectureWorks",
+        "oracle_text_memory",
+        "Sam_Oracle_Memory_Works",
+        "Exp_0_6_Validation"
+      ]
+    },
+    {
+      "candidate_count": 396,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q634",
+      "intent_match": true,
+      "latency_ms": 31.959300002199598,
+      "pred_intent": "factual_lookup",
+      "question": "What was the total wall time for oracle_memory training?",
+      "ranked_entities_at_k": [
+        "Oracle_Memory",
+        "oracle_memory",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "oracle_text_memory",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_9_OracleFilter_oracle_filter",
+        "Sam_Oracle_Memory",
+        "Exp_0_6_Validation"
+      ]
+    },
+    {
+      "candidate_count": 248,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q635",
+      "intent_match": true,
+      "latency_ms": 27.803200006019324,
+      "pred_intent": "factual_lookup",
+      "question": "What was the total wall time for controlled noise +1 training?",
+      "ranked_entities_at_k": [
+        "Exp_0_13A_NoisyMemory",
+        "Concept_ArchitectureWorks",
+        "Concept_NoiseTolerance",
+        "Exp_0_13A_NoisyMemory_noise_+1",
+        "Decision_PivotToNEXUS",
+        "Controlled_Distractor",
+        "Exp_0_13A_NoisyMemory_noise_+0",
+        "Exp_0_13A_NoisyMemory_noise_+2",
+        "Exp_0_13A_NoisyMemory_noise_+4",
+        "Exp_0_13A_NoisyMemory_noise_+8"
+      ]
+    },
+    {
+      "candidate_count": 104,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q636",
+      "intent_match": true,
+      "latency_ms": 17.247800002223812,
+      "pred_intent": "factual_lookup",
+      "question": "What selector loss function is used?",
+      "ranked_entities_at_k": [
+        "Function",
+        "Exp_0_12_Selection_learned_selector",
+        "Concept_PivotToNEXUS",
+        "Exp_0_12_Selection_equal_budget",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Exp_0_12_Selection_oracle_filter_top32",
+        "Exp_0_12_Selection_oracle_filter_top64",
+        "Concept_SelectorBottleneck",
+        "Exp_0_12_Selection",
+        "Decision_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 150,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q637",
+      "intent_match": true,
+      "latency_ms": 21.379300000262447,
+      "pred_intent": "factual_lookup",
+      "question": "How many features does the selector use per slot?",
+      "ranked_entities_at_k": [
+        "slot_selector",
+        "selection",
+        "Exp_0_12_Selection_learned_selector",
+        "use",
+        "Slot_Selector",
+        "slot_a",
+        "slot_b",
+        "Concept_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Exp_0_12_Selection"
+      ]
+    },
+    {
+      "candidate_count": 556,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q638",
+      "intent_match": true,
+      "latency_ms": 35.279899995657615,
+      "pred_intent": "factual_lookup",
+      "question": "What were the three bugs found in the pipeline diagnosis experiment?",
+      "ranked_entities_at_k": [
+        "Experiment",
+        "experiment",
+        "pipeline_diagnosis",
+        "Exp_0_Diagnosis",
+        "migration",
+        "bug",
+        "Exp_0_9_OracleFilter_baseline",
+        "Decision_PivotToNEXUS",
+        "experiment_0",
+        "Exp_0_13A_NoisyMemory"
+      ]
+    },
+    {
+      "candidate_count": 209,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q639",
+      "intent_match": true,
+      "latency_ms": 20.798900004592724,
+      "pred_intent": "factual_lookup",
+      "question": "What was the original dataset's examples-per-slot count?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation",
+        "slot_a",
+        "slot_b",
+        "slot",
+        "Exp_0_13A_NoisyMemory",
+        "slot_c",
+        "Decision_PivotToNEXUS",
+        "original_gates",
+        "Concept_SelectorBottleneck"
+      ]
+    },
+    {
+      "candidate_count": 559,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q640",
+      "intent_match": true,
+      "latency_ms": 35.284300000057556,
+      "pred_intent": "factual_lookup",
+      "question": "What does the slot graph expander do differently from chain-set BCE?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "slot_graph_expander",
+        "Chain_Set",
+        "slot_a",
+        "slot_b",
+        "Exp_0_6_Validation",
+        "slot",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "slot_c"
+      ]
+    },
+    {
+      "candidate_count": 602,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q641",
+      "intent_match": true,
+      "latency_ms": 50.5332000029739,
+      "pred_intent": "factual_lookup",
+      "question": "What was the oracle filter accuracy at top8 in experiment 0.12?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "Exp_0_9_OracleFilter_top1",
+        "Exp_0_9_OracleFilter_oracle_filter",
+        "Exp_0_9_OracleFilter_weighted_t005_top8",
+        "Exp_0_12_Selection",
+        "Exp_0_9_OracleFilter_baseline",
+        "Exp_0_12_Selection_oracle_filter_top32",
+        "Exp_0_12_Selection_oracle_filter_top64",
+        "Exp_0_9_OracleFilter"
+      ]
+    },
+    {
+      "candidate_count": 321,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q642",
+      "intent_match": true,
+      "latency_ms": 28.222799999639392,
+      "pred_intent": "factual_lookup",
+      "question": "What is the recall@32 from SAM's internal PKM vs the dual encoder?",
+      "ranked_entities_at_k": [
+        "dual_encoder",
+        "Concept_RetrievalMismatch",
+        "dual_encoder_recall_the",
+        "Dual_Encoder",
+        "query_encoder",
+        "Decision_PivotToNEXUS",
+        "Pkm_Recall_Vs_Dual_Encoder_Recall",
+        "Concept_ArchitectureWorks",
+        "Recall",
+        "Internal_Pkm"
+      ]
+    },
+    {
+      "candidate_count": 673,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q643",
+      "intent_match": true,
+      "latency_ms": 31.841100004385225,
+      "pred_intent": "factual_lookup",
+      "question": "What experiment tested oracle_text_memory?",
+      "ranked_entities_at_k": [
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Experiment",
+        "oracle_text_memory",
+        "experiment",
+        "Oracle_Memory",
+        "Oracle_Text_Memory",
+        "Exp_0_6_Validation_oracle_memory",
+        "Oracle_Text_Memory_Works",
+        "Sam_Oracle_Text_Memory",
+        "oracle_memory"
+      ]
+    },
+    {
+      "candidate_count": 657,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q644",
+      "intent_match": true,
+      "latency_ms": 39.143799993325956,
+      "pred_intent": "factual_lookup",
+      "question": "What was the memory_adapter_pretrain experiment in 0.7?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "train_memory_adapter",
+        "Exp_0_6_Validation",
+        "Exp_0_7_ExternalText_hidden_adapter",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_13A_NoisyMemory_noise_+0",
+        "Exp_0_13A_NoisyMemory_noise_+1",
+        "Exp_0_13A_NoisyMemory_noise_+2",
+        "Exp_0_13A_NoisyMemory_noise_+4"
+      ]
+    },
+    {
+      "candidate_count": 114,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q645",
+      "intent_match": true,
+      "latency_ms": 18.88659999531228,
+      "pred_intent": "factual_lookup",
+      "question": "What did the retriever_interface_comparison in 0.8 find?",
+      "ranked_entities_at_k": [
+        "Interface_Comparison",
+        "retriever_comparison",
+        "Retriever_Comparison",
+        "compare_retriever_interfaces.py",
+        "retriever_interface_consistency",
+        "sam/eval/compare_retriever_interfaces.py",
+        "retrieval_interface",
+        "Retrieval_Comparison",
+        "Chain_Retriever_Comparison",
+        "retrieval_interface_fix"
+      ]
+    },
+    {
+      "candidate_count": 536,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q646",
+      "intent_match": true,
+      "latency_ms": 32.548100003623404,
+      "pred_intent": "factual_lookup",
+      "question": "What multi-query variants were tested in experiment 0.9?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "Exp_0_9_OracleFilter",
+        "Exp_0_6_Validation",
+        "Exp_0_8_Aggregation",
+        "Exp_0_7_ExternalText_external_text_query",
+        "Questions_Tested",
+        "experiment_0",
+        "Exp_0_8_Aggregation_external_text_query",
+        "Exp_0_13A_NoisyMemory"
+      ]
+    },
+    {
+      "candidate_count": 574,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q647",
+      "intent_match": true,
+      "latency_ms": 35.37499999220017,
+      "pred_intent": "factual_lookup",
+      "question": "What is the chain_set_hardneg variant in experiment 0.11?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "Chain_Set",
+        "Exp_0_12_Selection",
+        "Exp_0_6_Validation",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "experiment_0",
+        "Exp_0_13A_NoisyMemory",
+        "lm_experiment",
+        "Concept_ArchitectureWorks"
+      ]
+    },
+    {
+      "candidate_count": 61,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q648",
+      "intent_match": true,
+      "latency_ms": 18.74909999605734,
+      "pred_intent": "factual_lookup",
+      "question": "How does rule-based entity extraction from Python code work?",
+      "ranked_entities_at_k": [
+        "Entity",
+        "entity_extraction",
+        "Exp_0_6_Validation",
+        "Mentioned_In",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "python",
+        "Rule_Based",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory"
+      ]
+    },
+    {
+      "candidate_count": 46,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q649",
+      "intent_match": true,
+      "latency_ms": 16.511399997398257,
+      "pred_intent": "factual_lookup",
+      "question": "How does rule-based entity extraction from markdown work?",
+      "ranked_entities_at_k": [
+        "Entity",
+        "entity_extraction",
+        "Mentioned_In",
+        "Exp_0_6_Validation",
+        "Decision_PivotToNEXUS",
+        "Rule_Based",
+        "Exp_0_12_Selection",
+        "Concept_ArchitectureWorks",
+        "Step_2:_Entity_Extraction",
+        "relation_extraction"
+      ]
+    },
+    {
+      "candidate_count": 38,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q650",
+      "intent_match": true,
+      "latency_ms": 13.432400010060519,
+      "pred_intent": "factual_lookup",
+      "question": "How does LLM-based entity extraction work?",
+      "ranked_entities_at_k": [
+        "Entity",
+        "entity_extraction",
+        "Mentioned_In",
+        "Exp_0_6_Validation",
+        "Step_2:_Entity_Extraction",
+        "Llm_Based",
+        "relation_extraction",
+        "Concept_ArchitectureWorks",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory"
+      ]
+    },
+    {
+      "candidate_count": 65,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q651",
+      "intent_match": true,
+      "latency_ms": 15.149400001973845,
+      "pred_intent": "factual_lookup",
+      "question": "How does the deduplication merge strategy work?",
+      "ranked_entities_at_k": [
+        "Merge_Strategy",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation",
+        "selection",
+        "Strategy",
+        "Direction_Strategy",
+        "Concept_RetrievalMismatch",
+        "model_uses_memory._any_imperfection",
+        "the_problem_is_distractor_quality,_train_on_hard_negatives",
+        "Knowledge"
+      ]
+    },
+    {
+      "candidate_count": 76,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q652",
+      "intent_match": true,
+      "latency_ms": 15.84220000950154,
+      "pred_intent": "factual_lookup",
+      "question": "What sources feed into the NEXUS ingestion pipeline?",
+      "ranked_entities_at_k": [
+        "ingestion_sources",
+        "Decision_PivotToNEXUS",
+        "integration_pipeline**_\u2014",
+        "Concept_PivotToNEXUS",
+        "Step_1:_Ingestion_Sources",
+        "selection",
+        "Concept_ArchitectureWorks",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_SelectorBottleneck",
+        "Exp_0_12_Selection"
+      ]
+    },
+    {
+      "candidate_count": 27,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q653",
+      "intent_match": true,
+      "latency_ms": 13.121100011630915,
+      "pred_intent": "factual_lookup",
+      "question": "How frequently should NEXUS ingestion run?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_PivotToNEXUS",
+        "ingestion_sources",
+        "Exp_0_12_Selection",
+        "Concept_ArchitectureWorks",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_SelectorBottleneck",
+        "slot_b",
+        "Step_1:_Ingestion_Sources",
+        "Exp_0_11_ChainRetrieval"
+      ]
+    },
+    {
+      "candidate_count": 587,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q654",
+      "intent_match": true,
+      "latency_ms": 38.04720001062378,
+      "pred_intent": "factual_lookup",
+      "question": "What SAM configurations were tested in experiment 0.9?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "Questions_Tested",
+        "Exp_0_6_Validation",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_12_Selection",
+        "experiment_0",
+        "lm_experiment",
+        "Exp_0_8_Aggregation",
+        "Decision_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 588,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q655",
+      "intent_match": true,
+      "latency_ms": 37.04130000551231,
+      "pred_intent": "factual_lookup",
+      "question": "What SAM configurations were tested in experiment 0.12?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "Questions_Tested",
+        "Exp_0_6_Validation",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_12_Selection",
+        "experiment_0",
+        "lm_experiment",
+        "Decision_PivotToNEXUS",
+        "Exp_0_8_Aggregation"
+      ]
+    },
+    {
+      "candidate_count": 525,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q656",
+      "intent_match": true,
+      "latency_ms": 33.68409999529831,
+      "pred_intent": "factual_lookup",
+      "question": "What noise levels were tested in experiment 0.13A?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_13A_NoisyMemory_noise_+0",
+        "Exp_0_13A_NoisyMemory_noise_+1",
+        "Exp_0_13A_NoisyMemory_noise_+2",
+        "Exp_0_13A_NoisyMemory_noise_+4",
+        "Exp_0_13A_NoisyMemory_noise_+8",
+        "Exp_0_13A_NoisyMemory_noise_+16",
+        "Exp_0_6_Validation"
+      ]
+    },
+    {
+      "candidate_count": 641,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q657",
+      "intent_match": true,
+      "latency_ms": 36.154700006591156,
+      "pred_intent": "factual_lookup",
+      "question": "What topK values in chain-set retrieval experiments?",
+      "ranked_entities_at_k": [
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "experiment",
+        "Experiment",
+        "Exp_0_11_ChainRetrieval",
+        "Experiment_0.11_\u2014_Chain_Aware_Retrieval",
+        "experiments",
+        "Chain_Set",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation",
+        "Concept_ChainRetrieval"
+      ]
+    },
+    {
+      "candidate_count": 170,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q658",
+      "intent_match": true,
+      "latency_ms": 19.16209999762941,
+      "pred_intent": "factual_lookup",
+      "question": "What PKM configuration does SAM use?",
+      "ranked_entities_at_k": [
+        "Memory_Configuration",
+        "Concept_RetrievalMismatch",
+        "sam",
+        "use",
+        "Exp_0_6_Validation",
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Config_Files",
+        "Exp_0_6_Validation_core_only"
+      ]
+    },
+    {
+      "candidate_count": 510,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q659",
+      "intent_match": true,
+      "latency_ms": 30.38669998932164,
+      "pred_intent": "factual_lookup",
+      "question": "What retriever configurations in experiment 0.11?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_12_Selection",
+        "experiment_metrics",
+        "experiment_0",
+        "Decision_PivotToNEXUS",
+        "Concept_RetrievalMismatch"
+      ]
+    },
+    {
+      "candidate_count": 202,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q660",
+      "intent_match": true,
+      "latency_ms": 21.975600000587292,
+      "pred_intent": "factual_lookup",
+      "question": "What is the SAM training configuration?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "sam",
+        "Training",
+        "Memory_Configuration",
+        "use_training",
+        "Concept_RetrievalMismatch",
+        "0)_during_training",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_retrieved_memory"
+      ]
+    },
+    {
+      "candidate_count": 74,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q661",
+      "intent_match": true,
+      "latency_ms": 15.934900002321228,
+      "pred_intent": "factual_lookup",
+      "question": "What is the default beam width for NEXUS traversal?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_SelectorBottleneck",
+        "graph_traversal",
+        "Concept_PivotToNEXUS",
+        "Traversal_Before_Llm",
+        "Exp_0_12_Selection",
+        "def_verify",
+        "def_score_path"
+      ]
+    },
+    {
+      "candidate_count": 77,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q662",
+      "intent_match": true,
+      "latency_ms": 15.89330000570044,
+      "pred_intent": "factual_lookup",
+      "question": "What is the default max traversal depth for NEXUS?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Concept_SelectorBottleneck",
+        "graph_traversal",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_PivotToNEXUS",
+        "Traversal_Before_Llm",
+        "def_verify",
+        "Exp_0_12_Selection",
+        "def_score_path"
+      ]
+    },
+    {
+      "candidate_count": 32,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q663",
+      "intent_match": true,
+      "latency_ms": 12.69819999288302,
+      "pred_intent": "factual_lookup",
+      "question": "What edge confidence thresholds in NEXUS?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Gate_Thresholds",
+        "the_threshold_is_binary:_perfect_filtering",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_PivotToNEXUS",
+        "confidence_scores_every",
+        "Confidence_Weighted",
+        "Concept_SelectorBottleneck",
+        "incoming_edges"
+      ]
+    },
+    {
+      "candidate_count": 123,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q664",
+      "intent_match": true,
+      "latency_ms": 17.21410000754986,
+      "pred_intent": "factual_lookup",
+      "question": "What LLM candidates for NEXUS reasoning model?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "\u2502_a\u00d7b_candidates",
+        "Code_Symbol_Reasoning",
+        "Exp_0_12_Selection",
+        "hop_reasoning",
+        "Api_Usage_Reasoning",
+        "Concept_PivotToNEXUS",
+        "graph_reasoning",
+        "reasoning_model_the",
+        "reasoning_aspect"
+      ]
+    },
+    {
+      "candidate_count": 123,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q665",
+      "intent_match": true,
+      "latency_ms": 18.7387000041781,
+      "pred_intent": "factual_lookup",
+      "question": "What is the target inference time for NEXUS reasoning model?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "reasoning_model_the",
+        "Concept_ArchitectureWorks",
+        "Code_Symbol_Reasoning",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+        "Api_Usage_Reasoning",
+        "Inference",
+        "hop_reasoning",
+        "Concept_SelectorBottleneck",
+        "Exp_0_13A_NoisyMemory"
+      ]
+    },
+    {
+      "candidate_count": 59,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q666",
+      "intent_match": true,
+      "latency_ms": 14.138500002445653,
+      "pred_intent": "factual_lookup",
+      "question": "What graph databases for NEXUS production?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_PivotToNEXUS",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_12_Selection",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_6_Validation_oracle_memory",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Concept_SelectorBottleneck"
+      ]
+    },
+    {
+      "candidate_count": 121,
+      "gold_entities": [
+        "Exp_0_5_DenseDataset"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q667",
+      "intent_match": true,
+      "latency_ms": 15.03910000610631,
+      "pred_intent": "factual_lookup",
+      "question": "What are the 5 synthetic datasets?",
+      "ranked_entities_at_k": [
+        "Synthetic_Dataset",
+        "dataset_design_synthetic",
+        "Concept_ArchitectureWorks",
+        "Dense_Dataset_(data/synthetic_Dense)",
+        "synthetic_facts.py",
+        "Exp_0_6_Validation",
+        "Dataset",
+        "sam/data/synthetic_facts.py",
+        "Decision_PivotToNEXUS",
+        "Dataset_Design"
+      ]
+    },
+    {
+      "candidate_count": 7,
+      "gold_entities": [
+        "Exp_0_5_DenseDataset"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q668",
+      "intent_match": true,
+      "latency_ms": 10.581000009551644,
+      "pred_intent": "factual_lookup",
+      "question": "What is in kb.jsonl?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Concept_PivotToNEXUS",
+        "roadmap_what",
+        "Concept_SelectorBottleneck",
+        "current_status_what",
+        "Detailed_Predictions.jsonl"
+      ]
+    },
+    {
+      "candidate_count": 28,
+      "gold_entities": [
+        "Exp_0_5_DenseDataset"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q669",
+      "intent_match": true,
+      "latency_ms": 11.068000007071532,
+      "pred_intent": "factual_lookup",
+      "question": "What is in train.jsonl?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "train_ex",
+        "Train.log",
+        "Concept_ArchitectureWorks",
+        "|_value_precision_|_bf16_train",
+        "Training",
+        "train_recall",
+        "train_sam.py",
+        "Concept_PivotToNEXUS",
+        "train_dense.py"
+      ]
+    },
+    {
+      "candidate_count": 287,
+      "gold_entities": [
+        "Exp_0_5_DenseDataset"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q670",
+      "intent_match": true,
+      "latency_ms": 23.981299993465655,
+      "pred_intent": "factual_lookup",
+      "question": "What hop counts exist in synthetic dataset?",
+      "ranked_entities_at_k": [
+        "dataset_design_synthetic",
+        "Synthetic_Dataset",
+        "Exp_0_6_Validation",
+        "Decision_PivotToNEXUS",
+        "synthetic_facts.py",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Dense_Dataset_(data/synthetic_Dense)",
+        "Concept_ArchitectureWorks",
+        "Dataset",
+        "Exp_0_6_Validation_retrieved_memory"
+      ]
+    },
+    {
+      "candidate_count": 127,
+      "gold_entities": [
+        "Exp_0_5_DenseDataset"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q671",
+      "intent_match": true,
+      "latency_ms": 15.10779999080114,
+      "pred_intent": "factual_lookup",
+      "question": "What are the dataset splits?",
+      "ranked_entities_at_k": [
+        "Dataset",
+        "dataset.py",
+        "Concept_ArchitectureWorks",
+        "Synthetic_Dataset",
+        "dense_dataset",
+        "Concept_PivotToNEXUS",
+        "Scale_Dataset",
+        "Decision_PivotToNEXUS",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation"
+      ]
+    },
+    {
+      "candidate_count": 98,
+      "gold_entities": [
+        "Exp_0_5_DenseDataset"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q672",
+      "intent_match": true,
+      "latency_ms": 14.489200009847991,
+      "pred_intent": "factual_lookup",
+      "question": "What seed for dataset generation?",
+      "ranked_entities_at_k": [
+        "Dataset",
+        "dataset.py",
+        "Exp_0_12_Selection",
+        "augmented_generation",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation",
+        "Concept_PivotToNEXUS",
+        "dense_dataset",
+        "Dataset_Evolution",
+        "Candidate_Generation:_Solved"
+      ]
+    },
+    {
+      "candidate_count": 405,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q673",
+      "intent_match": true,
+      "latency_ms": 28.49959999730345,
+      "pred_intent": "comparison",
+      "question": "Compare SAM core_only, oracle_memory, retrieved_memory.",
+      "ranked_entities_at_k": [
+        "Oracle_Memory",
+        "Exp_0_6_Validation_retrieved_memory",
+        "retrieved_memory",
+        "Exp_0_6_Validation",
+        "Retrieved_Memory",
+        "oracle_memory",
+        "Retrieved_Memory_Sam",
+        "Exp_0_6_Validation_oracle_memory",
+        "retrieved_text_memory",
+        "Concept_ArchitectureWorks"
+      ]
+    },
+    {
+      "candidate_count": 136,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q674",
+      "intent_match": true,
+      "latency_ms": 17.46189998812042,
+      "pred_intent": "comparison",
+      "question": "Compare dual encoder, chain-set BCE, NEXUS traversal.",
+      "ranked_entities_at_k": [
+        "dual_encoder",
+        "Chain_Set",
+        "Dual_Encoder",
+        "query_encoder",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "chunk",
+        "Concept_RetrievalMismatch",
+        "Concept_ChainRetrieval",
+        "graph_traversal",
+        "Decision_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 223,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q675",
+      "intent_match": true,
+      "latency_ms": 20.20849999098573,
+      "pred_intent": "comparison",
+      "question": "Compare SAM gate, selector, NEXUS verifier.",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_PivotToNEXUS",
+        "Exp_0_12_Selection_learned_selector",
+        "gate",
+        "sam",
+        "Concept_ArchitectureWorks",
+        "Revalidate_Learned_Selector",
+        "Exp_0_6_Validation",
+        "gate_shuts",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware"
+      ]
+    },
+    {
+      "candidate_count": 169,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q676",
+      "intent_match": true,
+      "latency_ms": 15.758800000185147,
+      "pred_intent": "comparison",
+      "question": "Compare SAM, RAG, NEXUS training.",
+      "ranked_entities_at_k": [
+        "0)_during_training",
+        "Decision_PivotToNEXUS",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Training",
+        "use_training",
+        "Concept_PivotToNEXUS",
+        "training_objective",
+        "Training_Dynamics",
+        "sam",
+        "Concept_ArchitectureWorks"
+      ]
+    },
+    {
+      "candidate_count": 245,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q677",
+      "intent_match": true,
+      "latency_ms": 25.187500010360964,
+      "pred_intent": "comparison",
+      "question": "Compare SAM PKM, chain-set retriever, NEXUS graph store.",
+      "ranked_entities_at_k": [
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Chain_Set",
+        "Decision_PivotToNEXUS",
+        "Chain_Set_Retriever",
+        "retriever_comparison",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Chain_Retriever_Comparison",
+        "Concept_ChainRetrieval",
+        "Exp_0_6_Validation",
+        "Concept_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 71,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q678",
+      "intent_match": true,
+      "latency_ms": 14.056300002266653,
+      "pred_intent": "factual_lookup",
+      "question": "What is the timeline for Phase 1?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Concept_SelectorBottleneck",
+        "The_Reasoning_Pipeline",
+        "phases_1",
+        "Concept_PivotToNEXUS",
+        "root_cause_the",
+        "blocked_by",
+        "cause_analysis_the",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix"
+      ]
+    },
+    {
+      "candidate_count": 72,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q679",
+      "intent_match": true,
+      "latency_ms": 13.95589999447111,
+      "pred_intent": "factual_lookup",
+      "question": "What is the timeline for Phase 2?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Concept_SelectorBottleneck",
+        "The_Reasoning_Pipeline",
+        "Concept_PivotToNEXUS",
+        "root_cause_the",
+        "blocked_by",
+        "cause_analysis_the",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+        "roadmap_what"
+      ]
+    },
+    {
+      "candidate_count": 72,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q680",
+      "intent_match": true,
+      "latency_ms": 13.825800007907674,
+      "pred_intent": "factual_lookup",
+      "question": "What is the timeline for Phase 3?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Concept_SelectorBottleneck",
+        "The_Reasoning_Pipeline",
+        "Concept_PivotToNEXUS",
+        "root_cause_the",
+        "blocked_by",
+        "cause_analysis_the",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+        "roadmap_what"
+      ]
+    },
+    {
+      "candidate_count": 70,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q681",
+      "intent_match": true,
+      "latency_ms": 13.640599994687364,
+      "pred_intent": "factual_lookup",
+      "question": "What is the timeline for Phase 4?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Concept_SelectorBottleneck",
+        "The_Reasoning_Pipeline",
+        "Concept_PivotToNEXUS",
+        "root_cause_the",
+        "blocked_by",
+        "cause_analysis_the",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+        "roadmap_what"
+      ]
+    },
+    {
+      "candidate_count": 72,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q682",
+      "intent_match": true,
+      "latency_ms": 13.9404000074137,
+      "pred_intent": "factual_lookup",
+      "question": "What is the timeline for Phase 5?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Concept_SelectorBottleneck",
+        "The_Reasoning_Pipeline",
+        "Concept_PivotToNEXUS",
+        "root_cause_the",
+        "blocked_by",
+        "cause_analysis_the",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+        "roadmap_what"
+      ]
+    },
+    {
+      "candidate_count": 106,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q683",
+      "intent_match": true,
+      "latency_ms": 15.889200003584847,
+      "pred_intent": "factual_lookup",
+      "question": "Total timeline to first NEXUS model?",
+      "ranked_entities_at_k": [
+        "Concept_PivotToNEXUS",
+        "Decision_PivotToNEXUS",
+        "Total",
+        "model_uses_memory._any_imperfection",
+        "Exp_0_6_Validation_dense_baseline",
+        "mode",
+        "model_can_rank_on_seen_queries",
+        "model_cannot_rank_on_unseen_queries",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_12_Selection_equal_budget"
+      ]
+    },
+    {
+      "candidate_count": 66,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q684",
+      "intent_match": true,
+      "latency_ms": 15.540299995336682,
+      "pred_intent": "factual_lookup",
+      "question": "When was the architecture pivot made?",
+      "ranked_entities_at_k": [
+        "Architecture",
+        "Concept_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "final_architecture",
+        "architecture_how",
+        "Decision_PivotToNEXUS",
+        "Sam_Architecture",
+        "[architecture](architecture.md)",
+        "final_architecture_this",
+        "Architecture_Validated"
+      ]
+    },
+    {
+      "candidate_count": 603,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q685",
+      "intent_match": true,
+      "latency_ms": 33.276100002694875,
+      "pred_intent": "factual_lookup",
+      "question": "What was the SAM experiment cadence?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "experiment_0",
+        "lm_experiment",
+        "Exp_0_6_Validation",
+        "Exp_0_13A_NoisyMemory",
+        "from_experiment",
+        "experiment_index",
+        "experiment_status",
+        "Experiment_0_5_Report.md"
+      ]
+    },
+    {
+      "candidate_count": 342,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q686",
+      "intent_match": true,
+      "latency_ms": 29.661900000064634,
+      "pred_intent": "diagnostic",
+      "question": "Walk through why SAM retrieved_memory equals core_only.",
+      "ranked_entities_at_k": [
+        "Exp_0_6_Validation_retrieved_memory",
+        "retrieved_memory",
+        "Retrieved_Memory",
+        "Exp_0_6_Validation",
+        "Retrieved_Memory_Sam",
+        "retrieved_text_memory",
+        "Concept_RetrievalMismatch",
+        "Run_Sam_Retrieved_Memory",
+        "Realistic_Retrieved_Memory_Sam",
+        "retrieved_memory_external_text_query"
+      ]
+    },
+    {
+      "candidate_count": 118,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q687",
+      "intent_match": true,
+      "latency_ms": 15.768700002809055,
+      "pred_intent": "diagnostic",
+      "question": "Walk through the NEXUS pivot causal chain.",
+      "ranked_entities_at_k": [
+        "migration",
+        "Concept_PivotToNEXUS",
+        "|_4_|_deep_causal_chains_|_dhm",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Chain_Set",
+        "token_chain",
+        "Exp_0_13A_NoisyMemory",
+        "status_code_chain"
+      ]
+    },
+    {
+      "candidate_count": 581,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q688",
+      "intent_match": false,
+      "latency_ms": 33.07689999928698,
+      "pred_intent": "factual_lookup",
+      "question": "Walk through all SAM experiment dependencies.",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "Exp_0_6_Validation",
+        "experiment_0",
+        "experiment_index",
+        "lm_experiment",
+        "from_experiment",
+        "sam",
+        "Experiment_0_5_Report.md",
+        "experiment_status"
+      ]
+    },
+    {
+      "candidate_count": 413,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q689",
+      "intent_match": true,
+      "latency_ms": 29.93879999849014,
+      "pred_intent": "comparison",
+      "question": "Compare SAM core_only and oracle_memory modes.",
+      "ranked_entities_at_k": [
+        "Oracle_Memory",
+        "oracle_memory",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation",
+        "Sam_Oracle_Memory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Oracle_Memory_Comparison",
+        "oracle_text_memory",
+        "model_ignores_memory"
+      ]
+    },
+    {
+      "candidate_count": 349,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q690",
+      "intent_match": true,
+      "latency_ms": 29.434600000968203,
+      "pred_intent": "comparison",
+      "question": "Compare SAM core_only and retrieved_memory modes.",
+      "ranked_entities_at_k": [
+        "Exp_0_6_Validation_retrieved_memory",
+        "retrieved_memory",
+        "Retrieved_Memory",
+        "Exp_0_6_Validation",
+        "retrieved_text_memory",
+        "Retrieved_Memory_Sam",
+        "Concept_RetrievalMismatch",
+        "Run_Sam_Retrieved_Memory",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Concept_ArchitectureWorks"
+      ]
+    },
+    {
+      "candidate_count": 346,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q691",
+      "intent_match": true,
+      "latency_ms": 26.921099997707643,
+      "pred_intent": "comparison",
+      "question": "Compare SAM core_only and random_memory modes.",
+      "ranked_entities_at_k": [
+        "Random_Memory_=_Core_Only",
+        "Exp_0_6_Validation_random_memory",
+        "Random_Memory",
+        "Exp_0_6_Validation",
+        "Concept_ArchitectureWorks",
+        "model_ignores_memory",
+        "Exp_0_6_Validation_core_only",
+        "[core_transformer_with_memory_layers]",
+        "Core_Only",
+        "Exp_0_6_Validation_retrieved_memory"
+      ]
+    },
+    {
+      "candidate_count": 448,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q692",
+      "intent_match": true,
+      "latency_ms": 30.474999992293306,
+      "pred_intent": "comparison",
+      "question": "Compare SAM core_only and oracle_text_memory modes.",
+      "ranked_entities_at_k": [
+        "oracle_text_memory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Oracle_Memory",
+        "Oracle_Text_Memory",
+        "Sam_Oracle_Text_Memory",
+        "Concept_ArchitectureWorks",
+        "oracle_memory",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_oracle_memory",
+        "Oracle_Text_Memory_Works"
+      ]
+    },
+    {
+      "candidate_count": 402,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q693",
+      "intent_match": true,
+      "latency_ms": 32.335399999283254,
+      "pred_intent": "comparison",
+      "question": "Compare SAM core_only and retrieved_memory_external_text_query modes.",
+      "ranked_entities_at_k": [
+        "Retrieved_Memory",
+        "retrieved_memory_external_text_query",
+        "Retrieved_Memory_External_Text_Query",
+        "Exp_0_7_ExternalText_external_text_query",
+        "Exp_0_8_Aggregation_external_text_query",
+        "External_Text_Query",
+        "Exp_0_6_Validation_retrieved_memory",
+        "retrieved_text_memory",
+        "retrieved_memory",
+        "Exp_0_6_Validation"
+      ]
+    },
+    {
+      "candidate_count": 393,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q694",
+      "intent_match": true,
+      "latency_ms": 30.972599997767247,
+      "pred_intent": "comparison",
+      "question": "Compare SAM oracle_memory and retrieved_memory modes.",
+      "ranked_entities_at_k": [
+        "Oracle_Memory",
+        "Exp_0_6_Validation_retrieved_memory",
+        "retrieved_memory",
+        "oracle_memory",
+        "Retrieved_Memory",
+        "Exp_0_6_Validation_oracle_memory",
+        "retrieved_text_memory",
+        "Exp_0_6_Validation",
+        "Retrieved_Memory_Sam",
+        "Concept_RetrievalMismatch"
+      ]
+    },
+    {
+      "candidate_count": 391,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q695",
+      "intent_match": true,
+      "latency_ms": 29.711900002439506,
+      "pred_intent": "comparison",
+      "question": "Compare SAM oracle_memory and random_memory modes.",
+      "ranked_entities_at_k": [
+        "Oracle_Memory",
+        "oracle_memory",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Random_Memory",
+        "Sam_Oracle_Memory",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Oracle_Memory_Comparison",
+        "oracle_text_memory"
+      ]
+    },
+    {
+      "candidate_count": 416,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q696",
+      "intent_match": true,
+      "latency_ms": 31.26499999780208,
+      "pred_intent": "comparison",
+      "question": "Compare SAM oracle_memory and oracle_text_memory modes.",
+      "ranked_entities_at_k": [
+        "oracle_text_memory",
+        "Oracle_Memory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Oracle_Text_Memory",
+        "Sam_Oracle_Text_Memory",
+        "oracle_memory",
+        "Exp_0_6_Validation_oracle_memory",
+        "Oracle_Text_Memory_Works",
+        "Concept_ArchitectureWorks",
+        "Sam_Oracle_Memory"
+      ]
+    },
+    {
+      "candidate_count": 446,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q697",
+      "intent_match": true,
+      "latency_ms": 36.23240000160877,
+      "pred_intent": "comparison",
+      "question": "Compare SAM oracle_memory and retrieved_memory_external_text_query modes.",
+      "ranked_entities_at_k": [
+        "Retrieved_Memory",
+        "retrieved_memory_external_text_query",
+        "Retrieved_Memory_External_Text_Query",
+        "Exp_0_7_ExternalText_external_text_query",
+        "Exp_0_8_Aggregation_external_text_query",
+        "Oracle_Memory",
+        "External_Text_Query",
+        "Exp_0_6_Validation_retrieved_memory",
+        "retrieved_text_memory",
+        "retrieved_memory"
+      ]
+    },
+    {
+      "candidate_count": 327,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q698",
+      "intent_match": true,
+      "latency_ms": 28.884400002425537,
+      "pred_intent": "comparison",
+      "question": "Compare SAM retrieved_memory and random_memory modes.",
+      "ranked_entities_at_k": [
+        "retrieved_memory",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Retrieved_Memory",
+        "Retrieved_Memory_Sam",
+        "Exp_0_6_Validation_random_memory",
+        "retrieved_text_memory",
+        "Random_Memory",
+        "Concept_RetrievalMismatch",
+        "Run_Sam_Retrieved_Memory",
+        "Realistic_Retrieved_Memory_Sam"
+      ]
+    },
+    {
+      "candidate_count": 428,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q699",
+      "intent_match": true,
+      "latency_ms": 33.60750000865664,
+      "pred_intent": "comparison",
+      "question": "Compare SAM retrieved_memory and oracle_text_memory modes.",
+      "ranked_entities_at_k": [
+        "retrieved_text_memory",
+        "oracle_text_memory",
+        "Retrieved_Memory",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Oracle_Memory",
+        "retrieved_memory",
+        "Oracle_Text_Memory",
+        "Sam_Oracle_Text_Memory",
+        "retrieves_slot_text"
+      ]
+    },
+    {
+      "candidate_count": 371,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q700",
+      "intent_match": true,
+      "latency_ms": 32.827099988935515,
+      "pred_intent": "comparison",
+      "question": "Compare SAM retrieved_memory and retrieved_memory_external_text_query modes.",
+      "ranked_entities_at_k": [
+        "Retrieved_Memory",
+        "retrieved_memory_external_text_query",
+        "Retrieved_Memory_External_Text_Query",
+        "Exp_0_7_ExternalText_external_text_query",
+        "Exp_0_8_Aggregation_external_text_query",
+        "External_Text_Query",
+        "Exp_0_6_Validation_retrieved_memory",
+        "retrieved_text_memory",
+        "retrieved_memory",
+        "Sam_External_Text_Query"
+      ]
+    },
+    {
+      "candidate_count": 426,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q701",
+      "intent_match": true,
+      "latency_ms": 31.490499997744337,
+      "pred_intent": "comparison",
+      "question": "Compare SAM random_memory and oracle_text_memory modes.",
+      "ranked_entities_at_k": [
+        "oracle_text_memory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Oracle_Memory",
+        "Oracle_Text_Memory",
+        "Sam_Oracle_Text_Memory",
+        "Exp_0_6_Validation_random_memory",
+        "oracle_memory",
+        "Concept_ArchitectureWorks",
+        "Random_Memory",
+        "Exp_0_6_Validation_oracle_memory"
+      ]
+    },
+    {
+      "candidate_count": 381,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q702",
+      "intent_match": true,
+      "latency_ms": 35.67779999866616,
+      "pred_intent": "comparison",
+      "question": "Compare SAM random_memory and retrieved_memory_external_text_query modes.",
+      "ranked_entities_at_k": [
+        "Retrieved_Memory",
+        "retrieved_memory_external_text_query",
+        "Retrieved_Memory_External_Text_Query",
+        "Exp_0_7_ExternalText_external_text_query",
+        "Exp_0_8_Aggregation_external_text_query",
+        "External_Text_Query",
+        "Exp_0_6_Validation_retrieved_memory",
+        "retrieved_text_memory",
+        "retrieved_memory",
+        "Sam_External_Text_Query"
+      ]
+    },
+    {
+      "candidate_count": 446,
+      "gold_entities": [
+        "Exp_0_6_Validation"
+      ],
+      "gt_intent": "comparison",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q703",
+      "intent_match": true,
+      "latency_ms": 36.921999999322,
+      "pred_intent": "comparison",
+      "question": "Compare SAM oracle_text_memory and retrieved_memory_external_text_query modes.",
+      "ranked_entities_at_k": [
+        "Retrieved_Memory",
+        "retrieved_memory_external_text_query",
+        "Retrieved_Memory_External_Text_Query",
+        "Exp_0_7_ExternalText_external_text_query",
+        "Exp_0_8_Aggregation_external_text_query",
+        "External_Text_Query",
+        "retrieved_text_memory",
+        "Exp_0_6_Validation_retrieved_memory",
+        "oracle_text_memory",
+        "Exp_0_6_Validation_oracle_text_memory"
+      ]
+    },
+    {
+      "candidate_count": 76,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q704",
+      "intent_match": true,
+      "latency_ms": 14.790400004130788,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'depends_on' edge type in NEXUS?",
+      "ranked_entities_at_k": [
+        "Depends_On",
+        "depends_on",
+        "Concept_ArchitectureWorks",
+        "edge_type",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation",
+        "edge_types",
+        "Concept_PivotToNEXUS",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation_core_only"
+      ]
+    },
+    {
+      "candidate_count": 89,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q705",
+      "intent_match": true,
+      "latency_ms": 15.218700005789287,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'caused_by' edge type in NEXUS?",
+      "ranked_entities_at_k": [
+        "caused_by",
+        "Caused_By",
+        "[caused_by,_0.85]",
+        "blocked_by",
+        "Concept_ArchitectureWorks",
+        "edge_type",
+        "Decision_PivotToNEXUS",
+        "Cause",
+        "cause_analysis_the",
+        "Exp_0_13A_NoisyMemory"
+      ]
+    },
+    {
+      "candidate_count": 75,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q706",
+      "intent_match": true,
+      "latency_ms": 14.829899999313056,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'blocked_by' edge type in NEXUS?",
+      "ranked_entities_at_k": [
+        "blocked_by",
+        "Blocked_By",
+        "[blocked_by,_0.90]",
+        "migration",
+        "Concept_ArchitectureWorks",
+        "Knowledge",
+        "edge_type",
+        "Decision_PivotToNEXUS",
+        "Mentioned_In",
+        "Exp_0_13A_NoisyMemory"
+      ]
+    },
+    {
+      "candidate_count": 300,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q707",
+      "intent_match": true,
+      "latency_ms": 21.205700002610683,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'validates' edge type in NEXUS?",
+      "ranked_entities_at_k": [
+        "Validates",
+        "validates",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "edge_type",
+        "Exp_0_6_Validation_dense_baseline"
+      ]
+    },
+    {
+      "candidate_count": 73,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q708",
+      "intent_match": true,
+      "latency_ms": 15.121700009331107,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'contradicts' edge type in NEXUS?",
+      "ranked_entities_at_k": [
+        "Contradicts",
+        "contradicts",
+        "Concept_ArchitectureWorks",
+        "Exp_0_13A_NoisyMemory",
+        "Knowledge",
+        "edge_type",
+        "Decision_PivotToNEXUS",
+        "Concept_SelectorBottleneck",
+        "Concept_PivotToNEXUS",
+        "edge_types"
+      ]
+    },
+    {
+      "candidate_count": 78,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q709",
+      "intent_match": true,
+      "latency_ms": 15.073599992319942,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'implements' edge type in NEXUS?",
+      "ranked_entities_at_k": [
+        "Implements",
+        "implements",
+        "Concept_ArchitectureWorks",
+        "Knowledge",
+        "Decision_PivotToNEXUS",
+        "edge_type",
+        "Function",
+        "Exp_0_13A_NoisyMemory",
+        "implement_slot_wise_memory_reader",
+        "Concept_SelectorBottleneck"
+      ]
+    },
+    {
+      "candidate_count": 84,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q710",
+      "intent_match": true,
+      "latency_ms": 15.382199999294244,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'derived_from' edge type in NEXUS?",
+      "ranked_entities_at_k": [
+        "Derived_From",
+        "derived_from",
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Knowledge",
+        "edge_type",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_SelectorBottleneck",
+        "blocked_by",
+        "Exp_0_12_Selection"
+      ]
+    },
+    {
+      "candidate_count": 72,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q711",
+      "intent_match": true,
+      "latency_ms": 15.631300004315563,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'replaces' edge type in NEXUS?",
+      "ranked_entities_at_k": [
+        "replaces",
+        "Concept_ArchitectureWorks",
+        "Knowledge",
+        "edge_type",
+        "Decision_PivotToNEXUS",
+        "Function",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_SelectorBottleneck",
+        "edge_types",
+        "Concept_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 74,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q712",
+      "intent_match": true,
+      "latency_ms": 16.662299996824004,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'related_to' edge type in NEXUS?",
+      "ranked_entities_at_k": [
+        "related_to",
+        "Concept_ArchitectureWorks",
+        "Related_To",
+        "Decision_PivotToNEXUS",
+        "Knowledge",
+        "edge_type",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_PivotToNEXUS",
+        "Concept_SelectorBottleneck",
+        "blocked_by"
+      ]
+    },
+    {
+      "candidate_count": 80,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q713",
+      "intent_match": true,
+      "latency_ms": 16.219400000409223,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'mentioned_in' edge type in NEXUS?",
+      "ranked_entities_at_k": [
+        "Mentioned_In",
+        "migration",
+        "mentioned_in",
+        "Entity",
+        "integrate",
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Concept_SelectorBottleneck",
+        "Exp_0_12_Selection",
+        "edge_type"
+      ]
+    },
+    {
+      "candidate_count": 78,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q714",
+      "intent_match": true,
+      "latency_ms": 15.093800000613555,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'Entity' node type in NEXUS?",
+      "ranked_entities_at_k": [
+        "Entity",
+        "Mentioned_In",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Node_Types",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_PivotToNEXUS",
+        "Concept_SelectorBottleneck",
+        "[node_ids]",
+        "Exp_0_12_Selection"
+      ]
+    },
+    {
+      "candidate_count": 80,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q715",
+      "intent_match": true,
+      "latency_ms": 15.44500001182314,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'Concept' node type in NEXUS?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Concept_SelectorBottleneck",
+        "Concept",
+        "Concept_PivotToNEXUS",
+        "Decision_PivotToNEXUS",
+        "Exp_0_13A_NoisyMemory",
+        "Node_Types",
+        "Entity",
+        "Concept_RetrievalMismatch",
+        "[node_ids]"
+      ]
+    },
+    {
+      "candidate_count": 74,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q716",
+      "intent_match": true,
+      "latency_ms": 15.052200003992766,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'Document' node type in NEXUS?",
+      "ranked_entities_at_k": [
+        "Document",
+        "Concept_ArchitectureWorks",
+        "Entity",
+        "Decision_PivotToNEXUS",
+        "Exp_0_13A_NoisyMemory",
+        "Node_Types",
+        "Concept_SelectorBottleneck",
+        "[node_ids]",
+        "Exp_0_12_Selection",
+        "Concept_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 82,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q717",
+      "intent_match": true,
+      "latency_ms": 15.136400004848838,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'CodeFile' node type in NEXUS?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Node_Types",
+        "Exp_0_13A_NoisyMemory",
+        "Codefile",
+        "Concept_SelectorBottleneck",
+        "[node_ids]",
+        "Exp_0_12_Selection",
+        "Concept_PivotToNEXUS",
+        "type_index:_dict[str,_list[str]]_#_node_type"
+      ]
+    },
+    {
+      "candidate_count": 73,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q718",
+      "intent_match": true,
+      "latency_ms": 15.382500001578592,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'Function' node type in NEXUS?",
+      "ranked_entities_at_k": [
+        "Function",
+        "migration",
+        "Concept_ArchitectureWorks",
+        "selection",
+        "Decision_PivotToNEXUS",
+        "Concept_SelectorBottleneck",
+        "Node_Types",
+        "Concept_PivotToNEXUS",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_12_Selection"
+      ]
+    },
+    {
+      "candidate_count": 83,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q719",
+      "intent_match": true,
+      "latency_ms": 14.983100001700222,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'TestCase' node type in NEXUS?",
+      "ranked_entities_at_k": [
+        "Testcase",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Node_Types",
+        "Function",
+        "Exp_0_13A_NoisyMemory",
+        "Validates",
+        "Concept_SelectorBottleneck",
+        "[node_ids]",
+        "Concept_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 89,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q720",
+      "intent_match": true,
+      "latency_ms": 14.870599989080802,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'Bug' node type in NEXUS?",
+      "ranked_entities_at_k": [
+        "migration",
+        "Concept_ArchitectureWorks",
+        "bug",
+        "Node_Types",
+        "Decision_PivotToNEXUS",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_SelectorBottleneck",
+        "[node_ids]",
+        "type_index:_dict[str,_list[str]]_#_node_type",
+        "Concept_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 82,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q721",
+      "intent_match": true,
+      "latency_ms": 15.163099989877082,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'Decision' node type in NEXUS?",
+      "ranked_entities_at_k": [
+        "Decision",
+        "Decision_PivotToNEXUS",
+        "Concept_SelectorBottleneck",
+        "Function",
+        "Concept_ArchitectureWorks",
+        "Exp_0_12_Selection",
+        "Node_Types",
+        "Exp_0_13A_NoisyMemory",
+        "[node_ids]",
+        "Concept_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 74,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q722",
+      "intent_match": true,
+      "latency_ms": 15.291600007913075,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'Requirement' node type in NEXUS?",
+      "ranked_entities_at_k": [
+        "Requirement",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Exp_0_13A_NoisyMemory",
+        "Node_Types",
+        "Concept_SelectorBottleneck",
+        "[node_ids]",
+        "Exp_0_12_Selection",
+        "Concept_PivotToNEXUS",
+        "type_index:_dict[str,_list[str]]_#_node_type"
+      ]
+    },
+    {
+      "candidate_count": 533,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q723",
+      "intent_match": true,
+      "latency_ms": 29.17870000237599,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'Experiment' node type in NEXUS?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "experiment_0",
+        "lm_experiment",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_ArchitectureWorks",
+        "from_experiment",
+        "lm_experiment_0",
+        "Decision_PivotToNEXUS",
+        "Experiment_0_5_Report.md"
+      ]
+    },
+    {
+      "candidate_count": 383,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q724",
+      "intent_match": true,
+      "latency_ms": 24.418799992417917,
+      "pred_intent": "factual_lookup",
+      "question": "What is the 'Metric' node type in NEXUS?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Node_Types",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Concept_PivotToNEXUS",
+        "type_index:_dict[str,_list[str]]_#_node_type",
+        "Exp_0_12_Selection_equal_budget",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Exp_0_12_Selection_learned_selector",
+        "Exp_0_12_Selection_oracle_filter_top32"
+      ]
+    },
+    {
+      "candidate_count": 603,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q725",
+      "intent_match": true,
+      "latency_ms": 31.130100003792904,
+      "pred_intent": "factual_lookup",
+      "question": "When was the last SAM experiment?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "experiment_0",
+        "experiment_index",
+        "lm_experiment",
+        "experiment_status",
+        "Exp_0_6_Validation",
+        "Experiment_0_5_Report.md",
+        "sam",
+        "experiment_metrics"
+      ]
+    },
+    {
+      "candidate_count": 57,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q726",
+      "intent_match": true,
+      "latency_ms": 12.793300003977492,
+      "pred_intent": "factual_lookup",
+      "question": "When was the NEXUS pivot?",
+      "ranked_entities_at_k": [
+        "Concept_PivotToNEXUS",
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Exp_0_13A_NoisyMemory",
+        "Concept_SelectorBottleneck",
+        "interpretation_when",
+        "blocked_by",
+        "Exp_0_12_Selection",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+        "cause_analysis_the"
+      ]
+    },
+    {
+      "candidate_count": 6,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q727",
+      "intent_match": true,
+      "latency_ms": 10.141099992324598,
+      "pred_intent": "factual_lookup",
+      "question": "Python version?",
+      "ranked_entities_at_k": [
+        "python",
+        "python_3.10",
+        "memory_python",
+        "Pytorch_Version_Mismatch",
+        "Python_3.10_Or_Later",
+        "Prototype_(phase_1_2):_In_Memory_Python"
+      ]
+    },
+    {
+      "candidate_count": 23,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q728",
+      "intent_match": true,
+      "latency_ms": 11.701600000378676,
+      "pred_intent": "factual_lookup",
+      "question": "NEXUS demo location?",
+      "ranked_entities_at_k": [
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Concept_PivotToNEXUS",
+        "Exp_0_6_Validation",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation_dense_baseline_early"
+      ]
+    },
+    {
+      "candidate_count": 80,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q729",
+      "intent_match": true,
+      "latency_ms": 12.388300005113706,
+      "pred_intent": "factual_lookup",
+      "question": "QA dataset size?",
+      "ranked_entities_at_k": [
+        "Dataset",
+        "dataset.py",
+        "Scale_Dataset",
+        "dense_dataset",
+        "Synthetic_Dataset",
+        "Dataset_Design",
+        "sam/data/dataset.py",
+        "Dataset_Evolution",
+        "dense_dataset_fix",
+        "inspect_dataset.py"
+      ]
+    },
+    {
+      "candidate_count": 34,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q730",
+      "intent_match": true,
+      "latency_ms": 11.920299992198125,
+      "pred_intent": "factual_lookup",
+      "question": "Graph population script?",
+      "ranked_entities_at_k": [
+        "Concept_PivotToNEXUS",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation_dense_openbook"
+      ]
+    },
+    {
+      "candidate_count": 23,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q731",
+      "intent_match": true,
+      "latency_ms": 11.108899998362176,
+      "pred_intent": "factual_lookup",
+      "question": "Entity extraction implementation?",
+      "ranked_entities_at_k": [
+        "Entity",
+        "entity_extraction",
+        "Mentioned_In",
+        "Implementation_Summary",
+        "relation_extraction",
+        "Step_2:_Entity_Extraction",
+        "Implementation_Prepared_But_Not_Run",
+        "implement_slot_wise_memory_reader",
+        "Step_3:_Relation_Extraction",
+        "entity_location_map"
+      ]
+    },
+    {
+      "candidate_count": 18,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q732",
+      "intent_match": true,
+      "latency_ms": 10.640599997714162,
+      "pred_intent": "factual_lookup",
+      "question": "Primary analysis document?",
+      "ranked_entities_at_k": [
+        "Document",
+        "impact_analysis",
+        "Entity",
+        "slot_rank_analysis",
+        "Loss_Analysis",
+        "retrieved_gap_analysis",
+        "Failure_Analysis",
+        "memory_failure_analysis",
+        "Root_Cause_Analysis",
+        "root_cause_analysis_1"
+      ]
+    },
+    {
+      "candidate_count": 127,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q733",
+      "intent_match": true,
+      "latency_ms": 15.413500004797243,
+      "pred_intent": "factual_lookup",
+      "question": "SAM archive location?",
+      "ranked_entities_at_k": [
+        "sam",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Concept_RetrievalMismatch"
+      ]
+    },
+    {
+      "candidate_count": 140,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "factual_lookup",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q734",
+      "intent_match": true,
+      "latency_ms": 16.03389999945648,
+      "pred_intent": "factual_lookup",
+      "question": "Is SAM production-ready?",
+      "ranked_entities_at_k": [
+        "sam",
+        "Concept_RetrievalMismatch",
+        "Exp_0_6_Validation",
+        "answer_|_read_structured_evidence",
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation_retrieved_memory",
+        "product_key_memory.py",
+        "Product_Key_Memory",
+        "key_memory_product"
+      ]
+    },
+    {
+      "candidate_count": 221,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q735",
+      "intent_match": false,
+      "latency_ms": 26.842799998121336,
+      "pred_intent": "factual_lookup",
+      "question": "What is the core difference between SAM and NEXUS knowledge representation?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Knowledge",
+        "Knowledge_Representation",
+        "more_cost._knowledge_and_computation",
+        "Concept_ArchitectureWorks",
+        "the_core_difference",
+        "Exp_0_6_Validation",
+        "Concept_RetrievalMismatch",
+        "Concept_PivotToNEXUS",
+        "Exp_0_6_Validation_core_only"
+      ]
+    },
+    {
+      "candidate_count": 186,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q736",
+      "intent_match": false,
+      "latency_ms": 22.55690000311006,
+      "pred_intent": "factual_lookup",
+      "question": "What SAM finding most directly supports the NEXUS design?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "sam",
+        "Concept_ArchitectureWorks",
+        "Concept_RetrievalMismatch",
+        "Exp_0_6_Validation",
+        "Concept_PivotToNEXUS",
+        "key_finding",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation_retrieved_memory",
+        "the_threshold_is_binary:_perfect_filtering"
+      ]
+    },
+    {
+      "candidate_count": 307,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q737",
+      "intent_match": false,
+      "latency_ms": 26.99689999280963,
+      "pred_intent": "factual_lookup",
+      "question": "What is the main advantage of NEXUS over SAM for multi-hop?",
+      "ranked_entities_at_k": [
+        "Multi_Hop",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "sam",
+        "Advantages",
+        "Adaptive_Multi_Hop",
+        "Concept_PivotToNEXUS",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation",
+        "Exp_0_12_Selection_fixed_top_by_hop"
+      ]
+    },
+    {
+      "candidate_count": 395,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q738",
+      "intent_match": true,
+      "latency_ms": 22.28929998818785,
+      "pred_intent": "diagnostic",
+      "question": "Why 'graph-first' not 'retrieval-first'?",
+      "ranked_entities_at_k": [
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation",
+        "Exp_0_2_CompactPKM_retrieval_compact_16k",
+        "Exp_0_6_Validation_pkm_retrieval_early",
+        "Exp_0_12_Selection",
+        "Exp_0_12_Selection_equal_budget",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Exp_0_12_Selection_learned_selector",
+        "Exp_0_6_Validation_core_only"
+      ]
+    },
+    {
+      "candidate_count": 93,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q739",
+      "intent_match": false,
+      "latency_ms": 15.791400001035072,
+      "pred_intent": "factual_lookup",
+      "question": "Role of small reasoning model in NEXUS?",
+      "ranked_entities_at_k": [
+        "Small",
+        "Code_Symbol_Reasoning",
+        "reasoning_model_the",
+        "hop_reasoning",
+        "Api_Usage_Reasoning",
+        "graph_reasoning",
+        "Recall",
+        "reasoning_aspect",
+        "Step_7:_Reasoning_Model",
+        "Decision_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 54,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q740",
+      "intent_match": true,
+      "latency_ms": 13.342200007173233,
+      "pred_intent": "diagnostic",
+      "question": "How does NEXUS handle unanswerable questions?",
+      "ranked_entities_at_k": [
+        "Questions_Tested",
+        "input_question",
+        "answer",
+        "question",
+        "Raw_Question_Text",
+        "answer_|_read_structured_evidence",
+        "Decision_PivotToNEXUS",
+        "parse_question",
+        "step_1:_embed_question",
+        "step_1:_parse_question"
+      ]
+    },
+    {
+      "candidate_count": 411,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q741",
+      "intent_match": false,
+      "latency_ms": 28.949500003363937,
+      "pred_intent": "factual_lookup",
+      "question": "How was SAM core vs dense equivalence validated?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_6_Validation_dense_baseline",
+        "Exp_0_6_Validation_dense_openbook",
+        "Exp_0_6_Validation_dense_baseline_early",
+        "Exp_0_6_Validation_retrieved_memory",
+        "sam",
+        "dense",
+        "Decision_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 43,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q742",
+      "intent_match": false,
+      "latency_ms": 13.584299987996928,
+      "pred_intent": "factual_lookup",
+      "question": "Significance of recency bonus in path scoring?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "def_score_path",
+        "Concept_ArchitectureWorks",
+        "Concept_PivotToNEXUS",
+        "Concept_SelectorBottleneck",
+        "path_scoring_each",
+        "pkm_scoring_collapse;_model_predicts_one_slot",
+        "blocked_by",
+        "Recall",
+        "Retrieved_Memory"
+      ]
+    },
+    {
+      "candidate_count": 197,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q743",
+      "intent_match": true,
+      "latency_ms": 21.946299995761365,
+      "pred_intent": "diagnostic",
+      "question": "Why 1-hop at 92.8% with +16 distractors but 3-hop at 39%?",
+      "ranked_entities_at_k": [
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_13A_NoisyMemory_noise_+16",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Exp_0_12_Selection",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_13A_NoisyMemory_noise_+0",
+        "Exp_0_13A_NoisyMemory_noise_+1",
+        "Exp_0_13A_NoisyMemory_noise_+2",
+        "Exp_0_13A_NoisyMemory_noise_+4",
+        "Exp_0_13A_NoisyMemory_noise_+8"
+      ]
+    },
+    {
+      "candidate_count": 186,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q744",
+      "intent_match": false,
+      "latency_ms": 20.08689999638591,
+      "pred_intent": "factual_lookup",
+      "question": "SAM wall time: 3 vs 8 epochs?",
+      "ranked_entities_at_k": [
+        "sam",
+        "wall_time",
+        "64%_over_15_epochs",
+        "Exp_0_6_Validation",
+        "Concept_ArchitectureWorks",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "num_epochs",
+        "Decision_PivotToNEXUS",
+        "Concept_RetrievalMismatch",
+        "Exp_0_6_Validation_retrieved_memory"
+      ]
+    },
+    {
+      "candidate_count": 65,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q745",
+      "intent_match": false,
+      "latency_ms": 15.23079999606125,
+      "pred_intent": "factual_lookup",
+      "question": "What does NEXUS evidence pack enable that chunks cannot?",
+      "ranked_entities_at_k": [
+        "chunk",
+        "answer_|_read_structured_evidence",
+        "chunks",
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "chunk_1",
+        "chunk_2",
+        "Concept_PivotToNEXUS",
+        "Evidence",
+        "Exp_0_13A_NoisyMemory"
+      ]
+    },
+    {
+      "candidate_count": 40,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q746",
+      "intent_match": true,
+      "latency_ms": 12.63450000260491,
+      "pred_intent": "diagnostic",
+      "question": "Why is NEXUS verifier not an LLM?",
+      "ranked_entities_at_k": [
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory",
+        "l_verifier",
+        "Recall",
+        "Decision_PivotToNEXUS",
+        "llm",
+        "selection",
+        "llm_2",
+        "Concept_ArchitectureWorks",
+        "Concept_PivotToNEXUS"
+      ]
+    },
+    {
+      "candidate_count": 25,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q747",
+      "intent_match": false,
+      "latency_ms": 11.744700008421205,
+      "pred_intent": "factual_lookup",
+      "question": "What is a NEXUS-ready document?",
+      "ranked_entities_at_k": [
+        "Document",
+        "Entity",
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Concept_PivotToNEXUS",
+        "Exp_0_13A_NoisyMemory",
+        "answer_|_read_structured_evidence",
+        "Exp_0_12_Selection",
+        "Ready",
+        "read_more"
+      ]
+    },
+    {
+      "candidate_count": 484,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q748",
+      "intent_match": false,
+      "latency_ms": 23.53920000314247,
+      "pred_intent": "factual_lookup",
+      "question": "Minimum viable NEXUS experiment?",
+      "ranked_entities_at_k": [
+        "experiment",
+        "Experiment",
+        "experiment_0",
+        "experiment_status",
+        "experiment_index",
+        "lm_experiment",
+        "Experiment_0_5_Report.md",
+        "experiment_metrics",
+        "from_experiment",
+        "lm_experiment_0"
+      ]
+    },
+    {
+      "candidate_count": 35,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q749",
+      "intent_match": true,
+      "latency_ms": 12.492599998950027,
+      "pred_intent": "diagnostic",
+      "question": "How does NEXUS handle cold start?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Concept_PivotToNEXUS",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_12_Selection",
+        "Concept_NoiseTolerance",
+        "Concept_SelectorBottleneck",
+        "slot_b",
+        "fix_non",
+        "more_streaming"
+      ]
+    },
+    {
+      "candidate_count": 388,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q750",
+      "intent_match": false,
+      "latency_ms": 35.28470000310335,
+      "pred_intent": "factual_lookup",
+      "question": "Key difference: SAM oracle_memory vs NEXUS oracle paths?",
+      "ranked_entities_at_k": [
+        "Oracle_Memory",
+        "oracle_memory",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Sam_Oracle_Memory",
+        "Decision_PivotToNEXUS",
+        "oracle_text_memory",
+        "Concept_ArchitectureWorks",
+        "Oracle_Memory_Works",
+        "Exp_0_6_Validation_retrieved_memory"
+      ]
+    },
+    {
+      "candidate_count": 92,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 0,
+      "hits_at_5": 0,
+      "id": "q751",
+      "intent_match": true,
+      "latency_ms": 14.912200000253506,
+      "pred_intent": "diagnostic",
+      "question": "Why NEXUS traversal O(depth*branching) not O(total_nodes)?",
+      "ranked_entities_at_k": [
+        "Exp_0_13A_NoisyMemory_noise_+0",
+        "Exp_0_12_Selection_equal_budget",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Exp_0_12_Selection_learned_selector",
+        "Exp_0_12_Selection_oracle_filter_top32",
+        "Exp_0_12_Selection_oracle_filter_top64",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Exp_0_6_Validation_core_only"
+      ]
+    },
+    {
+      "candidate_count": 363,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q752",
+      "intent_match": false,
+      "latency_ms": 26.453700003912672,
+      "pred_intent": "factual_lookup",
+      "question": "What SAM finding is still unvalidated for NEXUS?",
+      "ranked_entities_at_k": [
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Exp_0_6_Validation_retrieved_memory",
+        "sam",
+        "Exp_0_6_Validation",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Concept_RetrievalMismatch",
+        "Exp_0_6_Validation_oracle_text_memory"
+      ]
+    },
+    {
+      "candidate_count": 351,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q753",
+      "intent_match": false,
+      "latency_ms": 33.28529999998864,
+      "pred_intent": "factual_lookup",
+      "question": "Single most important metric for NEXUS vs RAG?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_PivotToNEXUS",
+        "Metric",
+        "Exp_0_11_ChainRetrieval_sam_chain_aware",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_12_Selection_learned_selector",
+        "Exp_0_12_Selection_equal_budget",
+        "Exp_0_12_Selection_fixed_top_by_hop",
+        "Exp_0_12_Selection_oracle_filter_top32",
+        "Exp_0_12_Selection_oracle_filter_top64"
+      ]
+    },
+    {
+      "candidate_count": 73,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q754",
+      "intent_match": false,
+      "latency_ms": 14.535199996316805,
+      "pred_intent": "factual_lookup",
+      "question": "Where is the NEXUS graph traversal demo?",
+      "ranked_entities_at_k": [
+        "graph_traversal",
+        "Concept_ArchitectureWorks",
+        "Decision_PivotToNEXUS",
+        "Concept_PivotToNEXUS",
+        "Step_3:_Graph_Traversal",
+        "Concept_SelectorBottleneck",
+        "Exp_0_6_Validation",
+        "Exp_0_13A_NoisyMemory",
+        "Graph_Reasoning_\u2014_Traversal_As_The_Reasoning_Engine",
+        "graph_store"
+      ]
+    },
+    {
+      "candidate_count": 292,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 1,
+      "hits_at_10": 1,
+      "hits_at_5": 1,
+      "id": "q755",
+      "intent_match": false,
+      "latency_ms": 24.091400002362207,
+      "pred_intent": "factual_lookup",
+      "question": "What is the initial evaluation window for NEXUS benchmarks?",
+      "ranked_entities_at_k": [
+        "Decision_PivotToNEXUS",
+        "Concept_ArchitectureWorks",
+        "Exp_0_6_Validation_retrieved_memory",
+        "Exp_0_6_Validation_random_memory",
+        "Concept_PivotToNEXUS",
+        "Exp_0_12_Selection_learned_selector",
+        "Exp_0_6_Validation_core_only",
+        "Exp_0_6_Validation_oracle_memory",
+        "Exp_0_6_Validation_oracle_text_memory",
+        "Exp_0_12_Selection_equal_budget"
+      ]
+    },
+    {
+      "candidate_count": 84,
+      "gold_entities": [
+        "Decision_PivotToNEXUS"
+      ],
+      "gt_intent": "diagnostic",
+      "hits_at_1": 0,
+      "hits_at_10": 1,
+      "hits_at_5": 0,
+      "id": "q756",
+      "intent_match": true,
+      "latency_ms": 20.019500007038005,
+      "pred_intent": "diagnostic",
+      "question": "Why is deterministic verification critical for the NEXUS pipeline?",
+      "ranked_entities_at_k": [
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_Diagnosis",
+        "integration_pipeline**_\u2014",
+        "Recall",
+        "verification_rule",
+        "selection",
+        "critical_factor",
+        "Decision_PivotToNEXUS",
+        "pipeline_diagnosis"
+      ]
+    }
+  ],
+  "winner": "feature_logistic"
+}
