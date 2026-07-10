@@ -623,7 +623,10 @@ def eval_paraphrase(
 
 def main():
     cli = argparse.ArgumentParser(description="Evaluate the frozen Stage 1B split honestly")
-    cli.add_argument("--entity-threshold", type=float, default=0.55)
+    cli.add_argument(
+        "--entity-threshold", type=float, default=0.10,
+        help="reranker threshold calibrated on stack/encoder/data/val.jsonl (default: 0.10)",
+    )
     args = cli.parse_args()
 
     # ── Setup ──
@@ -663,7 +666,7 @@ def main():
     print(f"  resolution_rate:    {baseline['resolution_rate']:.4f} ({baseline['resolution_rate']*100:.1f}%)")
 
     # ── Encoder evaluation ──
-    print("\n--- Encoder Evaluation (threshold=0.55) ---")
+    print(f"\n--- Encoder Evaluation (threshold={args.entity_threshold:.2f}) ---")
     from nexus.query.embedding_resolver import NodeEmbeddingIndex
     emb_idx = NodeEmbeddingIndex()
     emb_idx.build_index(graph)
