@@ -32,6 +32,26 @@ def get_peak_rss_mb() -> float:
             return -1.0
 
 
+def select_entity_candidates(
+    candidate_ids: list[str],
+    scores: list[float],
+    threshold: float,
+) -> tuple[list[str], list[tuple[str, float]]]:
+    """Select reranker candidates with explicit, strict threshold semantics."""
+    if not 0.0 <= threshold <= 1.0:
+        raise ValueError("entity threshold must be within [0, 1]")
+    scored = [
+        (candidate_ids[index], float(score))
+        for index, score in enumerate(scores)
+        if index < len(candidate_ids)
+    ]
+    selected = [(eid, score) for eid, score in scored if score > threshold]
+    ranked = sorted(selected, key=lambda item: (-item[1], candidate_ids.index(item[0])))
+    # Preserve candidate order for the legacy capped baseline; expose ranked
+    # scores separately for diagnostics and top-1 evaluation.
+    return [eid for eid, _score in selected], ranked
+
+
 class EncoderLoader:
     """Lazy-loader for the AssociativeEncoderV2 model.
 
@@ -202,13 +222,15 @@ class EncoderLoader:
                 entity_score_tensor = result.get("entity_scores")
                 if entity_score_tensor is not None:
                     scores = entity_score_tensor[0].tolist()
-                    for i, score in enumerate(scores):
-                        if i < len(entity_cands):
-                            candidate_scores[entity_cands[i]] = float(score)
-                            if score > entity_threshold:
-                                entity_ids.append(entity_cands[i])
-                                entity_scores.append((entity_cands[i], score))
-                entity_scores.sort(key=lambda x: x[1], reverse=True)
+                    entity_ids, entity_scores = select_entity_candidates(
+                        entity_cands, scores, entity_threshold,
+                    )
+                    candidate_scores = {
+                        entity_cands[i]: float(score)
+                        for i, score in enumerate(scores)
+                        if i < len(entity_cands)
+                    }
+                entity_scores.sort(key=lambda x: (-x[1], entity_cands.index(x[0])))
                 # Collect also the intent/category from model
                 model_intent_idx = result["intent_preds"][0].item()
                 model_intent = self.inv_intent_map.get(model_intent_idx, "factual_lookup")

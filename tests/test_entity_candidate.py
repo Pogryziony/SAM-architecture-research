@@ -8,11 +8,14 @@ there is no lexical substring overlap with the question text.
 
 from __future__ import annotations
 
+import pytest
+
 from nexus.graph import Node, Edge
 from nexus.graph.store import InMemoryGraphStore
 from stack.encoder.eval_gates import _stage1_exact_name_alias, _stage4_graph_expansion
 from nexus.query.parser import _rank_entities, parse_question
 from nexus.utils.config import NEXUSConfig
+from stack.encoder.loader import select_entity_candidates
 
 
 def _make_decision_graph():
@@ -178,6 +181,21 @@ class TestAbstractEntityCoverage:
         assert "Concept_OracleMemory" in expanded, (
             f"Stage 4 should add Concept_OracleMemory as neighbor. Got: {expanded}"
         )
+
+    def test_threshold_is_strict_and_boundary_is_rejected(self):
+        selected, scored = select_entity_candidates(["a", "b"], [0.55, 0.56], 0.55)
+        assert selected == ["b"]
+        assert scored == [("b", 0.56)]
+
+    def test_equal_scores_preserve_candidate_order(self):
+        selected, _ = select_entity_candidates(["a", "b"], [0.8, 0.8], 0.5)
+        assert selected == ["a", "b"]
+
+    def test_threshold_range_and_missing_scores(self):
+        with pytest.raises(ValueError):
+            select_entity_candidates(["a"], [0.5], 1.1)
+        selected, _ = select_entity_candidates(["a", "b"], [0.9], 0.5)
+        assert selected == ["a"]
 
     def test_encoder_selected_entity_is_not_displaced_by_final_cap(self):
         """The full parser must preserve a selected encoder baseline entity."""

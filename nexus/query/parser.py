@@ -225,6 +225,8 @@ def parse_question(
     encoder_model=None,
     dialogue_state=None,
     encoder_entity_threshold: float = 0.5,
+    encoder_result_override: dict | None = None,
+    encoder_candidates_override: list[str] | None = None,
 ) -> ParsedQuery:
     """
     Parse a natural language question into structured query intent.
@@ -257,7 +259,7 @@ def parse_question(
             if acronym in lowered_q:
                 expanded_temp = f"{expanded_temp} ({expansion})"
         lex_spots, _ = spot_entities(expanded_temp, graph, cutoff=cutoff)
-        encoder_candidates = [nid for _, _, _, nid in lex_spots]
+        encoder_candidates = list(encoder_candidates_override or [nid for _, _, _, nid in lex_spots])
         # Add embedding candidates for semantic matches (Decision/Concept nodes)
         if embedding_index is not None:
             emb_candidates = embedding_index.query(question, top_k=20)
@@ -275,7 +277,7 @@ def parse_question(
             else:
                 candidate_descs.append(eid.replace("_", " "))
         
-        encoder_result = encoder_model.predict(
+        encoder_result = encoder_result_override or encoder_model.predict(
             question, entity_threshold=encoder_entity_threshold,
             entity_candidates=encoder_candidates,
             entity_descriptions=candidate_descs,
@@ -387,7 +389,7 @@ def parse_question(
                                 alias_matched=alias_matched, config=config,
                                 embedding_scores=embedding_scores,
                                 dialogue_active_ids=dialogue_active_ids,
-                                protected_ids=set(encoder_entities))
+                                protected_ids=set(encoder_entities[:config.max_entry_nodes]))
 
     # ── Determine resolution method ──
     if not entity_ids:

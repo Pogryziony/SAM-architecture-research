@@ -23,6 +23,7 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import statistics
@@ -228,6 +229,7 @@ def eval_encoder(
     stage_diagnostic_counts: dict[str, int] = defaultdict(int)
     stage_hit_counts: dict[str, int] = defaultdict(int)
     stage_gold_total = 0
+    parser_failure_count = 0
 
     # Per-question details for debugging
     question_details: list[dict] = []
@@ -293,6 +295,7 @@ def eval_encoder(
             entity_candidates=candidates, entity_descriptions=candidate_descs
         )
         candidate_scores = encoder_result.get("candidate_scores", {})
+        raw_enc_ids = set(encoder_result["entity_ids"])
         t1 = time.perf_counter()
         inference_times.append((t1 - t0) * 1000)
 
@@ -304,9 +307,16 @@ def eval_encoder(
             encoder_model=encoder,
             embedding_index=embedding_index,
             encoder_entity_threshold=entity_threshold,
+            encoder_result_override=encoder_result,
+            encoder_candidates_override=candidates,
         )
 
         resolved_ids = pq.entity_ids[: config.max_entry_nodes]
+
+        capped_encoder_ids = set(encoder_result["entity_ids"][: config.max_entry_nodes])
+        parser_lost_ids = capped_encoder_ids - set(resolved_ids)
+        if parser_lost_ids:
+            parser_failure_count += 1
 
         # Pipeline metrics
         if resolved_ids:
@@ -329,7 +339,6 @@ def eval_encoder(
             correct_intent += 1
 
         # Encoder-only entity metrics
-        raw_enc_ids = set(encoder_result["entity_ids"])
         # Compare the encoder baseline at the same entry-node cap used by the
         # full pipeline. Uncapped re-ranker output is retained for diagnostics,
         # but is not a valid baseline for capped graph traversal.
@@ -359,6 +368,9 @@ def eval_encoder(
         # or final parsing.
         candidate_set = set(candidates)
         pipeline_set = set(resolved_ids)
+        ranked_scores = sorted(candidate_scores.items(), key=lambda item: (-item[1], candidates.index(item[0])))
+        score_rank = {eid: rank for rank, (eid, _score) in enumerate(ranked_scores, start=1)}
+        top1_ids = {ranked_scores[0][0]} if ranked_scores else set()
         gold_diagnostics = {}
         stage_gold_total += len(gt_ids)
         for stage_name, stage_ids in (
@@ -367,6 +379,7 @@ def eval_encoder(
             ("semantic", stage3_candidates),
             ("graph_expansion", stage4_candidates),
             ("candidate_pool", candidates),
+            ("reranker_top1", top1_ids),
             ("reranker_selected", raw_enc_ids),
             ("final_pipeline", pipeline_set),
         ):
@@ -384,9 +397,12 @@ def eval_encoder(
                 else:
                     status = "present_but_misranked"
                     reason = "candidate was scored but not selected by the reranker"
+            elif gold_id not in capped_encoder_ids:
+                status = "selected_but_outside_encoder_cap"
+                reason = "reranker selected the entity, but it was outside the capped encoder baseline"
             elif gold_id not in pipeline_set:
                 status = "selected_but_lost_during_parsing"
-                reason = "reranker selected the entity, but final parser ranking/cap removed it"
+                reason = "capped encoder candidate was removed by final parser ranking/cap"
             else:
                 status = "resolved"
                 reason = "gold entity survived all pipeline stages"
@@ -396,12 +412,21 @@ def eval_encoder(
                 "reason": reason,
                 "reranker_score": score,
                 "reranker_threshold": entity_threshold,
+                "reranker_rank": score_rank.get(gold_id),
+                "selected_candidate": encoder_result["entity_ids"][0] if encoder_result.get("entity_ids") else None,
+                "selected_score": candidate_scores.get(encoder_result["entity_ids"][0]) if encoder_result.get("entity_ids") else None,
+                "top1_candidate": ranked_scores[0][0] if ranked_scores else None,
+                "top1_score": ranked_scores[0][1] if ranked_scores else None,
+                "score_margin_to_top1": (
+                    (ranked_scores[0][1] - score) if score is not None and ranked_scores else None
+                ),
                 "stage_presence": {
                     "exact": gold_id in stage1_candidates,
                     "fuzzy": gold_id in stage2_candidates,
                     "semantic": gold_id in stage3_candidates,
                     "graph_expansion": gold_id in stage4_candidates,
                     "candidate_pool": gold_id in candidate_set,
+                    "reranker_top1": gold_id in top1_ids,
                     "reranker_selected": gold_id in raw_enc_ids,
                     "final_pipeline": gold_id in pipeline_set,
                 },
@@ -437,6 +462,10 @@ def eval_encoder(
             "pipeline_total": len(resolved_ids),
             "encoder_correct": sum(1 for e in enc_ids if e in gt_ids),
             "encoder_total": len(enc_ids),
+            "candidate_scores": candidate_scores,
+            "candidate_ranks": score_rank,
+            "selected_candidates": sorted(raw_enc_ids),
+            "parser_success": not parser_lost_ids,
             "candidate_pipeline": {
                 "stage1_exact": {"candidates": len(stage1_candidates), "hits": stage1_hits},
                 "stage2_fuzzy": {"candidates": len(stage2_candidates), "hits": stage2_hits},
@@ -535,6 +564,8 @@ def eval_encoder(
             for stage, hits in sorted(stage_hit_counts.items())
         },
         "stage_gold_total": stage_gold_total,
+        "parser_failure_count": parser_failure_count,
+        "parser_success_rate": (n - parser_failure_count) / n if n else 0.0,
     }
 
 
@@ -591,6 +622,10 @@ def eval_paraphrase(
 
 
 def main():
+    cli = argparse.ArgumentParser(description="Evaluate the frozen Stage 1B split honestly")
+    cli.add_argument("--entity-threshold", type=float, default=0.55)
+    args = cli.parse_args()
+
     # ── Setup ──
     print("=" * 60)
     print("Stage 1 Gate Evaluation — Associative Encoder (HONEST)")
@@ -634,8 +669,12 @@ def main():
     emb_idx.build_index(graph)
     config_enc = NEXUSConfig()
     config_enc.enable_associative_encoder = True
-    encoder_results = eval_encoder(graph, test_questions, encoder, entity_threshold=0.55,
-                                    embedding_index=emb_idx, config=config_enc)
+    if not 0.0 <= args.entity_threshold <= 1.0:
+        raise ValueError("--entity-threshold must be within [0, 1]")
+    encoder_results = eval_encoder(
+        graph, test_questions, encoder, entity_threshold=args.entity_threshold,
+        embedding_index=emb_idx, config=config_enc,
+    )
 
     print("\n--- Pipeline-with-fallback (encoder + lexical) ---")
     print(f"  entity_precision:   {encoder_results['entity_precision']:.4f} ({encoder_results['entity_precision']*100:.1f}%)")
@@ -791,7 +830,7 @@ def main():
                 ["git", "rev-parse", "HEAD"], cwd=_repo_root, text=True
             ).strip(),
             "configuration": {
-                "entity_threshold": 0.55,
+                "entity_threshold": args.entity_threshold,
                 "max_entry_nodes": config_enc.max_entry_nodes,
                 "fuzzy_cutoff": config_enc.fuzzy_cutoff,
                 "embedding_top_k": 20,
@@ -834,6 +873,15 @@ def main():
         },
         "paraphrase": para_results,
         "per_intent_breakdown": encoder_results["per_intent_breakdown"],
+        "metric_denominators": {
+            "candidate_pool_recall": "gold entity IDs present in the union candidate pool / all gold entity IDs (question, entity pairs)",
+            "reranker_top1_recall": "gold entity IDs that are the highest-scoring candidate / all gold entity IDs",
+            "final_accepted_recall": "correct final entity IDs / all gold entity IDs",
+            "parser_success_rate": "questions with no selected encoder IDs lost during final parsing / questions",
+            "threshold_rejection_rate": "candidate-present gold IDs rejected at or below threshold / candidate-present gold IDs",
+            "impossible_case_rate": "questions with at least one gold ID absent from the candidate pool / questions",
+        },
+        "question_details": clean_details,
         "candidate_diagnostics": {
             "missed_rerank_count": encoder_results["missed_rerank_count"],
             "impossible_count": encoder_results["impossible_count"],
@@ -841,6 +889,13 @@ def main():
             "stage_hit_counts": encoder_results["stage_hit_counts"],
             "stage_candidate_recall": encoder_results["stage_candidate_recall"],
             "stage_gold_total": encoder_results["stage_gold_total"],
+            "parser_failure_count": encoder_results["parser_failure_count"],
+            "parser_success_rate": encoder_results["parser_success_rate"],
+            "threshold_rejection_rate": (
+                encoder_results["stage_diagnostic_counts"].get("present_but_rejected_by_reranker_threshold", 0)
+                / max(encoder_results["stage_hit_counts"].get("candidate_pool", 0), 1)
+            ),
+            "impossible_case_rate": encoder_results["impossible_count"] / max(len(test_questions), 1),
         },
         "gates": {k: {"passed": p, "detail": d} for k, (p, d) in gates.items()},
         "decision": "HONEST PASS" if all_pass else "HONEST FAIL",
