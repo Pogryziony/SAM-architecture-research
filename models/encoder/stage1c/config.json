@@ -1,0 +1,14 @@
+{
+  "candidate_groups": "identical_for_both_rankers",
+  "gate": {
+    "baseline_recall@10": 0.3571428571,
+    "gate": true,
+    "required_recall@10": 0.5071428571,
+    "winner_recall@10": 0.7132352941176471,
+    "winner_recall@5": 0.5661764705882353
+  },
+  "seed": 20260710,
+  "source_sha": "6c0e25fe7b642747ab2dd7d59e7a85fe411b1eef",
+  "validation_only": true,
+  "winner": "feature_logistic"
+}

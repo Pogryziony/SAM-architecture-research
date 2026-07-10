@@ -1,0 +1,17 @@
+{
+  "groups": 1932,
+  "hard_negative_count": 28209,
+  "hard_negative_share": 0.7983302674402151,
+  "negative_count": 35335,
+  "pair_count": 37957,
+  "positive_count": 2622,
+  "positive_negative_ratio": 0.07420404697891608,
+  "random_negative_count": 7126,
+  "random_negative_share": 0.2016697325597849,
+  "seed": 20260710,
+  "sources": {
+    "stage1d_graph_mined": 1557,
+    "train_candidate_pipeline": 375
+  },
+  "test_split_read": false
+}

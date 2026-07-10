@@ -1,0 +1,87 @@
+{
+  "dataset_stats": {
+    "groups": 1932,
+    "hard_negative_count": 28209,
+    "hard_negative_share": 0.7983302674402151,
+    "negative_count": 35335,
+    "pair_count": 37957,
+    "positive_count": 2622,
+    "positive_negative_ratio": 0.07420404697891608,
+    "random_negative_count": 7126,
+    "random_negative_share": 0.2016697325597849,
+    "seed": 20260710,
+    "sources": {
+      "stage1d_graph_mined": 1557,
+      "train_candidate_pipeline": 375
+    },
+    "test_split_read": false
+  },
+  "evaluations": [
+    {
+      "candidate_groups": 127,
+      "metrics": {
+        "precision@1": 0.2047244094488189,
+        "precision@10": 0.07637795275590552,
+        "precision@5": 0.12125984251968504,
+        "recall@1": 0.19117647058823528,
+        "recall@10": 0.7132352941176471,
+        "recall@5": 0.5661764705882353
+      },
+      "model": "feature_logistic"
+    },
+    {
+      "candidate_groups": 127,
+      "metrics": {
+        "precision@1": 0.0,
+        "precision@10": 0.0,
+        "precision@5": 0.0,
+        "recall@1": 0.0,
+        "recall@10": 0.0,
+        "recall@5": 0.0
+      },
+      "model": "encoder"
+    }
+  ],
+  "graph": {
+    "build_command": "python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results/TIMESTAMPED_FILE.json",
+    "build_steps": [
+      "1. populate_from_experiments(EXPERIMENTS_DIR, graph)",
+      "2. ingest_directory('docs/', graph)",
+      "3. ingest_directory('sam-lm/docs/', graph)",
+      "4. ingest_directory('sam-lm/experiments/', graph)"
+    ],
+    "edge_count": 561,
+    "edge_type_counts": {
+      "contradicts": 1,
+      "depends_on": 202,
+      "derived_from": 348,
+      "validates": 10
+    },
+    "effective_config": {
+      "enable_associative_encoder": false,
+      "enable_cooccurrence_edges": false,
+      "enable_embedding_er": false,
+      "enable_normalization": false
+    },
+    "fixes_applied": [
+      "P0: entity filter, relations constrained 10K->116 edges, entity ranking",
+      "P1: key_findings surfaced as evidence in evidence_builder",
+      "P2: double-gate with corpus metric (honest hallucination measurement)"
+    ],
+    "node_count": 1866,
+    "timestamp": "2026-07-10T17:55:36.888537+00:00"
+  },
+  "seed": 20260710,
+  "selection": {
+    "baseline_recall@10": 0.3571428571,
+    "decision_rule": "recall@10, recall@5 tie-break",
+    "gate": true,
+    "required_recall@10": 0.5071428571,
+    "winner": "feature_logistic",
+    "winner_recall@10": 0.7132352941176471,
+    "winner_recall@5": 0.5661764705882353
+  },
+  "source_sha": "6c0e25fe7b642747ab2dd7d59e7a85fe411b1eef",
+  "split": "stack/encoder/data/val.jsonl",
+  "test_split_read": false
+}

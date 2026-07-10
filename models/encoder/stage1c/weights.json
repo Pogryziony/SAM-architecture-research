@@ -1,0 +1,19 @@
+{
+  "features": [
+    "bias",
+    "lexical_overlap",
+    "char_ngram_cosine",
+    "type_rule_intent",
+    "node_degree_log",
+    "alias_match"
+  ],
+  "kind": "feature_logistic",
+  "weights": [
+    -9.602186105625679,
+    -0.022830248617842257,
+    20.282716229148686,
+    -3.313891025912336,
+    2.896351714144328,
+    -0.8609883141078465
+  ]
+}
