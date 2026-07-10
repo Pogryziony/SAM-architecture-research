@@ -34,11 +34,12 @@ comes from the graph.
 | Architecture design | ✅ Complete — see [docs/](docs/) |
 | Graph data model | ✅ Defined — node types, edge types, confidence scoring |
 | Reasoning pipeline | ✅ Designed — entity extraction → traversal → evidence → verify |
-| Graph store | 🔄 In progress — `InMemoryGraphStore` implemented |
-| Entity extraction | 🔄 In progress — rule-based + LLM pipeline designed |
-| Graph traversal | 🔄 In progress — beam search with edge-type weighting |
-| End-to-end QA | ❌ Not yet validated |
-| RAG comparison | ❌ Not yet benchmarked |
+| Graph store | ✅ Implemented — `InMemoryGraphStore` with 1,866 nodes |
+| Associative encoder (Stage 1b) | ❌ FAILED — entity_recall 4.4% < 65% gate. Stage STOPPED. |
+| Realization L1 (Stage 2) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
+| Dialogue state (Stage 3) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
+| Realization L2 (Stage 4) | ⏭️ Skipped — entry conditions not met |
+| End-to-end QA | ❌ Not validated — stack halted at Stage 1b |
 
 ### Quick start (NEXUS)
 
@@ -117,4 +118,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-08*
+*Last updated: 2026-07-10 (honest re-evaluation)*

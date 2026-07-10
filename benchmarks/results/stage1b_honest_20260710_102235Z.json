@@ -1,0 +1,137 @@
+{
+  "meta": {
+    "phase": "R1",
+    "description": "HONEST re-evaluation on frozen 225-question test split",
+    "frozen_split": "stack/encoder/data/test.jsonl",
+    "frozen_commit": "34278d5 (Stage 1.0 split)",
+    "canonical_labels": "nexus/utils/canonical_labels.py",
+    "timestamp_utc": "20260710_102235Z",
+    "num_questions": 225,
+    "validated_ids_match": true
+  },
+  "encoder_info": {
+    "param_count": 555017,
+    "rss_delta_mb": 7.00390625
+  },
+  "baseline": {
+    "entity_precision": 0.013380909901873328,
+    "entity_recall": 0.05454545454545454,
+    "entity_f1": 0.02148997134670487,
+    "exact_entity_accuracy": 0.057777777777777775,
+    "resolution_rate": 1.0,
+    "total_questions": 225,
+    "total_resolved_entities": 1121,
+    "total_gt_entities": 275,
+    "total_correct": 15
+  },
+  "pipeline_with_fallback": {
+    "entity_precision": 0.010666666666666666,
+    "entity_recall": 0.04363636363636364,
+    "entity_f1": 0.017142857142857144,
+    "exact_entity_accuracy": 0.044444444444444446,
+    "resolution_rate": 1.0,
+    "intent_accuracy": 0.8533333333333334,
+    "pipeline_correct_entities": 12,
+    "pipeline_gt_entities": 275
+  },
+  "encoder_only": {
+    "encoder_precision": 0.01125703564727955,
+    "encoder_recall": 0.08727272727272728,
+    "encoder_f1": 0.019941836310760283,
+    "encoder_exact_entity_accuracy": 0.10666666666666667,
+    "encoder_resolution_rate": 0.7733333333333333
+  },
+  "latency": {
+    "inference_p50_ms": 18.167800008086488,
+    "inference_p90_ms": 29.131200004485436
+  },
+  "paraphrase": {
+    "original_entity_accuracy": 0.0,
+    "paraphrase_entity_accuracy": 0.0,
+    "drop_pp": 0.0,
+    "num_pairs": 30,
+    "drops_list": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "per_intent_breakdown": {
+    "comparison": {
+      "count": 29,
+      "intent_accuracy": 0.8620689655172413,
+      "encoder_precision": 0.008403361344537815,
+      "encoder_total_predictions": 238,
+      "encoder_correct": 2
+    },
+    "diagnostic": {
+      "count": 67,
+      "intent_accuracy": 0.8059701492537313,
+      "encoder_precision": 0.011092150170648464,
+      "encoder_total_predictions": 1172,
+      "encoder_correct": 13
+    },
+    "factual_lookup": {
+      "count": 129,
+      "intent_accuracy": 0.875968992248062,
+      "encoder_precision": 0.012465373961218837,
+      "encoder_total_predictions": 722,
+      "encoder_correct": 9
+    }
+  },
+  "gates": {
+    "entity_recall": {
+      "passed": false,
+      "detail": "4.4% >= 65%"
+    },
+    "resolution_rate": {
+      "passed": true,
+      "detail": "100.0% >= 100.0%"
+    },
+    "paraphrase_drop": {
+      "passed": true,
+      "detail": "0.0 pp < 10 pp"
+    },
+    "intent_accuracy": {
+      "passed": true,
+      "detail": "85.3% >= 85%"
+    },
+    "rss_delta": {
+      "passed": true,
+      "detail": "7.0 MB <= 150 MB"
+    },
+    "inference_p50": {
+      "passed": true,
+      "detail": "18.2 ms <= 50 ms"
+    }
+  },
+  "decision": "HONEST FAIL",
+  "all_pass": false
+}

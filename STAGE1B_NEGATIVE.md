@@ -354,3 +354,31 @@ The experiment is stopped. All artifacts are preserved in this commit. The progr
 5/6 gates passed. Pipeline entity accuracy dominated by lexical fallback (1.3%). Encoder-only precision: 1.1%.
 
 Per decision tree: R1 failed → R2 skipped → R3 (baseline fix) executed → program STOPPED after R3.
+
+---
+
+### Honest Re-evaluation (2026-07-10, metric fix)
+
+Evaluated on frozen 225-question test split with corrected metric definitions.
+The ambiguous `entity_accuracy` metric has been replaced with consistently named
+`entity_precision`, `entity_recall`, `entity_f1`, and `exact_entity_accuracy`.
+
+| Metric | Value | Threshold | Status |
+|--------|-------|-----------|--------|
+| entity_recall | 4.4% | ≥65% | **FAIL** |
+| entity_precision | 1.1% | measured | — |
+| entity_f1 | 1.7% | measured | — |
+| exact_entity_accuracy | 4.4% | measured | — |
+| intent_accuracy | 85.3% | ≥85% | PASS |
+| resolution_rate | 100% | no regression | PASS |
+| paraphrase_drop | 0.0 pp | <10 pp | PASS |
+| RSS delta | 7.0 MB | ≤150 MB | PASS |
+| inference p50 | 18.2 ms | ≤50 ms | PASS |
+
+Stage 1B: **FAILED** — entity_recall at 4.4% vs 65% threshold is far below requirement.
+The pre-registered 65% threshold was historically measured as recall (correct GT matches / total GT entities),
+which is now consistently named `entity_recall`. The metric fix preserves the original gate semantics.
+
+Baseline lexical path achieves entity_recall = 5.5% (entity_precision = 1.3%, entity_f1 = 2.1%).
+The encoder does not improve entity resolution over the lexical baseline — it marginally worsens
+recall (4.4% vs 5.5%) due to the encoder scores being near-random for unseen entity types.

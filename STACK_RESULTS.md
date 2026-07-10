@@ -13,9 +13,9 @@
 | P | Pre-registration | EXPERIMENT_SAM_NEXUS_STACK.md committed | ✅ PASS |
 | 0 | Canonical Baseline | Guards, paired_n>0, RAG populated, COMPARISON.md | ✅ PASS |
 | 1 | Associative Encoder v1 | Failed: intent 65.3% < 85% | ❌ STOP |
-| 1b | Associative Encoder v2 | ALL 6/6: entity 100%, intent 100%, RSS 6.6MB, 32.7ms | ✅ PASS |
-| 2 | Realization L1 | 3/4: naturalness +38.5, hallucination, accuracy. Relevance 60% pre-existing | ⚠️ PARTIAL |
-| 3 | Dialogue State | ALL 3/3: ref resolution 71.9%, no regression, 2.7ms | ✅ PASS |
+| 1b | Associative Encoder v2 | 1/6: entity_recall 4.4% < 65% (FAIL). Intent 85.3%, RSS 7.0MB, 18.2ms | ❌ FAIL |
+| 2 | Realization L1 | 3/4: naturalness +38.5, hallucination, accuracy. Relevance 60% pre-existing. Built on unvalidated Stage 1b foundation. | ⚠️ UNVALIDATED |
+| 3 | Dialogue State | ALL 3/3: ref resolution 71.9%, no regression, 2.7ms. Built on unvalidated Stage 1b foundation. | ⚠️ UNVALIDATED |
 | 4 | Realization L2 | Entry conditions not met (relevance gate + distillation pairs) | ⏭️ SKIPPED |
 | 5 | Freeze | This document | 🔄 |
 
@@ -32,16 +32,21 @@
 
 ---
 
-## Stage 1b — Associative Encoder (Passed)
+## Stage 1b — Associative Encoder (Failed)
 
-| Gate | Value | Threshold |
-|------|-------|-----------|
-| entity_accuracy | 100% | ≥65% |
-| resolution_rate | 100% | no regression |
-| paraphrase_drop | 0.0pp | <10pp |
-| intent_accuracy | 100% | ≥85% |
-| RSS delta | 6.6 MB | ≤150 MB |
-| inference p50 | 32.7 ms | ≤50 ms |
+| Gate | Value | Threshold | Status |
+|------|-------|-----------|--------|
+| entity_recall | 4.4% | ≥65% | ❌ FAIL |
+| entity_precision | 1.1% | measured | — |
+| entity_f1 | 1.7% | measured | — |
+| exact_entity_accuracy | 4.4% | measured | — |
+| resolution_rate | 100% | no regression | ✅ |
+| paraphrase_drop | 0.0 pp | <10 pp | ✅ |
+| intent_accuracy | 85.3% | ≥85% | ✅ |
+| RSS delta | 7.0 MB | ≤150 MB | ✅ |
+| inference p50 | 18.2 ms | ≤50 ms | ✅ |
+
+**Result: 1 of 6 gates FAIL (entity_recall 4.4% < 65%). Stage 1B FAILED.**
 
 Model: 555K params, char n-gram hashing, 1-layer GRU, entity re-ranker over lexical+embedding candidates. Rule-first intent with 63% coverage at 100% accuracy.
 
