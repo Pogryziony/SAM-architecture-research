@@ -1,0 +1,31 @@
+{"source": "Exp_0_6_Validation", "target": "Exp_0_5_DenseDataset", "edge_type": "depends_on", "evidence": "sam-lm/docs/experiments.md"}
+{"source": "Exp_0_13A_NoisyMemory", "target": "Exp_0_12_Selection", "edge_type": "depends_on", "evidence": "sam-lm/docs/experiments.md"}
+{"source": "Exp_0_11_ChainRetrieval", "target": "Concept_ChainRetrieval", "edge_type": "validates", "evidence": "ANALYSIS_AND_ROADMAP.md"}
+{"source": "Exp_0_12_Selection", "target": "Concept_SelectorBottleneck", "edge_type": "validates", "evidence": "ANALYSIS_AND_ROADMAP.md"}
+{"source": "Exp_0_13A_NoisyMemory", "target": "Concept_NoiseTolerance", "edge_type": "validates", "evidence": "ANALYSIS_AND_ROADMAP.md"}
+{"source": "Exp_0_12_Selection", "target": "Concept_RetrievalMismatch", "edge_type": "contradicts", "evidence": "ANALYSIS_AND_ROADMAP.md"}
+{"source": "Exp_0_6_Validation_core_only", "target": "Exp_0_6_Validation", "edge_type": "derived_from", "evidence": "sam-lm/experiments/experiment_0_6_report.md"}
+{"source": "Decision_PivotToNEXUS", "target": "Concept_SelectorBottleneck", "edge_type": "derived_from", "evidence": "ANALYSIS_AND_ROADMAP.md"}
+{"source": "Decision_PivotToNEXUS", "target": "Concept_ArchitectureWorks", "edge_type": "derived_from", "evidence": "ANALYSIS_AND_ROADMAP.md"}
+{"source": "Decision_PivotToNEXUS", "target": "Concept_PivotToNEXUS", "edge_type": "derived_from", "evidence": "ANALYSIS_AND_ROADMAP.md"}
+{"source": "Exp_0_10_RequiredSet", "target": "Exp_0_9_OracleFilter", "edge_type": "depends_on", "evidence": "sam-lm/docs/experiments.md"}
+{"source": "Exp_0_2_CompactPKM", "target": "Exp_0_Diagnosis", "edge_type": "depends_on", "evidence": "sam-lm/docs/experiments.md"}
+{"source": "Exp_0_6_Validation", "target": "Concept_OracleMemory", "edge_type": "validates", "evidence": "sam-lm/docs/experiments.md"}
+{"source": "Exp_0_6_Validation", "target": "Concept_ArchitectureWorks", "edge_type": "validates", "evidence": "ANALYSIS_AND_ROADMAP.md"}
+{"source": "Exp_0_6_Validation", "target": "Concept_RetrievalMismatch", "edge_type": "validates", "evidence": "sam-lm/docs/experiments.md"}
+{"source": "Exp_0_13A_NoisyMemory", "target": "Concept_ArchitectureWorks", "edge_type": "validates", "evidence": "ANALYSIS_AND_ROADMAP.md"}
+{"source": "Exp_0_7_ExternalText", "target": "Exp_0_6_Validation", "edge_type": "depends_on", "evidence": "sam-lm/docs/experiments.md"}
+{"source": "Exp_0_8_Aggregation", "target": "Exp_0_7_ExternalText", "edge_type": "depends_on", "evidence": "sam-lm/docs/experiments.md"}
+{"source": "Exp_0_9_OracleFilter", "target": "Exp_0_8_Aggregation", "edge_type": "depends_on", "evidence": "sam-lm/docs/experiments.md"}
+{"source": "Exp_0_12_Selection", "target": "Exp_0_11_ChainRetrieval", "edge_type": "depends_on", "evidence": "sam-lm/docs/experiments.md"}
+{"source": "Concept_SelectorBottleneck", "target": "Concept_RetrievalMismatch", "edge_type": "caused_by", "evidence": "ANALYSIS_AND_ROADMAP.md"}
+{"source": "Decision_PivotToNEXUS", "target": "Concept_PivotToNEXUS", "edge_type": "implements", "evidence": "ANALYSIS_AND_ROADMAP.md"}
+{"source": "Exp_0_13A_NoisyMemory", "target": "Concept_PivotToNEXUS", "edge_type": "validates", "evidence": "ANALYSIS_AND_ROADMAP.md"}
+{"source": "Exp_0_3_PKM_Candidates", "target": "Exp_0_2_CompactPKM", "edge_type": "depends_on", "evidence": "sam-lm/docs/experiments.md"}
+{"source": "Exp_0_5_DenseDataset", "target": "Exp_0_3_PKM_Candidates", "edge_type": "depends_on", "evidence": "sam-lm/docs/experiments.md"}
+{"source": "Exp_0_12_Selection", "target": "Concept_ArchitectureWorks", "edge_type": "validates", "evidence": "ANALYSIS_AND_ROADMAP.md"}
+{"source": "Exp_0_12_Selection", "target": "Concept_PivotToNEXUS", "edge_type": "validates", "evidence": "ANALYSIS_AND_ROADMAP.md"}
+{"source": "Exp_0_2_CompactPKM", "target": "Exp_0_13A_NoisyMemory", "edge_type": "depends_on", "evidence": "NEGATIVE: unrelated experiment phases", "is_negative": true}
+{"source": "Concept_NoiseTolerance", "target": "Exp_0_Diagnosis", "edge_type": "validates", "evidence": "NEGATIVE: noise tolerance not studied in diagnosis", "is_negative": true}
+{"source": "Decision_PivotToNEXUS", "target": "Exp_0_Diagnosis", "edge_type": "derived_from", "evidence": "NEGATIVE: pivot decision not derived from diagnosis", "is_negative": true}
+{"source": "Concept_SelectorBottleneck", "target": "Concept_ArchitectureWorks", "edge_type": "blocked_by", "evidence": "ANALYSIS_AND_ROADMAP.md"}
