@@ -40,6 +40,5 @@ jobs:
           python -c "from nexus.utils.config import NEXUSConfig; print('config OK')"
           python -c "from nexus.utils.canonical_labels import canonicalize_intent; print('labels OK')"
 
-      - name: Verify no results.json writes
-        run: |
-          if [ -f benchmarks/results.json ]; then echo "ERROR: benchmarks/results.json should not exist"; exit 1; fi
+      - name: Verify tests do not modify historical results.json
+        run: git diff --exit-code -- benchmarks/results.json
