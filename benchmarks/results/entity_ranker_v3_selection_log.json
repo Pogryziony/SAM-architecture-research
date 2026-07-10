@@ -1,0 +1,97 @@
+{
+  "dataset_stats": {
+    "canonical_mapping_size": 366,
+    "canonical_mapping_unique_targets": 20,
+    "graph_mined_groups": 400,
+    "train_groups": 375,
+    "validation_groups": 150
+  },
+  "evaluations": [
+    {
+      "candidate_groups": 150,
+      "metrics": {
+        "precision@10": 0.007427413909520594,
+        "recall@10": 0.06043956043956044,
+        "total_gold_entities": 182.0,
+        "total_questions": 150.0
+      },
+      "model": "trivial_baseline"
+    },
+    {
+      "candidate_groups": 150,
+      "metrics": {
+        "absent_gold_count": 0.0,
+        "candidate_recall_ceiling": 1.0,
+        "precision@1": 0.006666666666666667,
+        "precision@10": 0.020708082832331328,
+        "precision@5": 0.02,
+        "recall@1": 0.005494505494505495,
+        "recall@10": 0.17032967032967034,
+        "recall@5": 0.08241758241758242,
+        "total_gold_entities": 182.0,
+        "total_questions": 150.0
+      },
+      "model": "feature_logistic_v3"
+    },
+    {
+      "candidate_groups": 150,
+      "metrics": {
+        "absent_gold_count": 0.0,
+        "precision@10": 0.0190865712338105,
+        "recall@1": 0.038461538461538464,
+        "recall@10": 0.15384615384615385,
+        "recall@5": 0.11538461538461539,
+        "total_gold_entities": 182.0,
+        "total_questions": 150.0
+      },
+      "model": "entity_ranker_v3"
+    }
+  ],
+  "graph": {
+    "build_command": "python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results/TIMESTAMPED_FILE.json",
+    "build_steps": [
+      "1. populate_from_experiments(EXPERIMENTS_DIR, graph)",
+      "2. ingest_directory('docs/', graph)",
+      "3. ingest_directory('sam-lm/docs/', graph)",
+      "4. ingest_directory('sam-lm/experiments/', graph)"
+    ],
+    "edge_count": 563,
+    "edge_type_counts": {
+      "contradicts": 1,
+      "depends_on": 204,
+      "derived_from": 348,
+      "validates": 10
+    },
+    "effective_config": {
+      "enable_associative_encoder": false,
+      "enable_cooccurrence_edges": false,
+      "enable_embedding_er": false,
+      "enable_normalization": false
+    },
+    "fixes_applied": [
+      "P0: entity filter, relations constrained 10K->116 edges, entity ranking",
+      "P1: key_findings surfaced as evidence in evidence_builder",
+      "P2: double-gate with corpus metric (honest hallucination measurement)"
+    ],
+    "node_count": 1866,
+    "timestamp": "2026-07-10T20:57:02.736432+00:00"
+  },
+  "seed": 20260710,
+  "selection": {
+    "baseline_gap_pp": 10.989010989010989,
+    "baseline_gate_15pp": false,
+    "baseline_recall@10": 0.06043956043956044,
+    "candidate_recall_ceiling": 0.0,
+    "decision_rule": "recall@10, recall@5, recall@1 tie-break",
+    "proceed_to_frozen": false,
+    "val_gate_70pct": false,
+    "winner": "feature_logistic_v3",
+    "winner_recall@1": 0.005494505494505495,
+    "winner_recall@10": 0.17032967032967034,
+    "winner_recall@5": 0.08241758241758242
+  },
+  "source_sha": "0219df1af959ee1ac5e2042ed5eeba8a9bb77174",
+  "split": "stack/encoder/data/val.jsonl",
+  "split_sha256": "f95e212502c7c5ad5a615a3e1921e62ef7e1e961a229f44be63e3f829fdacd09",
+  "test_split_read": false
+}
