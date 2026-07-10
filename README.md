@@ -118,4 +118,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-10 (honest frozen-split rerun; current reference: `benchmarks/results/stage1b_honest_20260710_125609Z.json`; historical references remain preserved in the results index)*
+*Last updated: 2026-07-10 (honest frozen-split rerun; current reference: `benchmarks/results/stage1b_honest_20260710_130018Z.json`; historical references remain preserved in the results index)*

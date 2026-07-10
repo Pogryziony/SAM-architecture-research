@@ -12,8 +12,8 @@ Status: **GATES FAILED** — see details below.
 | resolution_rate | 100.0% | >= baseline | PASS |
 | paraphrase_drop | 0.0 pp | < 10 pp | PASS |
 | intent_accuracy | 85.3% | >= 85% | PASS |
-| RSS delta | 6.7 MB | <= 150 MB | PASS |
-| inference p50 | 26.4 ms | <= 50 ms | PASS |
+| RSS delta | 6.8 MB | <= 150 MB | PASS |
+| inference p50 | 25.9 ms | <= 50 ms | PASS |
 
 ## Per-Head Metrics
 
@@ -27,8 +27,8 @@ Status: **GATES FAILED** — see details below.
 - **Resolution rate**: 100.0%
 - **Intent accuracy** (canonical labels): 85.3%
 - **Paraphrase drop**: 0.0 pp
-- **Inference p50**: 26.4 ms
-- **RSS delta**: 6.7 MB
+- **Inference p50**: 25.9 ms
+- **RSS delta**: 6.8 MB
 - **Parameters**: 555,017
 
 ## Per-Intent-Class Breakdown
@@ -52,82 +52,82 @@ Key issues:
 
 ### Case 1: q564
 **Question**: What was the goal of the 'Pipeline Setup' phase in SAM research?
-**GT entities**: Exp_0_2_CompactPKM, Exp_0_3_PKM_Candidates, Exp_0_5_DenseDataset, Exp_0_Diagnosis
+**GT entities**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
 **Resolved**: Exp_0_Diagnosis, Exp_0_11_ChainRetrieval, Exp_0_6_Validation, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce
-**Missed**: Exp_0_2_CompactPKM, Exp_0_5_DenseDataset, Exp_0_3_PKM_Candidates
-**Extra**: Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_11_ChainRetrieval, Exp_0_6_Validation
+**Missed**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_5_DenseDataset
+**Extra**: Exp_0_6_Validation, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
 **Encoder entities**: ['Exp_0_10_RequiredSet', 'Exp_0_11_ChainRetrieval', 'Exp_0_11_ChainRetrieval_chain_set_bce', 'Exp_0_6_Validation', 'Exp_0_Diagnosis']
 
 ### Case 2: q566
 **Question**: What was the breakthrough moment of the 'Pipeline Setup' phase in SAM research?
-**GT entities**: Exp_0_2_CompactPKM, Exp_0_3_PKM_Candidates, Exp_0_5_DenseDataset, Exp_0_Diagnosis
+**GT entities**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
 **Resolved**: Exp_0_Diagnosis, Exp_0_11_ChainRetrieval, Exp_0_6_Validation, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce
-**Missed**: Exp_0_2_CompactPKM, Exp_0_5_DenseDataset, Exp_0_3_PKM_Candidates
-**Extra**: Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_11_ChainRetrieval, Exp_0_6_Validation
+**Missed**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_5_DenseDataset
+**Extra**: Exp_0_6_Validation, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
 **Encoder entities**: ['Exp_0_10_RequiredSet', 'Exp_0_11_ChainRetrieval', 'Exp_0_11_ChainRetrieval_chain_set_bce', 'Exp_0_6_Validation', 'Exp_0_Diagnosis']
 
 ### Case 3: q567
 **Question**: What was the biggest surprise of the 'Pipeline Setup' phase in SAM research?
-**GT entities**: Exp_0_2_CompactPKM, Exp_0_3_PKM_Candidates, Exp_0_5_DenseDataset, Exp_0_Diagnosis
+**GT entities**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
 **Resolved**: Exp_0_Diagnosis, Exp_0_11_ChainRetrieval, Exp_0_6_Validation, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce
-**Missed**: Exp_0_2_CompactPKM, Exp_0_5_DenseDataset, Exp_0_3_PKM_Candidates
-**Extra**: Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_11_ChainRetrieval, Exp_0_6_Validation
+**Missed**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_5_DenseDataset
+**Extra**: Exp_0_6_Validation, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
 **Encoder entities**: ['Exp_0_10_RequiredSet', 'Exp_0_11_ChainRetrieval', 'Exp_0_11_ChainRetrieval_chain_set_bce', 'Exp_0_6_Validation', 'Exp_0_Diagnosis']
 
 ### Case 4: q568
 **Question**: What was the lesson for NEXUS of the 'Pipeline Setup' phase in SAM research?
-**GT entities**: Exp_0_2_CompactPKM, Exp_0_3_PKM_Candidates, Exp_0_5_DenseDataset, Exp_0_Diagnosis
+**GT entities**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
 **Resolved**: Exp_0_Diagnosis, Exp_0_11_ChainRetrieval, Exp_0_6_Validation, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce
-**Missed**: Exp_0_2_CompactPKM, Exp_0_5_DenseDataset, Exp_0_3_PKM_Candidates
-**Extra**: Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_11_ChainRetrieval, Exp_0_6_Validation
+**Missed**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_5_DenseDataset
+**Extra**: Exp_0_6_Validation, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
 **Encoder entities**: ['Exp_0_10_RequiredSet', 'Exp_0_11_ChainRetrieval', 'Exp_0_11_ChainRetrieval_chain_set_bce', 'Exp_0_6_Validation', 'Exp_0_Diagnosis']
 
 ### Case 5: q569
 **Question**: What was the goal of the 'Core Validation' phase in SAM research?
-**GT entities**: Exp_0_7_ExternalText, Exp_0_9_OracleFilter, Exp_0_6_Validation, Exp_0_8_Aggregation
+**GT entities**: Exp_0_6_Validation, Exp_0_9_OracleFilter, Exp_0_8_Aggregation, Exp_0_7_ExternalText
 **Resolved**: Exp_0_6_Validation, Exp_0_11_ChainRetrieval, Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
-**Missed**: Exp_0_9_OracleFilter, Exp_0_7_ExternalText, Exp_0_8_Aggregation
-**Extra**: Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Exp_0_11_ChainRetrieval, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
+**Missed**: Exp_0_7_ExternalText, Exp_0_9_OracleFilter, Exp_0_8_Aggregation
+**Extra**: Metric_Exp_0_6_Validation_core_only_val_accuracy_overall, Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Exp_0_11_ChainRetrieval
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
 **Encoder entities**: ['Exp_0_11_ChainRetrieval', 'Exp_0_6_Validation', 'Exp_0_6_Validation_core_only', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_overall', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop']
 
 ### Case 6: q570
 **Question**: What was the key challenge of the 'Core Validation' phase in SAM research?
-**GT entities**: Exp_0_7_ExternalText, Exp_0_9_OracleFilter, Exp_0_6_Validation, Exp_0_8_Aggregation
+**GT entities**: Exp_0_6_Validation, Exp_0_9_OracleFilter, Exp_0_8_Aggregation, Exp_0_7_ExternalText
 **Resolved**: Exp_0_6_Validation, Exp_0_11_ChainRetrieval, Exp_0_6_Validation_core_only, Exp_0_2_CompactPKM, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
-**Missed**: Exp_0_9_OracleFilter, Exp_0_7_ExternalText, Exp_0_8_Aggregation
-**Extra**: Exp_0_2_CompactPKM, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall, Exp_0_11_ChainRetrieval, Exp_0_6_Validation_core_only
+**Missed**: Exp_0_7_ExternalText, Exp_0_9_OracleFilter, Exp_0_8_Aggregation
+**Extra**: Metric_Exp_0_6_Validation_core_only_val_accuracy_overall, Exp_0_6_Validation_core_only, Exp_0_2_CompactPKM, Exp_0_11_ChainRetrieval
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
 **Encoder entities**: ['Exp_0_11_ChainRetrieval', 'Exp_0_2_CompactPKM', 'Exp_0_6_Validation', 'Exp_0_6_Validation_core_only', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_overall']
 
 ### Case 7: q571
 **Question**: What was the breakthrough moment of the 'Core Validation' phase in SAM research?
-**GT entities**: Exp_0_7_ExternalText, Exp_0_9_OracleFilter, Exp_0_6_Validation, Exp_0_8_Aggregation
+**GT entities**: Exp_0_6_Validation, Exp_0_9_OracleFilter, Exp_0_8_Aggregation, Exp_0_7_ExternalText
 **Resolved**: Exp_0_6_Validation, Exp_0_11_ChainRetrieval, Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
-**Missed**: Exp_0_9_OracleFilter, Exp_0_7_ExternalText, Exp_0_8_Aggregation
-**Extra**: Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Exp_0_11_ChainRetrieval, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
+**Missed**: Exp_0_7_ExternalText, Exp_0_9_OracleFilter, Exp_0_8_Aggregation
+**Extra**: Metric_Exp_0_6_Validation_core_only_val_accuracy_overall, Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Exp_0_11_ChainRetrieval
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
 **Encoder entities**: ['Exp_0_11_ChainRetrieval', 'Exp_0_6_Validation', 'Exp_0_6_Validation_core_only', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_overall', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop']
 
 ### Case 8: q572
 **Question**: What was the biggest surprise of the 'Core Validation' phase in SAM research?
-**GT entities**: Exp_0_7_ExternalText, Exp_0_9_OracleFilter, Exp_0_6_Validation, Exp_0_8_Aggregation
+**GT entities**: Exp_0_6_Validation, Exp_0_9_OracleFilter, Exp_0_8_Aggregation, Exp_0_7_ExternalText
 **Resolved**: Exp_0_6_Validation, Exp_0_11_ChainRetrieval, Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
-**Missed**: Exp_0_9_OracleFilter, Exp_0_7_ExternalText, Exp_0_8_Aggregation
-**Extra**: Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Exp_0_11_ChainRetrieval, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
+**Missed**: Exp_0_7_ExternalText, Exp_0_9_OracleFilter, Exp_0_8_Aggregation
+**Extra**: Metric_Exp_0_6_Validation_core_only_val_accuracy_overall, Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Exp_0_11_ChainRetrieval
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
 **Encoder entities**: ['Exp_0_11_ChainRetrieval', 'Exp_0_6_Validation', 'Exp_0_6_Validation_core_only', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_overall', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop']
 
 ### Case 9: q573
 **Question**: What was the lesson for NEXUS of the 'Core Validation' phase in SAM research?
-**GT entities**: Exp_0_7_ExternalText, Exp_0_9_OracleFilter, Exp_0_6_Validation, Exp_0_8_Aggregation
+**GT entities**: Exp_0_6_Validation, Exp_0_9_OracleFilter, Exp_0_8_Aggregation, Exp_0_7_ExternalText
 **Resolved**: Exp_0_6_Validation, Exp_0_11_ChainRetrieval, Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
-**Missed**: Exp_0_9_OracleFilter, Exp_0_7_ExternalText, Exp_0_8_Aggregation
-**Extra**: Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Exp_0_11_ChainRetrieval, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
+**Missed**: Exp_0_7_ExternalText, Exp_0_9_OracleFilter, Exp_0_8_Aggregation
+**Extra**: Metric_Exp_0_6_Validation_core_only_val_accuracy_overall, Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Exp_0_11_ChainRetrieval
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
 **Encoder entities**: ['Exp_0_11_ChainRetrieval', 'Exp_0_6_Validation', 'Exp_0_6_Validation_core_only', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_overall', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop']
 
@@ -136,7 +136,7 @@ Key issues:
 **GT entities**: Exp_0_6_Validation
 **Resolved**: Step_3:_Relation_Extraction, relation_extraction, Decision_PivotToNEXUS, Step_2:_Entity_Extraction, entity_extraction
 **Missed**: Exp_0_6_Validation
-**Extra**: relation_extraction, Step_3:_Relation_Extraction, entity_extraction, Step_2:_Entity_Extraction, Decision_PivotToNEXUS
+**Extra**: relation_extraction, Decision_PivotToNEXUS, entity_extraction, Step_2:_Entity_Extraction, Step_3:_Relation_Extraction
 **GT intent**: factual_lookup, **Pred intent**: multi_hop ✗
 **Encoder entities**: ['Decision_PivotToNEXUS', 'Step_2:_Entity_Extraction', 'Step_3:_Relation_Extraction', 'entity_extraction', 'relation_extraction']
 
@@ -145,7 +145,7 @@ Key issues:
 **GT entities**: Exp_0_6_Validation
 **Resolved**: Decision_PivotToNEXUS, Mmap, current_status_what, entity_location_map, repository_map
 **Missed**: Exp_0_6_Validation
-**Extra**: Mmap, entity_location_map, current_status_what, repository_map, Decision_PivotToNEXUS
+**Extra**: current_status_what, Decision_PivotToNEXUS, Mmap, entity_location_map, repository_map
 **GT intent**: factual_lookup, **Pred intent**: factual_lookup ✓
 **Encoder entities**: ['Decision_PivotToNEXUS', 'Mmap', 'current_status_what', 'entity_location_map', 'repository_map']
 
@@ -154,7 +154,7 @@ Key issues:
 **GT entities**: Exp_0_6_Validation
 **Resolved**: Decision_PivotToNEXUS, Kuzudb, current_status_what, roadmap_what, datahub
 **Missed**: Exp_0_6_Validation
-**Extra**: datahub, Kuzudb, current_status_what, roadmap_what, Decision_PivotToNEXUS
+**Extra**: datahub, current_status_what, Decision_PivotToNEXUS, Kuzudb, roadmap_what
 **GT intent**: factual_lookup, **Pred intent**: factual_lookup ✓
 **Encoder entities**: ['Decision_PivotToNEXUS', 'Kuzudb', 'current_status_what', 'datahub', 'roadmap_what']
 
@@ -163,7 +163,7 @@ Key issues:
 **GT entities**: Exp_0_6_Validation
 **Resolved**: Hard_Negative, Hard_Negative_Training, Decision_PivotToNEXUS, the_problem_is_distractor_quality,_train_on_hard_negatives, current_status_what
 **Missed**: Exp_0_6_Validation
-**Extra**: Hard_Negative, Hard_Negative_Training, current_status_what, Decision_PivotToNEXUS, the_problem_is_distractor_quality,_train_on_hard_negatives
+**Extra**: Hard_Negative, current_status_what, Decision_PivotToNEXUS, Hard_Negative_Training, the_problem_is_distractor_quality,_train_on_hard_negatives
 **GT intent**: factual_lookup, **Pred intent**: factual_lookup ✓
 **Encoder entities**: ['Decision_PivotToNEXUS', 'Hard_Negative', 'Hard_Negative_Training', 'current_status_what', 'the_problem_is_distractor_quality,_train_on_hard_negatives']
 
@@ -172,7 +172,7 @@ Key issues:
 **GT entities**: Exp_0_6_Validation
 **Resolved**: Exp_0_13A_NoisyMemory, Decision_PivotToNEXUS, Controlled_Noisy_Memory_Path_(0.13a/0.13b), Concept_NoiseTolerance, controlled_noisy_memory_path
 **Missed**: Exp_0_6_Validation
-**Extra**: Exp_0_13A_NoisyMemory, Controlled_Noisy_Memory_Path_(0.13a/0.13b), controlled_noisy_memory_path, Concept_NoiseTolerance, Decision_PivotToNEXUS
+**Extra**: controlled_noisy_memory_path, Exp_0_13A_NoisyMemory, Decision_PivotToNEXUS, Controlled_Noisy_Memory_Path_(0.13a/0.13b), Concept_NoiseTolerance
 **GT intent**: factual_lookup, **Pred intent**: factual_lookup ✓
 **Encoder entities**: ['Concept_NoiseTolerance', 'Controlled_Noisy_Memory_Path_(0.13a/0.13b)', 'Decision_PivotToNEXUS', 'Exp_0_13A_NoisyMemory', 'controlled_noisy_memory_path']
 
@@ -181,7 +181,7 @@ Key issues:
 **GT entities**: Decision_PivotToNEXUS
 **Resolved**: Exp_0_6_Validation, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_3_PKM_Candidates, Exp_0_5_DenseDataset
 **Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_5_DenseDataset, Exp_0_6_Validation, Exp_0_Diagnosis, Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM
+**Extra**: Exp_0_6_Validation, Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
 **Encoder entities**: ['Exp_0_2_CompactPKM', 'Exp_0_3_PKM_Candidates', 'Exp_0_5_DenseDataset', 'Exp_0_6_Validation', 'Exp_0_Diagnosis']
 
@@ -190,7 +190,7 @@ Key issues:
 **GT entities**: Decision_PivotToNEXUS
 **Resolved**: Exp_0_11_ChainRetrieval, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce, Metric_Exp_0_11_ChainRetrieval_chain_set_bce_total_wall_s, Exp_0_11_ChainRetrieval_sam_chain_aware
 **Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_11_ChainRetrieval, Exp_0_11_ChainRetrieval_sam_chain_aware, Exp_0_11_ChainRetrieval_chain_set_bce, Metric_Exp_0_11_ChainRetrieval_chain_set_bce_total_wall_s, Exp_0_10_RequiredSet
+**Extra**: Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_10_RequiredSet, Metric_Exp_0_11_ChainRetrieval_chain_set_bce_total_wall_s, Exp_0_11_ChainRetrieval_sam_chain_aware, Exp_0_11_ChainRetrieval
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
 **Encoder entities**: ['Exp_0_10_RequiredSet', 'Exp_0_11_ChainRetrieval', 'Exp_0_11_ChainRetrieval_chain_set_bce', 'Exp_0_11_ChainRetrieval_sam_chain_aware', 'Metric_Exp_0_11_ChainRetrieval_chain_set_bce_total_wall_s']
 
@@ -199,7 +199,7 @@ Key issues:
 **GT entities**: Decision_PivotToNEXUS
 **Resolved**: Exp_0_12_Selection, Exp_0_2_CompactPKM, Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
 **Missed**: Decision_PivotToNEXUS
-**Extra**: Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Exp_0_12_Selection, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall, Exp_0_6_Validation_core_only, Exp_0_2_CompactPKM
+**Extra**: Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Exp_0_6_Validation_core_only, Exp_0_2_CompactPKM, Exp_0_12_Selection, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
 **Encoder entities**: ['Exp_0_12_Selection', 'Exp_0_2_CompactPKM', 'Exp_0_6_Validation_core_only', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_overall', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop']
 
@@ -208,7 +208,7 @@ Key issues:
 **GT entities**: Decision_PivotToNEXUS
 **Resolved**: Exp_0_Diagnosis, Exp_0_3_PKM_Candidates, Exp_0_5_DenseDataset, Exp_0_2_CompactPKM, Exp_0_6_Validation
 **Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_5_DenseDataset, Exp_0_6_Validation, Exp_0_Diagnosis, Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM
+**Extra**: Exp_0_6_Validation, Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
 **Encoder entities**: ['Exp_0_2_CompactPKM', 'Exp_0_3_PKM_Candidates', 'Exp_0_5_DenseDataset', 'Exp_0_6_Validation', 'Exp_0_Diagnosis']
 
@@ -217,7 +217,7 @@ Key issues:
 **GT entities**: Decision_PivotToNEXUS
 **Resolved**: Exp_0_5_DenseDataset, Exp_0_Diagnosis, Exp_0_2_CompactPKM, Exp_0_10_RequiredSet, Exp_0_6_Validation
 **Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_5_DenseDataset, Exp_0_6_Validation, Exp_0_Diagnosis, Exp_0_2_CompactPKM, Exp_0_10_RequiredSet
+**Extra**: Exp_0_6_Validation, Exp_0_10_RequiredSet, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
 **Encoder entities**: ['Exp_0_10_RequiredSet', 'Exp_0_2_CompactPKM', 'Exp_0_5_DenseDataset', 'Exp_0_6_Validation', 'Exp_0_Diagnosis']
 
@@ -226,6 +226,6 @@ Key issues:
 **GT entities**: Decision_PivotToNEXUS
 **Resolved**: Exp_0_11_ChainRetrieval, Exp_0_6_Validation, Exp_0_11_ChainRetrieval_sam_chain_aware, Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_single_hop, Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_overall
 **Missed**: Decision_PivotToNEXUS
-**Extra**: Exp_0_11_ChainRetrieval, Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_overall, Exp_0_11_ChainRetrieval_sam_chain_aware, Exp_0_6_Validation, Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_single_hop
+**Extra**: Exp_0_6_Validation, Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_single_hop, Exp_0_11_ChainRetrieval_sam_chain_aware, Exp_0_11_ChainRetrieval, Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_overall
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
 **Encoder entities**: ['Exp_0_11_ChainRetrieval', 'Exp_0_11_ChainRetrieval_sam_chain_aware', 'Exp_0_6_Validation', 'Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_overall', 'Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_single_hop']
