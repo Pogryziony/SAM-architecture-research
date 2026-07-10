@@ -127,3 +127,9 @@ Commands and artifacts:
 ## Stage 1C/1D decision
 
 Stage 1C was executed as a separate graph-only data-expansion experiment and remains an honest FAIL at 50.55%; its artifact is preserved. Stage 1D was then separately preregistered and executed using validation-only parser-cap selection. The current validated frozen artifact passes at 65.82% entity recall with all six gates enabled and unchanged. No gate threshold was modified or disabled.
+
+## Entity Ranker V3 preregistration (2026-07-10)
+
+10 critical defects were discovered in the C2/C3 encoder and feature-logistic ranker during code inspection at commit `e204a31`. The defects are documented in `EXPERIMENT_ENTITY_RANKER_V3.md` and include: (1) non-question-conditioned entity scoring, (2) validation denominator leakage (127/150 questions), (3) provenance mismatch, (4) impoverished entity representation, (5) broken training loop, (6) fake hard negatives, (7) synthetic data dominance, (8) missing canonical entity mapping, (9) limited feature-based ranking, and (10) paraphrase-gate semantics.
+
+Implementation is preregistered but has not begun. No existing artifacts were changed.
