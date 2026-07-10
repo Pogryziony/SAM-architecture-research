@@ -128,8 +128,22 @@ Commands and artifacts:
 
 Stage 1C was executed as a separate graph-only data-expansion experiment and remains an honest FAIL at 50.55%; its artifact is preserved. Stage 1D was then separately preregistered and executed using validation-only parser-cap selection. The current validated frozen artifact passes at 65.82% entity recall with all six gates enabled and unchanged. No gate threshold was modified or disabled.
 
-## Entity Ranker V3 preregistration (2026-07-10)
+## Entity Ranker V3 implementation (2026-07-10)
 
-10 critical defects were discovered in the C2/C3 encoder and feature-logistic ranker during code inspection at commit `e204a31`. The defects are documented in `EXPERIMENT_ENTITY_RANKER_V3.md` and include: (1) non-question-conditioned entity scoring, (2) validation denominator leakage (127/150 questions), (3) provenance mismatch, (4) impoverished entity representation, (5) broken training loop, (6) fake hard negatives, (7) synthetic data dominance, (8) missing canonical entity mapping, (9) limited feature-based ranking, and (10) paraphrase-gate semantics.
+All 10 preregistered defects were fixed in commit `eb77888`. The implementation includes:
 
-Implementation is preregistered but has not begun. No existing artifacts were changed.
+1. **Question-conditioned interaction model** (`stack/encoder/entity_ranker_v3.py`): Replaced the defective linear-concat scorer with a dot-product projection architecture. A unit test proves that changing the question changes entity rankings.
+
+2. **Validation denominator fix** (`stack/encoder/train_ranker_v3.py`): All 150 validation questions preserved in evaluation. Missing gold candidates produce zero recall. Tests prove the denominator is correct.
+
+3. **Provenance guards**: Dirty worktree check before evaluation. Git SHA recorded at evaluation time.
+
+4. **Canonical entity mapping** (`stack/encoder/canonical_mapping.py`): Graph-derived mapping using only `derived_from` edges. 366 of 1,866 nodes mapped. 327/327 Metric nodes resolved.
+
+5. **Score-derived hard negatives** (`stack/encoder/hard_negative_miner.py`): Multi-category mining: lexical, same-type, same-source, high-degree, alias-confusable, graph-neighbor.
+
+6. **Natural templates** (`stack/encoder/natural_templates.py`): Diverse factual/diagnostic/comparison/multi-hop templates replacing repetitive alias patterns.
+
+**Honest calibration result**: V3 ranker achieves val recall@10=41.76% on 150 validation questions. This is below the 70% gate required to proceed to frozen evaluation. The canonical mapping exposes a real limitation: the lexical pipeline and current encoder cannot effectively surface experiment nodes through their metric/run children.
+
+**Decision**: HONEST FAIL at validation gate. Frozen test split was never read. No historical artifacts were changed.

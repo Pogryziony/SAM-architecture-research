@@ -14,7 +14,7 @@
 | 0 | Canonical Baseline | Historical R3 artifact is incomplete for serialized-artifact validation (missing effective graph config/edge counts); prior PASS is retracted | ❌ INVALID / RETRACTED |
 | 1 | Associative Encoder v1 | Failed: intent 65.3% < 85% | ❌ STOP |
 | 1b/1D | Associative Encoder v2 + validated parser handoff | Current validated frozen entity_recall 65.82% (181/275) with validation-selected threshold 0.20 and cap 200. All six immutable gates pass. | ✅ HONEST PASS |
-| ER3 | Entity Ranker V3 (preregistered) | Preregistered at `EXPERIMENT_ENTITY_RANKER_V3.md`; 10 critical defects in current C2/C3 encoder and ranker documented; implementation pending. | 🔄 PREREGISTERED |
+| ER3 | Entity Ranker V3 (implemented) | 10 defects fixed; question-conditioned interaction model, canonical mapping, score-derived hard negatives, denominator-preserving evaluation. Val recall@10=41.76% (<70%), frozen eval not reached. Selection log: `benchmarks/results/entity_ranker_v3_selection_log.json`. | 🔄 HONEST FAIL (val gate) |
 | 2 | Realization L1 | 3/4: naturalness +38.5, hallucination, accuracy. Relevance 60% pre-existing. Built on unvalidated Stage 1b foundation. | ⚠️ UNVALIDATED |
 | 3 | Dialogue State | ALL 3/3: ref resolution 71.9%, no regression, 2.7ms. Built on unvalidated Stage 1b foundation. | ⚠️ UNVALIDATED |
 | 4 | Realization L2 | Entry conditions not met (relevance gate + distillation pairs) | ⏭️ SKIPPED |

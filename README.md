@@ -36,7 +36,7 @@ comes from the graph.
 | Reasoning pipeline | ✅ Designed — entity extraction → traversal → evidence → verify |
 | Graph store | ✅ Implemented — `InMemoryGraphStore` with 1,866 nodes |
 | Associative encoder (Stage 1D) | ✅ PASS — frozen-split entity_recall 65.82% (181/275) with validation-selected parser handoff cap 200; all immutable Stage 1 gates passed. |
-| Entity Ranker V3 (preregistered) | 🔄 Preregistered — `EXPERIMENT_ENTITY_RANKER_V3.md`; 10 critical defects documented, implementation pending. |
+| Entity Ranker V3 (implemented) | 🔄 HONEST FAIL (validation) — `EXPERIMENT_ENTITY_RANKER_V3.md`; 10 defects fixed; V3 ranker achieves val recall@10=41.76% (<70% gate); frozen evaluation not reached. See `benchmarks/results/entity_ranker_v3_selection_log.json`. |
 | Realization L1 (Stage 2) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
 | Dialogue state (Stage 3) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
 | Realization L2 (Stage 4) | ⏭️ Skipped — entry conditions not met |
