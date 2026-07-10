@@ -3,7 +3,7 @@
 **Date**: 2026-07-10  
 **Status**: **STAGE 1B GATES FAILED** — program STOPPED per immutable protocol.
 
-The metrics in this document are historical artifacts. The current frozen-split reference is `benchmarks/results/stage1b_honest_20260710_130018Z.json`, using validation-calibrated threshold 0.10; historical result files are preserved. Current recall is 50.5%, so the 65% gate remains FAIL.
+Historical metrics in this document are retained for comparison. The current validated frozen-split reference is `benchmarks/results/stage1b_honest_20260710_133731Z.json`, using threshold 0.10 calibrated on the separate 150-question validation split; historical result files are preserved. Current entity recall is 50.5% (139/275), so the unchanged 65% gate remains FAIL.
 **Pre-registered in**: EXPERIMENT_SAM_NEXUS_STACK.md §Stage 1B
 
 ---
@@ -12,14 +12,14 @@ The metrics in this document are historical artifacts. The current frozen-split 
 
 | Gate | Value | Threshold | Pass |
 |------|-------|-----------|------|
-| entity_accuracy | 18.8% | >= 65% | **FAIL** |
+| entity_recall | 50.55% (139/275) | >= 65% | **FAIL** |
 | resolution_rate | 100.0% | >= 100% (no regression) | PASS |
 | paraphrase_drop | 0.0 pp | < 10 pp | PASS |
-| intent_accuracy | 82.2% | >= 85% | **FAIL** |
-| RSS delta | 6.8 MB | <= 150 MB | PASS |
-| inference p50 | 0.6 ms | <= 50 ms | PASS |
+| intent_accuracy | 85.33% | >= 85% | PASS |
+| RSS delta | 6.6 MB | <= 150 MB | PASS |
+| inference p50 | 26.1 ms | <= 50 ms | PASS |
 
-**2 of 6 gates FAIL**. The program stops here.
+**1 of 6 gates FAIL**. The program stops here.
 
 ---
 
@@ -27,16 +27,17 @@ The metrics in this document are historical artifacts. The current frozen-split 
 
 | Metric | Value |
 |--------|-------|
-| Combined entity_accuracy | 18.8% (lexical baseline: 18.8%, no improvement) |
-| Entity re-ranker precision | 11.5% (when enabled; disabled in final eval) |
-| Entity re-ranker recall | ~98% (near-perfect — predicts almost all candidates) |
+| Entity precision | 12.36% |
+| Entity recall | 50.55% (139/275) |
+| Entity F1 | 19.86% |
+| Exact entity accuracy | 48.0% |
+| Candidate-pool recall | 85.45% |
+| Reranker top-1 recall | 0.0% |
 | Resolution rate | 100.0% (unchanged) |
-| Intent accuracy (rule + model) | 82.2% (up from 65.3% in Stage 1) |
-| Rule coverage | ~43% of test questions |
-| Rule accuracy | ~96% on matched cases |
-| Model intent accuracy | ~70% on unmatched cases |
-| RSS delta | 6.8 MB (well within budget) |
-| Inference p50 | 0.6 ms (well within budget) |
+| Intent accuracy (rule + model) | 85.33% |
+| Parser failures | 0 |
+| RSS delta | 6.6 MB (well within budget) |
+| Inference p50 | 26.1 ms (well within budget) |
 | Parameters | 555,017 |
 | Training epochs | 30 (early stopped at intent plateau) |
 

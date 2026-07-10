@@ -119,9 +119,10 @@ Encoder-only precision: 1.1%. Pipeline entity accuracy dominated by lexical fall
 The frozen split was re-run with stage-presence diagnostics. The original reported counts are reproduced as `missed_rerank_count=160` and `impossible_count=39` in the indexed reference artifact. The implementation fix makes the parser handoff monotonic with the capped encoder baseline: selected encoder candidates are protected from lexical re-ranking displacement, and the encoder threshold is passed consistently. The diagnostic rerun records per-entity outcomes and remains HONEST FAIL (entity recall below 65%).
 
 Commands and artifacts:
-- `python stack/encoder/eval_gates.py` → `benchmarks/results/stage1b_honest_20260710_130018Z.json` → FAIL (frozen IDs match).
-- `python experiments/relation-extraction/evaluate_relations.py` → `benchmarks/results/relation_eval_20260710T122730Z.json` → completed. Relation metrics are separate from Stage 1B: precision 6.74%, recall 89.29%, F1 12.53%; dominant false positives are `derived_from`, while the three false negatives are one each of `blocked_by`, `caused_by`, and `implements`. Co-occurrence edges are now actually disabled when the flag is false.
-- `python -m pytest tests/ -q` → 290 passed after the serialized-artifact and optional-PyTorch fixes.
+- `python benchmarks/calibrate_entity_threshold.py --thresholds 0.10 0.20 0.30 0.40 0.50 0.55 0.60 0.70 0.80 0.90` → `benchmarks/results/entity_threshold_calibration_20260710_133605Z.json` (validation-only, 150 samples; selected threshold 0.10).
+- `python stack/encoder/eval_gates.py --entity-threshold 0.10 --calibration-artifact benchmarks/results/entity_threshold_calibration_20260710_133605Z.json` → `benchmarks/results/stage1b_honest_20260710_133731Z.json` → validated HONEST FAIL (frozen IDs match; entity recall 50.55%).
+- `python experiments/relation-extraction/evaluate_relations.py` → `benchmarks/results/relation_eval_20260710T133747Z.json` → completed. Relation metrics are separate from Stage 1B: precision 6.74%, recall 89.29%, F1 12.53%; dominant false positives are `derived_from`, while the three false negatives are one each of `blocked_by`, `caused_by`, and `implements`. Co-occurrence edges are disabled when the flag is false.
+- `python -m pytest tests/ -q` → 299 passed; nexus-only no-PyTorch subprocess collection → 98 passed.
 
 ## Stage 1C decision
 

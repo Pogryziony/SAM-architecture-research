@@ -258,6 +258,13 @@ def test_validator_none_tokens_handled():
 # Test — Guard 1: RAG arm configured but zero result rows
 # ═══════════════════════════════════════════════════════════════════════
 
+def test_nexus_arm_zero_rows_fails():
+    """When arm_nexus is 'nexus' but no NEXUS rows exist, fail."""
+    results = [_make_result("rag_retrieval", 100)]
+    errors, _warnings = validate_benchmark_results(results, {"arm_nexus": "nexus", "arm_rag": "rag_retrieval"})
+    assert any("NEXUS arm configured" in e for e in errors), f"Expected missing NEXUS arm error, got: {errors}"
+
+
 def test_rag_arm_zero_rows_fails():
     """When arm_rag is 'rag_retrieval' but no rag_retrieval rows exist, fail."""
     results = [

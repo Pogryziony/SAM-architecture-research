@@ -198,7 +198,7 @@ If Stage 1b also fails: the negative is about the hypothesis, not the implementa
 
 ### Stage 1B Decision and Stage 1C Preregistration
 
-- **Current status**: Stage 1B is **HONEST FAIL**. The serialized frozen artifact is `benchmarks/results/stage1b_honest_20260710_130018Z.json`; entity recall is 50.55% (139/275), below the unchanged 65% gate. The selected threshold is 0.10, calibrated on the separate 150-question `stack/encoder/data/val.jsonl` split.
+- **Current status**: Stage 1B is **HONEST FAIL**. The serialized frozen artifact is `benchmarks/results/stage1b_honest_20260710_133731Z.json`; entity recall is 50.55% (139/275), below the unchanged 65% gate. The selected threshold is 0.10, calibrated on the separate 150-question `stack/encoder/data/val.jsonl` split.
 - **Why it failed**: 40 gold entity IDs were absent from the candidate pool and 96 selected IDs fell outside the capped encoder result; only 139/275 gold IDs were finally accepted. The implementation now passes the other registered gates, so this remains a hypothesis/data-coverage failure rather than a retracted baseline.
 - **Decision**: Proceed with Stage 1C as a separately preregistered data-expansion experiment; do not start implementation until this section is approved and the Stage 1B artifact remains immutable.
 - **Pre-registered data expansion**: generate additional training pairs from the existing graph and documents using deterministic entity-name/alias mentions, relation-neighborhood questions, and paraphrase templates. Deduplicate by `(question_text, sorted_gold_entity_ids)` and never draw from the frozen test IDs or answers.
