@@ -9,7 +9,7 @@ description = "NEXUS — Non-Parametric Execution and Understanding System. Grap
 requires-python = ">=3.11"
 
 [project.optional-dependencies]
-test = ["pytest"]
+test = ["pytest>=7.0"]
 
 [tool.setuptools.packages.find]
 include = ["nexus*"]

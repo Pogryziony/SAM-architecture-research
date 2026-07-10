@@ -1,15 +1,6 @@
-name: NEXUS Tests
+name: Tests
 
-on:
-  push:
-    paths:
-      - 'nexus/**'
-      - 'tests/**'
-      - '.github/workflows/tests.yml'
-  pull_request:
-    paths:
-      - 'nexus/**'
-      - 'tests/**'
+on: [push, pull_request]
 
 jobs:
   test:
@@ -19,17 +10,31 @@ jobs:
         python-version: ['3.11', '3.12']
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
 
-    - name: Run NEXUS graph tests
-      run: pytest tests/test_nexus_graph.py -v --tb=short
+      - name: Run full test suite
+        run: python -m pytest tests/ -v --tb=short
+
+      - name: Run stack tests (if deps available)
+        run: python -m pytest tests/ -v --tb=short -k "stack or encoder or canonical" || echo "Stack tests skipped (deps may be unavailable)"
+
+      - name: Run import smoke tests
+        run: |
+          python -c "from nexus.graph.store import InMemoryGraphStore; print('nexus OK')"
+          python -c "from nexus.query.parser import parse_question; print('parser OK')"
+          python -c "from nexus.utils.config import NEXUSConfig; print('config OK')"
+          python -c "from nexus.utils.canonical_labels import canonicalize_intent; print('labels OK')"
+
+      - name: Verify no results.json writes
+        run: |
+          if [ -f benchmarks/results.json ]; then echo "ERROR: benchmarks/results.json should not exist"; exit 1; fi
