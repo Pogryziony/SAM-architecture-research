@@ -210,4 +210,12 @@ If Stage 1b also fails: the negative is about the hypothesis, not the implementa
 - **Success criteria**: serialized artifact is valid, IDs match, all provenance is complete, entity recall is at least 65%, and all other Stage 1B gates pass.
 - **Failure criteria**: missing/invalid artifact, frozen-split contamination, any provenance or denominator inconsistency, or entity recall below 65% causes FAIL and no automatic progression.
 
+### Stage 1C Result (2026-07-10)
+
+Stage 1C is a valid **HONEST FAIL**. It generated 1,560 graph-only alias/key-finding/relation pairs with explicit provenance and added deterministic property-text candidate expansion. Calibration read only `stack/encoder/data/val.jsonl`; frozen evaluation read the unchanged 225-question test split only after calibration. The serialized artifact `benchmarks/results/stage1b_honest_20260710_152608Z.json` passed validation, but entity recall remained 50.55% (139/275), below the unchanged 65% gate. Candidate-pool recall reached 85.82%, yet 39 gold IDs remained absent and 97 selected IDs fell outside the existing parser cap. Details and the next proposal are recorded in `STAGE1C_NEGATIVE.md`; no gate or historical Stage 1/1B artifact was changed.
+
+### Stage 1D Preregistration and Result (2026-07-10)
+
+Stage 1D tested a validation-selected parser handoff cap without changing the 65% gate or disabling checks. Calibration was restricted to `stack/encoder/data/val.jsonl`; the initial cap search started at 30, then expanded to `[100, 150, 200]` only after the 30-cap validation result remained below the gate. Cap selection was maximum validation recall, subject to the existing latency/parser checks; threshold selection within the chosen cap remained maximum validation F1, then recall, then lowest threshold. The selected cap was 200 and the selected threshold was 0.20. The final frozen evaluation used only unchanged `stack/encoder/data/test.jsonl` and produced **65.45% (180/275)** entity recall, 100.0% resolution, 85.3% intent accuracy, 6.4 MB RSS delta, and 34.9 ms p50. All gates passed. The serialized artifact `benchmarks/results/stage1b_honest_20260710_162457Z.json` was read back and passed validation, including metadata/configuration cap consistency. Full result details are in `STAGE1D_RESULT.md`.
+
 ---

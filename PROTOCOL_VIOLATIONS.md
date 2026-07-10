@@ -124,6 +124,6 @@ Commands and artifacts:
 - `python experiments/relation-extraction/evaluate_relations.py` → `benchmarks/results/relation_eval_20260710T133747Z.json` → completed. Relation metrics are separate from Stage 1B: precision 6.74%, recall 89.29%, F1 12.53%; dominant false positives are `derived_from`, while the three false negatives are one each of `blocked_by`, `caused_by`, and `implements`. Co-occurrence edges are disabled when the flag is false.
 - `python -m pytest tests/ -q` → 299 passed; nexus-only no-PyTorch subprocess collection → 98 passed.
 
-## Stage 1C decision
+## Stage 1C/1D decision
 
-No Stage 1C experiment has been started. Stage 1B remains a genuine FAIL; any future data-expansion experiment must be separately preregistered with generated alias/key-finding pairs, weak supervision rules, a calibration split, and the unchanged frozen test split and 65% gate.
+Stage 1C was executed as a separate graph-only data-expansion experiment and remains an honest FAIL at 50.55%; its artifact is preserved. Stage 1D was then separately preregistered and executed using validation-only parser-cap selection. The current validated frozen artifact passes at 65.45% entity recall with all six gates enabled and unchanged. No gate threshold was modified or disabled.

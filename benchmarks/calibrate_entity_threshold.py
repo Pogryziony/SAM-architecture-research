@@ -26,6 +26,10 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--thresholds", nargs="+", type=float,
                         default=[0.10, 0.20, 0.30, 0.40, 0.50, 0.55, 0.60, 0.70, 0.80, 0.90])
+    parser.add_argument(
+        "--max-entry-nodes", nargs="+", type=int, default=[5, 10, 15, 20, 30],
+        help="parser handoff caps to select using validation only (default includes 30)",
+    )
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
 
@@ -39,22 +43,39 @@ def main() -> None:
     if not encoder.load():
         raise RuntimeError("failed to load encoder")
 
+    if not args.max_entry_nodes or any(cap <= 0 for cap in args.max_entry_nodes):
+        raise ValueError("--max-entry-nodes must contain only positive integers")
     curve = []
-    for threshold in args.thresholds:
-        config = NEXUSConfig(enable_associative_encoder=True)
-        result = eval_encoder(graph, questions, encoder, threshold, index, config)
-        curve.append({
-            "threshold": threshold,
-            "precision": result["entity_precision"],
-            "recall": result["entity_recall"],
-            "f1": result["entity_f1"],
-            "candidate_pool_recall": result["stage_candidate_recall"]["candidate_pool"],
-            "reranker_top1_recall": result["stage_candidate_recall"]["reranker_top1"],
-            "final_accepted_recall": result["entity_recall"],
-            "parser_success_rate": result["parser_success_rate"],
-        })
+    for max_entry_nodes in dict.fromkeys(args.max_entry_nodes):
+        for threshold in args.thresholds:
+            config = NEXUSConfig(max_entry_nodes=max_entry_nodes, enable_associative_encoder=True)
+            result = eval_encoder(graph, questions, encoder, threshold, index, config)
+            curve.append({
+                "max_entry_nodes": max_entry_nodes,
+                "threshold": threshold,
+                "precision": result["entity_precision"],
+                "recall": result["entity_recall"],
+                "f1": result["entity_f1"],
+                "candidate_pool_recall": result["stage_candidate_recall"]["candidate_pool"],
+                "reranker_top1_recall": result["stage_candidate_recall"]["reranker_top1"],
+                "final_accepted_recall": result["entity_recall"],
+                "parser_success_rate": result["parser_success_rate"],
+                "inference_p50_ms": result["inference_p50_ms"],
+            })
 
-    best = max(curve, key=lambda row: (row["f1"], row["recall"], -row["threshold"]))
+    # Stage 1D preregisters cap selection by validation recall first.  Once the
+    # cap is selected, threshold selection remains validation F1, then recall,
+    # then the lowest threshold, matching the Stage 1C rule.
+    selected_cap = max(
+        {row["max_entry_nodes"] for row in curve},
+        key=lambda cap: (
+            max(row["recall"] for row in curve if row["max_entry_nodes"] == cap),
+            max(row["f1"] for row in curve if row["max_entry_nodes"] == cap),
+            -cap,
+        ),
+    )
+    cap_curve = [row for row in curve if row["max_entry_nodes"] == selected_cap]
+    best = max(cap_curve, key=lambda row: (row["f1"], row["recall"], -row["threshold"]))
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%SZ")
     output = args.output or root / "benchmarks" / "results" / f"entity_threshold_calibration_{ts}.json"
     payload = {
@@ -68,6 +89,14 @@ def main() -> None:
                 ["git", "rev-parse", "HEAD"], cwd=root, text=True
             ).strip(),
             "thresholds": args.thresholds,
+            "parser_handoff_caps": list(dict.fromkeys(args.max_entry_nodes)),
+            "selected_parser_handoff_cap": best["max_entry_nodes"],
+            "selected_threshold": best["threshold"],
+            "configuration": {
+                "max_entry_nodes": best["max_entry_nodes"],
+                "selection_split_only": "stack/encoder/data/val.jsonl",
+            },
+            "selection_rule": "maximum validation recall for parser cap; within selected cap maximum validation F1, then recall, then lowest threshold",
             "metric_denominators": {
                 "precision": "correct predicted entity IDs / predicted entity IDs",
                 "recall": "correct predicted entity IDs / gold entity IDs",

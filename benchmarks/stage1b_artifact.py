@@ -56,6 +56,15 @@ def validate_stage1b_artifact(path: str | Path) -> list[str]:
         if _number(config.get("entity_threshold")) and _number(threshold):
             if abs(config["entity_threshold"] - threshold) > 1e-12:
                 errors.append("metadata/configuration threshold mismatch")
+        cap = meta.get("selected_parser_handoff_cap")
+        configured_cap = config.get("max_entry_nodes")
+        if cap is not None:
+            if not isinstance(cap, int) or isinstance(cap, bool) or cap <= 0:
+                errors.append("invalid parser handoff cap")
+            if configured_cap != cap:
+                errors.append("parser handoff cap metadata/configuration mismatch")
+        elif configured_cap is not None:
+            errors.append("missing selected parser handoff cap")
     if not isinstance(meta.get("model_checkpoint"), str) or not meta.get("model_checkpoint"):
         errors.append("missing model/checkpoint identifier")
     if not isinstance(meta.get("calibration_split"), str) or not meta.get("calibration_split"):

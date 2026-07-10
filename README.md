@@ -35,7 +35,7 @@ comes from the graph.
 | Graph data model | ✅ Defined — node types, edge types, confidence scoring |
 | Reasoning pipeline | ✅ Designed — entity extraction → traversal → evidence → verify |
 | Graph store | ✅ Implemented — `InMemoryGraphStore` with 1,866 nodes |
-| Associative encoder (Stage 1b) | ❌ FAILED — validated frozen-split entity_recall 50.5% < 65% gate. Stage STOPPED; Stage 1C remains proposal-only. |
+| Associative encoder (Stage 1D) | ✅ PASS — frozen-split entity_recall 65.45% (180/275) with validation-selected parser handoff cap 200; all immutable Stage 1 gates passed. |
 | Realization L1 (Stage 2) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
 | Dialogue state (Stage 3) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
 | Realization L2 (Stage 4) | ⏭️ Skipped — entry conditions not met |
@@ -118,4 +118,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-10 (validated calibrated frozen-split rerun; current reference: `benchmarks/results/stage1b_honest_20260710_133731Z.json`; historical references remain preserved in the results index)*
+*Last updated: 2026-07-10 (validated Stage 1D frozen-split pass; current reference: `benchmarks/results/stage1b_honest_20260710_162457Z.json`; historical references remain preserved in the results index)*

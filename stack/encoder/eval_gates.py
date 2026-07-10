@@ -44,12 +44,22 @@ from nexus.query.parser import parse_question, spot_entities
 from nexus.utils.config import NEXUSConfig
 from nexus.utils.canonical_labels import canonicalize_intent, canonicalize_question_type
 from stack.encoder.loader import get_encoder
+from stack.encoder.stage1c import stage1c_property_candidates
 from benchmarks.stage1b_artifact import validate_stage1b_artifact
 
 
 def load_questions(path: str) -> list[dict]:
     with open(path, encoding="utf-8") as f:
         return [json.loads(line) for line in f]
+
+
+def make_encoder_eval_config(max_entry_nodes: int = 5) -> NEXUSConfig:
+    """Build the encoder evaluation config with an explicit parser handoff cap."""
+    if not isinstance(max_entry_nodes, int) or isinstance(max_entry_nodes, bool) or max_entry_nodes <= 0:
+        raise ValueError("max_entry_nodes must be a positive integer")
+    config = NEXUSConfig(max_entry_nodes=max_entry_nodes)
+    config.enable_associative_encoder = True
+    return config
 
 
 def compute_stage_recall(hit_count: int, gold_entity_count: int) -> float:
@@ -254,6 +264,12 @@ def eval_encoder(
         stage2_candidates = list({nid for _, _, _, nid in lex_spots})
         stage2_hits = sum(1 for eid in stage2_candidates if eid in gt_ids)
 
+        # ── Stage 2.5: Key-finding/property retrieval (Stage 1C) ──
+        # This is graph-only deterministic expansion; it does not inspect any
+        # benchmark split or answer text.
+        stage1c_candidates = stage1c_property_candidates(question_text, graph, limit=30)
+        stage1c_hits = sum(1 for eid in stage1c_candidates if eid in gt_ids)
+
         # ── Stage 3: Semantic retrieval ──
         stage3_candidates: list[str] = []
         stage3_hits = 0
@@ -267,7 +283,7 @@ def eval_encoder(
         # Combine candidates from stages 1-3 (deduplicated, preserving order)
         combined_pre_expansion: list[str] = []
         seen_pre: set[str] = set()
-        for c in stage1_candidates + stage2_candidates + stage3_candidates:
+        for c in stage1_candidates + stage2_candidates + stage1c_candidates + stage3_candidates:
             if c not in seen_pre:
                 seen_pre.add(c)
                 combined_pre_expansion.append(c)
@@ -382,6 +398,7 @@ def eval_encoder(
         for stage_name, stage_ids in (
             ("exact", stage1_candidates),
             ("fuzzy", stage2_candidates),
+            ("property", stage1c_candidates),
             ("semantic", stage3_candidates),
             ("graph_expansion", stage4_candidates),
             ("candidate_pool", candidates),
@@ -475,6 +492,7 @@ def eval_encoder(
             "candidate_pipeline": {
                 "stage1_exact": {"candidates": len(stage1_candidates), "hits": stage1_hits},
                 "stage2_fuzzy": {"candidates": len(stage2_candidates), "hits": stage2_hits},
+                "stage1c_property": {"candidates": len(stage1c_candidates), "hits": stage1c_hits},
                 "stage3_semantic": {"candidates": len(stage3_candidates), "hits": stage3_hits},
                 "stage4_graph_expansion": {"candidates": len(stage4_candidates), "hits": stage4_hits},
                 "final_after_reranker": {
@@ -637,6 +655,10 @@ def main():
         "--calibration-artifact", type=Path,
         help="serialized validation calibration artifact to record in provenance",
     )
+    cli.add_argument(
+        "--max-entry-nodes", type=int, default=5,
+        help="validation-selected parser handoff cap (default: 5)",
+    )
     args = cli.parse_args()
 
     # ── Setup ──
@@ -680,8 +702,7 @@ def main():
     from nexus.query.embedding_resolver import NodeEmbeddingIndex
     emb_idx = NodeEmbeddingIndex()
     emb_idx.build_index(graph)
-    config_enc = NEXUSConfig()
-    config_enc.enable_associative_encoder = True
+    config_enc = make_encoder_eval_config(args.max_entry_nodes)
     if not 0.0 <= args.entity_threshold <= 1.0:
         raise ValueError("--entity-threshold must be within [0, 1]")
     encoder_results = eval_encoder(
@@ -839,6 +860,9 @@ def main():
     calibration_questions = load_questions(str(Path(_repo_root) / "stack" / "encoder" / "data" / "val.jsonl"))
     if calibration and calibration.get("selected_threshold") is not None and abs(args.entity_threshold - calibration["selected_threshold"]) > 1e-12:
         raise ValueError("frozen evaluation threshold does not match serialized calibration artifact")
+    if calibration and calibration.get("selected_parser_handoff_cap") is not None:
+        if args.max_entry_nodes != calibration["selected_parser_handoff_cap"]:
+            raise ValueError("frozen evaluation parser handoff cap does not match serialized calibration artifact")
 
     # Clean question_details for JSON (remove non-serializable parts)
     clean_details = []
@@ -869,6 +893,7 @@ def main():
             "calibration_sample_count": len(calibration_questions),
             "calibration_artifact": str(Path(calibration_path).as_posix()) if calibration_path else None,
             "selected_threshold": args.entity_threshold,
+            "selected_parser_handoff_cap": args.max_entry_nodes,
             "threshold_search_metrics": calibration_curve,
             "frozen_split": "stack/encoder/data/test.jsonl",
             "frozen_split_identifier": "stage1.0:test.jsonl:34278d5",
