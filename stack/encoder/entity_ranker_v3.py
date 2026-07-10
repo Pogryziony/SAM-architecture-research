@@ -79,17 +79,16 @@ class QuestionConditionedEntityRanker(nn.Module):
             nn.Linear(combined_dim // 2, proj_dim),
         )
 
+        self.e_proj = nn.Sequential(
+            nn.Linear(embed_dim, embed_dim // 2),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(embed_dim // 2, proj_dim),
+        )
+
         if use_bilinear:
             # Bilinear: q @ W @ e^T — W is [proj_dim, proj_dim]
             self.bilinear = nn.Bilinear(proj_dim, proj_dim, 1)
-        else:
-            # Dot-product: just use projection layers (no additional params)
-            self.e_proj = nn.Sequential(
-                nn.Linear(embed_dim, embed_dim // 2),
-                nn.ReLU(),
-                nn.Dropout(dropout),
-                nn.Linear(embed_dim // 2, proj_dim),
-            )
 
     def encode_question(
         self, feature_ids: torch.Tensor, offsets: torch.Tensor
@@ -135,8 +134,6 @@ class QuestionConditionedEntityRanker(nn.Module):
         Returns:
             e_proj: [K, proj_dim]
         """
-        if self.use_bilinear:
-            return F.normalize(entity_emb, p=2, dim=-1)
         return F.normalize(self.e_proj(entity_emb), p=2, dim=-1)
 
     def score(self, q_proj: torch.Tensor, e_proj: torch.Tensor) -> torch.Tensor:

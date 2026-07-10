@@ -113,42 +113,62 @@ def test_sampling_proportions_reject_invalid():
         validate_proportions(0.30, 0.40, 0.20, 0.10)
 
 
+def test_production_balanced_dataset_uses_distinct_source_pools(monkeypatch):
+    from stack.encoder import natural_templates
+
+    def row(identifier, source_id):
+        return {
+            "id": identifier,
+            "question": identifier,
+            "entities": ["E"],
+            "source_id": source_id,
+        }
+
+    generated = [
+        row("p1", "graph:v3:E:natural_paraphrase"),
+        row("p2", "graph:v3:E:natural_diagnostic"),
+        row("a1", "graph:v3:E:natural_factual"),
+        row("r1", "graph:v3:E:natural_relation"),
+    ]
+    monkeypatch.setattr(natural_templates, "generate_natural_pairs", lambda _g: generated)
+    real = [row(f"real-{index}", "real") for index in range(4)]
+    result = natural_templates.generate_balanced_dataset(real, graph=None)
+    counts = __import__("collections").Counter(item["source"] for item in result)
+    assert counts == {
+        "real_train": 4,
+        "graph_mined_paraphrase": 2,
+        "graph_alias_keyfinding": 1,
+    }
+    assert len({item["id"] for item in result}) == len(result)
+
+
 # ── T8: Dirty worktree blocks evaluation ──
 
 def test_dirty_worktree_guard(tmp_path: Path):
-    """T8: An evaluation script must raise an error if the working tree is dirty."""
-    # Simulate by checking for dirty status
-    # Real implementation uses `git diff --quiet` or `git status --porcelain`
-    def check_clean_worktree(repo_root: Path) -> bool:
-        """Returns True if worktree is clean."""
-        try:
-            result = subprocess.run(
-                ["git", "diff", "--quiet"],
-                cwd=str(repo_root),
-                capture_output=True,
-                timeout=10,
-            )
-            # --quiet returns 0 if clean, 1 if dirty
-            return result.returncode == 0
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            return True  # Not a git repo — skip check
+    """T8: staged and untracked changes must both block evaluation."""
+    from stack.encoder.experiment_guard import check_worktree_clean
 
-    def evaluate_with_guard(repo_root: Path) -> None:
-        if not check_clean_worktree(repo_root):
-            raise RuntimeError(
-                "Dirty worktree detected. Commit or stash changes before evaluation."
-            )
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "config", "user.email", "tests@example.invalid"],
+        cwd=tmp_path, check=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Tests"], cwd=tmp_path, check=True
+    )
+    tracked = tmp_path / "tracked.txt"
+    tracked.write_text("clean\n", encoding="utf-8")
+    subprocess.run(["git", "add", "tracked.txt"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "commit", "-m", "initial"], cwd=tmp_path, check=True, capture_output=True)
+    assert check_worktree_clean(tmp_path)
 
-    # This repo is clean at the moment (we committed)
-    # We won't test the dirty path here since it would modify the repo
-    # Instead, test the guard function exists and returns a boolean
-    repo_root = Path(__file__).parents[1]
-    is_clean = check_clean_worktree(repo_root)
-    assert isinstance(is_clean, bool), "T8: check_clean_worktree must return bool"
+    (tmp_path / "untracked.txt").write_text("new\n", encoding="utf-8")
+    assert not check_worktree_clean(tmp_path)
+    (tmp_path / "untracked.txt").unlink()
 
-    # The guard should not raise when clean
-    if is_clean:
-        evaluate_with_guard(repo_root)
+    tracked.write_text("staged\n", encoding="utf-8")
+    subprocess.run(["git", "add", "tracked.txt"], cwd=tmp_path, check=True)
+    assert not check_worktree_clean(tmp_path)
 
 
 def test_never_overwrite_historical_artifacts(tmp_path: Path):

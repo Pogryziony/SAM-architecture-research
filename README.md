@@ -36,7 +36,7 @@ comes from the graph.
 | Reasoning pipeline | ✅ Designed — entity extraction → traversal → evidence → verify |
 | Graph store | ✅ Implemented — `InMemoryGraphStore` with 1,866 nodes |
 | Associative encoder (Stage 1D) | ✅ PASS — frozen-split entity_recall 65.82% (181/275) with validation-selected parser handoff cap 200; all immutable Stage 1 gates passed. |
-| Entity Ranker V3 (implemented) | 🔄 HONEST FAIL (validation) — `EXPERIMENT_ENTITY_RANKER_V3.md`; 10 defects fixed; V3 ranker achieves val recall@10=41.76% (<70% gate); frozen evaluation not reached. See `benchmarks/results/entity_ranker_v3_selection_log.json`. |
+| Entity Ranker V3 (corrective implementation) | 🔄 VALIDATION BLOCKED — historical selection artifact reports canonical r@10=17.03% for feature-logistic and 15.38% for neural V3; 41.76% was a raw training diagnostic, not the canonical selection metric. Evaluation/training defects are fixed in the corrective implementation; a clean recalibration is still required. Frozen evaluation was not reached. |
 | Realization L1 (Stage 2) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
 | Dialogue state (Stage 3) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
 | Realization L2 (Stage 4) | ⏭️ Skipped — entry conditions not met |
@@ -119,4 +119,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-10 (validated Stage 1D frozen-split pass; Entity Ranker V3 preregistered at `EXPERIMENT_ENTITY_RANKER_V3.md`; current reference: `benchmarks/results/stage1b_honest_20260710_163732Z.json`; historical references remain preserved in the results index)*
+*Last updated: 2026-07-11 (Entity Ranker V3 corrective implementation pending clean validation recalibration; frozen evaluation remains blocked; historical references remain preserved in the results index)*

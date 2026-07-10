@@ -1,8 +1,8 @@
 """Canonical entity mapping — graph-derived, deterministic, no frozen test inspection.
 
 Maps granular graph entities (metrics, sub-experiments, concept variants) to
-canonical experiment/concept IDs via ``derived_from`` edges only. This mapping
-is constructed entirely from graph structure and never reads frozen test labels.
+canonical experiment/concept/decision IDs via explicit graph parent edges and
+provenance properties. It never reads frozen test labels.
 """
 
 from __future__ import annotations
@@ -14,6 +14,39 @@ from typing import Any
 _EXP_PATTERN = re.compile(r"^Exp_\d+.*$")
 # Canonical concept pattern: Concept_<Name> (alphabetic name only, no variants/underscores)
 _CONCEPT_PATTERN = re.compile(r"^Concept_[A-Z][a-zA-Z]+$")
+_DECISION_PATTERN = re.compile(r"^Decision_[A-Z][a-zA-Z0-9]+$")
+_PARENT_EDGE_TYPES = frozenset({"derived_from", "mentioned_in", "belongs_to"})
+_PARENT_PROPERTY_KEYS = (
+    "parent_id", "parent_entity", "experiment_id", "source_entity", "mentioned_in"
+)
+
+
+def _is_canonical_id(node_id: str) -> bool:
+    return bool(
+        _EXP_PATTERN.match(node_id)
+        or _CONCEPT_PATTERN.match(node_id)
+        or _DECISION_PATTERN.match(node_id)
+    )
+
+
+def _parent_ids(node_id: str, graph: Any) -> list[str]:
+    """Return deterministic explicit graph/property parents for a node."""
+    parents = {
+        edge.target
+        for edge in graph.get_outgoing(node_id)
+        if edge.type in _PARENT_EDGE_TYPES and graph.get_node(edge.target) is not None
+    }
+    node = graph.get_node(node_id)
+    properties = getattr(node, "properties", {}) if node is not None else {}
+    if isinstance(properties, dict):
+        for key in _PARENT_PROPERTY_KEYS:
+            value = properties.get(key)
+            values = value if isinstance(value, list) else [value]
+            for candidate in values:
+                candidate_id = str(candidate or "").strip()
+                if candidate_id and graph.get_node(candidate_id) is not None:
+                    parents.add(candidate_id)
+    return sorted(parents)
 
 
 def _find_canonical(
@@ -37,29 +70,20 @@ def _find_canonical(
     if node is None:
         return None
 
-    matches_pattern = bool(
-        _EXP_PATTERN.match(node_id) or _CONCEPT_PATTERN.match(node_id)
-    )
+    matches_pattern = _is_canonical_id(node_id)
 
     if matches_pattern:
         # Check if this node derives from another canonical node
         has_canonical_parent = any(
-            edge.type == "derived_from"
-            and (
-                _EXP_PATTERN.match(edge.target)
-                or _CONCEPT_PATTERN.match(edge.target)
-            )
-            for edge in graph.get_outgoing(node_id)
+            _is_canonical_id(parent_id) for parent_id in _parent_ids(node_id, graph)
         )
         if not has_canonical_parent:
             return node_id
 
-    # Follow derived_from edges to parent experiments/concepts
-    for edge in graph.get_outgoing(node_id):
-        if edge.type == "derived_from":
-            result = _find_canonical(edge.target, graph, v, depth + 1)
-            if result is not None:
-                return result
+    for parent_id in _parent_ids(node_id, graph):
+        result = _find_canonical(parent_id, graph, v, depth + 1)
+        if result is not None:
+            return result
 
     return None
 
@@ -88,18 +112,11 @@ def build_canonical_mapping(graph: Any) -> dict[str, str]:
         if node is None:
             continue
 
-        matches_pattern = bool(
-            _EXP_PATTERN.match(node_id) or _CONCEPT_PATTERN.match(node_id)
-        )
+        matches_pattern = _is_canonical_id(node_id)
 
         # Check if this node has derived_from edges to a canonical ancestor
         has_canonical_parent = any(
-            edge.type == "derived_from"
-            and (
-                _EXP_PATTERN.match(edge.target)
-                or _CONCEPT_PATTERN.match(edge.target)
-            )
-            for edge in graph.get_outgoing(node_id)
+            _is_canonical_id(parent_id) for parent_id in _parent_ids(node_id, graph)
         )
 
         # A node is canonical only if it matches the pattern AND has no
@@ -179,10 +196,12 @@ def export_canonical_mapping_metadata(
         "self_referential_mappings": self_referential,
         "many_to_one_targets": many_to_one,
         "unmapped_nodes": unmapped,
-        "edge_type_used": ["derived_from"],
+        "edge_type_used": sorted(_PARENT_EDGE_TYPES),
+        "property_keys_used": list(_PARENT_PROPERTY_KEYS),
         "canonical_patterns": {
-            "experiment": r"^Exp_\d+[A-Z]\w*$",
-            "concept": r"^Concept_\w+$",
+            "experiment": _EXP_PATTERN.pattern,
+            "concept": _CONCEPT_PATTERN.pattern,
+            "decision": _DECISION_PATTERN.pattern,
         },
         "deterministic": True,
         "frozen_test_inspection": False,
