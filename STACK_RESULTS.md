@@ -13,7 +13,7 @@
 | P | Pre-registration | EXPERIMENT_SAM_NEXUS_STACK.md committed | ✅ PASS |
 | 0 | Canonical Baseline | Historical R3 artifact is incomplete for serialized-artifact validation (missing effective graph config/edge counts); prior PASS is retracted | ❌ INVALID / RETRACTED |
 | 1 | Associative Encoder v1 | Failed: intent 65.3% < 85% | ❌ STOP |
-| 1b | Associative Encoder v2 | Current: entity_recall 50.5% < 65% (FAIL); encoder-only 50.5% with calibrated threshold 0.10. Intent 85.3%, RSS 6.7MB, 26.4ms | ❌ FAIL |
+| 1b | Associative Encoder v2 | Current: entity_recall 50.5% < 65% (FAIL); encoder-only 50.5% with calibrated threshold 0.10. Intent 85.3%, RSS 6.5MB, 25.4ms | ❌ FAIL |
 | 2 | Realization L1 | 3/4: naturalness +38.5, hallucination, accuracy. Relevance 60% pre-existing. Built on unvalidated Stage 1b foundation. | ⚠️ UNVALIDATED |
 | 3 | Dialogue State | ALL 3/3: ref resolution 71.9%, no regression, 2.7ms. Built on unvalidated Stage 1b foundation. | ⚠️ UNVALIDATED |
 | 4 | Realization L2 | Entry conditions not met (relevance gate + distillation pairs) | ⏭️ SKIPPED |
@@ -34,7 +34,7 @@
 
 ## Stage 1b — Associative Encoder (Failed)
 
-The 4.4% figures below are the historical R1 reference. The current result is `benchmarks/results/stage1b_honest_20260710_115848Z.json` (pipeline and capped encoder recall 50.5% using validation-calibrated threshold 0.10); the unchanged 65% gate remains FAIL.
+The 4.4% figures below are the historical R1 reference. The current result is `benchmarks/results/stage1b_honest_20260710_125609Z.json` (pipeline and capped encoder recall 50.5% using validation-calibrated threshold 0.10); the unchanged 65% gate remains FAIL.
 
 | Gate | Value | Threshold | Status |
 |------|-------|-----------|--------|
@@ -50,9 +50,9 @@ The 4.4% figures below are the historical R1 reference. The current result is `b
 
 **Historical result: 1 of 6 gates FAIL (entity_recall 4.4% < 65%). Stage 1B remains FAILED.**
 
-The current frozen rerun is `benchmarks/results/stage1b_honest_20260710_115848Z.json`: pipeline and capped encoder entity recall 50.5% with threshold 0.10 calibrated on validation data; the entity gate still fails. Diagnostics classify gold entities as absent, threshold-rejected, outside the encoder cap, or resolved; parser failure count is 0.
+The current frozen rerun is `benchmarks/results/stage1b_honest_20260710_125609Z.json`: pipeline and capped encoder entity recall 50.5% with threshold 0.10 calibrated on validation data; the entity gate still fails. Diagnostics classify gold entities as absent, threshold-rejected, outside the encoder cap, or resolved; parser failure count is 0.
 
-Candidate-pool recall is a **per-(question, gold-entity) pair** metric: 231 of 275 gold IDs were present in the union candidate pool (84.0%). It is not final entity accuracy. Final accepted recall is 139/275 (50.5%), with 92 additional selected IDs outside the capped encoder baseline and 44 IDs absent from candidates.
+Candidate-pool recall is a **per-(question, gold-entity) pair** metric: 234 of 275 gold IDs were present in the union candidate pool (84.0%). It is not final entity accuracy. Final accepted recall is 139/275 (50.5%), with 96 additional selected IDs outside the capped encoder baseline and 40 IDs absent from candidates.
 
 Model: 555K params, char n-gram hashing, 1-layer GRU, entity re-ranker over lexical+embedding candidates. Rule-first intent with 63% coverage at 100% accuracy.
 

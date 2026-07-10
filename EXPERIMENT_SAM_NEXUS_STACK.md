@@ -196,4 +196,18 @@ Stage 1 showed a -16.7pp drop on the Polish paraphrase subset vs -8.0pp on Engli
 
 If Stage 1b also fails: the negative is about the hypothesis, not the implementation, and STOP is final. If it passes: proceed to Stage 2.
 
+### Stage 1B Decision and Stage 1C Preregistration
+
+- **Current status**: Stage 1B is **HONEST FAIL**. The serialized frozen artifact is `benchmarks/results/stage1b_honest_20260710_125609Z.json`; entity recall is 50.55% (139/275), below the unchanged 65% gate. The selected threshold is 0.10, calibrated on the separate 150-question `stack/encoder/data/val.jsonl` split.
+- **Why it failed**: 40 gold entity IDs were absent from the candidate pool and 96 selected IDs fell outside the capped encoder result; only 139/275 gold IDs were finally accepted. The implementation now passes the other registered gates, so this remains a hypothesis/data-coverage failure rather than a retracted baseline.
+- **Decision**: Proceed with Stage 1C as a separately preregistered data-expansion experiment; do not start implementation until this section is approved and the Stage 1B artifact remains immutable.
+- **Pre-registered data expansion**: generate additional training pairs from the existing graph and documents using deterministic entity-name/alias mentions, relation-neighborhood questions, and paraphrase templates. Deduplicate by `(question_text, sorted_gold_entity_ids)` and never draw from the frozen test IDs or answers.
+- **Generated training-pair rules**: each pair has one question, one or more graph entity IDs, an intent label from the canonical label map, and a source identifier; retain exact/alias, relation, multi-hop, and hard-negative pairs at fixed documented counts; no generated pair may use frozen-test text or labels.
+- **Weak supervision**: if used, labels are accepted only when an exact/alias mention and graph node agree, or when a deterministic relation template identifies both endpoints; weak labels must carry `label_source=weak` and confidence, and are excluded from validation/test metrics.
+- **Calibration split**: use only `stack/encoder/data/val.jsonl`, separate from training and the unchanged frozen test split; report the complete threshold curve and select maximum validation F1, then recall, then lowest threshold.
+- **Frozen test split**: unchanged `stack/encoder/data/test.jsonl`, 225 questions from the Stage 1.0 split (`34278d5`); no threshold tuning or data generation may read it.
+- **Unchanged gate**: entity recall must reach **65%**; no gate threshold may be relaxed.
+- **Success criteria**: serialized artifact is valid, IDs match, all provenance is complete, entity recall is at least 65%, and all other Stage 1B gates pass.
+- **Failure criteria**: missing/invalid artifact, frozen-split contamination, any provenance or denominator inconsistency, or entity recall below 65% causes FAIL and no automatic progression.
+
 ---

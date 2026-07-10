@@ -27,6 +27,7 @@ from benchmarks.run_benchmark import (  # noqa: E402
     build_benchmark_graph,
 )
 from benchmarks.compare_arms import compare_paired  # noqa: E402
+from benchmarks.stage1b_artifact import validate_stage1b_artifact  # noqa: E402
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG  # noqa: E402
 
 
@@ -194,10 +195,33 @@ def test_real_r3_artifact_is_retracted_when_rag_summary_is_empty():
     assert any("provenance incomplete" in error or "summary incomplete" in error for error in errors)
 
 
+def test_serialized_guard_rejects_invalid_stage1b_artifact(tmp_path):
+    """Publication cannot be based on an in-memory result that was not serialized correctly."""
+    artifact = tmp_path / "invalid-stage1b.json"
+    artifact.write_text(json.dumps({"meta": {}, "metrics": {}}), encoding="utf-8")
+    errors = validate_stage1b_artifact(artifact)
+    assert errors
+    assert any("missing metadata" in error or "missing configuration" in error for error in errors)
+
+
+def test_serialized_guard_rejects_missing_and_zero_byte_artifacts(tmp_path):
+    missing = validate_stage1b_artifact(tmp_path / "missing.json")
+    assert any("missing" in error for error in missing)
+    empty = tmp_path / "empty.json"
+    empty.touch()
+    assert any("zero-byte" in error for error in validate_stage1b_artifact(empty))
+
+
 def test_disabled_cooccurrence_flag_produces_no_related_edges():
     graph, provenance = build_benchmark_graph(_make_default_nexus_config())
     assert provenance["effective_config"]["enable_cooccurrence_edges"] is False
     assert provenance["edge_type_counts"].get("related_to", 0) == 0
+    actual_counts = {}
+    for node_id in graph._nodes:
+        for edge in graph.get_outgoing(node_id):
+            actual_counts[edge.type] = actual_counts.get(edge.type, 0) + 1
+    assert actual_counts == provenance["edge_type_counts"]
+    assert sum(actual_counts.values()) == provenance["edge_count"]
     assert all(edge.type != "related_to" for node_id in graph._nodes for edge in graph.get_outgoing(node_id))
 
 

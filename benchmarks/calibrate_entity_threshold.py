@@ -60,6 +60,8 @@ def main() -> None:
     payload = {
         "meta": {
             "calibration_split": "stack/encoder/data/val.jsonl",
+            "calibration_sample_count": len(questions),
+            "model_checkpoint": "models/encoder_v2",
             "frozen_split_used": False,
             "timestamp_utc": ts,
             "source_commit_sha": __import__("subprocess").check_output(

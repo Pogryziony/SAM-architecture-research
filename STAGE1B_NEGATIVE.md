@@ -3,7 +3,7 @@
 **Date**: 2026-07-10  
 **Status**: **STAGE 1B GATES FAILED** — program STOPPED per immutable protocol.
 
-The metrics in this document are historical artifacts. The current frozen-split reference is `benchmarks/results/stage1b_honest_20260710_115848Z.json`, using validation-calibrated threshold 0.10; historical result files are preserved. Current recall is 50.5%, so the 65% gate remains FAIL.
+The metrics in this document are historical artifacts. The current frozen-split reference is `benchmarks/results/stage1b_honest_20260710_125609Z.json`, using validation-calibrated threshold 0.10; historical result files are preserved. Current recall is 50.5%, so the 65% gate remains FAIL.
 **Pre-registered in**: EXPERIMENT_SAM_NEXUS_STACK.md §Stage 1B
 
 ---

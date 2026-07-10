@@ -4,7 +4,7 @@
 
 | File | Date (UTC) | Size | Key Metrics | Command to Reproduce |
 |---|---|---|---|---|
-| `stage1b_honest_20260710_115848Z.json` | 2026-07-10 11:58 UTC | **CURRENT**; frozen 225q, calibrated threshold=0.10, pipeline/encoder recall=50.55%, candidate pool=84.00%, parser success=100%, honest FAIL; evaluated at commit `54ea49f` | `python stack/encoder/eval_gates.py` |
+| `stage1b_honest_20260710_125609Z.json` | 2026-07-10 12:56 UTC | **CURRENT**; frozen 225q, validation split 150q, calibrated threshold=0.10, pipeline/encoder recall=50.55%, candidate pool=85.45%, parser failures=0, honest FAIL; evaluated at commit `c329a7a` | `python stack/encoder/eval_gates.py --entity-threshold 0.10 --calibration-artifact benchmarks/results/entity_threshold_calibration_20260710_125534Z.json` |
 | `entity_threshold_calibration_20260710_115708Z.json` | 2026-07-10 11:57 UTC | Validation-only threshold curve; best threshold=0.10 by validation F1=15.88% (not evaluated on frozen split) | `python benchmarks/calibrate_entity_threshold.py --thresholds 0.10 0.20 0.30 0.40 0.50 0.55 0.60 0.70 0.80 0.90` |
 | `stage1b_honest_20260710_102235Z.json` | 2026-07-10 10:22 UTC | Historical honest Stage 1B reference; 225q frozen split, pipeline entity=4.4%, FAIL | `python stack/encoder/eval_gates.py` |
 | `stage1b_honest_20260710_105643Z.json` | 2026-07-10 10:55 UTC | Historical diagnostic rerun; 225q frozen split, pipeline entity=5.8%, honest FAIL | `python stack/encoder/eval_gates.py` |

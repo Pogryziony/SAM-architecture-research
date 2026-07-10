@@ -760,11 +760,17 @@ def validate_benchmark_artifact(path: str | Path) -> tuple[list[str], list[str]]
     artifact_path = Path(path)
     errors: list[str] = []
     warnings: list[str] = []
+    if not artifact_path.exists():
+        return [f"Artifact missing: {artifact_path}"], []
+    if artifact_path.stat().st_size == 0:
+        return [f"Artifact is zero-byte: {artifact_path}"], []
     try:
         with artifact_path.open(encoding="utf-8") as handle:
             artifact = json.load(handle)
-    except (OSError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         return [f"Artifact unreadable: {exc}"], []
+    if not isinstance(artifact, dict):
+        return ["Artifact root must be an object"], []
 
     required = {"config", "graph_provenance", "summary", "paired_comparison", "results"}
     missing = sorted(required - set(artifact))
@@ -773,12 +779,25 @@ def validate_benchmark_artifact(path: str | Path) -> tuple[list[str], list[str]]
 
     config = artifact["config"]
     provenance = artifact["graph_provenance"]
+    if not isinstance(config, dict) or not config:
+        errors.append("Artifact configuration missing or empty")
+        config = {}
+    if not isinstance(provenance, dict):
+        errors.append("Artifact graph provenance missing or invalid")
+        provenance = {}
     if "effective_config" not in provenance or "edge_type_counts" not in provenance:
         errors.append("Artifact provenance incomplete: effective graph configuration and edge counts are required")
     summary = artifact["summary"]
+    if not isinstance(summary, dict) or not summary:
+        errors.append("Artifact summary incomplete: summary is empty or invalid")
+        summary = {}
     if not summary.get("nexus") or not summary.get("baseline"):
         errors.append("Artifact summary incomplete: both summary.nexus and summary.baseline are required")
     effective = provenance.get("effective_config", {})
+    edge_counts = provenance.get("edge_type_counts", {})
+    if isinstance(edge_counts, dict) and isinstance(provenance.get("edge_count"), int):
+        if sum(value for value in edge_counts.values() if isinstance(value, int)) != provenance["edge_count"]:
+            errors.append("Artifact graph edge-count metadata mismatch")
     for flag in (
         "enable_cooccurrence_edges", "enable_embedding_er",
         "enable_associative_encoder", "enable_normalization",
@@ -792,12 +811,20 @@ def validate_benchmark_artifact(path: str | Path) -> tuple[list[str], list[str]]
                 f"Artifact config mismatch: cooccurrence disabled but graph has {related_count} related_to edges"
             )
 
-    expected_questions = artifact["summary"].get("total_questions")
+    results = artifact["results"]
+    if not isinstance(results, list):
+        errors.append("Artifact results are missing or invalid")
+        results = []
+    paired_comparison = artifact["paired_comparison"]
+    if not isinstance(paired_comparison, dict):
+        errors.append("Artifact paired comparison is missing or invalid")
+        paired_comparison = {}
+    expected_questions = summary.get("total_questions")
     row_errors, row_warnings = validate_benchmark_results(
-        artifact["results"], config,
+        results, config,
         question_count=expected_questions,
-        summary=artifact["summary"],
-        paired_comparison=artifact["paired_comparison"],
+        summary=summary,
+        paired_comparison=paired_comparison,
     )
     errors.extend(row_errors)
     warnings.extend(row_warnings)

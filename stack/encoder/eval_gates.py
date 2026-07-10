@@ -44,6 +44,7 @@ from nexus.query.parser import parse_question, spot_entities
 from nexus.utils.config import NEXUSConfig
 from nexus.utils.canonical_labels import canonicalize_intent, canonicalize_question_type
 from stack.encoder.loader import get_encoder
+from benchmarks.stage1b_artifact import validate_stage1b_artifact
 
 
 def load_questions(path: str) -> list[dict]:
@@ -632,6 +633,10 @@ def main():
         "--entity-threshold", type=float, default=0.10,
         help="reranker threshold calibrated on stack/encoder/data/val.jsonl (default: 0.10)",
     )
+    cli.add_argument(
+        "--calibration-artifact", type=Path,
+        help="serialized validation calibration artifact to record in provenance",
+    )
     args = cli.parse_args()
 
     # ── Setup ──
@@ -732,7 +737,7 @@ def main():
         _repo_root, "benchmarks", "qa-dataset", "paraphrase_30.jsonl"
     )
     print("\n--- Paraphrase Robustness ---")
-    para_results = eval_paraphrase(graph, paraphrase_path, encoder, entity_threshold=0.5)
+    para_results = eval_paraphrase(graph, paraphrase_path, encoder, entity_threshold=args.entity_threshold)
     print(f"  original acc:     {para_results['original_entity_accuracy']:.4f} ({para_results['original_entity_accuracy']*100:.1f}%)")
     print(f"  paraphrase acc:   {para_results['paraphrase_entity_accuracy']:.4f} ({para_results['paraphrase_entity_accuracy']*100:.1f}%)")
     print(f"  drop:             {para_results['drop_pp']:.1f} pp")
@@ -822,6 +827,18 @@ def main():
     ts = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%SZ")
     results_dir = os.path.join(_repo_root, "benchmarks", "results")
     results_path_stamped = os.path.join(results_dir, f"stage1b_honest_{ts}.json")
+    calibration_path = args.calibration_artifact
+    if calibration_path is None:
+        calibration_candidates = sorted(Path(results_dir).glob("entity_threshold_calibration_*.json"))
+        calibration_path = calibration_candidates[-1] if calibration_candidates else None
+    calibration = {}
+    if calibration_path and Path(calibration_path).exists():
+        calibration = json.loads(Path(calibration_path).read_text(encoding="utf-8"))
+    calibration_meta = calibration.get("meta", {})
+    calibration_curve = calibration.get("curve", [])
+    calibration_questions = load_questions(str(Path(_repo_root) / "stack" / "encoder" / "data" / "val.jsonl"))
+    if calibration and calibration.get("selected_threshold") is not None and abs(args.entity_threshold - calibration["selected_threshold"]) > 1e-12:
+        raise ValueError("frozen evaluation threshold does not match serialized calibration artifact")
 
     # Clean question_details for JSON (remove non-serializable parts)
     clean_details = []
@@ -832,8 +849,8 @@ def main():
 
     results = {
         "meta": {
-            "phase": "R1",
-            "description": "HONEST re-evaluation on frozen 225-question test split",
+            "phase": "Stage 1B",
+            "description": "HONEST calibrated evaluation on the unchanged frozen 225-question test split",
             "evaluation_commit_sha": subprocess.check_output(
                 ["git", "rev-parse", "HEAD"], cwd=_repo_root, text=True
             ).strip(),
@@ -845,11 +862,20 @@ def main():
                 "graph_expansion_max_neighbors": 15,
                 "encoder_model_dir": "models/encoder_v2",
                 "frozen_split_only": True,
+                "enable_cooccurrence_edges": config_enc.enable_cooccurrence_edges,
             },
+            "model_checkpoint": "models/encoder_v2",
+            "calibration_split": calibration_meta.get("calibration_split", "stack/encoder/data/val.jsonl"),
+            "calibration_sample_count": len(calibration_questions),
+            "calibration_artifact": str(Path(calibration_path).as_posix()) if calibration_path else None,
+            "selected_threshold": args.entity_threshold,
+            "threshold_search_metrics": calibration_curve,
             "frozen_split": "stack/encoder/data/test.jsonl",
+            "frozen_split_identifier": "stage1.0:test.jsonl:34278d5",
             "frozen_commit": "34278d5 (Stage 1.0 split)",
             "canonical_labels": "nexus/utils/canonical_labels.py",
             "timestamp_utc": ts,
+            "question_count": len(test_questions),
             "num_questions": len(test_questions),
             "validated_ids_match": eval_ids == frozen_ids,
         },
@@ -882,12 +908,26 @@ def main():
         "paraphrase": para_results,
         "per_intent_breakdown": encoder_results["per_intent_breakdown"],
         "metric_denominators": {
+            "gold_entities": encoder_results["pipeline_gt_entities"],
+            "correct_entities": encoder_results["pipeline_correct_entities"],
+            "predicted_entities": encoder_results["pipeline_resolved_entities"],
             "candidate_pool_recall": "gold entity IDs present in the union candidate pool / all gold entity IDs (question, entity pairs)",
             "reranker_top1_recall": "gold entity IDs that are the highest-scoring candidate / all gold entity IDs",
             "final_accepted_recall": "correct final entity IDs / all gold entity IDs",
             "parser_success_rate": "questions with no selected encoder IDs lost during final parsing / questions",
             "threshold_rejection_rate": "candidate-present gold IDs rejected at or below threshold / candidate-present gold IDs",
             "impossible_case_rate": "questions with at least one gold ID absent from the candidate pool / questions",
+        },
+        "metrics": {
+            "entity_precision": encoder_results["entity_precision"],
+            "entity_recall": encoder_results["entity_recall"],
+            "entity_f1": encoder_results["entity_f1"],
+            "exact_accuracy": encoder_results["exact_entity_accuracy"],
+            "candidate_pool_recall": encoder_results["stage_candidate_recall"].get("candidate_pool", 0.0),
+            "reranker_recall": encoder_results["stage_candidate_recall"].get("reranker_top1", 0.0),
+            "parser_failures": encoder_results["parser_failure_count"],
+            "latency_ms": encoder_results["inference_p50_ms"],
+            "rss_mb": encoder.rss_delta_mb,
         },
         "question_details": clean_details,
         "candidate_diagnostics": {
@@ -912,7 +952,13 @@ def main():
 
     with open(results_path_stamped, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
-    print(f"\nResults written to {results_path_stamped}")
+    serialized_errors = validate_stage1b_artifact(results_path_stamped)
+    if serialized_errors:
+        raise RuntimeError("serialized Stage 1B artifact rejected: " + "; ".join(serialized_errors))
+    serialized_results = json.loads(Path(results_path_stamped).read_text(encoding="utf-8"))
+    results["decision"] = serialized_results["decision"]
+    results["all_pass"] = serialized_results["all_pass"]
+    print(f"\nResults written to {results_path_stamped} (serialized artifact validated)")
 
     # Also write to canonical gate_results.json for reference
     results_path = os.path.join(_repo_root, "models", "encoder", "gate_results.json")
