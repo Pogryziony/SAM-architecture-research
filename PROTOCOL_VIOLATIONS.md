@@ -51,7 +51,20 @@
 
 ---
 
-## Rules Added (post-violation)
+## R1: Honest Stage 1b Re-evaluation (2026-07-10)
+
+**Result**: HONEST FAIL on frozen 225-question test split (commit 45a774f).
+
+| Gate | Value | Threshold | Status |
+|------|-------|-----------|--------|
+| entity_accuracy | 4.4% | ≥65% | FAIL |
+| resolution_rate | 100% | no regression | PASS |
+| paraphrase_drop | 0.0pp | <10pp | PASS |
+| intent_accuracy | 85.3% | ≥85% | PASS |
+| RSS delta | 6.7 MB | ≤150 MB | PASS |
+| inference p50 | 18.0 ms | ≤50 ms | PASS |
+
+Encoder-only precision: 1.1%. Pipeline entity accuracy dominated by lexical fallback (1.3%). Per decision tree: R2 skipped, R3 proceeds, program stops after R3.
 
 1. Evaluating any gate on a subset other than the frozen split is prohibited.
 2. Negative artifacts are permanent — never deleted or edited.
