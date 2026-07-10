@@ -15,10 +15,10 @@
 
 | Architecture | Paired fuzzy accuracy | Hallucination rate (post-fix) | Verification pass rate | Answer rate | Avg evidence tokens | p50 latency | Peak RAM (MB) | Total RSS (MB) | $/1K queries | Sign test p vs RAG | Relevance rate |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| NEXUS + local 3B<br>(FallbackModel: qwen2.5:latest + SynthesizingModel) | 35.98% [nexus_vs_rag_20260709_151249Z.json] | 19.25% [nexus_vs_rag_200.json] | 70.50% [nexus_vs_rag_200.json] | 66.00% [nexus_vs_rag_200.json] | 1566.0 [nexus_vs_rag_200.json] | 4.34 s [nexus_vs_rag_200.json] | 44 MB (delta +2 MB) [ram_throughput_20260708T212808Z.json] | 8209 MB [ram_throughput_20260708T212808Z.json] (pipeline 44 MB + Ollama idle 8165 MB) | $0.0398 [ram_throughput_20260708T212808Z.json] | 1.0000 [nexus_vs_rag_20260709_151249Z.json] | 76.9% [relevance_audit.md] |
+| NEXUS + local qwen2.5:latest<br>(7.6B Q4_K_M; FallbackModel + SynthesizingModel) | 35.98% [nexus_vs_rag_20260709_151249Z.json] | 19.25% [nexus_vs_rag_200.json] | 70.50% [nexus_vs_rag_200.json] | 66.00% [nexus_vs_rag_200.json] | 1566.0 [nexus_vs_rag_200.json] | 4.34 s [nexus_vs_rag_200.json] | 44 MB (delta +2 MB) [ram_throughput_20260708T212808Z.json] | 8209 MB [ram_throughput_20260708T212808Z.json] (pipeline 44 MB + Ollama idle 8165 MB) | $0.0398 [ram_throughput_20260708T212808Z.json] | 1.0000 [nexus_vs_rag_20260709_151249Z.json] | 76.9% [relevance_audit.md] |
 | NEXUS zero-weight<br>(SynthesizingModel only, no LLM) | not measured [verifier_check_20260708_194420Z.json] (no paired comparison run) | 38.77% [verifier_check_20260708_194420Z.json] | 20.00% [verifier_check_20260708_194420Z.json] | 100.00% [verifier_check_20260708_194420Z.json] | not measured [verifier_check_20260708_194420Z.json] (no evidence token tracking in verifier) | 1.39 s [verifier_check_20260708_194420Z.json] | 42 MB (delta +6 MB) [ram_throughput_20260708T212808Z.json] | 42 MB [ram_throughput_20260708T212808Z.json] (pipeline only, no LLM) | $0.0000 [ram_throughput_20260708T212808Z.json] (template synthesis only) | not measured [verifier_check_20260708_194420Z.json] | 76.9% [relevance_audit.md] |
 | NEXUS router<br>(SynthesizingModel + LLM routing, 97% synth) | 20.82% [router_vs_rag_paired_20260708T215707Z.json] | 17.32% [router_paired_20260708.json] | 70.50% [router_paired_20260708.json] | 97.50% [router_paired_20260708.json] | 47.0 [router_paired_20260708.json] (blended: 97% synth×0 + 3% LLM×1566) | 0.05 s [router_paired_20260708.json] | 44 MB (delta +2 MB) [ram_throughput_20260708T212808Z.json] | 8209 MB [ram_throughput_20260708T212808Z.json] (pipeline 44 MB + Ollama idle 8165 MB) | $0.0001 [ram_throughput_20260708T212808Z.json] | 0.0237 [router_vs_rag_paired_20260708T215707Z.json] | 76.9% [relevance_audit.md] |
-| RAG + same 3B<br>(OllamaModel qwen2.5:latest) | 33.60% [nexus_vs_rag_20260709_151249Z.json] | 32.77% [nexus_vs_rag_200.json] | 54.50% [nexus_vs_rag_200.json] | 75.50% [nexus_vs_rag_200.json] | 2231.6 [nexus_vs_rag_200.json] | 3.35 s [nexus_vs_rag_200.json] | 456 MB (delta +411 MB) [ram_throughput_20260708T212808Z.json] | 8621 MB [ram_throughput_20260708T212808Z.json] (pipeline 456 MB + Ollama idle 8165 MB) | $0.0552 [ram_throughput_20260708T212808Z.json] | (baseline) | 76.9% [relevance_audit.md] |
+| RAG + same qwen2.5:latest<br>(7.6B Q4_K_M OllamaModel) | 33.60% [nexus_vs_rag_20260709_151249Z.json] | 32.77% [nexus_vs_rag_200.json] | 54.50% [nexus_vs_rag_200.json] | 75.50% [nexus_vs_rag_200.json] | 2231.6 [nexus_vs_rag_200.json] | 3.35 s [nexus_vs_rag_200.json] | 456 MB (delta +411 MB) [ram_throughput_20260708T212808Z.json] | 8621 MB [ram_throughput_20260708T212808Z.json] (pipeline 456 MB + Ollama idle 8165 MB) | $0.0552 [ram_throughput_20260708T212808Z.json] | (baseline) | 76.9% [relevance_audit.md] |
 
 ## Notes
 
@@ -44,14 +44,14 @@
 
 ## Key Findings
 
-- **NEXUS vs RAG accuracy**: 36.0% vs 33.6% (p = 1.000) — no significant difference.
+- **NEXUS vs RAG accuracy**: 36.0% vs 33.6% on paired_n=88 (p = 1.000) — no significant difference. The clean R3 gate is separate: n=200 per arm, paired_n=89, p=7e-06.
 - **Hallucination**: NEXUS 19.2% vs RAG 32.8% — NEXUS has the lower measured hallucination rate (RAG is higher), not “RAG hallucinates less.”
 - **Evidence efficiency**: NEXUS uses 1566 tokens vs RAG's 2232 — 3.2× reduction.
 - **Latency**: NEXUS 4.34s vs RAG 3.35s.
 - **Throughput (warmed)**: p50=116.8 tok/s on qwen2.5:latest (7.6B Q4_K_M). Raw LLM cost = $0.0232/1M. Router (80% synth) = $0.0046/1M.
 - **RAM**: RAG indexing adds +411.4 MB (embedding model). NEXUS pipeline adds +2.4 MB. Zero-weight adds +5.6 MB. Total RSS (pipeline + Ollama idle): see table column.
 - **Zero-weight hallucination**: 38.8% (SynthesizingModel only, n=30).
-- **Relevance**: 76.9% — below 70% triggers metric caveat (accuracy × relevance = 30.2% actionable accuracy).
+- **Relevance**: 76.9% — above the 70% metric-caveat trigger but below the preregistered 77.0% gate (accuracy × relevance = 30.2% actionable accuracy).
 
 ## Router vs RAG (Row 3 — newly measured)
 

@@ -13,7 +13,7 @@
 | P | Pre-registration | EXPERIMENT_SAM_NEXUS_STACK.md committed | ✅ PASS |
 | 0 | Canonical Baseline | Guards, paired_n>0, RAG populated, COMPARISON.md | ✅ PASS |
 | 1 | Associative Encoder v1 | Failed: intent 65.3% < 85% | ❌ STOP |
-| 1b | Associative Encoder v2 | 1/6: entity_recall 4.4% < 65% (FAIL). Intent 85.3%, RSS 7.0MB, 18.2ms | ❌ FAIL |
+| 1b | Associative Encoder v2 | Current: entity_recall 5.8% < 65% (FAIL); encoder-only 4.7%. Intent 85.3%, RSS 6.6MB, 25.0ms | ❌ FAIL |
 | 2 | Realization L1 | 3/4: naturalness +38.5, hallucination, accuracy. Relevance 60% pre-existing. Built on unvalidated Stage 1b foundation. | ⚠️ UNVALIDATED |
 | 3 | Dialogue State | ALL 3/3: ref resolution 71.9%, no regression, 2.7ms. Built on unvalidated Stage 1b foundation. | ⚠️ UNVALIDATED |
 | 4 | Realization L2 | Entry conditions not met (relevance gate + distillation pairs) | ⏭️ SKIPPED |
@@ -34,6 +34,8 @@
 
 ## Stage 1b — Associative Encoder (Failed)
 
+The 4.4% figures below are the historical R1 reference. The current result is `benchmarks/results/stage1b_honest_20260710_112600Z.json` (pipeline recall 5.8%, encoder-only recall 4.7% at the shared cap); the gate remains FAIL.
+
 | Gate | Value | Threshold | Status |
 |------|-------|-----------|--------|
 | entity_recall | 4.4% | ≥65% | ❌ FAIL |
@@ -48,7 +50,7 @@
 
 **Historical result: 1 of 6 gates FAIL (entity_recall 4.4% < 65%). Stage 1B remains FAILED.**
 
-The current diagnostic rerun on the same frozen split is `benchmarks/results/stage1b_honest_20260710_105643Z.json`: pipeline entity recall 5.8%, encoder baseline recall 4.7% at the shared entry-node cap, and the entity gate still fails. The explicitly indexed current reference remains `stage1b_honest_20260710_102235Z.json`. Diagnostics classify gold entities as absent from candidates, present but not selected by the reranker, selected but lost in final handling, or resolved.
+The current diagnostic rerun on the same frozen split is `benchmarks/results/stage1b_honest_20260710_112600Z.json`: pipeline entity recall 5.8%, encoder baseline recall 4.7% at the shared entry-node cap, and the entity gate still fails. The explicitly indexed current reference remains `stage1b_honest_20260710_112600Z.json`. Diagnostics classify gold entities as absent from candidates, present but not selected by the reranker, selected but lost in final handling, or resolved.
 
 Model: 555K params, char n-gram hashing, 1-layer GRU, entity re-ranker over lexical+embedding candidates. Rule-first intent with 63% coverage at 100% accuracy.
 
