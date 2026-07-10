@@ -450,11 +450,11 @@ def main():
     print("=" * 60)
     if all_pass:
         print("  All six pre-registered thresholds pass on frozen 225-question split.")
-        print("  → HONEST PASS")
+        print("  -> HONEST PASS")
     else:
         failed = [name for name, (p, _) in gates.items() if not p]
         print(f"  Threshold(s) failed: {', '.join(failed)}")
-        print("  → HONEST FAIL")
+        print("  -> HONEST FAIL")
 
     # ── Validated split assertion ──
     eval_ids = {qd["id"] for qd in encoder_results.get("question_details", [])}
@@ -463,7 +463,7 @@ def main():
         print(f"  Missing: {sorted(frozen_ids - eval_ids)[:10]}")
         print(f"  Extra: {sorted(eval_ids - frozen_ids)[:10]}")
     else:
-        print(f"\n  ✓ ID assertion: all {len(frozen_ids)} frozen question IDs match")
+        print(f"\n  [OK] ID assertion: all {len(frozen_ids)} frozen question IDs match")
 
     # ── Write results ──
     from datetime import datetime, timezone
