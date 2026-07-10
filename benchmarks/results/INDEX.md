@@ -4,7 +4,8 @@
 
 | File | Date (UTC) | Size | Key Metrics | Command to Reproduce |
 |---|---|---|---|---|
-| `stage1b_honest_20260710_112600Z.json` | 2026-07-10 11:26 UTC | **CURRENT**; 225q frozen split, pipeline entity=5.8%, encoder-only entity=4.7%, stage recalls and per-entity reasons, honest FAIL; evaluated at commit `11997d2` | `python stack/encoder/eval_gates.py` |
+| `stage1b_honest_20260710_115848Z.json` | 2026-07-10 11:58 UTC | **CURRENT**; frozen 225q, calibrated threshold=0.10, pipeline/encoder recall=50.55%, candidate pool=84.00%, parser success=100%, honest FAIL; evaluated at commit `54ea49f` | `python stack/encoder/eval_gates.py` |
+| `entity_threshold_calibration_20260710_115708Z.json` | 2026-07-10 11:57 UTC | Validation-only threshold curve; best threshold=0.10 by validation F1=15.88% (not evaluated on frozen split) | `python benchmarks/calibrate_entity_threshold.py --thresholds 0.10 0.20 0.30 0.40 0.50 0.55 0.60 0.70 0.80 0.90` |
 | `stage1b_honest_20260710_102235Z.json` | 2026-07-10 10:22 UTC | Historical honest Stage 1B reference; 225q frozen split, pipeline entity=4.4%, FAIL | `python stack/encoder/eval_gates.py` |
 | `stage1b_honest_20260710_105643Z.json` | 2026-07-10 10:55 UTC | Historical diagnostic rerun; 225q frozen split, pipeline entity=5.8%, honest FAIL | `python stack/encoder/eval_gates.py` |
 | `stack_baseline_v2_20260710_091759Z.json` | 2026-07-10 11:41 UTC | 2.2 MB | Phase R3 clean baseline, N=200 paired, nexus_acc=23.7%, rag_acc=8.7%, paired_n=89, avg_paths=12.55 (suspect), all experimental OFF | `python benchmarks/run_benchmark.py --limit 200 --arm-rag rag_retrieval --output ...` |
@@ -36,4 +37,6 @@
 | `synth_after_fix.json` | 2026-07-08 20:22 UTC | 92 KB | questions=30, nodes=1870, edges=562, model=FallbackModel(SynthesizingModel + SynthesizingModel), limit=30 | `python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results.json` |
 | `tier3_diagnostic_20260709T183718Z.json` | 2026-07-09 18:37 UTC | 36 KB | questions=34 | see source |
 | `verifier_calibrated_20260708_232220.json` | 2026-07-08 21:22 UTC | 10 KB | results=30 | `python benchmarks/verifier_check.py` |
+| `verifier_check_20260708_194420Z.json` | 2026-07-08 19:47 UTC | 90 KB | questions=30, nodes=1855, edges=563, model=OllamaModel(qwen2.5-coder:3b), limit=30 | `python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results.json` |
+ython benchmarks/verifier_check.py` |
 | `verifier_check_20260708_194420Z.json` | 2026-07-08 19:47 UTC | 90 KB | questions=30, nodes=1855, edges=563, model=OllamaModel(qwen2.5-coder:3b), limit=30 | `python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results.json` |

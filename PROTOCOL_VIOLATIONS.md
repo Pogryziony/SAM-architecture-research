@@ -118,6 +118,6 @@ Encoder-only precision: 1.1%. Pipeline entity accuracy dominated by lexical fall
 The frozen split was re-run with stage-presence diagnostics. The original reported counts are reproduced as `missed_rerank_count=160` and `impossible_count=39` in the indexed reference artifact. The implementation fix makes the parser handoff monotonic with the capped encoder baseline: selected encoder candidates are protected from lexical re-ranking displacement, and the encoder threshold is passed consistently. The diagnostic rerun records per-entity outcomes and remains HONEST FAIL (entity recall below 65%).
 
 Commands and artifacts:
-- `python stack/encoder/eval_gates.py` → `benchmarks/results/stage1b_honest_20260710_112600Z.json` → FAIL (frozen IDs match).
-- `python experiments/relation-extraction/evaluate_relations.py` → `benchmarks/results/relation_eval_20260710T105429Z.json` → completed.
+- `python stack/encoder/eval_gates.py` → `benchmarks/results/stage1b_honest_20260710_115848Z.json` → FAIL (frozen IDs match).
+- `python experiments/relation-extraction/evaluate_relations.py` → `benchmarks/results/relation_eval_20260710T115856Z.json` → completed. Relation metrics are separate from Stage 1B: precision 6.74%, recall 89.29%, F1 12.53%; dominant false positives are `derived_from`, while the three false negatives are one each of `blocked_by`, `caused_by`, and `implements`. The evaluator excludes only `related_to` co-occurrence edges at confidence 0.3; no valid gold semantic edge is hidden by that exclusion.
 - `python -m pytest tests/ -q` → initial run exposed an existing `sub_experiment` edge vocabulary use; runtime validation now accepts that supported relation and the suite was rerun.

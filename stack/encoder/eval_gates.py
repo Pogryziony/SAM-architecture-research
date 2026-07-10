@@ -51,6 +51,11 @@ def load_questions(path: str) -> list[dict]:
         return [json.loads(line) for line in f]
 
 
+def compute_stage_recall(hit_count: int, gold_entity_count: int) -> float:
+    """Return pair-level stage recall: hits divided by all gold IDs."""
+    return hit_count / gold_entity_count if gold_entity_count else 0.0
+
+
 def _get_gt_intent_canonical(q: dict) -> str:
     """Extract GT intent from question dict, canonicalized."""
     raw = q.get("intent", q.get("question_type", ""))
@@ -560,7 +565,7 @@ def eval_encoder(
         "stage_diagnostic_counts": dict(sorted(stage_diagnostic_counts.items())),
         "stage_hit_counts": dict(sorted(stage_hit_counts.items())),
         "stage_candidate_recall": {
-            stage: (hits / stage_gold_total if stage_gold_total else 0.0)
+            stage: compute_stage_recall(hits, stage_gold_total)
             for stage, hits in sorted(stage_hit_counts.items())
         },
         "stage_gold_total": stage_gold_total,

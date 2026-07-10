@@ -6,38 +6,38 @@ Status: **GATES FAILED** — see details below.
 
 | Gate | Value | Threshold | Pass |
 |------|-------|-----------|------|
-| entity_recall (pipeline) | 5.8% | >= 65% | FAIL |
-| entity_precision (pipeline) | 1.4% | measured | — |
-| entity_f1 (pipeline) | 2.3% | measured | — |
+| entity_recall (pipeline) | 50.5% | >= 65% | FAIL |
+| entity_precision (pipeline) | 12.4% | measured | — |
+| entity_f1 (pipeline) | 19.9% | measured | — |
 | resolution_rate | 100.0% | >= baseline | PASS |
 | paraphrase_drop | 0.0 pp | < 10 pp | PASS |
 | intent_accuracy | 85.3% | >= 85% | PASS |
-| RSS delta | 6.6 MB | <= 150 MB | PASS |
-| inference p50 | 25.0 ms | <= 50 ms | PASS |
+| RSS delta | 6.7 MB | <= 150 MB | PASS |
+| inference p50 | 26.4 ms | <= 50 ms | PASS |
 
 ## Per-Head Metrics
 
-- **Entity precision** (pipeline): 1.4%
-- **Entity recall** (pipeline): 5.8%
-- **Entity F1** (pipeline): 2.3%
-- **Exact entity accuracy** (all GT matched): 7.1%
-- **Encoder-only precision**: 1.4%
-- **Encoder-only recall**: 4.7%
-- **Encoder-only F1**: 2.2%
+- **Entity precision** (pipeline): 12.4%
+- **Entity recall** (pipeline): 50.5%
+- **Entity F1** (pipeline): 19.9%
+- **Exact entity accuracy** (all GT matched): 48.0%
+- **Encoder-only precision**: 12.4%
+- **Encoder-only recall**: 50.5%
+- **Encoder-only F1**: 19.9%
 - **Resolution rate**: 100.0%
 - **Intent accuracy** (canonical labels): 85.3%
 - **Paraphrase drop**: 0.0 pp
-- **Inference p50**: 25.0 ms
-- **RSS delta**: 6.6 MB
+- **Inference p50**: 26.4 ms
+- **RSS delta**: 6.7 MB
 - **Parameters**: 555,017
 
 ## Per-Intent-Class Breakdown
 
 | Intent | Count | Intent Acc | Enc Precision |
 |--------|-------|------------|---------------|
-| factual_lookup | 129 | 87.6% | 2.1% |
-| diagnostic | 67 | 80.6% | 1.1% |
-| comparison | 29 | 86.2% | 0.0% |
+| factual_lookup | 129 | 87.6% | 11.9% |
+| diagnostic | 67 | 80.6% | 12.2% |
+| comparison | 29 | 86.2% | 14.5% |
 
 ## Failure Hypothesis
 
@@ -52,180 +52,180 @@ Key issues:
 
 ### Case 1: q564
 **Question**: What was the goal of the 'Pipeline Setup' phase in SAM research?
-**GT entities**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
-**Resolved**: [troubleshooting](troubleshooting.md), [repository_Map](repository_Map.md), Experiment_0_—_Pipeline_Diagnosis, Step_3:_Relation_Extraction, Retriever_To_Sam_Integration
-**Missed**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
-**Extra**: [troubleshooting](troubleshooting.md), Retriever_To_Sam_Integration, Step_3:_Relation_Extraction, [repository_Map](repository_Map.md), Experiment_0_—_Pipeline_Diagnosis
+**GT entities**: Exp_0_2_CompactPKM, Exp_0_3_PKM_Candidates, Exp_0_5_DenseDataset, Exp_0_Diagnosis
+**Resolved**: Exp_0_Diagnosis, Exp_0_11_ChainRetrieval, Exp_0_6_Validation, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce
+**Missed**: Exp_0_2_CompactPKM, Exp_0_5_DenseDataset, Exp_0_3_PKM_Candidates
+**Extra**: Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_11_ChainRetrieval, Exp_0_6_Validation
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
-**Encoder entities**: ['Exp_0_6_Validation_core_only']
+**Encoder entities**: ['Exp_0_10_RequiredSet', 'Exp_0_11_ChainRetrieval', 'Exp_0_11_ChainRetrieval_chain_set_bce', 'Exp_0_6_Validation', 'Exp_0_Diagnosis']
 
-### Case 2: q565
-**Question**: What was the key challenge of the 'Pipeline Setup' phase in SAM research?
-**GT entities**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
-**Resolved**: —_Sam_Validation, [repository_Map](repository_Map.md), Step_3:_Relation_Extraction, [troubleshooting](troubleshooting.md), Experiment_0_—_Pipeline_Diagnosis
-**Missed**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
-**Extra**: [troubleshooting](troubleshooting.md), —_Sam_Validation, Step_3:_Relation_Extraction, [repository_Map](repository_Map.md), Experiment_0_—_Pipeline_Diagnosis
-**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
-**Encoder entities**: ['Exp_0_6_Validation_core_only', 'Exp_0_6_Validation_dense_openbook', '—_Sam_Validation']
-
-### Case 3: q566
+### Case 2: q566
 **Question**: What was the breakthrough moment of the 'Pipeline Setup' phase in SAM research?
-**GT entities**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
-**Resolved**: —_Sam_Validation, [troubleshooting](troubleshooting.md), [repository_Map](repository_Map.md), Experiment_0_—_Pipeline_Diagnosis, Step_3:_Relation_Extraction
-**Missed**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
-**Extra**: [troubleshooting](troubleshooting.md), —_Sam_Validation, Step_3:_Relation_Extraction, [repository_Map](repository_Map.md), Experiment_0_—_Pipeline_Diagnosis
+**GT entities**: Exp_0_2_CompactPKM, Exp_0_3_PKM_Candidates, Exp_0_5_DenseDataset, Exp_0_Diagnosis
+**Resolved**: Exp_0_Diagnosis, Exp_0_11_ChainRetrieval, Exp_0_6_Validation, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce
+**Missed**: Exp_0_2_CompactPKM, Exp_0_5_DenseDataset, Exp_0_3_PKM_Candidates
+**Extra**: Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_11_ChainRetrieval, Exp_0_6_Validation
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
-**Encoder entities**: ['Exp_0_6_Validation_core_only', 'Exp_0_6_Validation_dense_baseline', 'Exp_0_6_Validation_oracle_memory', 'The_Situation_Before_0.13a', '—_Sam_Validation']
+**Encoder entities**: ['Exp_0_10_RequiredSet', 'Exp_0_11_ChainRetrieval', 'Exp_0_11_ChainRetrieval_chain_set_bce', 'Exp_0_6_Validation', 'Exp_0_Diagnosis']
 
-### Case 4: q567
+### Case 3: q567
 **Question**: What was the biggest surprise of the 'Pipeline Setup' phase in SAM research?
-**GT entities**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
-**Resolved**: —_Sam_Validation, [troubleshooting](troubleshooting.md), [repository_Map](repository_Map.md), Experiment_0_—_Pipeline_Diagnosis, Step_3:_Relation_Extraction
-**Missed**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
-**Extra**: [troubleshooting](troubleshooting.md), —_Sam_Validation, Step_3:_Relation_Extraction, [repository_Map](repository_Map.md), Experiment_0_—_Pipeline_Diagnosis
+**GT entities**: Exp_0_2_CompactPKM, Exp_0_3_PKM_Candidates, Exp_0_5_DenseDataset, Exp_0_Diagnosis
+**Resolved**: Exp_0_Diagnosis, Exp_0_11_ChainRetrieval, Exp_0_6_Validation, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce
+**Missed**: Exp_0_2_CompactPKM, Exp_0_5_DenseDataset, Exp_0_3_PKM_Candidates
+**Extra**: Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_11_ChainRetrieval, Exp_0_6_Validation
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
-**Encoder entities**: ['Exp_0_6_Validation_core_only', 'Exp_0_6_Validation_dense_openbook', 'Exp_0_6_Validation_random_memory', '—_Sam_Validation']
+**Encoder entities**: ['Exp_0_10_RequiredSet', 'Exp_0_11_ChainRetrieval', 'Exp_0_11_ChainRetrieval_chain_set_bce', 'Exp_0_6_Validation', 'Exp_0_Diagnosis']
 
-### Case 5: q568
+### Case 4: q568
 **Question**: What was the lesson for NEXUS of the 'Pipeline Setup' phase in SAM research?
-**GT entities**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
-**Resolved**: —_Sam_Validation, Step_3:_Relation_Extraction, Nodes_(entities)_+_Edges_(relationships), [troubleshooting](troubleshooting.md), [repository_Map](repository_Map.md)
-**Missed**: Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_5_DenseDataset
-**Extra**: [troubleshooting](troubleshooting.md), —_Sam_Validation, Step_3:_Relation_Extraction, Nodes_(entities)_+_Edges_(relationships), [repository_Map](repository_Map.md)
+**GT entities**: Exp_0_2_CompactPKM, Exp_0_3_PKM_Candidates, Exp_0_5_DenseDataset, Exp_0_Diagnosis
+**Resolved**: Exp_0_Diagnosis, Exp_0_11_ChainRetrieval, Exp_0_6_Validation, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce
+**Missed**: Exp_0_2_CompactPKM, Exp_0_5_DenseDataset, Exp_0_3_PKM_Candidates
+**Extra**: Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce, Exp_0_11_ChainRetrieval, Exp_0_6_Validation
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
-**Encoder entities**: ['Exp_0_6_Validation_core_only', 'Exp_0_6_Validation_dense_openbook', 'Exp_0_6_Validation_random_memory', '—_Sam_Validation']
+**Encoder entities**: ['Exp_0_10_RequiredSet', 'Exp_0_11_ChainRetrieval', 'Exp_0_11_ChainRetrieval_chain_set_bce', 'Exp_0_6_Validation', 'Exp_0_Diagnosis']
 
-### Case 6: q569
+### Case 5: q569
 **Question**: What was the goal of the 'Core Validation' phase in SAM research?
-**GT entities**: Exp_0_6_Validation, Exp_0_7_ExternalText, Exp_0_8_Aggregation, Exp_0_9_OracleFilter
-**Resolved**: Experiment_0.6_—_Full_Validation, End_To_End_Pipeline_Validation, Gate_1_(rec@8_≥_80%):_Passed, Revalidate_Learned_Selector, Hard_Negative_Training
-**Missed**: Exp_0_6_Validation, Exp_0_7_ExternalText, Exp_0_8_Aggregation, Exp_0_9_OracleFilter
-**Extra**: Revalidate_Learned_Selector, Experiment_0.6_—_Full_Validation, Hard_Negative_Training, Gate_1_(rec@8_≥_80%):_Passed, End_To_End_Pipeline_Validation
+**GT entities**: Exp_0_7_ExternalText, Exp_0_9_OracleFilter, Exp_0_6_Validation, Exp_0_8_Aggregation
+**Resolved**: Exp_0_6_Validation, Exp_0_11_ChainRetrieval, Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
+**Missed**: Exp_0_9_OracleFilter, Exp_0_7_ExternalText, Exp_0_8_Aggregation
+**Extra**: Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Exp_0_11_ChainRetrieval, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
-**Encoder entities**: []
+**Encoder entities**: ['Exp_0_11_ChainRetrieval', 'Exp_0_6_Validation', 'Exp_0_6_Validation_core_only', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_overall', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop']
 
-### Case 7: q570
+### Case 6: q570
 **Question**: What was the key challenge of the 'Core Validation' phase in SAM research?
-**GT entities**: Exp_0_6_Validation, Exp_0_7_ExternalText, Exp_0_8_Aggregation, Exp_0_9_OracleFilter
-**Resolved**: Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants, Experiment_0_Results_(poc_Validation), Experiment_0.6_—_Full_Validation, [repository_Map](repository_Map.md), Gate_1_(rec@8_≥_80%):_Passed
-**Missed**: Exp_0_6_Validation, Exp_0_7_ExternalText, Exp_0_8_Aggregation, Exp_0_9_OracleFilter
-**Extra**: Experiment_0_Results_(poc_Validation), Experiment_0.6_—_Full_Validation, Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants, Gate_1_(rec@8_≥_80%):_Passed, [repository_Map](repository_Map.md)
+**GT entities**: Exp_0_7_ExternalText, Exp_0_9_OracleFilter, Exp_0_6_Validation, Exp_0_8_Aggregation
+**Resolved**: Exp_0_6_Validation, Exp_0_11_ChainRetrieval, Exp_0_6_Validation_core_only, Exp_0_2_CompactPKM, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
+**Missed**: Exp_0_9_OracleFilter, Exp_0_7_ExternalText, Exp_0_8_Aggregation
+**Extra**: Exp_0_2_CompactPKM, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall, Exp_0_11_ChainRetrieval, Exp_0_6_Validation_core_only
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
-**Encoder entities**: ['Exp_0_6_Validation_core_only', 'Validation']
+**Encoder entities**: ['Exp_0_11_ChainRetrieval', 'Exp_0_2_CompactPKM', 'Exp_0_6_Validation', 'Exp_0_6_Validation_core_only', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_overall']
 
-### Case 8: q571
+### Case 7: q571
 **Question**: What was the breakthrough moment of the 'Core Validation' phase in SAM research?
-**GT entities**: Exp_0_6_Validation, Exp_0_7_ExternalText, Exp_0_8_Aggregation, Exp_0_9_OracleFilter
-**Resolved**: —_Sam_Validation, Experiment_0.6_—_Full_Validation, Gate_1_(rec@8_≥_80%):_Passed, Experiment_0.5_—_Dense_Dataset_Fix, Bug_3:_Evaluation_Used_Wrong_Checkpoints_For_Sam_Modes
-**Missed**: Exp_0_6_Validation, Exp_0_7_ExternalText, Exp_0_8_Aggregation, Exp_0_9_OracleFilter
-**Extra**: Bug_3:_Evaluation_Used_Wrong_Checkpoints_For_Sam_Modes, —_Sam_Validation, Experiment_0.5_—_Dense_Dataset_Fix, Experiment_0.6_—_Full_Validation, Gate_1_(rec@8_≥_80%):_Passed
+**GT entities**: Exp_0_7_ExternalText, Exp_0_9_OracleFilter, Exp_0_6_Validation, Exp_0_8_Aggregation
+**Resolved**: Exp_0_6_Validation, Exp_0_11_ChainRetrieval, Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
+**Missed**: Exp_0_9_OracleFilter, Exp_0_7_ExternalText, Exp_0_8_Aggregation
+**Extra**: Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Exp_0_11_ChainRetrieval, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
-**Encoder entities**: ['Exp_0_6_Validation_core_only', 'Exp_0_6_Validation_dense_openbook', 'Exp_0_6_Validation_random_memory', 'Metric_Exp_0_6_Validation_core_only_num_live_slots', 'Validation']
+**Encoder entities**: ['Exp_0_11_ChainRetrieval', 'Exp_0_6_Validation', 'Exp_0_6_Validation_core_only', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_overall', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop']
 
-### Case 9: q572
+### Case 8: q572
 **Question**: What was the biggest surprise of the 'Core Validation' phase in SAM research?
-**GT entities**: Exp_0_6_Validation, Exp_0_7_ExternalText, Exp_0_8_Aggregation, Exp_0_9_OracleFilter
-**Resolved**: Experiment_0.6_—_Full_Validation, Gate_1_(rec@8_≥_80%):_Passed, Iterative_Querying, Experiment_0.5_—_Dense_Dataset_Fix, Bug_3:_Evaluation_Used_Wrong_Checkpoints_For_Sam_Modes
-**Missed**: Exp_0_6_Validation, Exp_0_7_ExternalText, Exp_0_8_Aggregation, Exp_0_9_OracleFilter
-**Extra**: Bug_3:_Evaluation_Used_Wrong_Checkpoints_For_Sam_Modes, Experiment_0.6_—_Full_Validation, Experiment_0.5_—_Dense_Dataset_Fix, Iterative_Querying, Gate_1_(rec@8_≥_80%):_Passed
+**GT entities**: Exp_0_7_ExternalText, Exp_0_9_OracleFilter, Exp_0_6_Validation, Exp_0_8_Aggregation
+**Resolved**: Exp_0_6_Validation, Exp_0_11_ChainRetrieval, Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
+**Missed**: Exp_0_9_OracleFilter, Exp_0_7_ExternalText, Exp_0_8_Aggregation
+**Extra**: Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Exp_0_11_ChainRetrieval, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
-**Encoder entities**: ['Exp_0_6_Validation_core_only', 'Validation']
+**Encoder entities**: ['Exp_0_11_ChainRetrieval', 'Exp_0_6_Validation', 'Exp_0_6_Validation_core_only', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_overall', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop']
 
-### Case 10: q573
+### Case 9: q573
 **Question**: What was the lesson for NEXUS of the 'Core Validation' phase in SAM research?
-**GT entities**: Exp_0_6_Validation, Exp_0_7_ExternalText, Exp_0_8_Aggregation, Exp_0_9_OracleFilter
-**Resolved**: Validation, Experiment_0.6_—_Full_Validation, Gate_1_(rec@8_≥_80%):_Passed, Step_3:_Relation_Extraction, Experiment_0.5_—_Dense_Dataset_Fix
-**Missed**: Exp_0_6_Validation, Exp_0_7_ExternalText, Exp_0_8_Aggregation, Exp_0_9_OracleFilter
-**Extra**: Experiment_0.6_—_Full_Validation, Experiment_0.5_—_Dense_Dataset_Fix, Validation, Gate_1_(rec@8_≥_80%):_Passed, Step_3:_Relation_Extraction
+**GT entities**: Exp_0_7_ExternalText, Exp_0_9_OracleFilter, Exp_0_6_Validation, Exp_0_8_Aggregation
+**Resolved**: Exp_0_6_Validation, Exp_0_11_ChainRetrieval, Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
+**Missed**: Exp_0_9_OracleFilter, Exp_0_7_ExternalText, Exp_0_8_Aggregation
+**Extra**: Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Exp_0_11_ChainRetrieval, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
-**Encoder entities**: ['Exp_0_6_Validation_core_only', 'Validation']
+**Encoder entities**: ['Exp_0_11_ChainRetrieval', 'Exp_0_6_Validation', 'Exp_0_6_Validation_core_only', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_overall', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop']
 
-### Case 11: q579
-**Question**: What was the goal of the 'Selection & Noise' phase in SAM research?
-**GT entities**: Exp_0_12_Selection, Exp_0_13B_RealisticDistractors, Exp_0_13A_NoisyMemory
-**Resolved**: —_Sam_Validation, Experiment_0_—_Pipeline_Diagnosis, "the_Latent_Memory_Path_Is_Fragile", Integration_Step, Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants
-**Missed**: Exp_0_12_Selection, Exp_0_13B_RealisticDistractors, Exp_0_13A_NoisyMemory
-**Extra**: —_Sam_Validation, "the_Latent_Memory_Path_Is_Fragile", Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants, Integration_Step, Experiment_0_—_Pipeline_Diagnosis
+### Case 10: q532
+**Question**: What is relation extraction?
+**GT entities**: Exp_0_6_Validation
+**Resolved**: Step_3:_Relation_Extraction, relation_extraction, Decision_PivotToNEXUS, Step_2:_Entity_Extraction, entity_extraction
+**Missed**: Exp_0_6_Validation
+**Extra**: relation_extraction, Step_3:_Relation_Extraction, entity_extraction, Step_2:_Entity_Extraction, Decision_PivotToNEXUS
+**GT intent**: factual_lookup, **Pred intent**: multi_hop ✗
+**Encoder entities**: ['Decision_PivotToNEXUS', 'Step_2:_Entity_Extraction', 'Step_3:_Relation_Extraction', 'entity_extraction', 'relation_extraction']
+
+### Case 11: q533
+**Question**: What is mmap?
+**GT entities**: Exp_0_6_Validation
+**Resolved**: Decision_PivotToNEXUS, Mmap, current_status_what, entity_location_map, repository_map
+**Missed**: Exp_0_6_Validation
+**Extra**: Mmap, entity_location_map, current_status_what, repository_map, Decision_PivotToNEXUS
+**GT intent**: factual_lookup, **Pred intent**: factual_lookup ✓
+**Encoder entities**: ['Decision_PivotToNEXUS', 'Mmap', 'current_status_what', 'entity_location_map', 'repository_map']
+
+### Case 12: q534
+**Question**: What is KuzuDB?
+**GT entities**: Exp_0_6_Validation
+**Resolved**: Decision_PivotToNEXUS, Kuzudb, current_status_what, roadmap_what, datahub
+**Missed**: Exp_0_6_Validation
+**Extra**: datahub, Kuzudb, current_status_what, roadmap_what, Decision_PivotToNEXUS
+**GT intent**: factual_lookup, **Pred intent**: factual_lookup ✓
+**Encoder entities**: ['Decision_PivotToNEXUS', 'Kuzudb', 'current_status_what', 'datahub', 'roadmap_what']
+
+### Case 13: q536
+**Question**: What is a hard negative?
+**GT entities**: Exp_0_6_Validation
+**Resolved**: Hard_Negative, Hard_Negative_Training, Decision_PivotToNEXUS, the_problem_is_distractor_quality,_train_on_hard_negatives, current_status_what
+**Missed**: Exp_0_6_Validation
+**Extra**: Hard_Negative, Hard_Negative_Training, current_status_what, Decision_PivotToNEXUS, the_problem_is_distractor_quality,_train_on_hard_negatives
+**GT intent**: factual_lookup, **Pred intent**: factual_lookup ✓
+**Encoder entities**: ['Decision_PivotToNEXUS', 'Hard_Negative', 'Hard_Negative_Training', 'current_status_what', 'the_problem_is_distractor_quality,_train_on_hard_negatives']
+
+### Case 14: q537
+**Question**: What is a controlled distractor?
+**GT entities**: Exp_0_6_Validation
+**Resolved**: Exp_0_13A_NoisyMemory, Decision_PivotToNEXUS, Controlled_Noisy_Memory_Path_(0.13a/0.13b), Concept_NoiseTolerance, controlled_noisy_memory_path
+**Missed**: Exp_0_6_Validation
+**Extra**: Exp_0_13A_NoisyMemory, Controlled_Noisy_Memory_Path_(0.13a/0.13b), controlled_noisy_memory_path, Concept_NoiseTolerance, Decision_PivotToNEXUS
+**GT intent**: factual_lookup, **Pred intent**: factual_lookup ✓
+**Encoder entities**: ['Concept_NoiseTolerance', 'Controlled_Noisy_Memory_Path_(0.13a/0.13b)', 'Decision_PivotToNEXUS', 'Exp_0_13A_NoisyMemory', 'controlled_noisy_memory_path']
+
+### Case 15: q538
+**Question**: What is the significance of the oracle memory experiment achieving 99.87% accuracy?
+**GT entities**: Decision_PivotToNEXUS
+**Resolved**: Exp_0_6_Validation, Exp_0_2_CompactPKM, Exp_0_Diagnosis, Exp_0_3_PKM_Candidates, Exp_0_5_DenseDataset
+**Missed**: Decision_PivotToNEXUS
+**Extra**: Exp_0_5_DenseDataset, Exp_0_6_Validation, Exp_0_Diagnosis, Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
-**Encoder entities**: ['Exp_0_13A_NoisyMemory_noise_+0', 'Exp_0_6_Validation_core_only', 'Exp_0_6_Validation_dense_openbook', '—_Sam_Validation']
+**Encoder entities**: ['Exp_0_2_CompactPKM', 'Exp_0_3_PKM_Candidates', 'Exp_0_5_DenseDataset', 'Exp_0_6_Validation', 'Exp_0_Diagnosis']
 
-### Case 12: q580
-**Question**: What was the key challenge of the 'Selection & Noise' phase in SAM research?
-**GT entities**: Exp_0_12_Selection, Exp_0_13B_RealisticDistractors, Exp_0_13A_NoisyMemory
-**Resolved**: —_Sam_Validation, Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants, Experiment_0_—_Pipeline_Diagnosis, [repository_Map](repository_Map.md), "the_Latent_Memory_Path_Is_Fragile"
-**Missed**: Exp_0_12_Selection, Exp_0_13B_RealisticDistractors, Exp_0_13A_NoisyMemory
-**Extra**: —_Sam_Validation, "the_Latent_Memory_Path_Is_Fragile", Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants, [repository_Map](repository_Map.md), Experiment_0_—_Pipeline_Diagnosis
+### Case 16: q539
+**Question**: What is the significance of the chain-set BCE retriever achieving 100% all_required@32?
+**GT entities**: Decision_PivotToNEXUS
+**Resolved**: Exp_0_11_ChainRetrieval, Exp_0_10_RequiredSet, Exp_0_11_ChainRetrieval_chain_set_bce, Metric_Exp_0_11_ChainRetrieval_chain_set_bce_total_wall_s, Exp_0_11_ChainRetrieval_sam_chain_aware
+**Missed**: Decision_PivotToNEXUS
+**Extra**: Exp_0_11_ChainRetrieval, Exp_0_11_ChainRetrieval_sam_chain_aware, Exp_0_11_ChainRetrieval_chain_set_bce, Metric_Exp_0_11_ChainRetrieval_chain_set_bce_total_wall_s, Exp_0_10_RequiredSet
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
-**Encoder entities**: ['Exp_0_13A_NoisyMemory_noise_+0', 'Exp_0_6_Validation_core_only', 'Exp_0_6_Validation_dense_openbook', 'Exp_0_6_Validation_random_memory', '—_Sam_Validation']
+**Encoder entities**: ['Exp_0_10_RequiredSet', 'Exp_0_11_ChainRetrieval', 'Exp_0_11_ChainRetrieval_chain_set_bce', 'Exp_0_11_ChainRetrieval_sam_chain_aware', 'Metric_Exp_0_11_ChainRetrieval_chain_set_bce_total_wall_s']
 
-### Case 13: q581
-**Question**: What was the breakthrough moment of the 'Selection & Noise' phase in SAM research?
-**GT entities**: Exp_0_12_Selection, Exp_0_13B_RealisticDistractors, Exp_0_13A_NoisyMemory
-**Resolved**: —_Sam_Validation, Experiment_0_—_Pipeline_Diagnosis, "the_Latent_Memory_Path_Is_Fragile", Integration_Step, Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants
-**Missed**: Exp_0_12_Selection, Exp_0_13B_RealisticDistractors, Exp_0_13A_NoisyMemory
-**Extra**: —_Sam_Validation, "the_Latent_Memory_Path_Is_Fragile", Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants, Integration_Step, Experiment_0_—_Pipeline_Diagnosis
+### Case 17: q540
+**Question**: What is the significance of the selector achieving only 50% precision?
+**GT entities**: Decision_PivotToNEXUS
+**Resolved**: Exp_0_12_Selection, Exp_0_2_CompactPKM, Exp_0_6_Validation_core_only, Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall
+**Missed**: Decision_PivotToNEXUS
+**Extra**: Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop, Exp_0_12_Selection, Metric_Exp_0_6_Validation_core_only_val_accuracy_overall, Exp_0_6_Validation_core_only, Exp_0_2_CompactPKM
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
-**Encoder entities**: ['Exp_0_13A_NoisyMemory_noise_+0', 'Exp_0_13A_NoisyMemory_noise_+1', 'Metric_Exp_0_13A_NoisyMemory_noise_+0_best_val_loss', 'Metric_Exp_0_13A_NoisyMemory_noise_+0_num_live_slots', 'Metric_Exp_0_13A_NoisyMemory_noise_+1_num_live_slots']
+**Encoder entities**: ['Exp_0_12_Selection', 'Exp_0_2_CompactPKM', 'Exp_0_6_Validation_core_only', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_overall', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop']
 
-### Case 14: q582
-**Question**: What was the biggest surprise of the 'Selection & Noise' phase in SAM research?
-**GT entities**: Exp_0_12_Selection, Exp_0_13B_RealisticDistractors, Exp_0_13A_NoisyMemory
-**Resolved**: —_Sam_Validation, Experiment_0_—_Pipeline_Diagnosis, "the_Latent_Memory_Path_Is_Fragile", Integration_Step, Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants
-**Missed**: Exp_0_12_Selection, Exp_0_13B_RealisticDistractors, Exp_0_13A_NoisyMemory
-**Extra**: —_Sam_Validation, "the_Latent_Memory_Path_Is_Fragile", Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants, Integration_Step, Experiment_0_—_Pipeline_Diagnosis
+### Case 18: q541
+**Question**: What is the significance of the noise tolerance experiment showing 91.6% at +8 distractors?
+**GT entities**: Decision_PivotToNEXUS
+**Resolved**: Exp_0_Diagnosis, Exp_0_3_PKM_Candidates, Exp_0_5_DenseDataset, Exp_0_2_CompactPKM, Exp_0_6_Validation
+**Missed**: Decision_PivotToNEXUS
+**Extra**: Exp_0_5_DenseDataset, Exp_0_6_Validation, Exp_0_Diagnosis, Exp_0_3_PKM_Candidates, Exp_0_2_CompactPKM
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
-**Encoder entities**: ['Exp_0_13A_NoisyMemory_noise_+0', 'Exp_0_13A_NoisyMemory_noise_+1', 'Exp_0_13A_NoisyMemory_noise_+2', 'Metric_Exp_0_13A_NoisyMemory_noise_+0_num_live_slots', 'Metric_Exp_0_13A_NoisyMemory_noise_+2_num_live_slots']
+**Encoder entities**: ['Exp_0_2_CompactPKM', 'Exp_0_3_PKM_Candidates', 'Exp_0_5_DenseDataset', 'Exp_0_6_Validation', 'Exp_0_Diagnosis']
 
-### Case 15: q583
-**Question**: What was the lesson for NEXUS of the 'Selection & Noise' phase in SAM research?
-**GT entities**: Exp_0_12_Selection, Exp_0_13B_RealisticDistractors, Exp_0_13A_NoisyMemory
-**Resolved**: —_Sam_Validation, Step_3:_Relation_Extraction, Integration_Step, Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants, Experiment_0_—_Pipeline_Diagnosis
-**Missed**: Exp_0_12_Selection, Exp_0_13B_RealisticDistractors, Exp_0_13A_NoisyMemory
-**Extra**: —_Sam_Validation, Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants, Integration_Step, Step_3:_Relation_Extraction, Experiment_0_—_Pipeline_Diagnosis
+### Case 19: q543
+**Question**: What is the significance of the dense dataset improving retrieval from 6.9% to 99.0% Rec@8?
+**GT entities**: Decision_PivotToNEXUS
+**Resolved**: Exp_0_5_DenseDataset, Exp_0_Diagnosis, Exp_0_2_CompactPKM, Exp_0_10_RequiredSet, Exp_0_6_Validation
+**Missed**: Decision_PivotToNEXUS
+**Extra**: Exp_0_5_DenseDataset, Exp_0_6_Validation, Exp_0_Diagnosis, Exp_0_2_CompactPKM, Exp_0_10_RequiredSet
 **GT intent**: diagnostic, **Pred intent**: diagnostic ✓
-**Encoder entities**: ['Exp_0_13A_NoisyMemory_noise_+0', 'Exp_0_13A_NoisyMemory_noise_+1', 'Exp_0_13A_NoisyMemory_noise_+2', 'Exp_0_13A_NoisyMemory_noise_+4', 'Metric_Exp_0_13A_NoisyMemory_noise_+0_num_live_slots']
+**Encoder entities**: ['Exp_0_10_RequiredSet', 'Exp_0_2_CompactPKM', 'Exp_0_5_DenseDataset', 'Exp_0_6_Validation', 'Exp_0_Diagnosis']
 
-### Case 16: q550
-**Question**: Compare the 3-hop accuracy across different SAM configurations: core_only (22.00%) vs oracle_memory (100%) vs controlled noise +8 (79.33%) vs +16 (39.00%). What does this tell us?
-**GT entities**: Exp_0_6_Validation, Exp_0_13A_NoisyMemory
-**Resolved**: Exp_0_13A_NoisyMemory_noise_+16, Exp_0_13A_NoisyMemory_noise_+8, Exp_0_13A_NoisyMemory_noise_+1, Exp_0_13A_NoisyMemory_noise_+0, Exp_0_13A_NoisyMemory_noise_+4
-**Missed**: Exp_0_6_Validation, Exp_0_13A_NoisyMemory
-**Extra**: Exp_0_13A_NoisyMemory_noise_+0, Exp_0_13A_NoisyMemory_noise_+8, Exp_0_13A_NoisyMemory_noise_+16, Exp_0_13A_NoisyMemory_noise_+1, Exp_0_13A_NoisyMemory_noise_+4
-**GT intent**: comparison, **Pred intent**: comparison ✓
-**Encoder entities**: ['Exp_0_6_Validation_core_only', 'Exp_0_6_Validation_oracle_memory', 'Metric_Exp_0_6_Validation_core_only_best_val_loss', 'Metric_Exp_0_6_Validation_core_only_num_live_slots', 'Metric_Exp_0_6_Validation_core_only_total_wall_s']
-
-### Case 17: q551
-**Question**: Compare the overall accuracy across all memory modes at experiment 0.6 across different SAM configurations: core_only=68.74%, random_memory=68.74%, retrieved_memory=68.74%, oracle_memory=99.87%, oracle_text=100%. What does this tell us?
-**GT entities**: Exp_0_6_Validation, Exp_0_13A_NoisyMemory
-**Resolved**: Experiment_0.6_—_Full_Validation, Exp_0_6_Validation_oracle_text_memory, Exp_0_6_Validation_random_memory, Exp_0_6_Validation_oracle_memory, Updated_Decision_Gates_(post_Experiment_0.11)
-**Missed**: Exp_0_6_Validation, Exp_0_13A_NoisyMemory
-**Extra**: Exp_0_6_Validation_oracle_text_memory, Experiment_0.6_—_Full_Validation, Exp_0_6_Validation_oracle_memory, Updated_Decision_Gates_(post_Experiment_0.11), Exp_0_6_Validation_random_memory
-**GT intent**: comparison, **Pred intent**: comparison ✓
-**Encoder entities**: ['Exp_0_6_Validation_core_only', 'Metric_Exp_0_6_Validation_core_only_best_val_loss', 'Metric_Exp_0_6_Validation_core_only_num_live_slots', 'Metric_Exp_0_6_Validation_core_only_param_count', 'Metric_Exp_0_6_Validation_core_only_total_wall_s']
-
-### Case 18: q552
-**Question**: Compare the all_required@K at K=8, 16, 32 for chain-set BCE across different SAM configurations: K=8: 81.03%, K=16: 96.53%, K=32: 100.00%. What does this tell us?
-**GT entities**: Exp_0_6_Validation, Exp_0_13A_NoisyMemory
-**Resolved**: —_Sam_Validation, Chain_Set_Bce, Integration_Step, Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training, "the_Latent_Memory_Path_Is_Fragile"
-**Missed**: Exp_0_6_Validation, Exp_0_13A_NoisyMemory
-**Extra**: Chain_Set_Bce, —_Sam_Validation, "the_Latent_Memory_Path_Is_Fragile", Integration_Step, Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training
-**GT intent**: comparison, **Pred intent**: comparison ✓
-**Encoder entities**: ['Exp_0_6_Validation_core_only', 'Start_The_Poc_At_8–16m_Slots', 'The_Situation_Before_0.13a', 'no_validation_ever_ran_|_per_epoch_eval_in_all_training_scripts_|', '—_Sam_Validation']
-
-### Case 19: q553
-**Question**: Compare the all_required@K at K=8, 32, 64 for dual encoder across different SAM configurations: K=8: 26.34%, K=32: 26.84%, K=64: 27.29%. What does this tell us?
-**GT entities**: Exp_0_6_Validation, Exp_0_13A_NoisyMemory
-**Resolved**: sam_tiny_dense.yaml, Train_Dual_Encoder(), Train_Sam_Full_Compact, Exp_0_6_Validation_retrieval_dual_encoder, Sam_Lm_Experiment_0.6_—_Final_Validation_Report
-**Missed**: Exp_0_6_Validation, Exp_0_13A_NoisyMemory
-**Extra**: sam_tiny_dense.yaml, Train_Dual_Encoder(), Train_Sam_Full_Compact, Sam_Lm_Experiment_0.6_—_Final_Validation_Report, Exp_0_6_Validation_retrieval_dual_encoder
-**GT intent**: comparison, **Pred intent**: comparison ✓
-**Encoder entities**: ['Exp_0_6_Validation_retrieval_dual_encoder', 'Start_The_Poc_At_8–16m_Slots', 'The_Situation_Before_0.13a', 'sam_tiny_dense.yaml', '—_Sam_Validation']
-
-### Case 20: q554
-**Question**: Compare the 3-hop accuracy under noise at +1, +2, +4, +8, +16 distractors across different SAM configurations: +1: 99.50%, +2: 98.17%, +4: 95.00%, +8: 79.33%, +16: 39.00%. What does this tell us?
-**GT entities**: Exp_0_6_Validation, Exp_0_13A_NoisyMemory
-**Resolved**: Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_single_hop, Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_two_hop, Exp_0_13A_NoisyMemory_noise_+16, Exp_0_13A_NoisyMemory_noise_+8, Exp_0_13A_NoisyMemory_noise_+1
-**Missed**: Exp_0_6_Validation, Exp_0_13A_NoisyMemory
-**Extra**: Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_two_hop, Exp_0_13A_NoisyMemory_noise_+8, Exp_0_13A_NoisyMemory_noise_+16, Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_single_hop, Exp_0_13A_NoisyMemory_noise_+1
-**GT intent**: comparison, **Pred intent**: comparison ✓
-**Encoder entities**: ['Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_three_hop', 'Metric_Exp_0_6_Validation_core_only_val_accuracy_two_hop', 'Metric_Exp_0_6_Validation_random_memory_val_accuracy_single_hop', 'Metric_Exp_0_6_Validation_random_memory_val_accuracy_two_hop']
+### Case 20: q544
+**Question**: What is the significance of the pivot from SAM to NEXUS?
+**GT entities**: Decision_PivotToNEXUS
+**Resolved**: Exp_0_11_ChainRetrieval, Exp_0_6_Validation, Exp_0_11_ChainRetrieval_sam_chain_aware, Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_single_hop, Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_overall
+**Missed**: Decision_PivotToNEXUS
+**Extra**: Exp_0_11_ChainRetrieval, Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_overall, Exp_0_11_ChainRetrieval_sam_chain_aware, Exp_0_6_Validation, Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_single_hop
+**GT intent**: diagnostic, **Pred intent**: diagnostic ✓
+**Encoder entities**: ['Exp_0_11_ChainRetrieval', 'Exp_0_11_ChainRetrieval_sam_chain_aware', 'Exp_0_6_Validation', 'Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_overall', 'Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_single_hop']

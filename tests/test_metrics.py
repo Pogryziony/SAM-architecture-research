@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import pytest
 
+from stack.encoder.eval_gates import compute_stage_recall
+
 
 def _compute_metrics(resolved: list[list[str]], gt: list[list[str]]) -> dict:
     """Compute metrics from resolved and GT entity ID lists, one per question.
@@ -56,6 +58,13 @@ def _compute_metrics(resolved: list[list[str]], gt: list[list[str]]) -> dict:
         "total_gt": total_gt,
         "exact_matches": exact_matches,
     }
+
+
+class TestStageRecallDenominators:
+    def test_pair_level_stage_recall(self):
+        assert compute_stage_recall(231, 275) == pytest.approx(231 / 275)
+        assert compute_stage_recall(0, 275) == 0.0
+        assert compute_stage_recall(1, 0) == 0.0
 
 
 class TestHandCalculatedMetrics:

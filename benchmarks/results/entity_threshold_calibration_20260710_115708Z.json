@@ -1,0 +1,129 @@
+{
+  "meta": {
+    "calibration_split": "stack/encoder/data/val.jsonl",
+    "frozen_split_used": false,
+    "timestamp_utc": "20260710_115708Z",
+    "source_commit_sha": "b5712973727c443c776b84d4042f3bcc167ace07",
+    "thresholds": [
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.55,
+      0.6,
+      0.7,
+      0.8,
+      0.9
+    ],
+    "metric_denominators": {
+      "precision": "correct predicted entity IDs / predicted entity IDs",
+      "recall": "correct predicted entity IDs / gold entity IDs",
+      "f1": "harmonic mean of precision and recall"
+    }
+  },
+  "curve": [
+    {
+      "threshold": 0.1,
+      "precision": 0.09866666666666667,
+      "recall": 0.4065934065934066,
+      "f1": 0.15879828326180256,
+      "candidate_pool_recall": 0.8241758241758241,
+      "reranker_top1_recall": 0.0,
+      "final_accepted_recall": 0.4065934065934066,
+      "parser_success_rate": 1.0
+    },
+    {
+      "threshold": 0.2,
+      "precision": 0.09866666666666667,
+      "recall": 0.4065934065934066,
+      "f1": 0.15879828326180256,
+      "candidate_pool_recall": 0.8241758241758241,
+      "reranker_top1_recall": 0.0,
+      "final_accepted_recall": 0.4065934065934066,
+      "parser_success_rate": 1.0
+    },
+    {
+      "threshold": 0.3,
+      "precision": 0.09733333333333333,
+      "recall": 0.4010989010989011,
+      "f1": 0.15665236051502143,
+      "candidate_pool_recall": 0.8241758241758241,
+      "reranker_top1_recall": 0.0,
+      "final_accepted_recall": 0.4010989010989011,
+      "parser_success_rate": 1.0
+    },
+    {
+      "threshold": 0.4,
+      "precision": 0.084,
+      "recall": 0.34615384615384615,
+      "f1": 0.13519313304721028,
+      "candidate_pool_recall": 0.8241758241758241,
+      "reranker_top1_recall": 0.0,
+      "final_accepted_recall": 0.34615384615384615,
+      "parser_success_rate": 1.0
+    },
+    {
+      "threshold": 0.5,
+      "precision": 0.02666666666666667,
+      "recall": 0.10989010989010989,
+      "f1": 0.04291845493562232,
+      "candidate_pool_recall": 0.8241758241758241,
+      "reranker_top1_recall": 0.0,
+      "final_accepted_recall": 0.10989010989010989,
+      "parser_success_rate": 1.0
+    },
+    {
+      "threshold": 0.55,
+      "precision": 0.014666666666666666,
+      "recall": 0.06043956043956044,
+      "f1": 0.023605150214592273,
+      "candidate_pool_recall": 0.8241758241758241,
+      "reranker_top1_recall": 0.0,
+      "final_accepted_recall": 0.06043956043956044,
+      "parser_success_rate": 1.0
+    },
+    {
+      "threshold": 0.6,
+      "precision": 0.009333333333333334,
+      "recall": 0.038461538461538464,
+      "f1": 0.015021459227467815,
+      "candidate_pool_recall": 0.8241758241758241,
+      "reranker_top1_recall": 0.0,
+      "final_accepted_recall": 0.038461538461538464,
+      "parser_success_rate": 1.0
+    },
+    {
+      "threshold": 0.7,
+      "precision": 0.0026666666666666666,
+      "recall": 0.01098901098901099,
+      "f1": 0.004291845493562232,
+      "candidate_pool_recall": 0.8241758241758241,
+      "reranker_top1_recall": 0.0,
+      "final_accepted_recall": 0.01098901098901099,
+      "parser_success_rate": 1.0
+    },
+    {
+      "threshold": 0.8,
+      "precision": 0.0026666666666666666,
+      "recall": 0.01098901098901099,
+      "f1": 0.004291845493562232,
+      "candidate_pool_recall": 0.8241758241758241,
+      "reranker_top1_recall": 0.0,
+      "final_accepted_recall": 0.01098901098901099,
+      "parser_success_rate": 1.0
+    },
+    {
+      "threshold": 0.9,
+      "precision": 0.006666666666666667,
+      "recall": 0.027472527472527472,
+      "f1": 0.01072961373390558,
+      "candidate_pool_recall": 0.8241758241758241,
+      "reranker_top1_recall": 0.0,
+      "final_accepted_recall": 0.027472527472527472,
+      "parser_success_rate": 1.0
+    }
+  ],
+  "selected_threshold": 0.1,
+  "selection_rule": "maximum validation F1, then recall, then lowest threshold"
+}
