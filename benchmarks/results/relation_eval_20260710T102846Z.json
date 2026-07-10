@@ -1,0 +1,1805 @@
+{
+  "global": {
+    "gold_count": 27,
+    "predicted_count": 371,
+    "tp": 25,
+    "precision": 0.0674,
+    "recall": 0.9259,
+    "f1": 0.1256
+  },
+  "per_type": {
+    "caused_by": {
+      "gold_count": 1,
+      "predicted_count": 0,
+      "tp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "contradicts": {
+      "gold_count": 1,
+      "predicted_count": 1,
+      "tp": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "depends_on": {
+      "gold_count": 10,
+      "predicted_count": 12,
+      "tp": 10,
+      "precision": 0.8333,
+      "recall": 1.0,
+      "f1": 0.9091
+    },
+    "derived_from": {
+      "gold_count": 4,
+      "predicted_count": 348,
+      "tp": 4,
+      "precision": 0.0115,
+      "recall": 1.0,
+      "f1": 0.0227
+    },
+    "implements": {
+      "gold_count": 1,
+      "predicted_count": 0,
+      "tp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "validates": {
+      "gold_count": 10,
+      "predicted_count": 10,
+      "tp": 10,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    }
+  },
+  "false_positives": [
+    {
+      "source": "Exp_0_11_ChainRetrieval",
+      "target": "Exp_0_10_RequiredSet",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "Exp_0_11_ChainRetrieval_chain_set_bce",
+      "target": "Exp_0_11_ChainRetrieval",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "target": "Exp_0_11_ChainRetrieval",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_12_Selection_equal_budget",
+      "target": "Exp_0_12_Selection",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_12_Selection_fixed_top_by_hop",
+      "target": "Exp_0_12_Selection",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_12_Selection_learned_selector",
+      "target": "Exp_0_12_Selection",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_12_Selection_oracle_filter_top32",
+      "target": "Exp_0_12_Selection",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_12_Selection_oracle_filter_top64",
+      "target": "Exp_0_12_Selection",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_13A_NoisyMemory_noise_+0",
+      "target": "Exp_0_13A_NoisyMemory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_13A_NoisyMemory_noise_+1",
+      "target": "Exp_0_13A_NoisyMemory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_13A_NoisyMemory_noise_+16",
+      "target": "Exp_0_13A_NoisyMemory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_13A_NoisyMemory_noise_+2",
+      "target": "Exp_0_13A_NoisyMemory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_13A_NoisyMemory_noise_+4",
+      "target": "Exp_0_13A_NoisyMemory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_13A_NoisyMemory_noise_+8",
+      "target": "Exp_0_13A_NoisyMemory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_13B_RealisticDistractors",
+      "target": "Exp_0_13A_NoisyMemory",
+      "edge_type": "depends_on"
+    },
+    {
+      "source": "Exp_0_2_CompactPKM_retrieval_compact_16k",
+      "target": "Exp_0_2_CompactPKM",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_3_PKM_Candidates_improved",
+      "target": "Exp_0_3_PKM_Candidates",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_3_PKM_Candidates_subkey_loss",
+      "target": "Exp_0_3_PKM_Candidates",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_3_PKM_Candidates_top64",
+      "target": "Exp_0_3_PKM_Candidates",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_6_Validation_dense_baseline",
+      "target": "Exp_0_6_Validation",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_6_Validation_dense_baseline_early",
+      "target": "Exp_0_6_Validation",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_6_Validation_dense_openbook",
+      "target": "Exp_0_6_Validation",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_6_Validation_oracle_memory",
+      "target": "Exp_0_6_Validation",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_6_Validation_oracle_text_memory",
+      "target": "Exp_0_6_Validation",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_6_Validation_pkm_retrieval_early",
+      "target": "Exp_0_6_Validation",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_6_Validation_random_memory",
+      "target": "Exp_0_6_Validation",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_6_Validation_retrieval_dual_encoder",
+      "target": "Exp_0_6_Validation",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_6_Validation_retrieved_memory",
+      "target": "Exp_0_6_Validation",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_7_ExternalText_external_text_query",
+      "target": "Exp_0_7_ExternalText",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_7_ExternalText_hidden_adapter",
+      "target": "Exp_0_7_ExternalText",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_8_Aggregation_external_text_query",
+      "target": "Exp_0_8_Aggregation",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_8_Aggregation_oracle_slots",
+      "target": "Exp_0_8_Aggregation",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_9_OracleFilter_baseline",
+      "target": "Exp_0_9_OracleFilter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_9_OracleFilter_oracle_filter",
+      "target": "Exp_0_9_OracleFilter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_9_OracleFilter_top1",
+      "target": "Exp_0_9_OracleFilter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_9_OracleFilter_weighted_t005_top32",
+      "target": "Exp_0_9_OracleFilter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Exp_0_9_OracleFilter_weighted_t005_top8",
+      "target": "Exp_0_9_OracleFilter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_11_ChainRetrieval_chain_set_bce_total_wall_s",
+      "target": "Exp_0_11_ChainRetrieval_chain_set_bce",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_best_val_loss",
+      "target": "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_num_live_slots",
+      "target": "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_param_count",
+      "target": "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_total_wall_s",
+      "target": "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_overall",
+      "target": "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_single_hop",
+      "target": "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_three_hop",
+      "target": "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_two_hop",
+      "target": "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_recall_at_1",
+      "target": "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_recall_at_32",
+      "target": "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_recall_at_8",
+      "target": "Exp_0_11_ChainRetrieval_sam_chain_aware",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_equal_budget_best_val_loss",
+      "target": "Exp_0_12_Selection_equal_budget",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_equal_budget_num_live_slots",
+      "target": "Exp_0_12_Selection_equal_budget",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_equal_budget_param_count",
+      "target": "Exp_0_12_Selection_equal_budget",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_equal_budget_total_wall_s",
+      "target": "Exp_0_12_Selection_equal_budget",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_overall",
+      "target": "Exp_0_12_Selection_equal_budget",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_single_hop",
+      "target": "Exp_0_12_Selection_equal_budget",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_three_hop",
+      "target": "Exp_0_12_Selection_equal_budget",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_two_hop",
+      "target": "Exp_0_12_Selection_equal_budget",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_equal_budget_val_recall_at_1",
+      "target": "Exp_0_12_Selection_equal_budget",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_equal_budget_val_recall_at_32",
+      "target": "Exp_0_12_Selection_equal_budget",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_equal_budget_val_recall_at_8",
+      "target": "Exp_0_12_Selection_equal_budget",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_fixed_top_by_hop_best_val_loss",
+      "target": "Exp_0_12_Selection_fixed_top_by_hop",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_fixed_top_by_hop_num_live_slots",
+      "target": "Exp_0_12_Selection_fixed_top_by_hop",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_fixed_top_by_hop_param_count",
+      "target": "Exp_0_12_Selection_fixed_top_by_hop",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_fixed_top_by_hop_total_wall_s",
+      "target": "Exp_0_12_Selection_fixed_top_by_hop",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_overall",
+      "target": "Exp_0_12_Selection_fixed_top_by_hop",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_single_hop",
+      "target": "Exp_0_12_Selection_fixed_top_by_hop",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_three_hop",
+      "target": "Exp_0_12_Selection_fixed_top_by_hop",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_two_hop",
+      "target": "Exp_0_12_Selection_fixed_top_by_hop",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_recall_at_1",
+      "target": "Exp_0_12_Selection_fixed_top_by_hop",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_recall_at_32",
+      "target": "Exp_0_12_Selection_fixed_top_by_hop",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_recall_at_8",
+      "target": "Exp_0_12_Selection_fixed_top_by_hop",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_learned_selector_best_val_loss",
+      "target": "Exp_0_12_Selection_learned_selector",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_learned_selector_num_live_slots",
+      "target": "Exp_0_12_Selection_learned_selector",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_learned_selector_param_count",
+      "target": "Exp_0_12_Selection_learned_selector",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_learned_selector_total_wall_s",
+      "target": "Exp_0_12_Selection_learned_selector",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_overall",
+      "target": "Exp_0_12_Selection_learned_selector",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_single_hop",
+      "target": "Exp_0_12_Selection_learned_selector",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_three_hop",
+      "target": "Exp_0_12_Selection_learned_selector",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_two_hop",
+      "target": "Exp_0_12_Selection_learned_selector",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_learned_selector_val_recall_at_1",
+      "target": "Exp_0_12_Selection_learned_selector",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_learned_selector_val_recall_at_32",
+      "target": "Exp_0_12_Selection_learned_selector",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_learned_selector_val_recall_at_8",
+      "target": "Exp_0_12_Selection_learned_selector",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top32_best_val_loss",
+      "target": "Exp_0_12_Selection_oracle_filter_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top32_num_live_slots",
+      "target": "Exp_0_12_Selection_oracle_filter_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top32_param_count",
+      "target": "Exp_0_12_Selection_oracle_filter_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top32_total_wall_s",
+      "target": "Exp_0_12_Selection_oracle_filter_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_overall",
+      "target": "Exp_0_12_Selection_oracle_filter_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_single_hop",
+      "target": "Exp_0_12_Selection_oracle_filter_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_three_hop",
+      "target": "Exp_0_12_Selection_oracle_filter_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_two_hop",
+      "target": "Exp_0_12_Selection_oracle_filter_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_recall_at_1",
+      "target": "Exp_0_12_Selection_oracle_filter_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_recall_at_32",
+      "target": "Exp_0_12_Selection_oracle_filter_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_recall_at_8",
+      "target": "Exp_0_12_Selection_oracle_filter_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top64_best_val_loss",
+      "target": "Exp_0_12_Selection_oracle_filter_top64",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top64_num_live_slots",
+      "target": "Exp_0_12_Selection_oracle_filter_top64",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top64_param_count",
+      "target": "Exp_0_12_Selection_oracle_filter_top64",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top64_total_wall_s",
+      "target": "Exp_0_12_Selection_oracle_filter_top64",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_overall",
+      "target": "Exp_0_12_Selection_oracle_filter_top64",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_single_hop",
+      "target": "Exp_0_12_Selection_oracle_filter_top64",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_three_hop",
+      "target": "Exp_0_12_Selection_oracle_filter_top64",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_two_hop",
+      "target": "Exp_0_12_Selection_oracle_filter_top64",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_recall_at_1",
+      "target": "Exp_0_12_Selection_oracle_filter_top64",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_recall_at_32",
+      "target": "Exp_0_12_Selection_oracle_filter_top64",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_recall_at_8",
+      "target": "Exp_0_12_Selection_oracle_filter_top64",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+0_best_val_loss",
+      "target": "Exp_0_13A_NoisyMemory_noise_+0",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+0_num_live_slots",
+      "target": "Exp_0_13A_NoisyMemory_noise_+0",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+0_param_count",
+      "target": "Exp_0_13A_NoisyMemory_noise_+0",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+0_total_wall_s",
+      "target": "Exp_0_13A_NoisyMemory_noise_+0",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_overall",
+      "target": "Exp_0_13A_NoisyMemory_noise_+0",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_single_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+0",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_three_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+0",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_two_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+0",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_recall_at_1",
+      "target": "Exp_0_13A_NoisyMemory_noise_+0",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_recall_at_32",
+      "target": "Exp_0_13A_NoisyMemory_noise_+0",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_recall_at_8",
+      "target": "Exp_0_13A_NoisyMemory_noise_+0",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+16_best_val_loss",
+      "target": "Exp_0_13A_NoisyMemory_noise_+16",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+16_num_live_slots",
+      "target": "Exp_0_13A_NoisyMemory_noise_+16",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+16_param_count",
+      "target": "Exp_0_13A_NoisyMemory_noise_+16",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+16_total_wall_s",
+      "target": "Exp_0_13A_NoisyMemory_noise_+16",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_accuracy_overall",
+      "target": "Exp_0_13A_NoisyMemory_noise_+16",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_accuracy_single_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+16",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_accuracy_three_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+16",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_accuracy_two_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+16",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_recall_at_1",
+      "target": "Exp_0_13A_NoisyMemory_noise_+16",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_recall_at_32",
+      "target": "Exp_0_13A_NoisyMemory_noise_+16",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_recall_at_8",
+      "target": "Exp_0_13A_NoisyMemory_noise_+16",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+1_best_val_loss",
+      "target": "Exp_0_13A_NoisyMemory_noise_+1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+1_num_live_slots",
+      "target": "Exp_0_13A_NoisyMemory_noise_+1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+1_param_count",
+      "target": "Exp_0_13A_NoisyMemory_noise_+1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+1_total_wall_s",
+      "target": "Exp_0_13A_NoisyMemory_noise_+1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_overall",
+      "target": "Exp_0_13A_NoisyMemory_noise_+1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_single_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_three_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_two_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_recall_at_1",
+      "target": "Exp_0_13A_NoisyMemory_noise_+1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_recall_at_32",
+      "target": "Exp_0_13A_NoisyMemory_noise_+1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_recall_at_8",
+      "target": "Exp_0_13A_NoisyMemory_noise_+1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+2_best_val_loss",
+      "target": "Exp_0_13A_NoisyMemory_noise_+2",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+2_num_live_slots",
+      "target": "Exp_0_13A_NoisyMemory_noise_+2",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+2_param_count",
+      "target": "Exp_0_13A_NoisyMemory_noise_+2",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+2_total_wall_s",
+      "target": "Exp_0_13A_NoisyMemory_noise_+2",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_accuracy_overall",
+      "target": "Exp_0_13A_NoisyMemory_noise_+2",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_accuracy_single_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+2",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_accuracy_three_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+2",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_accuracy_two_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+2",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_recall_at_1",
+      "target": "Exp_0_13A_NoisyMemory_noise_+2",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_recall_at_32",
+      "target": "Exp_0_13A_NoisyMemory_noise_+2",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_recall_at_8",
+      "target": "Exp_0_13A_NoisyMemory_noise_+2",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+4_best_val_loss",
+      "target": "Exp_0_13A_NoisyMemory_noise_+4",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+4_num_live_slots",
+      "target": "Exp_0_13A_NoisyMemory_noise_+4",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+4_param_count",
+      "target": "Exp_0_13A_NoisyMemory_noise_+4",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+4_total_wall_s",
+      "target": "Exp_0_13A_NoisyMemory_noise_+4",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_accuracy_overall",
+      "target": "Exp_0_13A_NoisyMemory_noise_+4",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_accuracy_single_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+4",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_accuracy_three_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+4",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_accuracy_two_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+4",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_recall_at_1",
+      "target": "Exp_0_13A_NoisyMemory_noise_+4",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_recall_at_32",
+      "target": "Exp_0_13A_NoisyMemory_noise_+4",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_recall_at_8",
+      "target": "Exp_0_13A_NoisyMemory_noise_+4",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+8_best_val_loss",
+      "target": "Exp_0_13A_NoisyMemory_noise_+8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+8_num_live_slots",
+      "target": "Exp_0_13A_NoisyMemory_noise_+8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+8_param_count",
+      "target": "Exp_0_13A_NoisyMemory_noise_+8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+8_total_wall_s",
+      "target": "Exp_0_13A_NoisyMemory_noise_+8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_accuracy_overall",
+      "target": "Exp_0_13A_NoisyMemory_noise_+8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_accuracy_single_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_accuracy_three_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_accuracy_two_hop",
+      "target": "Exp_0_13A_NoisyMemory_noise_+8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_recall_at_1",
+      "target": "Exp_0_13A_NoisyMemory_noise_+8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_recall_at_32",
+      "target": "Exp_0_13A_NoisyMemory_noise_+8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_recall_at_8",
+      "target": "Exp_0_13A_NoisyMemory_noise_+8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_2_CompactPKM_retrieval_compact_16k_num_live_slots",
+      "target": "Exp_0_2_CompactPKM_retrieval_compact_16k",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_2_CompactPKM_retrieval_compact_16k_param_count",
+      "target": "Exp_0_2_CompactPKM_retrieval_compact_16k",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_2_CompactPKM_retrieval_compact_16k_total_wall_s",
+      "target": "Exp_0_2_CompactPKM_retrieval_compact_16k",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_3_PKM_Candidates_improved_num_live_slots",
+      "target": "Exp_0_3_PKM_Candidates_improved",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_3_PKM_Candidates_improved_param_count",
+      "target": "Exp_0_3_PKM_Candidates_improved",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_3_PKM_Candidates_improved_total_wall_s",
+      "target": "Exp_0_3_PKM_Candidates_improved",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_3_PKM_Candidates_subkey_loss_num_live_slots",
+      "target": "Exp_0_3_PKM_Candidates_subkey_loss",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_3_PKM_Candidates_subkey_loss_param_count",
+      "target": "Exp_0_3_PKM_Candidates_subkey_loss",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_3_PKM_Candidates_subkey_loss_total_wall_s",
+      "target": "Exp_0_3_PKM_Candidates_subkey_loss",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_3_PKM_Candidates_top64_num_live_slots",
+      "target": "Exp_0_3_PKM_Candidates_top64",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_3_PKM_Candidates_top64_param_count",
+      "target": "Exp_0_3_PKM_Candidates_top64",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_3_PKM_Candidates_top64_total_wall_s",
+      "target": "Exp_0_3_PKM_Candidates_top64",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_core_only_best_val_loss",
+      "target": "Exp_0_6_Validation_core_only",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_core_only_num_live_slots",
+      "target": "Exp_0_6_Validation_core_only",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_core_only_param_count",
+      "target": "Exp_0_6_Validation_core_only",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_core_only_total_wall_s",
+      "target": "Exp_0_6_Validation_core_only",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_core_only_val_accuracy_overall",
+      "target": "Exp_0_6_Validation_core_only",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop",
+      "target": "Exp_0_6_Validation_core_only",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_core_only_val_accuracy_three_hop",
+      "target": "Exp_0_6_Validation_core_only",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_core_only_val_accuracy_two_hop",
+      "target": "Exp_0_6_Validation_core_only",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_baseline_best_val_loss",
+      "target": "Exp_0_6_Validation_dense_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_baseline_early_best_val_loss",
+      "target": "Exp_0_6_Validation_dense_baseline_early",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_baseline_early_param_count",
+      "target": "Exp_0_6_Validation_dense_baseline_early",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_baseline_early_total_wall_s",
+      "target": "Exp_0_6_Validation_dense_baseline_early",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_baseline_early_val_accuracy_overall",
+      "target": "Exp_0_6_Validation_dense_baseline_early",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_baseline_early_val_accuracy_single_hop",
+      "target": "Exp_0_6_Validation_dense_baseline_early",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_baseline_early_val_accuracy_three_hop",
+      "target": "Exp_0_6_Validation_dense_baseline_early",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_baseline_early_val_accuracy_two_hop",
+      "target": "Exp_0_6_Validation_dense_baseline_early",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_baseline_param_count",
+      "target": "Exp_0_6_Validation_dense_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_baseline_total_wall_s",
+      "target": "Exp_0_6_Validation_dense_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_baseline_val_accuracy_overall",
+      "target": "Exp_0_6_Validation_dense_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_baseline_val_accuracy_single_hop",
+      "target": "Exp_0_6_Validation_dense_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_baseline_val_accuracy_three_hop",
+      "target": "Exp_0_6_Validation_dense_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_baseline_val_accuracy_two_hop",
+      "target": "Exp_0_6_Validation_dense_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_openbook_best_val_loss",
+      "target": "Exp_0_6_Validation_dense_openbook",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_openbook_param_count",
+      "target": "Exp_0_6_Validation_dense_openbook",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_openbook_total_wall_s",
+      "target": "Exp_0_6_Validation_dense_openbook",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_openbook_val_accuracy_overall",
+      "target": "Exp_0_6_Validation_dense_openbook",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_openbook_val_accuracy_single_hop",
+      "target": "Exp_0_6_Validation_dense_openbook",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_openbook_val_accuracy_three_hop",
+      "target": "Exp_0_6_Validation_dense_openbook",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_dense_openbook_val_accuracy_two_hop",
+      "target": "Exp_0_6_Validation_dense_openbook",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_memory_best_val_loss",
+      "target": "Exp_0_6_Validation_oracle_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_memory_num_live_slots",
+      "target": "Exp_0_6_Validation_oracle_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_memory_param_count",
+      "target": "Exp_0_6_Validation_oracle_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_memory_total_wall_s",
+      "target": "Exp_0_6_Validation_oracle_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_memory_val_accuracy_overall",
+      "target": "Exp_0_6_Validation_oracle_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_memory_val_accuracy_single_hop",
+      "target": "Exp_0_6_Validation_oracle_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_memory_val_accuracy_three_hop",
+      "target": "Exp_0_6_Validation_oracle_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_memory_val_accuracy_two_hop",
+      "target": "Exp_0_6_Validation_oracle_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_text_memory_best_val_loss",
+      "target": "Exp_0_6_Validation_oracle_text_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_text_memory_num_live_slots",
+      "target": "Exp_0_6_Validation_oracle_text_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_text_memory_param_count",
+      "target": "Exp_0_6_Validation_oracle_text_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_text_memory_total_wall_s",
+      "target": "Exp_0_6_Validation_oracle_text_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_text_memory_val_accuracy_overall",
+      "target": "Exp_0_6_Validation_oracle_text_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_text_memory_val_accuracy_single_hop",
+      "target": "Exp_0_6_Validation_oracle_text_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_text_memory_val_accuracy_three_hop",
+      "target": "Exp_0_6_Validation_oracle_text_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_oracle_text_memory_val_accuracy_two_hop",
+      "target": "Exp_0_6_Validation_oracle_text_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_pkm_retrieval_early_num_live_slots",
+      "target": "Exp_0_6_Validation_pkm_retrieval_early",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_pkm_retrieval_early_param_count",
+      "target": "Exp_0_6_Validation_pkm_retrieval_early",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_pkm_retrieval_early_total_wall_s",
+      "target": "Exp_0_6_Validation_pkm_retrieval_early",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_random_memory_best_val_loss",
+      "target": "Exp_0_6_Validation_random_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_random_memory_num_live_slots",
+      "target": "Exp_0_6_Validation_random_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_random_memory_param_count",
+      "target": "Exp_0_6_Validation_random_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_random_memory_total_wall_s",
+      "target": "Exp_0_6_Validation_random_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_random_memory_val_accuracy_overall",
+      "target": "Exp_0_6_Validation_random_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_random_memory_val_accuracy_single_hop",
+      "target": "Exp_0_6_Validation_random_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_random_memory_val_accuracy_three_hop",
+      "target": "Exp_0_6_Validation_random_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_random_memory_val_accuracy_two_hop",
+      "target": "Exp_0_6_Validation_random_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_retrieval_dual_encoder_total_wall_s",
+      "target": "Exp_0_6_Validation_retrieval_dual_encoder",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_retrieved_memory_best_val_loss",
+      "target": "Exp_0_6_Validation_retrieved_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_retrieved_memory_num_live_slots",
+      "target": "Exp_0_6_Validation_retrieved_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_retrieved_memory_param_count",
+      "target": "Exp_0_6_Validation_retrieved_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_retrieved_memory_total_wall_s",
+      "target": "Exp_0_6_Validation_retrieved_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_retrieved_memory_val_accuracy_overall",
+      "target": "Exp_0_6_Validation_retrieved_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_retrieved_memory_val_accuracy_single_hop",
+      "target": "Exp_0_6_Validation_retrieved_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_retrieved_memory_val_accuracy_three_hop",
+      "target": "Exp_0_6_Validation_retrieved_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_retrieved_memory_val_accuracy_two_hop",
+      "target": "Exp_0_6_Validation_retrieved_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_retrieved_memory_val_recall_at_1",
+      "target": "Exp_0_6_Validation_retrieved_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_retrieved_memory_val_recall_at_32",
+      "target": "Exp_0_6_Validation_retrieved_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_6_Validation_retrieved_memory_val_recall_at_8",
+      "target": "Exp_0_6_Validation_retrieved_memory",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_external_text_query_best_val_loss",
+      "target": "Exp_0_7_ExternalText_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_external_text_query_num_live_slots",
+      "target": "Exp_0_7_ExternalText_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_external_text_query_param_count",
+      "target": "Exp_0_7_ExternalText_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_external_text_query_total_wall_s",
+      "target": "Exp_0_7_ExternalText_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_external_text_query_val_accuracy_overall",
+      "target": "Exp_0_7_ExternalText_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_external_text_query_val_accuracy_single_hop",
+      "target": "Exp_0_7_ExternalText_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_external_text_query_val_accuracy_three_hop",
+      "target": "Exp_0_7_ExternalText_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_external_text_query_val_accuracy_two_hop",
+      "target": "Exp_0_7_ExternalText_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_external_text_query_val_recall_at_1",
+      "target": "Exp_0_7_ExternalText_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_external_text_query_val_recall_at_32",
+      "target": "Exp_0_7_ExternalText_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_external_text_query_val_recall_at_8",
+      "target": "Exp_0_7_ExternalText_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_hidden_adapter_best_val_loss",
+      "target": "Exp_0_7_ExternalText_hidden_adapter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_hidden_adapter_num_live_slots",
+      "target": "Exp_0_7_ExternalText_hidden_adapter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_hidden_adapter_param_count",
+      "target": "Exp_0_7_ExternalText_hidden_adapter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_hidden_adapter_total_wall_s",
+      "target": "Exp_0_7_ExternalText_hidden_adapter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_hidden_adapter_val_accuracy_overall",
+      "target": "Exp_0_7_ExternalText_hidden_adapter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_hidden_adapter_val_accuracy_single_hop",
+      "target": "Exp_0_7_ExternalText_hidden_adapter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_hidden_adapter_val_accuracy_three_hop",
+      "target": "Exp_0_7_ExternalText_hidden_adapter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_hidden_adapter_val_accuracy_two_hop",
+      "target": "Exp_0_7_ExternalText_hidden_adapter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_hidden_adapter_val_recall_at_1",
+      "target": "Exp_0_7_ExternalText_hidden_adapter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_hidden_adapter_val_recall_at_32",
+      "target": "Exp_0_7_ExternalText_hidden_adapter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_7_ExternalText_hidden_adapter_val_recall_at_8",
+      "target": "Exp_0_7_ExternalText_hidden_adapter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_external_text_query_best_val_loss",
+      "target": "Exp_0_8_Aggregation_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_external_text_query_num_live_slots",
+      "target": "Exp_0_8_Aggregation_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_external_text_query_param_count",
+      "target": "Exp_0_8_Aggregation_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_external_text_query_total_wall_s",
+      "target": "Exp_0_8_Aggregation_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_external_text_query_val_accuracy_overall",
+      "target": "Exp_0_8_Aggregation_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_external_text_query_val_accuracy_single_hop",
+      "target": "Exp_0_8_Aggregation_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_external_text_query_val_accuracy_three_hop",
+      "target": "Exp_0_8_Aggregation_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_external_text_query_val_accuracy_two_hop",
+      "target": "Exp_0_8_Aggregation_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_external_text_query_val_recall_at_1",
+      "target": "Exp_0_8_Aggregation_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_external_text_query_val_recall_at_32",
+      "target": "Exp_0_8_Aggregation_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_external_text_query_val_recall_at_8",
+      "target": "Exp_0_8_Aggregation_external_text_query",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_oracle_slots_best_val_loss",
+      "target": "Exp_0_8_Aggregation_oracle_slots",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_oracle_slots_num_live_slots",
+      "target": "Exp_0_8_Aggregation_oracle_slots",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_oracle_slots_param_count",
+      "target": "Exp_0_8_Aggregation_oracle_slots",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_oracle_slots_total_wall_s",
+      "target": "Exp_0_8_Aggregation_oracle_slots",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_oracle_slots_val_accuracy_overall",
+      "target": "Exp_0_8_Aggregation_oracle_slots",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_oracle_slots_val_accuracy_single_hop",
+      "target": "Exp_0_8_Aggregation_oracle_slots",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_oracle_slots_val_accuracy_three_hop",
+      "target": "Exp_0_8_Aggregation_oracle_slots",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_8_Aggregation_oracle_slots_val_accuracy_two_hop",
+      "target": "Exp_0_8_Aggregation_oracle_slots",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_baseline_best_val_loss",
+      "target": "Exp_0_9_OracleFilter_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_baseline_num_live_slots",
+      "target": "Exp_0_9_OracleFilter_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_baseline_param_count",
+      "target": "Exp_0_9_OracleFilter_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_baseline_total_wall_s",
+      "target": "Exp_0_9_OracleFilter_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_baseline_val_accuracy_overall",
+      "target": "Exp_0_9_OracleFilter_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_baseline_val_accuracy_single_hop",
+      "target": "Exp_0_9_OracleFilter_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_baseline_val_accuracy_three_hop",
+      "target": "Exp_0_9_OracleFilter_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_baseline_val_accuracy_two_hop",
+      "target": "Exp_0_9_OracleFilter_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_baseline_val_recall_at_1",
+      "target": "Exp_0_9_OracleFilter_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_baseline_val_recall_at_32",
+      "target": "Exp_0_9_OracleFilter_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_baseline_val_recall_at_8",
+      "target": "Exp_0_9_OracleFilter_baseline",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_oracle_filter_best_val_loss",
+      "target": "Exp_0_9_OracleFilter_oracle_filter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_oracle_filter_num_live_slots",
+      "target": "Exp_0_9_OracleFilter_oracle_filter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_oracle_filter_param_count",
+      "target": "Exp_0_9_OracleFilter_oracle_filter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_oracle_filter_total_wall_s",
+      "target": "Exp_0_9_OracleFilter_oracle_filter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_oracle_filter_val_accuracy_overall",
+      "target": "Exp_0_9_OracleFilter_oracle_filter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_oracle_filter_val_accuracy_single_hop",
+      "target": "Exp_0_9_OracleFilter_oracle_filter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_oracle_filter_val_accuracy_three_hop",
+      "target": "Exp_0_9_OracleFilter_oracle_filter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_oracle_filter_val_accuracy_two_hop",
+      "target": "Exp_0_9_OracleFilter_oracle_filter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_oracle_filter_val_recall_at_1",
+      "target": "Exp_0_9_OracleFilter_oracle_filter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_oracle_filter_val_recall_at_32",
+      "target": "Exp_0_9_OracleFilter_oracle_filter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_oracle_filter_val_recall_at_8",
+      "target": "Exp_0_9_OracleFilter_oracle_filter",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_top1_best_val_loss",
+      "target": "Exp_0_9_OracleFilter_top1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_top1_num_live_slots",
+      "target": "Exp_0_9_OracleFilter_top1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_top1_param_count",
+      "target": "Exp_0_9_OracleFilter_top1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_top1_total_wall_s",
+      "target": "Exp_0_9_OracleFilter_top1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_top1_val_accuracy_overall",
+      "target": "Exp_0_9_OracleFilter_top1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_top1_val_accuracy_single_hop",
+      "target": "Exp_0_9_OracleFilter_top1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_top1_val_accuracy_three_hop",
+      "target": "Exp_0_9_OracleFilter_top1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_top1_val_accuracy_two_hop",
+      "target": "Exp_0_9_OracleFilter_top1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_top1_val_recall_at_1",
+      "target": "Exp_0_9_OracleFilter_top1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_top1_val_recall_at_32",
+      "target": "Exp_0_9_OracleFilter_top1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_top1_val_recall_at_8",
+      "target": "Exp_0_9_OracleFilter_top1",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top32_best_val_loss",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top32_num_live_slots",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top32_param_count",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top32_total_wall_s",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top32_val_accuracy_overall",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top32_val_accuracy_single_hop",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top32_val_accuracy_three_hop",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top32_val_accuracy_two_hop",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top32_val_recall_at_1",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top32_val_recall_at_32",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top32_val_recall_at_8",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top32",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top8_best_val_loss",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top8_num_live_slots",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top8_param_count",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top8_total_wall_s",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top8_val_accuracy_overall",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top8_val_accuracy_single_hop",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top8_val_accuracy_three_hop",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top8_val_accuracy_two_hop",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top8_val_recall_at_1",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top8_val_recall_at_32",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top8",
+      "edge_type": "derived_from"
+    },
+    {
+      "source": "Metric_Exp_0_9_OracleFilter_weighted_t005_top8_val_recall_at_8",
+      "target": "Exp_0_9_OracleFilter_weighted_t005_top8",
+      "edge_type": "derived_from"
+    }
+  ],
+  "false_negatives": [
+    {
+      "source": "Concept_SelectorBottleneck",
+      "target": "Concept_RetrievalMismatch",
+      "edge_type": "caused_by"
+    },
+    {
+      "source": "Decision_PivotToNEXUS",
+      "target": "Concept_PivotToNEXUS",
+      "edge_type": "implements"
+    }
+  ],
+  "negative_examples_hit": []
+}
