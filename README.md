@@ -118,4 +118,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-10 (validated Stage 1D frozen-split pass; current reference: `benchmarks/results/stage1b_honest_20260710_162457Z.json`; historical references remain preserved in the results index)*
+*Last updated: 2026-07-10 (validated Stage 1D frozen-split pass; current reference: `benchmarks/results/stage1b_honest_20260710_163732Z.json`; historical references remain preserved in the results index)*

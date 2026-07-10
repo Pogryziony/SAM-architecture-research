@@ -6,7 +6,7 @@ Stage 1D evaluated a parser handoff cap selected from validation only. The cap s
 
 ## Validation calibration
 
-Artifact: `benchmarks/results/entity_threshold_calibration_stage1d_capupper_20260710.json`
+Artifact: `benchmarks/results/entity_threshold_calibration_stage1d_postcommit_20260710.json`
 
 | Cap | Selected validation recall | p50 (ms) | Parser success |
 |---:|---:|---:|---:|
@@ -18,18 +18,18 @@ Selection rule: maximum validation recall for the parser cap; within the selecte
 
 ## Frozen evaluation
 
-Artifact: `benchmarks/results/stage1b_honest_20260710_162457Z.json`
+Artifact: `benchmarks/results/stage1b_honest_20260710_163732Z.json`
 
 The artifact was written, read back from disk, and passed `validate_stage1b_artifact`. Its metadata and configuration agree on `max_entry_nodes=200`, `entity_threshold=0.20`, the validation calibration artifact, and the frozen split identifier.
 
 | Metric | Result | Gate |
 |---|---:|---:|
-| Entity recall | **65.45% (180/275)** | >= 65% PASS |
+| Entity recall | **65.82% (181/275)** | >= 65% PASS |
 | Resolution rate | 100.0% | >= baseline PASS |
 | Paraphrase drop | 0.0 pp | < 10 pp PASS |
 | Intent accuracy | 85.3% | >= 85% PASS |
-| RSS delta | 6.4 MB | <= 150 MB PASS |
-| Inference p50 | 34.9 ms | <= 50 ms PASS |
+| RSS delta | 6.5 MB | <= 150 MB PASS |
+| Inference p50 | 34.8 ms | <= 50 ms PASS |
 
 Decision: **HONEST PASS**. The 65% gate and all other checks remained unchanged and enabled.
 
