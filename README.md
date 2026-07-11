@@ -36,7 +36,7 @@ comes from the graph.
 | Reasoning pipeline | ✅ Designed — entity extraction → traversal → evidence → verify |
 | Graph store | ✅ Implemented — `InMemoryGraphStore` with 1,866 nodes |
 | Associative encoder (Stage 1D) | ✅ PASS — frozen-split entity_recall 65.82% (181/275) with validation-selected parser handoff cap 200; all immutable Stage 1 gates passed. |
-| Entity Ranker V3 | ✅ **AUDITABLE PASS** — validation canonical recall@10=77.47% (150q, 182 gold), frozen canonical recall@10=79.64% (225q, 275 gold). Gates: validation R@10≥70% PASS, baseline gap 41.21pp≥15pp PASS, frozen R@10≥65% PASS. Full checkpoint (3.5 MB weights + tokenizer + config) recovered and SHA-256 verified. All source SHAs and hashes cross-validated. Architecture: exhaustive canonical-vocabulary ranking with lexical and graph-derived candidate augmentation (59 canonical nodes always included). Frozen test.jsonl permanently locked (LF, CRLF, and semantic hashes rejected). See `benchmarks/results/entity_ranker_v3_attestation_20260711.md`. |
+| Entity Ranker V3 | ✅ **REPORTED PASS / REPRODUCIBILITY INCOMPLETE** — validation canonical recall@10=77.47% and historical frozen canonical recall@10=79.64%. Aggregate artifacts and non-weight model files are committed. Weights are intentionally external and are not currently published; future evaluation requires a local `weights.pt` matching the recorded SHA-256. Per-question frozen predictions and the original canonical-mapping snapshot were not captured. The consumed frozen split is permanently locked. |
 | Realization L1 (Stage 2) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
 | Dialogue state (Stage 3) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
 | Realization L2 (Stage 4) | ⏭️ Skipped — entry conditions not met |
@@ -119,4 +119,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-11 (Entity Ranker V3 corrective implementation pending clean validation recalibration; frozen evaluation remains blocked; historical references remain preserved in the results index)*
+*Last updated: 2026-07-11 (Entity Ranker V3 historical aggregate result preserved; reproducibility remains incomplete because external weights are not published and original per-question predictions/mapping snapshot are unavailable.)*
