@@ -1,0 +1,18 @@
+{
+  "manifest": "entity_ranker_v3_weights_manifest",
+  "created_utc": "2026-07-11T13:28:00+00:00",
+  "artifacts": [
+    {
+      "run_id": "entity_ranker_v3_20260711T081545Z",
+      "training_source_sha": "ae9b6ee2f67ca2aaa7467e158d5318908d047511",
+      "file": "models/encoder/entity_ranker_v3_20260711T081545Z/weights.pt",
+      "sha256": "8be5156f94b3d05fd24927592b48d1a1df38dccf4dbbecdfb3df815777f514c7",
+      "size_bytes": 3487600,
+      "torch_version": "2.x",
+      "architecture": "question_conditioned_dot_product_v3",
+      "note": "Weights are NOT stored in git. Use GitHub Releases or local recovery."
+    }
+  ],
+  "validation_artifact_sha256": "a34d51119663495dc2020d63a081bc34993fb2f2620d1ffb87af455e75571c6b",
+  "frozen_artifact_sha256": "60d883971d43ce9abfa2b2185547c13f3ec90c2640cf461a5a1f237277f13195"
+}

@@ -3,6 +3,10 @@
 **POST-RUN ATTESTATION** — created 2026-07-11 after the original evaluation.
 Does not replace or modify original artifacts.
 
+**Weights policy**: Model weights (`.pt` files) are never committed to git.
+Only SHA-256 hashes are recorded in `weights_manifest.json`. Weights must be
+recovered from local workspace or distributed via GitHub Releases.
+
 ## Artifact Inventory
 
 | # | Artifact | Availability | Path | SHA-256 | Size (B) | Embedded Source SHA | Expected Source SHA | Run ID | Verified |
@@ -10,7 +14,8 @@ Does not replace or modify original artifacts.
 | 1 | Validation JSON | ✅ AVAILABLE | `benchmarks/results/entity_ranker_v3_selection_20260711T081545Z.json` | `a34d51119663495dc2020d63a081bc34993fb2f2620d1ffb87af455e75571c6b` | 6,475 | `ae9b6ee2f67ca2aaa7467e158d5318908d047511` | `ae9b6ee2f67ca2aaa7467e158d5318908d047511` | `entity_ranker_v3_20260711T081545Z` | ✅ |
 | 2 | Frozen JSON | ✅ AVAILABLE | `benchmarks/results/entity_ranker_v3_frozen_20260711T084518Z.json` | `60d883971d43ce9abfa2b2185547c13f3ec90c2640cf461a5a1f237277f13195` | 3,247 | `499db7b30d40758a13d7717a061153d513b083c4` | `499db7b30d40758a13d7717a061153d513b083c4` | `entity_ranker_v3_frozen_20260711T084518Z` | ✅ |
 | 3 | Model config | ✅ AVAILABLE | `models/encoder/entity_ranker_v3_20260711T081545Z/config.json` | `8ad4071a3ef141aca0fbe682a9ad5a20cd7944a39d5af7ad94874fd5570d8c18` | 352 | `ae9b6ee2f67ca2aaa7467e158d5318908d047511` | `ae9b6ee2f67ca2aaa7467e158d5318908d047511` | `entity_ranker_v3_20260711T081545Z` | ✅ |
-| 4 | Model weights | ✅ AVAILABLE | `models/encoder/entity_ranker_v3_20260711T081545Z/weights.pt` | `8be5156f94b3d05fd24927592b48d1a1df38dccf4dbbecdfb3df815777f514c7` | 3,487,600 | N/A (binary) | N/A | `entity_ranker_v3_20260711T081545Z` | ✅ |
+| 4 | Model weights | ✅ RECOVERED (not in git) | `models/encoder/entity_ranker_v3_20260711T081545Z/weights.pt` | `8be5156f94b3d05fd24927592b48d1a1df38dccf4dbbecdfb3df815777f514c7` | 3,487,600 | N/A (binary) | N/A | `entity_ranker_v3_20260711T081545Z` | ✅ (hash in manifest) |
+| 11 | Weights manifest | ✅ COMMITTED | `models/encoder/entity_ranker_v3_20260711T081545Z/weights_manifest.json` | — | — | — | — | — | ✅ |
 | 5 | Tokenizer | ✅ AVAILABLE | `models/encoder/entity_ranker_v3_20260711T081545Z/vocab.json` | `e6249e08524d9b9e398a8791b53f039a0f4b7e17db4bed23c9faaf281c7a581a` | 65,670 | N/A (data) | N/A | `entity_ranker_v3_20260711T081545Z` | ✅ |
 | 6 | Training split | ✅ AVAILABLE | `stack/encoder/data/train.jsonl` | `6b52b5b0fc2ae8accbc85df0b568b72355a5122994704a96329c257228fc9e40` | — | N/A | N/A | N/A | ✅ |
 | 7 | Validation split | ✅ AVAILABLE | `stack/encoder/data/val.jsonl` | `f95e212502c7c5ad5a615a3e1921e62ef7e1e961a229f44be63e3f829fdacd09` | — | N/A | N/A | N/A | ✅ |
