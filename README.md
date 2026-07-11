@@ -36,7 +36,7 @@ comes from the graph.
 | Reasoning pipeline | ✅ Designed — entity extraction → traversal → evidence → verify |
 | Graph store | ✅ Implemented — `InMemoryGraphStore` with 1,866 nodes |
 | Associative encoder (Stage 1D) | ✅ PASS — frozen-split entity_recall 65.82% (181/275) with validation-selected parser handoff cap 200; all immutable Stage 1 gates passed. |
-| Entity Ranker V3 | ✅ REPORTED PASS / REPRODUCIBILITY INCOMPLETE — validation canonical recall@10=77.47% (150q, 182 gold), frozen canonical recall@10=79.64% (225q, 275 gold). Gates: validation R@10≥70% PASS, baseline gap≥15pp PASS, frozen R@10≥65% PASS. Model checkpoint SHA-256 verified. Frozen test.jsonl permanently locked. Per-question frozen predictions not captured. |
+| Entity Ranker V3 | ✅ REPORTED PASS / REPRODUCIBILITY INCOMPLETE — validation canonical recall@10=77.47% (150q, 182 gold), frozen canonical recall@10=79.64% (225q, 275 gold). Gates: validation R@10≥70% PASS, baseline gap≥15pp PASS, frozen R@10≥65% PASS. Model checkpoint SHA-256 verified. Frozen test.jsonl permanently locked (raw LF, raw CRLF, and semantic hashes all rejected). Per-question frozen predictions not captured. Architecture: exhaustive canonical-vocabulary ranking with lexical and graph-derived candidate augmentation (59 canonical nodes always included; min pool=63 on validation). See `benchmarks/results/entity_ranker_v3_attestation_20260711.md` for full SHA-256 audit. |
 | Realization L1 (Stage 2) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
 | Dialogue state (Stage 3) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
 | Realization L2 (Stage 4) | ⏭️ Skipped — entry conditions not met |
