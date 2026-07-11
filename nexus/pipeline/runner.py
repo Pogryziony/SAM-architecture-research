@@ -209,10 +209,16 @@ class NEXUSRunner:
                 qr.selected_entry_nodes = er3_entities[:self.config.max_entry_nodes]
                 qr.lexical_fallback_used = False
 
-                from nexus.query.parser import parse_question
-                parsed = parse_question(question, self.graph, config=self.config)
-                parsed.entity_ids = er3_entities
-                qr.parsed_intent = parsed.intent
+                # Pass ER3 entities to answer_question via entry_nodes_override.
+                # This ensures traversal uses ER3 entities, not lexical ones.
+                result = answer_question(
+                    question, self.graph, model=model,
+                    verifier=self.verifier, config=self.config,
+                    entry_nodes_override=er3_entities,
+                )
+                parsed = result.get("parsed_query")
+                if parsed:
+                    qr.parsed_intent = parsed.intent
             else:
                 result_raw = answer_question(
                     question, self.graph, model=model,
@@ -226,14 +232,8 @@ class NEXUSRunner:
                     qr.selected_entry_nodes = list(parsed.entity_ids[:self.config.max_entry_nodes])
                     qr.lexical_fallback_used = True
 
-            # ── Continue with answer_question for graph paths/evidence ──
-            if self.config.pipeline_id.entity_ranker_v3_enabled:
-                result = answer_question(
-                    question, self.graph, model=model,
-                    verifier=self.verifier, config=self.config,
-                )
-                result["parsed_query"] = parsed
-            else:
+            # ── Continue with answer_question if lexical ──
+            if not self.config.pipeline_id.entity_ranker_v3_enabled:
                 result = result_raw
 
             qr.graph_paths_count = result.get("path_count", 0)
