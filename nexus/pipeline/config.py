@@ -182,8 +182,10 @@ class ProductionNEXUSConfig(NEXUSConfig):
         ranker_dir: str = "models/encoder/entity_ranker_v3_20260711T081545Z",
         **overrides: Any,
     ) -> "ProductionNEXUSConfig":
-        """Factory: Entity Ranker V3 enabled."""
-        kwargs: dict[str, Any] = {}
+        """Factory: Entity Ranker V3 enabled with exhaustive canonical vocabulary."""
+        kwargs: dict[str, Any] = {
+            "max_entry_nodes": 10,
+        }
         kwargs.update(overrides)
         return cls(
             pipeline_id=PipelineIdentity(
