@@ -86,13 +86,14 @@ def run_stage2(
 
         answer = qr.answer or ""
         ground_truth = str(q.get("answer", q.get("entities", "")))
+        question_type = str(q.get("question_type", "factual_lookup"))
 
         # Score naturalness
         nat_score = score_naturalness(answer)
         naturalness_scores.append(nat_score)
 
-        # Score relevance
-        rel = relevance_judge.judge(q["question"], answer)
+        # Score relevance (3 args: question, answer, question_type)
+        rel = relevance_judge.judge(q["question"], answer, question_type)
         relevance_results.append(rel)
 
         # Score accuracy
@@ -136,13 +137,13 @@ def run_stage2(
             "hallucination_mean": round(hal_mean, 4),
         },
         "gates": {
-            "naturalness_improvement": nat_mean,  # baseline comparison TBD
-            "relevance": rel_pass,
-            "relevance_pass": rel_pass >= 0.77,
-            "relevance_threshold": 0.77,
+            "naturalness_improvement": {"value": nat_mean, "threshold": 5.0, "note": "baseline comparison TBD — historical baseline was +38.5"},
+            "relevance": {"value": rel_pass, "threshold": 0.77, "passed": rel_pass >= 0.77},
+            "hallucination": {"value": hal_mean, "threshold": "baseline_registered", "note": "must not exceed registered baseline"},
+            "accuracy": {"value": acc_mean, "threshold": "baseline - 2pp", "note": "must not drop more than 2pp below baseline"},
         },
         "per_question": results,
-        "status": "PASS" if rel_pass >= 0.77 else "FAIL",
+        "status": "PASS" if rel_pass >= 0.77 else "FAIL (relevance below 77%)",
     }
 
     out = Path(output_path)
@@ -203,12 +204,17 @@ def run_stage3(
         latencies.append(lat)
         total_turns += 1
 
-        gold_entities = set(turn.get("entities", []))
+        # Update dialogue state with resolved entities
+        state.update(parsed.entity_ids)
+
+        # Use gt_entities field (correct dataset field name)
+        gold_entities = set(turn.get("gt_entities", turn.get("entities", [])))
         is_context = turn.get("resolution_source") == "context"
 
-        if is_context and parsed.entity_ids:
-            if gold_entities & set(parsed.entity_ids):
-                resolved_correct += 1
+        if is_context:
+            if gold_entities and parsed.entity_ids:
+                if gold_entities & set(parsed.entity_ids):
+                    resolved_correct += 1
 
         if not is_context:
             single_turn_total += 1
@@ -227,7 +233,11 @@ def run_stage3(
     if dialogue_turns:
         per_dialogue.append({"dialogue_id": current_dialogue_id, "turns": dialogue_turns})
 
-    ref_resolution = resolved_correct / total_turns if total_turns else 0
+    # Count context turns correctly
+    context_turns = sum(
+        1 for t in turns if t.get("resolution_source") == "context"
+    )
+    ref_resolution = resolved_correct / max(1, context_turns)
     single_turn_acc = single_turn_correct / max(1, single_turn_total)
     latencies.sort()
     p50_lat = latencies[len(latencies) // 2] if latencies else 0

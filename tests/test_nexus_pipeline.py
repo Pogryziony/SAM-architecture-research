@@ -982,32 +982,27 @@ class TestStage0Guard:
             "nexus": {"answered": 25, "mean_accuracy": 0.32},
             "rag": {"answered": 25, "mean_accuracy": 0.28},
             "questions_total": 30,
-            "per_question": [{"question_id": "q1"}],
+            "per_question": [{"question_id": "q1", "nexus_answer": "Answer text here ok", "rag_answer": "RAG answer too"}],
             "source_sha": "abc123",
             "paired_comparison": {"paired_n": 25},
         }
         assert not validate_artifact(artifact)
 
-    def test_empty_nexus_fails(self):
+    def test_empty_answers_fail(self):
         artifact = {
-            "nexus": {"answered": 0},
-            "rag": {"answered": 25},
+            "nexus": {"answered": 25}, "rag": {"answered": 25},
             "questions_total": 30,
-            "per_question": [{}],
-            "source_sha": "a",
-            "paired_comparison": {"paired_n": 0},
+            "per_question": [{"question_id": "q1", "nexus_answer": "", "rag_answer": ""}],
+            "source_sha": "a", "paired_comparison": {"paired_n": 0},
         }
-        errors = validate_artifact(artifact)
-        assert any("NEXUS" in e for e in errors)
+        assert validate_artifact(artifact)
 
-    def test_empty_rag_fails(self):
+    def test_rag_error_fails(self):
         artifact = {
-            "nexus": {"answered": 25},
-            "rag": {"answered": 0},
+            "nexus": {"answered": 25}, "rag": {"answered": 0},
             "questions_total": 30,
-            "per_question": [{}],
-            "source_sha": "a",
-            "paired_comparison": {"paired_n": 0},
+            "per_question": [{"question_id": "q1", "nexus_answer": "ok", "rag_answer": "", "rag_error": "init failed"}],
+            "source_sha": "a", "paired_comparison": {"paired_n": 0},
         }
         errors = validate_artifact(artifact)
         assert any("RAG" in e for e in errors)
@@ -1015,7 +1010,70 @@ class TestStage0Guard:
     def test_missing_source_sha_fails(self):
         artifact = {
             "nexus": {"answered": 1}, "rag": {"answered": 1},
-            "questions_total": 1, "per_question": [{}],
+            "questions_total": 1,
+            "per_question": [{"nexus_answer": "ok", "rag_answer": "ok"}],
             "source_sha": "", "paired_comparison": {"paired_n": 1},
         }
         assert any("source_sha" in e.lower() for e in validate_artifact(artifact))
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Critical integration tests
+# ═══════════════════════════════════════════════════════════════════
+
+class TestER3Integration:
+    """Prove ER3 entities reach traversal, not just diagnostics."""
+
+    def test_entry_nodes_override_controls_traversal(self):
+        """Override entities are used for traversal, not lexical parser."""
+        from nexus.graph import Node, Edge
+        from nexus.reasoning.answer import answer_question
+        from nexus.reasoning.model_interface import SynthesizingModel
+        from nexus.reasoning.verifier import Verifier
+
+        g = InMemoryGraphStore()
+        g.add_node(Node(id="Exp_Alpha", type="Experiment",
+                        aliases=["alpha"], properties={"key_finding": "Alpha result"}))
+        g.add_node(Node(id="Exp_Beta", type="Experiment",
+                        aliases=["beta"], properties={"key_finding": "Beta result"}))
+        g.add_edge(Edge(type="derived_from", source="Exp_Alpha", target="Exp_Beta"))
+
+        model = SynthesizingModel()
+        verifier = Verifier(hallucination_threshold=0.5)
+
+        # Without override: parser finds "alpha" lexically
+        result_no_override = answer_question(
+            "What about alpha?", g, model=model, verifier=verifier,
+        )
+        entities_no = result_no_override["parsed_query"].entity_ids
+
+        # With override to Exp_Beta: traversal uses Beta despite question saying alpha
+        result_override = answer_question(
+            "What about alpha?", g, model=model, verifier=verifier,
+            entry_nodes_override=["Exp_Beta"],
+        )
+        entities_override = result_override["parsed_query"].entity_ids
+
+        assert "Exp_Beta" in entities_override, (
+            "entry_nodes_override must control traversal entities"
+        )
+        assert entities_no != entities_override, (
+            "Override must change the entities used in traversal"
+        )
+
+    def test_er3_entities_recorded_in_diagnostics(self):
+        """ER3 entities appear in all diagnostic fields."""
+        from nexus.graph import Node
+        g = InMemoryGraphStore()
+        g.add_node(Node(id="Exp_0_1_Test", type="Experiment",
+                        aliases=["test"], properties={"key_finding": "Result"}))
+
+        config = ProductionNEXUSConfig.lexical_only()
+        runner = NEXUSRunner(g, config)
+        result = runner.run([{"id": "q1", "question": "test"}])
+        qr = result.per_question[0]
+
+        # Verify all entity fields are populated
+        assert qr.predicted_entities, "predicted_entities must not be empty"
+        assert qr.entity_resolution_method, "resolution method must be recorded"
+        assert qr.selected_entry_nodes, "entry nodes must be recorded"

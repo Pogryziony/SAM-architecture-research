@@ -48,43 +48,26 @@ def load_questions(path: str, limit: int | None = None) -> list[dict[str, Any]]:
 
 def run_rag_baseline(questions: list[dict], model_name: str = "qwen2.5:latest") -> list[dict]:
     """Run RAG baseline using the existing rag_baseline module."""
-    from benchmarks.rag_baseline import (
-        build_corpus, chunk_documents, embed_chunks,
-        retrieve_top_k, build_rag_prompt, EMBEDDING_MODEL,
-    )
+    from benchmarks.rag_baseline import initialize_rag_pipeline, run_rag_pipeline, initialize_nexus_model
 
-    print(f"  Building RAG corpus...")
-    corpus = build_corpus()
-    chunks = chunk_documents(corpus)
-    print(f"  {len(chunks)} chunks from {len(corpus)} documents")
-
-    print(f"  Embedding with {EMBEDDING_MODEL}...")
+    print("  Initializing RAG pipeline...")
     try:
-        embeddings, chunk_texts = embed_chunks(chunks)
-    except ImportError:
-        print("  WARNING: sentence_transformers not available — RAG arm disabled")
-        return [{"rag_answer": "", "rag_error": "embedding_unavailable"} for _ in questions]
-
-    from nexus.reasoning.model_interface import OllamaModel, Verifier
-    model = OllamaModel(model_name=model_name)
-    verifier = Verifier()
+        rag_state = initialize_rag_pipeline()
+        model, model_name = initialize_nexus_model()
+    except Exception as exc:
+        print(f"  WARNING: RAG initialization failed: {exc}")
+        return [{"rag_answer": "", "rag_error": f"init_failed:{exc}", "rag_latency_ms": 0} for _ in questions]
 
     results = []
     for i, q in enumerate(questions):
         question = q["question"]
-        t0 = time.perf_counter()
         try:
-            top_chunks = retrieve_top_k(question, embeddings, chunk_texts, top_k=5)
-            prompt = build_rag_prompt(question, top_chunks)
-            answer = model.generate(prompt)
-            verification = verifier.verify(answer, {"rag_chunks": top_chunks})
-            rag_latency = round((time.perf_counter() - t0) * 1000, 3)
+            rag_result = run_rag_pipeline(question, rag_state, model)
             results.append({
-                "rag_answer": answer,
-                "rag_chunks": top_chunks[:2],
-                "rag_latency_ms": rag_latency,
-                "rag_verification_passed": verification.passed,
-                "rag_hallucination_rate": verification.hallucination_rate,
+                "rag_answer": rag_result.get("answer", ""),
+                "rag_chunks": rag_result.get("retrieved_chunks", [])[:3],
+                "rag_latency_ms": rag_result.get("rag_time_ms", 0),
+                "rag_evidence": rag_result.get("evidence", {}),
             })
         except Exception as exc:
             results.append({
@@ -221,28 +204,51 @@ def validate_artifact(artifact: dict) -> list[str]:
     """Publication guard — returns list of errors (empty = valid)."""
     errors = []
 
+    per_q = artifact.get("per_question", [])
+
     # Both arms must have non-empty results
-    if artifact["nexus"]["answered"] == 0:
-        errors.append("NEXUS arm has zero answered questions")
-    if artifact["rag"]["answered"] == 0:
-        errors.append("RAG arm has zero answered questions")
+    nexus_answered = sum(
+        1 for pq in per_q
+        if pq.get("nexus_answer") and len(pq["nexus_answer"].strip()) >= 10
+    )
+    rag_answered = sum(
+        1 for pq in per_q
+        if pq.get("rag_answer") and len(pq["rag_answer"].strip()) >= 10
+    )
+    rag_errors = sum(1 for pq in per_q if pq.get("rag_error"))
+    nexus_errors = sum(1 for pq in per_q if pq.get("nexus_error"))
+
+    if nexus_answered == 0 and nexus_errors > 0:
+        errors.append(f"NEXUS arm: 0 answered, {nexus_errors} errors")
+    if rag_answered == 0 and rag_errors > 0:
+        errors.append(f"RAG arm: 0 answered, {rag_errors} errors")
+    if nexus_answered == 0 and nexus_errors == 0:
+        errors.append("NEXUS arm has zero non-empty answers")
+    if rag_answered == 0 and rag_errors == 0:
+        errors.append("RAG arm has zero non-empty answers")
 
     # Same denominator
     if artifact["questions_total"] == 0:
         errors.append("Zero questions total")
 
     # Must have per_question data
-    if not artifact.get("per_question"):
+    if not per_q:
         errors.append("Missing per_question data")
 
     # Must have source SHA
     if not artifact.get("source_sha"):
         errors.append("Missing source_sha")
 
-    # Must have comparison
+    # Must have comparison with non-zero paired
     comp = artifact.get("paired_comparison", {})
     if not comp.get("paired_n"):
         errors.append("Paired comparison has zero paired questions")
+
+    # Question ID match between arms
+    nexus_ids = {pq.get("question_id") for pq in per_q if pq.get("nexus_answer")}
+    rag_ids = {pq.get("question_id") for pq in per_q if pq.get("rag_answer")}
+    if nexus_ids and rag_ids and nexus_ids != rag_ids:
+        errors.append("NEXUS and RAG arms answered different question sets")
 
     return errors
 

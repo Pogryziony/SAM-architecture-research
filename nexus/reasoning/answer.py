@@ -141,6 +141,7 @@ def answer_question(
     config: NEXUSConfig = DEFAULT_CONFIG,
     embedding_index=None,
     dialogue_state=None,
+    entry_nodes_override: list[str] | None = None,
 ) -> dict[str, Any]:
     """
     Run the complete NEXUS pipeline on a natural language question.
@@ -163,17 +164,11 @@ def answer_question(
        max_paths: Maximum paths to include in evidence
        config: NEXUSConfig with tunable parameters
        embedding_index: Optional NodeEmbeddingIndex for semantic entity resolution.
-           Auto-creates and builds from graph if None and needed.
-       dialogue_state: Optional DialogueState for anaphora/ellipsis resolution (Stage 3).
-
-    Returns:
-       Dict with keys:
-           - question: original question
-           - answer: model-generated answer text
-           - evidence_pack: dict with paths, facts, sources
-           - verification: VerificationResult
-           - parsed_query: ParsedQuery from the parser
-           - path_count: number of traversal paths found
+       dialogue_state: Optional DialogueState for anaphora/ellipsis resolution.
+       entry_nodes_override: When provided, use these entity IDs for traversal
+          instead of the parser's results. Parser is still called for intent
+          detection. The override controls which entities actually reach
+          traversal and evidence building.
     """
     if max_depth is None:
        max_depth = config.max_depth
@@ -221,7 +216,13 @@ def answer_question(
 
     result["parsed_query"] = parsed
     result["entity_resolution_method"] = parsed.resolution_method
-    result["entities_resolved"] = bool(parsed.entity_ids)  # L0 consistency: cascade_level 0 ↔ no entities resolved
+    result["entities_resolved"] = bool(parsed.entity_ids)
+
+    # ── Apply entry_nodes_override for external resolvers (ER3, etc.) ──
+    if entry_nodes_override is not None:
+        parsed.entity_ids = list(entry_nodes_override)[:config.max_entry_nodes]
+        result["entity_resolution_method"] = "external_override"
+        result["parsed_query"] = parsed
 
     # Map resolution method to a confidence score
     _resolution_confidence_map = {"alias": 1.0, "embedding": 0.8, "fuzzy": 0.6, "none": 0.0}
