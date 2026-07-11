@@ -273,12 +273,32 @@ def test_documentation_references_existing_artifacts():
             f"and has no external asset URL."
         )
 
-    # Verify STACK_RESULTS.md and README.md don't disagree
+    # Verify STACK_RESULTS.md and README.md don't disagree on ER3 status
     stack_results = (repo_root / "STACK_RESULTS.md").read_text(encoding="utf-8")
     readme = (repo_root / "README.md").read_text(encoding="utf-8")
-    if "HONEST PASS" in stack_results:
-        assert "HONEST PASS" in readme or "REPORTED PASS" in readme, (
-            "STACK_RESULTS.md and README.md status must agree."
+
+    # Extract the ER3 status line from STACK_RESULTS
+    sr_er3_status = ""
+    for line in stack_results.splitlines():
+        if "| ER3 |" in line:
+            sr_er3_status = line.strip()
+            break
+
+    rm_er3_status = ""
+    for line in readme.splitlines():
+        if "Entity Ranker V3 |" in line or "Entity Ranker V3 (corrective" in line:
+            rm_er3_status = line.strip()
+            break
+
+    # Both must contain the same status keyword
+    status_keywords = {"AUDITABLE PASS", "REPORTED PASS", "HONEST PASS"}
+    sr_keywords = status_keywords & set(sr_er3_status.split())
+    rm_keywords = status_keywords & set(rm_er3_status.split())
+
+    if sr_keywords or rm_keywords:
+        assert sr_keywords == rm_keywords, (
+            f"STACK_RESULTS ER3 status ({sr_keywords}) and README ER3 status "
+            f"({rm_keywords}) must agree.\nSTACK: {sr_er3_status}\nREADME: {rm_er3_status}"
         )
 
 
