@@ -1,0 +1,96 @@
+{
+  "architecture": "exhaustive canonical-vocabulary ranking with lexical and graph-derived candidate augmentation",
+  "diagnostic": "candidate_pool_v3",
+  "graph": {
+    "build_command": "python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results/TIMESTAMPED_FILE.json",
+    "build_steps": [
+      "1. populate_from_experiments(EXPERIMENTS_DIR, graph)",
+      "2. ingest_directory('docs/', graph)",
+      "3. ingest_directory('sam-lm/docs/', graph)",
+      "4. ingest_directory('sam-lm/experiments/', graph)"
+    ],
+    "edge_count": 218,
+    "edge_type_counts": {
+      "contradicts": 1,
+      "depends_on": 204,
+      "derived_from": 3,
+      "validates": 10
+    },
+    "effective_config": {
+      "enable_associative_encoder": false,
+      "enable_cooccurrence_edges": false,
+      "enable_embedding_er": false,
+      "enable_normalization": false
+    },
+    "fixes_applied": [
+      "P0: entity filter, relations constrained 10K->116 edges, entity ranking",
+      "P1: key_findings surfaced as evidence in evidence_builder",
+      "P2: double-gate with corpus metric (honest hallucination measurement)"
+    ],
+    "node_count": 1521,
+    "timestamp": "2026-07-11T18:15:30.597910+00:00"
+  },
+  "pipeline": {
+    "exhaustive": {
+      "include_canonical_vocabulary": true
+    },
+    "lexical": {
+      "include_canonical_vocabulary": false
+    }
+  },
+  "run_timestamp_utc": "2026-07-11T18:15:29.737225+00:00",
+  "schema_version": "2.0",
+  "source_sha": "6beb5bdc2ab7783e018af5f2c6e6712d18a688de",
+  "split_results": {
+    "train": {
+      "canonical_pattern_nodes": 23,
+      "exhaustive_canonical_candidate_ceiling": 1.0,
+      "invariant_min_pool_ge_canonical": true,
+      "latency_p50_ms": 17.701416999898356,
+      "latency_p95_ms": 26.838762999886967,
+      "lexical_latency_p50_ms": 16.81626800018421,
+      "lexical_latency_p95_ms": 25.816277000103582,
+      "lexical_only_candidate_ceiling": 0.9880952380952381,
+      "lexical_pool_size_max": 435,
+      "lexical_pool_size_median": 218,
+      "lexical_pool_size_min": 33,
+      "lexical_pool_size_p95": 341,
+      "peak_rss_mb": 0.5,
+      "pool_size_max": 437,
+      "pool_size_mean": 227.16,
+      "pool_size_median": 223,
+      "pool_size_min": 45,
+      "pool_size_p95": 344,
+      "questions": 375,
+      "questions_with_missing_gold": 0,
+      "split_raw_sha256": "f62ec7a2a82b7a4038987143899ff4b41fdca6eb643a170651801260ad612ee4",
+      "split_semantic_sha256": "87038d743fbc0b40e505442536252c27ff94ab48c76d63fed032e7102c7c3186",
+      "total_gold_entities": 504
+    },
+    "validation": {
+      "canonical_pattern_nodes": 23,
+      "exhaustive_canonical_candidate_ceiling": 1.0,
+      "invariant_min_pool_ge_canonical": true,
+      "latency_p50_ms": 11.93055099997764,
+      "latency_p95_ms": 18.324178000057145,
+      "lexical_latency_p50_ms": 10.98667800010844,
+      "lexical_latency_p95_ms": 17.835498999829724,
+      "lexical_only_candidate_ceiling": 0.9120879120879121,
+      "lexical_pool_size_max": 345,
+      "lexical_pool_size_median": 98.5,
+      "lexical_pool_size_min": 8,
+      "lexical_pool_size_p95": 277,
+      "peak_rss_mb": 0.0,
+      "pool_size_max": 350,
+      "pool_size_mean": 134.18666666666667,
+      "pool_size_median": 112.5,
+      "pool_size_min": 27,
+      "pool_size_p95": 281,
+      "questions": 150,
+      "questions_with_missing_gold": 0,
+      "split_raw_sha256": "030005a1306d6eb2e57219967ff84e09df9927d018854dea3af948917ae0fdd5",
+      "split_semantic_sha256": "82f859e5c9c9d4aba0e2bdc9f382d13c57c792125a7c4f00798d0b4eff6697c2",
+      "total_gold_entities": 182
+    }
+  }
+}
