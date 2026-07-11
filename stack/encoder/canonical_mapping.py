@@ -54,10 +54,9 @@ def _find_canonical(
 ) -> str | None:
     """Follow derived_from edges to find the nearest canonical ancestor.
 
-    A canonical ancestor matches _EXP_PATTERN or _CONCEPT_PATTERN and is not
-    itself the starting node (unless the starting node already matches).
-    A pattern-matching node is only canonical if it has no derived_from edge
-    to another canonical node.
+    Returns the first canonical-pattern node encountered during upward
+    traversal.  A pattern-matching node is always canonical when returned
+    via this function (it is the ancestor another node is looking for).
     """
     if depth > 10:
         return None
@@ -70,15 +69,9 @@ def _find_canonical(
     if node is None:
         return None
 
-    matches_pattern = _is_canonical_id(node_id)
-
-    if matches_pattern:
-        # Check if this node derives from another canonical node
-        has_canonical_parent = any(
-            _is_canonical_id(parent_id) for parent_id in _parent_ids(node_id, graph)
-        )
-        if not has_canonical_parent:
-            return node_id
+    # If this node matches a canonical pattern, it IS the canonical ancestor.
+    if _is_canonical_id(node_id):
+        return node_id
 
     for parent_id in _parent_ids(node_id, graph):
         result = _find_canonical(parent_id, graph, v, depth + 1)
@@ -92,8 +85,13 @@ def build_canonical_mapping(graph: Any) -> dict[str, str]:
     """Build a deterministic graph-derived canonical entity mapping.
 
     For each node in the graph, follow ``derived_from`` edges to find
-    the nearest canonical ancestor (Exp_* or Concept_*).  Returns a
-    dict mapping granular node IDs to their canonical ancestors.
+    the nearest canonical ancestor (Exp_* or Concept_* or Decision_*).
+    Returns a dict mapping granular node IDs to their canonical ancestors.
+
+    All nodes whose ID matches the canonical patterns (Exp_*, Concept_*,
+    Decision_*) are treated as canonical and map to themselves, regardless
+    of any derived_from edges they may have.  Only non-pattern-matching
+    granular IDs (metrics, sub-variants, etc.) are followed upstream.
 
     The mapping is:
     - One-to-one for canonical nodes (map to themselves)
@@ -114,15 +112,10 @@ def build_canonical_mapping(graph: Any) -> dict[str, str]:
 
         matches_pattern = _is_canonical_id(node_id)
 
-        # Check if this node has derived_from edges to a canonical ancestor
-        has_canonical_parent = any(
-            _is_canonical_id(parent_id) for parent_id in _parent_ids(node_id, graph)
-        )
-
-        # A node is canonical only if it matches the pattern AND has no
-        # derived_from edge to a canonical parent (prevents sub-experiments
-        # and concept variants from self-mapping).
-        if matches_pattern and not has_canonical_parent:
+        # Pattern-matching nodes are always canonical, regardless of
+        # derived_from edges.  Only non-pattern granular IDs follow
+        # upstream edges to locate their canonical ancestor.
+        if matches_pattern:
             mapping[node_id] = node_id
             continue
 

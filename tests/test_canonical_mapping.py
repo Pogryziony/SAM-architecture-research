@@ -71,13 +71,14 @@ class TestCanonicalMapping:
         assert mapping.get("Decision_PivotToNEXUS") == "Decision_PivotToNEXUS"
 
     def test_many_to_one_granular_to_canonical(self):
-        """Two granular metrics map to the same canonical experiment."""
+        """Granular metrics map to their canonical experiment; sub-experiments
+        that match Exp_* self-map because they are themselves canonical IDs."""
         g = _graph()
         mapping = build_canonical_mapping(g)
-        # Sub-experiment maps to canonical
-        assert mapping.get("Exp_0_6_Validation_core_only") == "Exp_0_6_Validation"
-        # Metric maps to canonical (two hops)
-        assert mapping.get("Metric_Exp_0_6_Validation_core_only_accuracy") == "Exp_0_6_Validation"
+        # Sub-experiment matches Exp_* pattern → self-maps
+        assert mapping.get("Exp_0_6_Validation_core_only") == "Exp_0_6_Validation_core_only"
+        # Granular metric (non-pattern) maps to canonical (two hops)
+        assert mapping.get("Metric_Exp_0_6_Validation_core_only_accuracy") == "Exp_0_6_Validation_core_only"
 
     def test_missing_parent_node_excluded(self):
         """Nodes with no derived_from to canonical are not in mapping."""
