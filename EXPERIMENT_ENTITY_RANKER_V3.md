@@ -1,7 +1,7 @@
 # EXPERIMENT: Entity Ranker V3 — Genuinely Question-Conditioned CPU-Only Encoder/Ranker
 
 **Pre-registered**: 2026-07-10
-**Status**: ✅ **AUDITABLE PASS** — canonical recall@10 = 79.64% on the unchanged 225-question frozen split. Full checkpoint recovered and SHA-256 verified.
+**Status**: ✅ **REPORTED PASS / REPRODUCIBILITY INCOMPLETE** — the historical artifact reports canonical recall@10 = 79.64%. Weights are external and not currently published; original per-question predictions and the canonical-mapping snapshot were not captured.
 **Repository**: SAM-architecture-research
 **Reference commit**: `499db7b` (frozen evaluation); `ae9b6ee` (model training); `0ead138` (canonical mapping fix)
 

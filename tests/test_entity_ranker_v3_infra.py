@@ -290,16 +290,11 @@ def test_documentation_references_existing_artifacts():
             rm_er3_status = line.strip()
             break
 
-    # Both must contain the same status keyword
-    status_keywords = {"AUDITABLE PASS", "REPORTED PASS", "HONEST PASS"}
-    sr_keywords = status_keywords & set(sr_er3_status.split())
-    rm_keywords = status_keywords & set(rm_er3_status.split())
-
-    if sr_keywords or rm_keywords:
-        assert sr_keywords == rm_keywords, (
-            f"STACK_RESULTS ER3 status ({sr_keywords}) and README ER3 status "
-            f"({rm_keywords}) must agree.\nSTACK: {sr_er3_status}\nREADME: {rm_er3_status}"
-        )
+    expected = "REPORTED PASS / REPRODUCIBILITY INCOMPLETE"
+    assert expected in sr_er3_status
+    assert expected in rm_er3_status
+    assert "AUDITABLE PASS" not in sr_er3_status
+    assert "AUDITABLE PASS" not in rm_er3_status
 
 
 def test_no_evaluation_test_reads_frozen_split():

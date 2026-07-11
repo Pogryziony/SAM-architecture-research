@@ -15,9 +15,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from stack.encoder.semantic_hash import (
-    compute_canonical_semantic_sha256_path,
-)
+from stack.encoder.semantic_hash import compute_canonical_semantic_sha256
 
 
 # ── Consumed split registry ──────────────────────────────────────────────
@@ -116,7 +114,7 @@ def check_split_not_consumed(
 
     data = split_path.read_bytes()
     raw_hash = hashlib.sha256(data).hexdigest()
-    semantic_hash = compute_canonical_semantic_sha256_path(split_path)
+    semantic_hash = compute_canonical_semantic_sha256(data)
 
     for label, h in [("raw", raw_hash), ("semantic", semantic_hash)]:
         if h in consumed_hashes:

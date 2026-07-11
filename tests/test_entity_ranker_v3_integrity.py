@@ -65,12 +65,12 @@ def test_manifest_hashes_match_committed():
         _git_show("models/encoder/entity_ranker_v3_20260711T081545Z/manifest.json")
     )
     for key, path in MANIFEST_FILES.items():
-        expected = manifest_data["files"][key]["committed_sha256"]
+        expected = manifest_data["files"][key]["sha256"]
         actual = hashlib.sha256(_git_show(path)).hexdigest()
         assert actual == expected, f"manifest {key}: expected {expected[:16]}..., got {actual[:16]}..."
 
     # Check validation artifact hash in manifest
-    val_expected = manifest_data["validation_artifact"]["committed_sha256"]
+    val_expected = manifest_data["validation_artifact"]["sha256"]
     val_actual = hashlib.sha256(
         _git_show(manifest_data["validation_artifact"]["path"])
     ).hexdigest()
@@ -114,8 +114,8 @@ class CountingOpener:
         return self.real_path.read_bytes()
 
 
-def test_holdout_read_exactly_once(tmp_path: Path):
-    """HoldoutData is created from a single physical read."""
+def test_holdout_read_exactly_once(tmp_path: Path, monkeypatch):
+    """Production loader performs one physical read."""
     records = [{"id": f"q{i}", "question": f"Q{i}?", "entities": ["E"]} for i in range(5)]
     f = tmp_path / "holdout.jsonl"
     f.write_text(
@@ -123,18 +123,16 @@ def test_holdout_read_exactly_once(tmp_path: Path):
         encoding="utf-8",
     )
 
-    # Simulate single-read by reading bytes once
-    raw = f.read_bytes()
-    raw_hash = hashlib.sha256(raw).hexdigest()
-    semantic_hash = compute_canonical_semantic_sha256(raw)
-    parsed = [json.loads(line) for line in raw.decode("utf-8").splitlines() if line.strip()]
-
-    hd = HoldoutData(
-        raw_bytes=raw,
-        records=parsed,
-        raw_sha256=raw_hash,
-        semantic_sha256=semantic_hash,
-    )
+    original = Path.read_bytes
+    reads = 0
+    def counted(path):
+        nonlocal reads
+        if path == f:
+            reads += 1
+        return original(path)
+    monkeypatch.setattr(Path, "read_bytes", counted)
+    hd = load_and_validate_new_holdout(f)
+    assert reads == 1
     assert hd.record_count == 5
     assert len(hd.records[0]) == 3  # id, question, entities
 

@@ -10,9 +10,10 @@
       "size_bytes": 3487600,
       "torch_version": "2.x",
       "architecture": "question_conditioned_dot_product_v3",
-      "note": "Weights are NOT stored in git. Use GitHub Releases or local recovery."
+      "published": false,
+      "note": "Weights are not stored in the repository and no public asset is currently published. Supply the original file locally; its SHA-256 and size are mandatory."
     }
   ],
-  "validation_artifact_sha256": "a34d51119663495dc2020d63a081bc34993fb2f2620d1ffb87af455e75571c6b",
-  "frozen_artifact_sha256": "60d883971d43ce9abfa2b2185547c13f3ec90c2640cf461a5a1f237277f13195"
+  "validation_artifact_sha256": "8f0542b73aaa4f0c528c02f3ee190005713ac707880045b497eb43987c34846d",
+  "frozen_artifact_sha256": "df2c51c66ca5e26b641c8dc3c3da355f8292d32525b2d22f791d5356a16e1538"
 }

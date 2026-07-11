@@ -16,7 +16,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import subprocess
 import time
@@ -26,11 +25,7 @@ from typing import Any
 
 import torch
 
-from stack.encoder.char_tokenizer import CharNgramTokenizer
-from stack.encoder.entity_ranker_v3 import (
-    QuestionConditionedEntityRanker,
-    load_ranker_v3,
-)
+from stack.encoder.entity_ranker_v3 import load_ranker_v3
 from stack.encoder.entity_text import build_entity_text
 from stack.encoder.canonical_mapping import (
     build_canonical_mapping,
@@ -44,7 +39,9 @@ from stack.encoder.train_ranker_v3 import (
     SEED,
 )
 from stack.encoder.experiment_guard import check_worktree_clean
-from stack.encoder.frozen_split_guard import validate_new_holdout, ConsumedSplitError
+from stack.encoder.semantic_hash import load_and_validate_new_holdout
+from stack.encoder.evaluation_contract import evaluate_contract, Verdict
+from stack.encoder.model_bundle import BundleVerificationError, verify_model_bundle
 from stack.encoder.loader import get_peak_rss_mb
 
 
@@ -66,10 +63,6 @@ def _write_json_artifact(path: Path, data: dict[str, Any]) -> None:
     tmp = path.with_suffix(path.suffix + ".tmp")
     tmp.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     tmp.rename(path)
-
-
-def _compute_file_sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def run_frozen_evaluation(
@@ -104,7 +97,7 @@ def run_frozen_evaluation(
             "Use --split path/to/new_holdout.jsonl"
         )
     split_path_p = Path(split_path)
-    raw_hash, semantic_hash = validate_new_holdout(split_path_p)
+    holdout = load_and_validate_new_holdout(split_path_p)
 
     # ── Timestamp ──
     utc_now = datetime.now(timezone.utc)
@@ -116,74 +109,45 @@ def run_frozen_evaluation(
         ["git", "rev-parse", "HEAD"], cwd=root, text=True
     ).strip()
 
-    # ── Load and verify validation artifact ──
+    # ── Authenticate model bundle and validation artifact ──
+    verified = verify_model_bundle(root, model_dir, validation_artifact)
     val_path = Path(validation_artifact)
-    if not val_path.exists():
-        raise FileNotFoundError(
-            f"Validation artifact not found: {val_path}"
-        )
-    val_data = json.loads(val_path.read_text(encoding="utf-8"))
+    val_data = verified.validation
     val_winner = val_data["selection"]["winner"]
     val_r10 = val_data["selection"]["winner_recall@10"]
     val_baseline_r10 = val_data["selection"]["baseline_recall@10"]
     val_source_sha = val_data["source_sha"]
     val_run_id = val_data["run_id"]
 
-    # Verify validation gates
-    if val_r10 < REQUIRED_VAL_RECALL10:
-        raise ValueError(
-            f"Validation recall@10 {val_r10:.4f} is below "
-            f"required {REQUIRED_VAL_RECALL10}. Frozen evaluation blocked."
-        )
-    if val_r10 - val_baseline_r10 < REQUIRED_BASELINE_GAP:
-        raise ValueError(
-            f"Validation baseline gap {val_r10 - val_baseline_r10:.4f} "
-            f"is below required {REQUIRED_BASELINE_GAP}. Frozen evaluation blocked."
+    validation_metrics = {
+        "recall@10": val_r10,
+        "baseline_gap": val_r10 - val_baseline_r10,
+        "run_id": val_run_id,
+        "source_sha": val_source_sha,
+    }
+    validation_contract = evaluate_contract(
+        validation_metrics,
+        [
+            {"name": "recall@10", "threshold": REQUIRED_VAL_RECALL10},
+            {"name": "baseline_gap", "threshold": REQUIRED_BASELINE_GAP},
+        ],
+        required_meta={
+            "run_id": verified.manifest["run_id"],
+            "source_sha": verified.manifest["training_source_sha"],
+        },
+    )
+    if validation_contract.verdict is not Verdict.PASS:
+        raise BundleVerificationError(
+            f"validation contract {validation_contract.verdict.value}: "
+            f"{validation_contract.errors}"
         )
 
     # ── Load and verify model checkpoint ──
     model_dir_p = Path(model_dir)
-    if not model_dir_p.exists():
-        raise FileNotFoundError(f"Model directory not found: {model_dir_p}")
-
-    checkpoint_path = model_dir_p / "weights.pt"
-    config_path = model_dir_p / "config.json"
-    vocab_path = model_dir_p / "vocab.json"
-
-    for p, name in [(checkpoint_path, "weights"), (config_path, "config"),
-                     (vocab_path, "tokenizer")]:
-        if not p.exists():
-            raise FileNotFoundError(f"Model {name} not found: {p}")
-
-    checkpoint_sha256 = _compute_file_sha256(checkpoint_path)
-    config_sha256 = _compute_file_sha256(config_path)
-    vocab_sha256 = _compute_file_sha256(vocab_path)
-
+    if not model_dir_p.is_absolute():
+        model_dir_p = root / model_dir_p
     model, tokenizer, model_config = load_ranker_v3(str(model_dir_p))
-
-    # Verify model source SHA matches validation
-    model_source_sha = model_config.get("source_sha", "")
-    if model_source_sha != val_source_sha:
-        raise ValueError(
-            f"Model source SHA {model_source_sha} does not match "
-            f"validation source SHA {val_source_sha}"
-        )
-
-    # Verify model run ID
-    model_run_id = model_config.get("run_id", "")
-    if model_run_id != val_run_id:
-        raise ValueError(
-            f"Model run ID {model_run_id} does not match "
-            f"validation run ID {val_run_id}"
-        )
-
-    # ── Load split ──
-    split_bytes = split_path_p.read_bytes()
-    split_data = [
-        json.loads(line)
-        for line in split_bytes.decode("utf-8").splitlines()
-        if line.strip()
-    ]
+    split_data = holdout.records
 
     # ── Build graph and canonical mapping ──
     from benchmarks.run_benchmark import build_benchmark_graph
@@ -304,7 +268,11 @@ def run_frozen_evaluation(
     metrics["peak_rss_mb"] = rss_after - rss_before
 
     frozen_recall10 = metrics["canonical_recall@10"]
-    gate_pass = frozen_recall10 >= 0.65
+    frozen_contract = evaluate_contract(
+        {"canonical_recall@10": frozen_recall10},
+        [{"name": "canonical_recall@10", "threshold": 0.65}],
+    )
+    gate_pass = frozen_contract.verdict is Verdict.PASS
 
     # ── Write artifact ──
     artifact_path = root / "benchmarks" / "results" / f"{run_id}.json"
@@ -314,16 +282,18 @@ def run_frozen_evaluation(
         "source_sha": source_sha,
         "model_dir": str(model_dir_p),
         "model_config": model_config,
-        "model_checkpoint_sha256": checkpoint_sha256,
-        "model_config_sha256": config_sha256,
-        "model_vocab_sha256": vocab_sha256,
+        "model_checkpoint_sha256": verified.hashes["weights.pt"],
+        "model_config_sha256": verified.hashes["config.json"],
+        "model_vocab_sha256": verified.hashes["vocab.json"],
+        "model_manifest": verified.manifest,
         "validation_artifact": str(val_path),
         "validation_winner": val_winner,
         "validation_recall10": val_r10,
         "validation_source_sha": val_source_sha,
         "validation_run_id": val_run_id,
         "split": str(split_path_p),
-        "split_sha256": raw_hash,
+        "split_sha256": holdout.raw_sha256,
+        "split_semantic_sha256": holdout.semantic_sha256,
         "graph": graph_meta,
         "canonical_mapping": canonical_meta,
         "total_questions": total_questions,
@@ -334,6 +304,8 @@ def run_frozen_evaluation(
             "threshold": 0.65,
             "passed": gate_pass,
         },
+        "validation_contract": validation_contract.to_dict(),
+        "frozen_contract": frozen_contract.to_dict(),
         "k_max": K_MAX,
         "seed": SEED,
         "test_split_read": True,
@@ -346,6 +318,7 @@ def run_frozen_evaluation(
         "artifact_path": str(artifact_path),
         "frozen_recall10": frozen_recall10,
         "gate_passed": gate_pass,
+        "verdict": frozen_contract.verdict.value,
     }
 
 

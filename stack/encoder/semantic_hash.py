@@ -67,6 +67,8 @@ def canonicalize_jsonl_bytes(data: bytes) -> bytes:
                 raw_line=stripped[:200],
                 original_error=str(exc),
             )
+        if not isinstance(record, dict):
+            raise MalformedJSONLError(idx, stripped[:200], "record must be a JSON object")
         lines.append(
             json.dumps(record, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
         )
@@ -154,13 +156,16 @@ def load_canonical_records_from_bytes(data: bytes) -> list[dict]:
         if not stripped:
             continue
         try:
-            records.append(json.loads(stripped))
+            record = json.loads(stripped)
         except json.JSONDecodeError as exc:
             raise MalformedJSONLError(
                 line_number=idx,
                 raw_line=stripped[:200],
                 original_error=str(exc),
             )
+        if not isinstance(record, dict):
+            raise MalformedJSONLError(idx, stripped[:200], "record must be a JSON object")
+        records.append(record)
     return records
 
 

@@ -3,9 +3,10 @@
 **POST-RUN ATTESTATION** — created 2026-07-11 after the original evaluation.
 Does not replace or modify original artifacts.
 
-**Weights policy**: Model weights (`.pt` files) are tracked in git at commit
-`b6d832d`. The `.gitignore` pattern `models/**/*.pt` prevents accidental
-future commits. SHA-256 hashes are recorded here for audit.
+**Weights policy**: Model weights are intentionally not stored in the current
+repository tree. No public external asset is currently published. A future
+evaluation requires the original local file with SHA-256
+`8be5156f94b3d05fd24927592b48d1a1df38dccf4dbbecdfb3df815777f514c7`.
 
 ## Artifact Inventory
 
@@ -59,17 +60,16 @@ Semantic hashes are line-ending insensitive canonical JSONL digests.
 |----------|--------|
 | Validation artifact | ✅ RECOVERED — 6,295 B committed |
 | Frozen artifact | ✅ RECOVERED — 3,151 B committed |
-| Model checkpoint | ✅ RECOVERED — 3.5 MB, SHA-256 verified |
+| Model checkpoint | ⚠️ EXTERNAL / NOT PUBLISHED — expected SHA-256 and size recorded |
 | Tokenizer | ✅ RECOVERED — 62,575 B committed |
 | Per-question frozen predictions | ❌ NOT AVAILABLE |
 | Canonical mapping snapshot | ❌ NOT CAPTURED |
 
 ## Final Status
 
-**AUDITABLE PASS**
+**REPORTED PASS / REPRODUCIBILITY INCOMPLETE**
 
-All recoverable evidence is committed and SHA-256 verified. The full checkpoint
-(config + 3.5 MB weights + tokenizer) is available. All source SHAs, hashes, and
-arithmetic cross-validated. The model can be reloaded and rerun on any new holdout
-to produce identical architecture-level results. The consumed frozen split is
-permanently locked by three hash types.
+Aggregate validation/frozen artifacts and non-weight model files are committed.
+Weights are intentionally external and are not currently published. The original
+frozen result also lacks per-question predictions and a canonical-mapping snapshot,
+so it cannot be independently recomputed. The consumed split remains locked.
