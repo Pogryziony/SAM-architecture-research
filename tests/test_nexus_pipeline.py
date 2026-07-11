@@ -967,3 +967,55 @@ class TestPipelineRunner:
         runner.serialize_result(result, out)
         with pytest.raises(FileExistsError, match="Refusing to overwrite"):
             runner.serialize_result(result, out)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Stage 0 publication guard tests
+# ═══════════════════════════════════════════════════════════════════
+
+from benchmarks.run_stage0_baseline import validate_artifact
+
+
+class TestStage0Guard:
+    def test_valid_artifact_passes(self):
+        artifact = {
+            "nexus": {"answered": 25, "mean_accuracy": 0.32},
+            "rag": {"answered": 25, "mean_accuracy": 0.28},
+            "questions_total": 30,
+            "per_question": [{"question_id": "q1"}],
+            "source_sha": "abc123",
+            "paired_comparison": {"paired_n": 25},
+        }
+        assert not validate_artifact(artifact)
+
+    def test_empty_nexus_fails(self):
+        artifact = {
+            "nexus": {"answered": 0},
+            "rag": {"answered": 25},
+            "questions_total": 30,
+            "per_question": [{}],
+            "source_sha": "a",
+            "paired_comparison": {"paired_n": 0},
+        }
+        errors = validate_artifact(artifact)
+        assert any("NEXUS" in e for e in errors)
+
+    def test_empty_rag_fails(self):
+        artifact = {
+            "nexus": {"answered": 25},
+            "rag": {"answered": 0},
+            "questions_total": 30,
+            "per_question": [{}],
+            "source_sha": "a",
+            "paired_comparison": {"paired_n": 0},
+        }
+        errors = validate_artifact(artifact)
+        assert any("RAG" in e for e in errors)
+
+    def test_missing_source_sha_fails(self):
+        artifact = {
+            "nexus": {"answered": 1}, "rag": {"answered": 1},
+            "questions_total": 1, "per_question": [{}],
+            "source_sha": "", "paired_comparison": {"paired_n": 1},
+        }
+        assert any("source_sha" in e.lower() for e in validate_artifact(artifact))
