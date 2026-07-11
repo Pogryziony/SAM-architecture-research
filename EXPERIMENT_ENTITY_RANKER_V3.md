@@ -592,5 +592,5 @@ The final report must include:
 | Stage | Hits/Total | Rate |
 |-------|-----------|------|
 | Graph | 275/275 | 100.00% |
-| Candidate pool | ~246/275 | ~89.5% |
+| Candidate pool (exhaustive canonical-vocabulary) | 275/275 | 100.00% |
 | Canonical pipeline | 219/275 | 79.64% |
