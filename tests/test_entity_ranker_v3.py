@@ -14,6 +14,19 @@ from typing import Any
 
 import pytest
 
+torch = pytest.importorskip("torch")
+
+from nexus.graph import Node
+from nexus.graph.store import InMemoryGraphStore
+from stack.encoder.char_tokenizer import CharNgramTokenizer
+from stack.encoder.entity_ranker_v3 import QuestionConditionedEntityRanker
+from stack.encoder.train_ranker_v3 import (
+    build_evaluation_group,
+    build_training_group,
+    evaluate_trivial_baseline,
+    multi_positive_listwise_loss,
+)
+
 
 # ── T1: Question-conditional entity scoring ──
 
@@ -70,6 +83,60 @@ def test_question_changes_relative_entity_ordering():
         "T1 FAIL: Changing the question did not change entity ordering. "
         "The scorer is not genuinely question-conditioned."
     )
+
+
+def test_production_ranker_score_margin_depends_on_question():
+    """Exercise the real V3 scorer rather than a test-only stand-in."""
+    import torch
+
+    torch.manual_seed(7)
+    tokenizer = CharNgramTokenizer()
+    tokenizer.add_words([
+        "alpha experiment result", "beta graph decision",
+        "alpha entity", "beta entity",
+    ])
+    tokenizer.freeze()
+    model = QuestionConditionedEntityRanker(
+        tokenizer.feature_dim, embed_dim=16, hidden_dim=32, proj_dim=8, dropout=0.0
+    )
+    model.eval()
+    entity_texts = ["alpha entity", "beta entity"]
+
+    def margin(question: str):
+        offsets, indices = tokenizer.tokenize_batch([question])
+        scores = model(
+            torch.tensor(indices), torch.tensor(offsets[:-1]), entity_texts, tokenizer
+        )[0]
+        return float(scores[0] - scores[1])
+
+    assert margin("alpha experiment result") != pytest.approx(
+        margin("beta graph decision")
+    )
+
+
+def test_entity_projection_receives_gradient_and_all_positives_reduce_loss():
+    import torch
+
+    torch.manual_seed(11)
+    tokenizer = CharNgramTokenizer()
+    tokenizer.add_words(["question", "positive one", "positive two", "negative"])
+    tokenizer.freeze()
+    model = QuestionConditionedEntityRanker(
+        tokenizer.feature_dim, embed_dim=16, hidden_dim=32, proj_dim=8, dropout=0.0
+    )
+    offsets, indices = tokenizer.tokenize_batch(["question"])
+    scores = model(
+        torch.tensor(indices),
+        torch.tensor(offsets[:-1]),
+        ["positive one", "positive two", "negative"],
+        tokenizer,
+    )[0]
+    one_positive_loss = multi_positive_listwise_loss(scores, [0])
+    all_positive_loss = multi_positive_listwise_loss(scores, [0, 1])
+    assert all_positive_loss <= one_positive_loss
+    all_positive_loss.backward()
+    assert model.e_proj[0].weight.grad is not None
+    assert torch.count_nonzero(model.e_proj[0].weight.grad) > 0
 
 
 def test_linear_concat_scorer_is_not_question_conditioned():
@@ -155,6 +222,47 @@ def test_missing_gold_cannot_disappear_from_evaluation():
 
     # Verify q2 is NOT silently dropped (it contributes gold=1 but hits=0)
     assert total_gold == 2, "Missing-gold question must contribute to denominator"
+
+
+def test_production_group_builders_only_inject_gold_for_training():
+    graph = InMemoryGraphStore()
+    for node_id in ("A", "B", "Z"):
+        graph.add_node(Node(id=node_id, type="Entity"))
+
+    evaluation = build_evaluation_group(
+        "q", "question", ["Z"], ["A", "B"], "validation", graph
+    )
+    training = build_training_group(
+        "q", "question", ["Z"], ["A", "B"], "real_train", graph
+    )
+
+    assert evaluation is not None and training is not None
+    assert evaluation["candidate_ids"] == ["A", "B"]
+    assert evaluation["gold_present_in_candidates"] is False
+    assert evaluation["gold_injected_for_training"] is False
+    assert training["candidate_ids"] == ["A", "B", "Z"]
+    assert training["gold_present_in_candidates"] is False
+    assert training["gold_injected_for_training"] is True
+
+
+def test_production_baseline_preserves_missing_gold_in_denominator():
+    graph = InMemoryGraphStore()
+    graph.add_node(Node(id="Alpha", type="Entity", aliases=["alpha"]))
+    graph.add_node(Node(id="Beta", type="Entity", aliases=["beta"]))
+    graph.add_node(Node(id="Missing", type="Entity"))
+    groups = [
+        build_evaluation_group(
+            "q1", "alpha", ["Alpha"], ["Alpha", "Beta"], "validation", graph
+        ),
+        build_evaluation_group(
+            "q2", "beta", ["Missing"], ["Beta"], "validation", graph
+        ),
+    ]
+    metrics = evaluate_trivial_baseline(groups, graph)
+    assert metrics["total_questions"] == 2
+    assert metrics["total_gold_entities"] == 2
+    assert metrics["raw_candidate_recall_ceiling"] == 0.5
+    assert metrics["recall@10"] == 0.5
 
 
 class TestValidationDenominator:

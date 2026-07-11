@@ -14,36 +14,28 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-import os
-import statistics
 import subprocess
-import time
 from collections import Counter
-from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Iterable, Mapping, Sequence
+from typing import Any, Mapping, Sequence
 
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
 from stack.encoder.char_tokenizer import CharNgramTokenizer
 from stack.encoder.entity_ranker_v3 import (
     QuestionConditionedEntityRanker,
     save_ranker_v3,
-    load_ranker_v3,
-    compute_data_hash,
 )
-from stack.encoder.entity_text import build_entity_text, build_entity_texts
+from stack.encoder.entity_text import build_entity_text
 from stack.encoder.canonical_mapping import (
     build_canonical_mapping,
     apply_canonical_mapping,
 )
 from stack.encoder.hard_negative_miner import mine_hard_negatives_group
-from stack.encoder.stage1c import generate_stage1c_pairs
 from stack.encoder.trivial_baseline import candidate_pool, rank_candidates
 from stack.encoder.natural_templates import generate_balanced_dataset
-from stack.encoder.c2_c3 import _node_features, _dot, normalized_question, _validate_no_leakage, SEED as C2_SEED
+from stack.encoder.experiment_guard import check_worktree_clean
+from stack.encoder.c2_c3 import _dot
 
 
 SEED = 20260710
@@ -72,12 +64,13 @@ def build_group(
     hard_negative_k: int = 15,
     random_negative_fraction: float = 0.10,
     seed: int = SEED,
+    inject_missing_gold: bool | None = None,
 ) -> dict[str, Any] | None:
     """Build a single training/evaluation group.
 
-    Unlike C2/C3, this NEVER returns None for missing gold candidates.
-    Instead, it preserves the group with empty positive_ids so the
-    question stays in the denominator.
+    Evaluation groups preserve the original candidate pool. Training groups
+    may inject missing gold entities so the ranker has a supervised positive.
+    The pre-injection coverage flag is always retained for diagnostics.
     """
     import random as _random
     rng = _random.Random(seed)
@@ -85,10 +78,13 @@ def build_group(
     positive_set = set(str(x) for x in positive_ids)
     candidate_set = list(dict.fromkeys(str(x) for x in candidate_ids))
 
-    # Ensure all gold IDs are in the candidate list (for training)
-    for pid in positive_set:
-        if pid not in candidate_set:
-            candidate_set.append(pid)
+    gold_present_before_injection = positive_set.issubset(set(candidate_set))
+    if inject_missing_gold is None:
+        inject_missing_gold = source != "validation"
+    if inject_missing_gold:
+        for pid in positive_set:
+            if pid not in candidate_set:
+                candidate_set.append(pid)
 
     group = {
         "question_id": question_id,
@@ -96,7 +92,10 @@ def build_group(
         "candidate_ids": candidate_set,
         "positive_ids": sorted(positive_set),
         "source": source,
-        "gold_present_in_candidates": positive_set.issubset(set(candidate_set)),
+        "gold_present_in_candidates": gold_present_before_injection,
+        "gold_injected_for_training": bool(
+            inject_missing_gold and not gold_present_before_injection
+        ),
     }
 
     # Mine hard negatives (only for training, uses real negatives)
@@ -115,7 +114,32 @@ def build_group(
     return group
 
 
+def build_training_group(*args: Any, **kwargs: Any) -> dict[str, Any] | None:
+    """Build a supervised group; missing gold may be injected for training."""
+    kwargs["inject_missing_gold"] = True
+    return build_group(*args, **kwargs)
+
+
+def build_evaluation_group(*args: Any, **kwargs: Any) -> dict[str, Any] | None:
+    """Build an evaluation group without ever modifying its candidate pool."""
+    kwargs["inject_missing_gold"] = False
+    return build_group(*args, **kwargs)
+
+
 # ── Training ──
+
+def multi_positive_listwise_loss(
+    scores: torch.Tensor, positive_indices: Sequence[int]
+) -> torch.Tensor:
+    """Negative log probability assigned to any positive candidate."""
+    if not positive_indices:
+        raise ValueError("positive_indices must not be empty")
+    positive_scores = scores[
+        torch.tensor(list(positive_indices), dtype=torch.long, device=scores.device)
+    ]
+    return torch.logsumexp(scores, dim=0) - torch.logsumexp(
+        positive_scores, dim=0
+    )
 
 def train_feature_logistic(
     groups: Sequence[Mapping[str, Any]],
@@ -203,21 +227,36 @@ def train_ranker_v3(
     groups: Sequence[Mapping[str, Any]],
     graph: Any,
     val_groups: Sequence[Mapping[str, Any]] | None = None,
+    canonical_mapping: dict[str, str] | None = None,
     epochs: int = 20,
     lr: float = 0.001,
     patience: int = 5,
 ) -> dict[str, Any]:
     """Train the V3 question-conditioned entity ranker.
 
-    Simple per-group SGD with pre-computed entity embeddings.
-    Early stops on validation recall@10.
+    End-to-end per-group listwise training. Both the question and entity
+    encoders receive gradients. Early stopping uses the same canonical metric
+    as model selection when a canonical mapping is supplied.
     """
     torch.set_num_threads(1)
     torch.manual_seed(SEED)
 
-    # Build tokenizer from all texts
+    # Build a graph-wide entity vocabulary. Graph text is public model input,
+    # not validation supervision, and prevents unseen validation candidates
+    # from disappearing during scoring.
+    all_entity_ids = sorted(str(node_id) for node_id in graph._nodes)
+    entity_text_map = {
+        entity_id: build_entity_text(entity_id, graph)
+        for entity_id in all_entity_ids
+    }
+    entity_id_to_idx = {
+        entity_id: index for index, entity_id in enumerate(all_entity_ids)
+    }
+
+    # Build tokenizer from both questions and the full entity representations.
     tokenizer = CharNgramTokenizer()
     tokenizer.add_words([str(g["question"]) for g in groups])
+    tokenizer.add_words(list(entity_text_map.values()))
     tokenizer.freeze()
 
     # Build model
@@ -230,14 +269,6 @@ def train_ranker_v3(
     )
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
 
-    # Pre-compute entity texts and ID mapping
-    all_entity_ids = sorted(set(
-        cid for g in groups for cid in g["candidate_ids"]
-    ))
-    entity_text_map = {eid: eid.replace("_", " ") for eid in all_entity_ids}
-    entity_id_to_idx = {eid: i for i, eid in enumerate(all_entity_ids)}
-    entity_texts = [entity_text_map[eid] for eid in all_entity_ids]
-
     best_val_recall10 = 0.0
     best_val_recall5 = 0.0
     best_state = None
@@ -245,12 +276,6 @@ def train_ranker_v3(
 
     for epoch in range(epochs):
         model.train()
-
-        # Pre-compute entity projections once per epoch
-        with torch.no_grad():
-            e_emb = model.encode_entities(entity_texts, tokenizer)
-            e_proj = model.project_entities(e_emb)  # [N, proj_dim]
-        e_proj.requires_grad_(False)
 
         total_loss = 0.0
         n_steps = 0
@@ -266,10 +291,11 @@ def train_ranker_v3(
             if len(positives) == 0:
                 continue
 
-            # Map candidates to pre-computed indices
-            cand_indices = [entity_id_to_idx.get(cid) for cid in group["candidate_ids"]]
-            cand_indices = [ci for ci in cand_indices if ci is not None]
-            if len(cand_indices) < 2:
+            indexed_candidates = [
+                cid for cid in group["candidate_ids"]
+                if cid in entity_id_to_idx
+            ]
+            if len(indexed_candidates) < 2:
                 continue
 
             # Encode question
@@ -279,36 +305,23 @@ def train_ranker_v3(
             combined = model.encode_question(q_indices, q_offsets)
             q_proj = model.project_question(combined)  # [1, proj_dim]
 
-            # Get pre-computed entity projections
-            batch_e = e_proj[cand_indices].unsqueeze(0)  # [1, K, proj_dim]
-
-            # Compute scores
+            # Encode candidate entities inside the autograd graph. This is
+            # essential: V3 must learn both sides of the interaction.
+            candidate_texts = [entity_text_map[cid] for cid in indexed_candidates]
+            e_emb = model.encode_entities(candidate_texts, tokenizer)
+            batch_e = model.project_entities(e_emb).unsqueeze(0)
             scores = model.score(q_proj, batch_e).squeeze(0)  # [K]
 
-            # Target: uniform over positives
             pos_in_group = [
-                i for i, cid in enumerate(group["candidate_ids"])
-                if cid in positives and entity_id_to_idx.get(cid) is not None
+                index for index, cid in enumerate(indexed_candidates)
+                if cid in positives
             ]
             if not pos_in_group:
                 continue
 
-            target = torch.zeros(len(cand_indices))
-            for pi_rel in pos_in_group:
-                # Map from original candidate position to compressed position
-                orig_cid = group["candidate_ids"][pi_rel]
-                compressed = next(
-                    j for j, cid in enumerate(
-                        [cid for cid in group["candidate_ids"] if entity_id_to_idx.get(cid) is not None]
-                    )
-                    if cid == orig_cid
-                )
-                target[compressed] = 1.0 / len(pos_in_group)
-
-            loss = F.cross_entropy(
-                scores.unsqueeze(0),
-                target.unsqueeze(0).argmax(dim=1),
-            )
+            # Multi-positive listwise loss. Probability mass assigned to any
+            # gold entity is rewarded; no positive is discarded via argmax.
+            loss = multi_positive_listwise_loss(scores, pos_in_group)
 
             optimizer.zero_grad()
             loss.backward()
@@ -320,9 +333,13 @@ def train_ranker_v3(
 
         # Validation
         if val_groups is not None and epoch % 2 == 0:
-            val_metrics = evaluate_ranker_v3_fast(
-                val_groups, model, tokenizer, entity_text_map,
-                entity_id_to_idx, all_entity_ids, e_proj,
+            val_metrics = evaluate_ranker_v3(
+                val_groups,
+                graph,
+                model,
+                tokenizer,
+                entity_text_map,
+                canonical_mapping,
             )
             val_r10 = val_metrics["recall@10"]
             val_r5 = val_metrics["recall@5"]
@@ -379,16 +396,17 @@ def evaluate_ranker_v3_fast(
         for group in groups:
             positives = set(group["positive_ids"])
             cand_ids = group["candidate_ids"]
+            if not positives.issubset(set(cand_ids)):
+                absent_count += len(positives - set(cand_ids))
 
-            # Map candidates to pre-computed indices
-            cand_indices = []
-            for cid in cand_ids:
-                ei = entity_id_to_idx.get(cid)
-                if ei is not None:
-                    cand_indices.append(ei)
+            # Keep IDs aligned with the compressed projection indices.
+            indexed_candidates = [
+                (cid, entity_id_to_idx[cid])
+                for cid in cand_ids
+                if cid in entity_id_to_idx
+            ]
 
-            if not cand_indices:
-                absent_count += 1
+            if not indexed_candidates:
                 continue
 
             # Encode question
@@ -399,16 +417,18 @@ def evaluate_ranker_v3_fast(
             q_proj = model.project_question(combined)
 
             # Score using pre-computed entity projections
-            batch_e = e_proj[cand_indices].unsqueeze(0)
+            batch_e = e_proj[
+                [entity_index for _cid, entity_index in indexed_candidates]
+            ].unsqueeze(0)
             scores = model.score(q_proj, batch_e).squeeze(0)
             ranked_indices = torch.argsort(scores, descending=True).tolist()
 
             ranked = []
             seen_canonical = set()
-            for ri in ranked_indices[:K_MAX * 2]:  # Over-sample for canonical dedup
+            for ri in ranked_indices:
                 if len(ranked) >= K_MAX:
                     break
-                cid = cand_ids[ri]
+                cid = indexed_candidates[ri][0]
                 if canonical_mapping:
                     canonical = canonical_mapping.get(cid, cid)
                     if canonical not in seen_canonical:
@@ -436,6 +456,13 @@ def evaluate_ranker_v3_fast(
         "total_questions": float(len(groups)),
         "total_gold_entities": float(total_gold),
         "absent_gold_count": float(absent_count),
+        "candidate_recall_ceiling": (
+            sum(
+                len(set(group["positive_ids"]) & set(group["candidate_ids"]))
+                for group in groups
+            ) / total_gold
+            if total_gold else 0.0
+        ),
     }
 
 
@@ -528,11 +555,55 @@ def evaluate_ranker_v3(
     result["total_questions"] = float(total_questions)
     result["total_gold_entities"] = float(total_gold)
     result["absent_gold_count"] = float(absent_gold_count)
+    ceiling_hits = 0
+    for group in groups:
+        candidates = list(group["candidate_ids"])
+        if canonical_mapping is not None:
+            candidates = apply_canonical_mapping(
+                candidates, canonical_mapping, top_k=max(1, len(candidates))
+            )
+        ceiling_hits += len(set(group["positive_ids"]) & set(candidates))
     result["candidate_recall_ceiling"] = (
-        sum(len(set(g["positive_ids"]) & set(g["candidate_ids"])) for g in groups) / total_gold
-        if total_gold else 0.0
+        ceiling_hits / total_gold if total_gold else 0.0
     )
 
+    return result
+
+
+def evaluate_ranker_raw_and_canonical(
+    groups: Sequence[Mapping[str, Any]],
+    graph: Any,
+    ranker_or_model: Any,
+    tokenizer_or_none: Any = None,
+    entity_text_map: dict[str, str] | None = None,
+    canonical_mapping: dict[str, str] | None = None,
+) -> dict[str, float]:
+    """Report raw and canonical metrics while selecting on canonical recall."""
+    raw = evaluate_ranker_v3(
+        groups, graph, ranker_or_model, tokenizer_or_none, entity_text_map, None
+    )
+    canonical = evaluate_ranker_v3(
+        groups,
+        graph,
+        ranker_or_model,
+        tokenizer_or_none,
+        entity_text_map,
+        canonical_mapping,
+    )
+    result: dict[str, float] = {
+        "total_questions": canonical["total_questions"],
+        "total_gold_entities": canonical["total_gold_entities"],
+        "absent_gold_count": raw["absent_gold_count"],
+        "raw_candidate_recall_ceiling": raw["candidate_recall_ceiling"],
+        "canonical_candidate_recall_ceiling": canonical["candidate_recall_ceiling"],
+    }
+    for k in (1, 5, 10):
+        result[f"raw_recall@{k}"] = raw[f"recall@{k}"]
+        result[f"raw_precision@{k}"] = raw[f"precision@{k}"]
+        result[f"canonical_recall@{k}"] = canonical[f"recall@{k}"]
+        result[f"canonical_precision@{k}"] = canonical[f"precision@{k}"]
+        result[f"recall@{k}"] = canonical[f"recall@{k}"]
+        result[f"precision@{k}"] = canonical[f"precision@{k}"]
     return result
 
 
@@ -541,45 +612,70 @@ def evaluate_trivial_baseline(
     graph: Any,
     canonical_mapping: dict[str, str] | None = None,
 ) -> dict[str, float]:
-    """Evaluate the trivial lexical baseline on validation groups.
-
-    Reports both raw (granular) and canonical recall.
-    """
-    hits_10 = 0
-    predicted_10 = 0
+    """Evaluate the baseline on the exact candidate pools used by rankers."""
+    raw_hits = {1: 0, 5: 0, 10: 0}
+    canonical_hits = {1: 0, 5: 0, 10: 0}
+    raw_predicted = {1: 0, 5: 0, 10: 0}
+    canonical_predicted = {1: 0, 5: 0, 10: 0}
     total_gold = sum(len(set(g["positive_ids"])) for g in groups)
+    raw_ceiling_hits = 0
+    canonical_ceiling_hits = 0
 
     for group in groups:
-        ranked = rank_candidates(
-            candidate_pool(group["question"], graph), graph, K_MAX
-        )
+        pool_scores = {
+            str(item["node_id"]): float(item["lexical_score"])
+            for item in candidate_pool(group["question"], graph)
+        }
+        candidate_records = [
+            {"node_id": candidate_id, "lexical_score": pool_scores.get(candidate_id, 0.0)}
+            for candidate_id in group["candidate_ids"]
+            if graph.get_node(candidate_id) is not None
+        ]
+        ranked = rank_candidates(candidate_records, graph, len(candidate_records))
         gold = set(group["positive_ids"])
-        hits_10 += len(set(ranked[:10]) & gold)
-        predicted_10 += len(ranked[:10])
-
-    raw_recall = hits_10 / total_gold if total_gold else 0.0
-    raw_precision = hits_10 / predicted_10 if predicted_10 else 0.0
+        raw_ceiling_hits += len(set(group["candidate_ids"]) & gold)
+        mapped_all = (
+            apply_canonical_mapping(ranked, canonical_mapping, top_k=max(1, len(ranked)))
+            if canonical_mapping is not None else ranked
+        )
+        canonical_ceiling_hits += len(set(mapped_all) & gold)
+        canonical_ranked = (
+            apply_canonical_mapping(ranked, canonical_mapping, top_k=K_MAX)
+            if canonical_mapping is not None else ranked[:K_MAX]
+        )
+        for k in (1, 5, 10):
+            raw_hits[k] += len(set(ranked[:k]) & gold)
+            raw_predicted[k] += len(ranked[:k])
+            canonical_hits[k] += len(set(canonical_ranked[:k]) & gold)
+            canonical_predicted[k] += len(canonical_ranked[:k])
 
     result = {
-        "recall@10": raw_recall,
-        "precision@10": raw_precision,
         "total_questions": float(len(groups)),
         "total_gold_entities": float(total_gold),
+        "raw_candidate_recall_ceiling": (
+            raw_ceiling_hits / total_gold if total_gold else 0.0
+        ),
+        "canonical_candidate_recall_ceiling": (
+            canonical_ceiling_hits / total_gold if total_gold else 0.0
+        ),
     }
-
-    # Also compute canonical recall if mapping is provided
-    if canonical_mapping is not None:
-        can_hits_10 = can_pred_10 = 0
-        for group in groups:
-            ranked = rank_candidates(
-                candidate_pool(group["question"], graph), graph, K_MAX
-            )
-            mapped = apply_canonical_mapping(ranked, canonical_mapping, top_k=K_MAX)
-            gold = set(group["positive_ids"])
-            can_hits_10 += len(set(mapped[:10]) & gold)
-            can_pred_10 += len(mapped[:10])
-        result["canonical_recall@10"] = can_hits_10 / total_gold if total_gold else 0.0
-        result["canonical_precision@10"] = can_hits_10 / can_pred_10 if can_pred_10 else 0.0
+    for k in (1, 5, 10):
+        result[f"raw_recall@{k}"] = raw_hits[k] / total_gold if total_gold else 0.0
+        result[f"raw_precision@{k}"] = (
+            raw_hits[k] / raw_predicted[k] if raw_predicted[k] else 0.0
+        )
+        result[f"canonical_recall@{k}"] = (
+            canonical_hits[k] / total_gold if total_gold else 0.0
+        )
+        result[f"canonical_precision@{k}"] = (
+            canonical_hits[k] / canonical_predicted[k]
+            if canonical_predicted[k] else 0.0
+        )
+        # Selection aliases always use the canonical metric when a mapping is
+        # supplied, otherwise they use the raw metric.
+        prefix = "canonical" if canonical_mapping is not None else "raw"
+        result[f"recall@{k}"] = result[f"{prefix}_recall@{k}"]
+        result[f"precision@{k}"] = result[f"{prefix}_precision@{k}"]
 
     return result
 
@@ -599,18 +695,6 @@ def select_winner(metrics: Mapping[str, Mapping[str, float]]) -> str:
     )[0]
 
 
-def check_worktree_clean() -> bool:
-    """Return True if git working tree is clean."""
-    try:
-        result = subprocess.run(
-            ["git", "diff", "--quiet"],
-            capture_output=True, timeout=10,
-        )
-        return result.returncode == 0
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        return True
-
-
 # ── Main experiment ──
 
 def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
@@ -627,7 +711,7 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
     root = Path(root)
 
     # Guard: clean worktree
-    if not check_worktree_clean():
+    if not check_worktree_clean(root):
         raise RuntimeError(
             "Dirty worktree detected. Commit or stash changes before evaluation."
         )
@@ -643,52 +727,33 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
     # Build canonical mapping (graph-derived, no test inspection)
     canonical_mapping = build_canonical_mapping(graph)
 
-    # Build training groups (all 375 questions preserved, but limit candidates per group)
+    # Build the preregistered source-balanced training dataset. Natural V3
+    # templates are used here instead of the legacy Stage 1C generator.
+    balanced_records = generate_balanced_dataset([dict(row) for row in train], graph)
     train_groups = []
-    for record in train:
+    for record in balanced_records:
         pool = candidate_pool(record["question"], graph)
-        # Cap candidate pool to 200 per question for training speed
         candidate_ids = [str(item["node_id"]) for item in pool[:200]]
-        group = build_group(
+        source = str(record.get("source", "real_train"))
+        group = build_training_group(
             str(record.get("id", "")),
             str(record["question"]),
             [str(e) for e in record.get("entities", [])],
             candidate_ids,
-            "train",
+            source,
             graph,
-            hard_negative_k=10,  # Reduced for speed
+            hard_negative_k=10,
         )
         if group is not None:
             train_groups.append(group)
-
-    # Add graph-mined groups (capped)
-    import random
-    rng = random.Random(SEED)
-    stage1c_pairs = generate_stage1c_pairs(graph)
-    rng.shuffle(stage1c_pairs)
-    graph_groups = []
-    for pair in stage1c_pairs[:400]:  # Cap at 400
-        pool = candidate_pool(pair["question"], graph)
-        candidate_ids = [str(item["node_id"]) for item in pool[:100]]
-        group = build_group(
-            str(pair.get("id", "")),
-            str(pair["question"]),
-            [str(e) for e in pair.get("entities", [])],
-            candidate_ids,
-            "graph_mined",
-            graph,
-            hard_negative_k=8,
-        )
-        if group is not None:
-            graph_groups.append(group)
-
-    all_train_groups = train_groups + graph_groups
-    print(f"Training groups: {len(train_groups)} real + {len(graph_groups)} graph = {len(all_train_groups)} total")
+    all_train_groups = train_groups
+    source_counts = Counter(str(group["source"]) for group in all_train_groups)
+    print(f"Training groups: {len(all_train_groups)} total; sources={dict(source_counts)}")
 
     # Build validation groups (ALL 150 questions preserved)
     val_groups = []
     for record in val:
-        group = build_group(
+        group = build_evaluation_group(
             str(record.get("id", "")),
             str(record["question"]),
             [str(e) for e in record.get("entities", [])],
@@ -711,27 +776,26 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
 
     # Compute candidate recall ceiling
     val_baseline = evaluate_trivial_baseline(val_groups, graph, canonical_mapping)
-    candidate_ceiling = val_baseline.get("candidate_recall_ceiling", 0.0)
+    candidate_ceiling = val_baseline["canonical_candidate_recall_ceiling"]
 
     # Train rankers (reduced epochs for speed)
     logistic = train_feature_logistic(all_train_groups, graph, epochs=40)
-    encoder_v3 = train_ranker_v3(all_train_groups, graph, val_groups)
-
-    # Evaluate all rankers on identical validation groups
-    # Pre-compute entity projections for V3 fast evaluation
-    all_eids = encoder_v3["all_entity_ids"]
-    all_texts = [encoder_v3["entity_text_map"].get(eid, eid.replace("_", " ")) for eid in all_eids]
-    v3_e_proj = encoder_v3["model"].project_entities(
-        encoder_v3["model"].encode_entities(all_texts, encoder_v3["tokenizer"])
+    encoder_v3 = train_ranker_v3(
+        all_train_groups, graph, val_groups, canonical_mapping=canonical_mapping
     )
 
     metrics = {
         "trivial_baseline": evaluate_trivial_baseline(val_groups, graph, canonical_mapping),
-        "feature_logistic_v3": evaluate_ranker_v3(val_groups, graph, logistic, canonical_mapping=canonical_mapping),
-        "entity_ranker_v3": evaluate_ranker_v3_fast(
-            val_groups, encoder_v3["model"], encoder_v3["tokenizer"],
-            encoder_v3["entity_text_map"], encoder_v3["entity_id_to_idx"],
-            all_eids, v3_e_proj, canonical_mapping,
+        "feature_logistic_v3": evaluate_ranker_raw_and_canonical(
+            val_groups, graph, logistic, canonical_mapping=canonical_mapping
+        ),
+        "entity_ranker_v3": evaluate_ranker_raw_and_canonical(
+            val_groups,
+            graph,
+            encoder_v3["model"],
+            encoder_v3["tokenizer"],
+            encoder_v3["entity_text_map"],
+            canonical_mapping,
         ),
     }
 
@@ -789,8 +853,8 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
         "split_sha256": hashlib.sha256(val_split_path.read_bytes()).hexdigest(),
         "graph": graph_meta,
         "dataset_stats": {
-            "train_groups": len(train_groups),
-            "graph_mined_groups": len(graph_groups),
+            "training_groups": len(train_groups),
+            "training_source_counts": dict(source_counts),
             "validation_groups": len(val_groups),
             "canonical_mapping_size": len(canonical_mapping),
             "canonical_mapping_unique_targets": len(set(canonical_mapping.values())),

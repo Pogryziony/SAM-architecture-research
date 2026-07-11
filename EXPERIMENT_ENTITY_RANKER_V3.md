@@ -1,7 +1,7 @@
 # EXPERIMENT: Entity Ranker V3 — Genuinely Question-Conditioned CPU-Only Encoder/Ranker
 
 **Pre-registered**: 2026-07-10
-**Status**: Preregistration — no implementation yet
+**Status**: Implemented; historical validation blocked. Corrective implementation completed 2026-07-11 and requires a new clean validation run before frozen evaluation.
 **Repository**: SAM-architecture-research
 **Reference commit**: `e204a31552f5774fa291ea0f0b346c9b2c14a69e`
 
@@ -418,6 +418,36 @@ Build a deterministic mapping from granular graph entities to frozen-label entit
 | T9 | Artifact decision is mechanically derived | All gates pass = PASS; any fail = FAIL |
 | T10 | Nexus-only tests collect without PyTorch | Subprocess import check |
 | T11 | Python 3.11 and 3.12 CI pass | Both interpreters |
+
+## Corrective implementation note — 2026-07-11
+
+Post-run inspection found that the first V3 selection artifact could not be
+used as a clean gate result. Validation groups retained all 150 questions but
+injected missing gold IDs into their candidate pools; the baseline rebuilt a
+different pool; the entity projection was detached during training; the
+multi-positive target was reduced through `argmax`; early stopping used raw
+instead of canonical recall; and the provenance guard missed staged/untracked
+files. The artifact remains immutable and is indexed as historical.
+
+The corrective implementation:
+
+- separates training and evaluation group construction;
+- never injects gold IDs into validation candidates;
+- evaluates all models on the same candidate IDs;
+- reports raw and canonical recall/precision and both candidate ceilings;
+- trains question and entity projections end-to-end with multi-positive
+  listwise loss;
+- uses graph-wide rich entity text and vocabulary;
+- selects and early-stops on canonical recall when canonical mapping is active;
+- preserves candidate ID/index alignment and scans the full ranking during
+  canonical deduplication;
+- uses the preregistered natural, source-balanced generator;
+- detects tracked, staged, and untracked changes before gated execution.
+
+No new validation or frozen metric is claimed by this code change. A new
+timestamped validation artifact must be produced from a clean commit. Frozen
+evaluation remains prohibited unless canonical validation recall@10 is at
+least 70% and the identical-population baseline gap is at least 15 pp.
 
 ---
 

@@ -112,9 +112,9 @@ def generate_natural_pairs(graph: Any) -> list[dict[str, Any]]:
             if edge.target in graph._nodes and edge.type in ("depends_on", "derived_from", "validates"):
                 edge_pairs.append((node_id, edge.target, edge.type))
 
-    rng.shuffle(nodes_with_aliases, random=lambda: rng.random())
-    rng.shuffle(nodes_with_findings, random=lambda: rng.random())
-    rng.shuffle(edge_pairs, random=lambda: rng.random())
+    rng.shuffle(nodes_with_aliases)
+    rng.shuffle(nodes_with_findings)
+    rng.shuffle(edge_pairs)
 
     # ── Factual: alias/key-finding questions ──
     for node_id, node, aliases in nodes_with_aliases:
@@ -136,6 +136,24 @@ def generate_natural_pairs(graph: Any) -> list[dict[str, Any]]:
             "source_id": f"graph:v3:{node_id}:natural_factual",
             "label_source": "exact_alias",
             "confidence": 1.0,
+        }
+        # A distinct, natural paraphrase for source-balanced training. It has
+        # separate provenance and never reuses the exact alias question text.
+        paraphrase_question = f"What did {name} demonstrate?"
+        if paraphrase_question == question:
+            paraphrase_question = f"Summarize the result of {name}."
+        paraphrase_key = (paraphrase_question, (node_id,))
+        pairs[paraphrase_key] = {
+            "id": _pair_id(paraphrase_question, [node_id]),
+            "question": paraphrase_question,
+            "answer": finding or node_id,
+            "question_type": "factual",
+            "entities": [node_id],
+            "intent": "factual_lookup",
+            "category": "factual",
+            "source_id": f"graph:v3:{node_id}:natural_paraphrase",
+            "label_source": "graph_paraphrase",
+            "confidence": 0.95,
         }
 
     # ── Diagnostic: findings-based questions ──
@@ -222,7 +240,11 @@ def generate_balanced_dataset(
     natural_pairs = generate_natural_pairs(graph)
 
     # Split natural pairs into paraphrase, alias/key-finding, and relation sources
-    paraphrase_pairs = [p for p in natural_pairs if "natural_factual" in p["source_id"] or "natural_diagnostic" in p["source_id"]]
+    paraphrase_pairs = [
+        p for p in natural_pairs
+        if "natural_paraphrase" in p["source_id"]
+        or "natural_diagnostic" in p["source_id"]
+    ]
     alias_pairs = [p for p in natural_pairs if "natural_factual" in p["source_id"]]
     relation_pairs = [p for p in natural_pairs if "natural_relation" in p["source_id"]]
 

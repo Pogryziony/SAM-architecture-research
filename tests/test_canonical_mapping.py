@@ -23,6 +23,7 @@ def _graph() -> InMemoryGraphStore:
     g.add_node(Node(id="Exp_0_6_Validation", type="Experiment"))
     g.add_node(Node(id="Exp_0_7_ExternalText", type="Experiment"))
     g.add_node(Node(id="Concept_RetrievalMismatch", type="Concept"))
+    g.add_node(Node(id="Decision_PivotToNEXUS", type="Decision"))
 
     # Sub-experiments – derive from canonical
     g.add_node(Node(id="Exp_0_6_Validation_core_only", type="Experiment"))
@@ -45,6 +46,10 @@ def _graph() -> InMemoryGraphStore:
 
     # Non-canonical node with no derived_from
     g.add_node(Node(id="Unrelated_Entity", type="Entity"))
+    g.add_node(Node(
+        id="Property_Child", type="Metric",
+        properties={"parent_entity": "Decision_PivotToNEXUS"},
+    ))
 
     # Concept variant
     g.add_node(Node(id="Concept_RetrievalMismatch_variant", type="Concept"))
@@ -63,6 +68,7 @@ class TestCanonicalMapping:
         mapping = build_canonical_mapping(g)
         assert mapping.get("Exp_0_6_Validation") == "Exp_0_6_Validation"
         assert mapping.get("Concept_RetrievalMismatch") == "Concept_RetrievalMismatch"
+        assert mapping.get("Decision_PivotToNEXUS") == "Decision_PivotToNEXUS"
 
     def test_many_to_one_granular_to_canonical(self):
         """Two granular metrics map to the same canonical experiment."""
@@ -100,6 +106,10 @@ class TestCanonicalMapping:
         g = _graph()
         mapping = build_canonical_mapping(g)
         assert mapping.get("Concept_RetrievalMismatch_variant") == "Concept_RetrievalMismatch"
+
+    def test_explicit_parent_property_maps_without_test_labels(self):
+        mapping = build_canonical_mapping(_graph())
+        assert mapping.get("Property_Child") == "Decision_PivotToNEXUS"
 
     def test_apply_canonical_mapping_deduplicates(self):
         """apply_canonical_mapping deduplicates after mapping and caps at K."""

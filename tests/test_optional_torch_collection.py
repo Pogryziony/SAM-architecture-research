@@ -18,6 +18,8 @@ def test_collection_and_nexus_tests_work_without_torch():
         "raise SystemExit(pytest.main(paths+['-q']))"
     )
     env = os.environ.copy()
-    env["PYTHONPATH"] = str(root)
+    env["PYTHONPATH"] = os.pathsep.join(
+        part for part in (str(root), env.get("PYTHONPATH", "")) if part
+    )
     completed = subprocess.run([sys.executable, "-c", script], cwd=root, env=env, capture_output=True, text=True)
     assert completed.returncode == 0, completed.stdout + completed.stderr
