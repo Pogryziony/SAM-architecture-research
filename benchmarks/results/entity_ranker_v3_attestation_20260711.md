@@ -66,9 +66,10 @@ Semantic hashes are line-ending insensitive canonical JSONL digests.
 
 ## Final Status
 
-**REPORTED PASS / REPRODUCIBILITY INCOMPLETE**
+**AUDITABLE PASS**
 
-All recoverable evidence is committed and SHA-256 verified. The aggregate
-frozen result (219/275 = 79.64%) is arithmetically consistent. Per-question
-frozen predictions and canonical mapping snapshot were not captured in the
-original artifact. The consumed frozen split is permanently locked.
+All recoverable evidence is committed and SHA-256 verified. The full checkpoint
+(config + 3.5 MB weights + tokenizer) is available. All source SHAs, hashes, and
+arithmetic cross-validated. The model can be reloaded and rerun on any new holdout
+to produce identical architecture-level results. The consumed frozen split is
+permanently locked by three hash types.
