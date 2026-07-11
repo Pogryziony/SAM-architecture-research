@@ -1,0 +1,36 @@
+{
+  "canonical_mapping_applied": true,
+  "features": [
+    "bias",
+    "lexical_overlap",
+    "char_ngram_cosine",
+    "type_rule_intent",
+    "node_degree_regularized",
+    "alias_exact_match",
+    "alias_jaccard",
+    "provenance_match",
+    "graph_distance_to_top",
+    "bm25_overlap",
+    "keyfinding_overlap",
+    "description_overlap"
+  ],
+  "kind": "feature_logistic_v3",
+  "seed": 20260710,
+  "source_sha": "0219df1af959ee1ac5e2042ed5eeba8a9bb77174",
+  "validation_only": true,
+  "weights": [
+    -10.831827757771547,
+    0.8324012907621676,
+    11.353912024813614,
+    -1.7827079835110216,
+    7.36432445793707,
+    2.365300887461809,
+    0.7496063208271885,
+    -2.1539292599487725,
+    0.0,
+    5.570606609803724,
+    8.68920620488109,
+    3.8074824807749437
+  ],
+  "winner": "feature_logistic_v3"
+}
