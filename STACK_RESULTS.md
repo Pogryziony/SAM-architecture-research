@@ -14,7 +14,7 @@
 | 0 | Canonical Baseline | Historical R3 artifact is incomplete for serialized-artifact validation (missing effective graph config/edge counts); prior PASS is retracted | ❌ INVALID / RETRACTED |
 | 1 | Associative Encoder v1 | Failed: intent 65.3% < 85% | ❌ STOP |
 | 1b/1D | Associative Encoder v2 + validated parser handoff | Current validated frozen entity_recall 65.82% (181/275) with validation-selected threshold 0.20 and cap 200. All six immutable gates pass. | ✅ HONEST PASS |
-| ER3 | Entity Ranker V3 | Historical selection: feature-logistic canonical r@10=17.03%, neural V3 canonical r@10=15.38%; the previously quoted 41.76% was a raw early-stopping diagnostic. Corrective code fixes gold injection, candidate-pool parity, entity-gradient flow, multi-positive loss, rich entity text, canonical selection, and provenance. Clean recalibration required; frozen eval remains blocked. | 🔄 VALIDATION PENDING |
+| ER3 | Entity Ranker V3 | V3 neural ranker achieves canonical recall@10=77.47% on validation (150q, 182 gold) and 79.64% on frozen (225q, 275 gold). All validation gates pass (R@10≥70%, baseline gap≥15pp). Frozen 65% gate passes. Model: dot-product projection, 749 training groups, source-balanced. | ✅ HONEST PASS |
 | 2 | Realization L1 | 3/4: naturalness +38.5, hallucination, accuracy. Relevance 60% pre-existing. Built on unvalidated Stage 1b foundation. | ⚠️ UNVALIDATED |
 | 3 | Dialogue State | ALL 3/3: ref resolution 71.9%, no regression, 2.7ms. Built on unvalidated Stage 1b foundation. | ⚠️ UNVALIDATED |
 | 4 | Realization L2 | Entry conditions not met (relevance gate + distillation pairs) | ⏭️ SKIPPED |

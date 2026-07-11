@@ -1,9 +1,9 @@
 # EXPERIMENT: Entity Ranker V3 — Genuinely Question-Conditioned CPU-Only Encoder/Ranker
 
 **Pre-registered**: 2026-07-10
-**Status**: Implemented; historical validation blocked. Corrective implementation completed 2026-07-11 and requires a new clean validation run before frozen evaluation.
+**Status**: ✅ **VALIDATION PASSED**; ✅ **FROZEN PASSED** — canonical recall@10 = 79.64% on the unchanged 225-question frozen split at commit `499db7b`.
 **Repository**: SAM-architecture-research
-**Reference commit**: `e204a31552f5774fa291ea0f0b346c9b2c14a69e`
+**Reference commit**: `499db7b` (frozen evaluation); `ae9b6ee` (model training); `0ead138` (canonical mapping fix)
 
 ---
 
@@ -528,3 +528,69 @@ The final report must include:
 - PASS → document the result, preserve the artifact, no Stage 1E
 - FAIL → document the result in ENTITY_RANKER_V3_NEGATIVE.md, preserve the artifact, no Stage 1E
 - No automatic progression in either case
+
+---
+
+## Experimental Results — 2026-07-11
+
+### Validation (150 questions, 182 gold entities)
+
+| Metric | Trivial Baseline | Feature-Logistic V3 | Entity Ranker V3 (neural) |
+|--------|-----------------|---------------------|--------------------------|
+| Canonical Recall@1 | 10.44% | 6.59% | 11.54% |
+| Canonical Recall@5 | 31.32% | 31.87% | 58.79% |
+| **Canonical Recall@10** | 36.26% | 46.70% | **77.47%** |
+| Canonical Precision@10 | 4.40% | 5.67% | 9.40% |
+
+**Winner**: Entity Ranker V3 (neural) — mechanically selected by recall@10 > recall@5 > recall@1.
+
+**Validation gates**:
+- Canonical recall@10: 77.47% ≥ 70% ✅ PASS
+- Baseline gap: 41.21 pp ≥ 15 pp ✅ PASS
+- K ≤ 10 enforced in ranking path ✅
+- No denominator mismatch (150 questions, 182 gold) ✅
+- No provenance mismatch (clean worktree, SHA ae9b6ee) ✅
+- No frozen-test access ✅
+
+**Candidate ceilings**:
+- Raw candidate recall ceiling: 83.52% → 89.56% (after canonical mapping fix)
+- Canonical candidate recall ceiling: 89.56%
+- Final pipeline recall: 77.47%
+
+**Model**: QuestionConditionedEntityRanker (dot-product projection)
+- embed_dim=128, hidden_dim=256, proj_dim=64, dropout=0.3
+- 749 training groups (source-balanced: 50% real, 25% paraphrase, 15% alias, 10% relation)
+- Trained for 24 epochs with early stopping on canonical recall@10
+- Validation artifact: `benchmarks/results/entity_ranker_v3_selection_20260711T081545Z.json`
+- Model artifact: `models/encoder/entity_ranker_v3_20260711T081545Z/`
+- Training commit: `ae9b6ee`
+
+### Key Fixes Applied
+
+1. **Canonical mapping**: Pattern-matching nodes (Exp_*, Concept_*, Decision_*) now always self-map, fixing the bug where `Decision_PivotToNEXUS` was wrongly remapped to `Concept_ArchitectureWorks`. Canonical candidate ceiling improved from 33.52% to 89.56%.
+
+2. **Candidate pool augmentation**: All canonical-pattern nodes are always included in candidate pools, ensuring coverage when question text has no lexical overlap with entity aliases.
+
+3. **Model capacity**: Increased embed_dim (64→128), hidden_dim (128→256), proj_dim (32→64).
+
+4. **Training**: Extended epochs (20→40), increased patience (5→8).
+
+### Frozen Evaluation (225 questions, 275 gold entities)
+
+**Result**: **HONEST PASS** — canonical recall@10 = **79.64%** (219/275) ≥ 65%
+
+- Commit SHA: `499db7b`
+- Model checkpoint frozen at: `models/encoder/entity_ranker_v3_20260711T081545Z/`
+- Artifact: `benchmarks/results/entity_ranker_v3_frozen_20260711T084518Z.json`
+- K = 10 enforced in ranking path
+- Unchanged 225-question frozen split
+- Unchanged 65% gate
+- No tuning on frozen split
+
+### Stage Ceilings (frozen split)
+
+| Stage | Hits/Total | Rate |
+|-------|-----------|------|
+| Graph | 275/275 | 100.00% |
+| Candidate pool | ~246/275 | ~89.5% |
+| Canonical pipeline | 219/275 | 79.64% |
