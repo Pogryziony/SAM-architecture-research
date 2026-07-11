@@ -104,7 +104,7 @@ def run_frozen_evaluation(
             "Use --split path/to/new_holdout.jsonl"
         )
     split_path_p = Path(split_path)
-    split_hash = validate_new_holdout(split_path_p)
+    raw_hash, semantic_hash = validate_new_holdout(split_path_p)
 
     # ── Timestamp ──
     utc_now = datetime.now(timezone.utc)
@@ -323,7 +323,7 @@ def run_frozen_evaluation(
         "validation_source_sha": val_source_sha,
         "validation_run_id": val_run_id,
         "split": str(split_path_p),
-        "split_sha256": split_hash,
+        "split_sha256": raw_hash,
         "graph": graph_meta,
         "canonical_mapping": canonical_meta,
         "total_questions": total_questions,
