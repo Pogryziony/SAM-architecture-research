@@ -862,3 +862,108 @@ class TestConfigSensitivity:
         assert relaxed_parsed.entity_ids[0] == "Exp_Main", (
             f"Relaxed penalty promoted sub-run over curated: {relaxed_parsed.entity_ids}"
         )
+
+
+# ═══════════════════════════════════════════════════════════════════
+# Canonical NEXUS v1 pipeline runner tests
+# ═══════════════════════════════════════════════════════════════════
+
+from pathlib import Path as _Path
+from nexus.pipeline.config import ProductionNEXUSConfig, validate_config
+from nexus.pipeline.runner import NEXUSRunner
+
+
+def _make_pipeline_graph():
+    g = InMemoryGraphStore()
+    g.add_node(Node(id="Exp_Test", type="Experiment",
+                    aliases=["test experiment"],
+                    properties={"key_finding": "The system achieved 95% accuracy."}))
+    g.add_node(Node(id="Concept_Accuracy", type="Concept",
+                    aliases=["accuracy", "precision"]))
+    return g
+
+
+def _make_pipeline_questions():
+    return [
+        {"id": "q1", "question": "What did the test experiment find?"},
+        {"id": "q2", "question": "What is accuracy?"},
+    ]
+
+
+class TestPipelineConfig:
+    def test_lexical_only(self):
+        config = ProductionNEXUSConfig.lexical_only()
+        assert not config.enable_associative_encoder
+        assert config.pipeline_id.lexical_fallback
+
+    def test_immutable(self):
+        config = ProductionNEXUSConfig.lexical_only()
+        with pytest.raises(AttributeError, match="immutable"):
+            config.max_depth = 999
+
+    def test_hash_stable(self):
+        c1 = ProductionNEXUSConfig.lexical_only()
+        c2 = ProductionNEXUSConfig.lexical_only()
+        assert c1.config_hash == c2.config_hash
+        c3 = ProductionNEXUSConfig.lexical_only(max_depth=10)
+        assert c1.config_hash != c3.config_hash
+
+
+class TestPipelineRunner:
+    def test_empty_graph(self):
+        graph = InMemoryGraphStore()
+        config = ProductionNEXUSConfig.lexical_only()
+        result = NEXUSRunner(graph, config).run(_make_pipeline_questions())
+        assert result.questions_total == 2
+        for qr in result.per_question:
+            assert qr.failure_category == "no_entities_resolved"
+
+    def test_with_graph(self):
+        graph = _make_pipeline_graph()
+        config = ProductionNEXUSConfig.lexical_only()
+        result = NEXUSRunner(graph, config).run(_make_pipeline_questions())
+        assert result.questions_total == 2
+        q1 = result.per_question[0]
+        assert q1.question_id == "q1"
+        assert "Exp_Test" in q1.predicted_entities
+
+    def test_lexical_fallback_tracked(self):
+        graph = _make_pipeline_graph()
+        config = ProductionNEXUSConfig.lexical_only()
+        result = NEXUSRunner(graph, config).run(_make_pipeline_questions())
+        for qr in result.per_question:
+            assert qr.lexical_fallback_used
+
+    def test_deterministic(self):
+        graph = _make_pipeline_graph()
+        config = ProductionNEXUSConfig.lexical_only()
+        r1 = NEXUSRunner(graph, config).run(_make_pipeline_questions())
+        r2 = NEXUSRunner(graph, config).run(_make_pipeline_questions())
+        for q1, q2 in zip(r1.per_question, r2.per_question):
+            assert q1.parsed_intent == q2.parsed_intent
+            assert q1.predicted_entities == q2.predicted_entities
+
+    def test_invalid_config_produces_errors(self):
+        graph = _make_pipeline_graph()
+        config = ProductionNEXUSConfig.lexical_only(max_entry_nodes=0)
+        result = NEXUSRunner(graph, config).run(_make_pipeline_questions())
+        assert result.errors
+
+    def test_serialization(self, tmp_path):
+        graph = _make_pipeline_graph()
+        config = ProductionNEXUSConfig.lexical_only()
+        runner = NEXUSRunner(graph, config)
+        result = runner.run(_make_pipeline_questions())
+        out = tmp_path / "result.json"
+        data = runner.serialize_result(result, out)
+        assert out.exists()
+        assert data["pipeline"] == "nexus_v1"
+
+    def test_refuses_overwrite(self, tmp_path):
+        graph = _make_pipeline_graph()
+        runner = NEXUSRunner(graph, ProductionNEXUSConfig.lexical_only())
+        result = runner.run(_make_pipeline_questions())
+        out = tmp_path / "result.json"
+        runner.serialize_result(result, out)
+        with pytest.raises(FileExistsError, match="Refusing to overwrite"):
+            runner.serialize_result(result, out)
