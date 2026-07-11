@@ -24,7 +24,7 @@
       "path": "models/encoder/entity_ranker_v3_20260711T081545Z/weights.pt",
       "committed_sha256": "8be5156f94b3d05fd24927592b48d1a1df38dccf4dbbecdfb3df815777f514c7",
       "committed_size": 3487600,
-      "note": "weights are NOT stored in git; hash recorded for audit only"
+      "note": "weights tracked in git at commit b6d832d; .gitignore pattern models/**/*.pt prevents accidental future commits"
     },
     "vocab.json": {
       "path": "models/encoder/entity_ranker_v3_20260711T081545Z/vocab.json",

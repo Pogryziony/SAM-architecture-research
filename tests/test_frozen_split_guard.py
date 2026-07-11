@@ -46,7 +46,8 @@ def _crlf(data: bytes) -> bytes:
 def test_consumed_frozen_hash_rejected(tmp_path: Path):
     """Any file with a consumed raw hash is rejected."""
     f = tmp_path / "test.jsonl"
-    f.write_text("synthetic test content\n")
+    # Use valid JSONL content
+    f.write_text('{"id":"q1","question":"Q?","entities":["A"]}\n', encoding="utf-8")
     fh = hashlib.sha256(f.read_bytes()).hexdigest()
     with pytest.raises(ConsumedSplitError, match="consumed split"):
         check_split_not_consumed(f, {fh})

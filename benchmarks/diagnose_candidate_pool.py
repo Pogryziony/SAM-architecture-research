@@ -1,7 +1,7 @@
 """Candidate-pool diagnostic — train and validation only.
 
-Never reads test.jsonl.  Reports exhaustive canonical-vocabulary
-ranking statistics and invariant checks.
+Does not read the consumed frozen split.  Reports exhaustive
+canonical-vocabulary ranking statistics and invariant checks.
 
 Usage:
     python -m benchmarks.diagnose_candidate_pool

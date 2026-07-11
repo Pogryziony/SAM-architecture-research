@@ -4,6 +4,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from stack.encoder.semantic_hash import (
     canonicalize_jsonl_bytes,
     compute_raw_sha256,
@@ -114,11 +116,62 @@ def test_canonicalize_and_hash_records_uses_sorted_keys():
     assert canonicalize_and_hash_records(r1) == canonicalize_and_hash_records(r2)
 
 
-def test_non_jsonl_content_handled_gracefully(tmp_path: Path):
-    """Non-JSONL content is handled without crashing."""
+def test_non_jsonl_content_raises_error(tmp_path: Path):
+    """Non-JSONL content raises MalformedJSONLError, not silently hashed."""
+    from stack.encoder.semantic_hash import MalformedJSONLError
+
     f = tmp_path / "not_jsonl.txt"
     f.write_text("this is not json\nnor is this\n", encoding="utf-8")
-    h = compute_canonical_semantic_sha256_path(f)
-    assert len(h) == 64
-    # Should produce deterministic output
-    assert compute_canonical_semantic_sha256_path(f) == h
+    with pytest.raises(MalformedJSONLError):
+        compute_canonical_semantic_sha256_path(f)
+
+
+def test_malformed_json_raises_error(tmp_path: Path):
+    """Malformed JSON raises MalformedJSONLError."""
+    from stack.encoder.semantic_hash import MalformedJSONLError
+
+    f = tmp_path / "bad.jsonl"
+    f.write_text('{"valid": 1}\n{broken json\n', encoding="utf-8")
+    with pytest.raises(MalformedJSONLError):
+        compute_canonical_semantic_sha256_path(f)
+
+
+def test_truncated_line_raises_error(tmp_path: Path):
+    """Truncated JSON line raises MalformedJSONLError."""
+    from stack.encoder.semantic_hash import MalformedJSONLError
+
+    f = tmp_path / "truncated.jsonl"
+    f.write_text('{"valid": 1}\n{"incomplete":\n', encoding="utf-8")
+    with pytest.raises(MalformedJSONLError):
+        compute_canonical_semantic_sha256_path(f)
+
+
+def test_empty_split_raises_error(tmp_path: Path):
+    """Empty split raises EmptySplitError."""
+    from stack.encoder.semantic_hash import EmptySplitError
+
+    f = tmp_path / "empty.jsonl"
+    f.write_text("\n\n", encoding="utf-8")
+    with pytest.raises(EmptySplitError):
+        compute_canonical_semantic_sha256_path(f)
+
+
+def test_invalid_utf8_raises_error(tmp_path: Path):
+    """Invalid UTF-8 raises UnicodeDecodeError."""
+    f = tmp_path / "bad_utf8.jsonl"
+    f.write_bytes(b'\x80\x81invalid utf-8\n')
+    with pytest.raises(UnicodeDecodeError):
+        compute_canonical_semantic_sha256_path(f)
+
+
+def test_malformed_error_has_line_number(tmp_path: Path):
+    """MalformedJSONLError includes the line number."""
+    from stack.encoder.semantic_hash import MalformedJSONLError
+
+    f = tmp_path / "numbered.jsonl"
+    f.write_text('{"valid": 1}\n\n{"valid": 2}\n{broken\n', encoding="utf-8")
+    try:
+        compute_canonical_semantic_sha256_path(f)
+    except MalformedJSONLError as exc:
+        assert exc.line_number == 4  # line 3 is blank, line 4 is broken
+        assert "broken" in exc.raw_line
