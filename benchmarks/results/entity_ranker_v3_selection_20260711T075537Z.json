@@ -1,0 +1,180 @@
+{
+  "canonical_mapping": {
+    "canonical_patterns": {
+      "concept": "^Concept_[A-Z][a-zA-Z]+$",
+      "decision": "^Decision_[A-Z][a-zA-Z0-9]+$",
+      "experiment": "^Exp_\\d+.*$"
+    },
+    "deterministic": true,
+    "edge_type_used": [
+      "belongs_to",
+      "derived_from",
+      "mentioned_in"
+    ],
+    "frozen_test_inspection": false,
+    "many_to_one_targets": 36,
+    "mapped_nodes": 368,
+    "property_keys_used": [
+      "parent_id",
+      "parent_entity",
+      "experiment_id",
+      "source_entity",
+      "mentioned_in"
+    ],
+    "self_referential_mappings": 59,
+    "total_graph_nodes": 1866,
+    "unique_canonical_targets": 59,
+    "unmapped_nodes": 1498
+  },
+  "dataset_stats": {
+    "canonical_mapping_size": 368,
+    "canonical_mapping_unique_targets": 59,
+    "training_groups": 749,
+    "training_source_counts": {
+      "graph_alias_keyfinding": 112,
+      "graph_mined_paraphrase": 187,
+      "graph_relation": 75,
+      "real_train": 375
+    },
+    "validation_groups": 150
+  },
+  "evaluations": [
+    {
+      "candidate_groups": 150,
+      "metrics": {
+        "canonical_candidate_recall_ceiling": 0.8351648351648352,
+        "canonical_precision@1": 0.12666666666666668,
+        "canonical_precision@10": 0.04342017368069472,
+        "canonical_precision@5": 0.07466666666666667,
+        "canonical_recall@1": 0.1043956043956044,
+        "canonical_recall@10": 0.35714285714285715,
+        "canonical_recall@5": 0.3076923076923077,
+        "precision@1": 0.12666666666666668,
+        "precision@10": 0.04342017368069472,
+        "precision@5": 0.07466666666666667,
+        "raw_candidate_recall_ceiling": 0.8351648351648352,
+        "raw_precision@1": 0.12666666666666668,
+        "raw_precision@10": 0.04342017368069472,
+        "raw_precision@5": 0.07466666666666667,
+        "raw_recall@1": 0.1043956043956044,
+        "raw_recall@10": 0.35714285714285715,
+        "raw_recall@5": 0.3076923076923077,
+        "recall@1": 0.1043956043956044,
+        "recall@10": 0.35714285714285715,
+        "recall@5": 0.3076923076923077,
+        "total_gold_entities": 182.0,
+        "total_questions": 150.0
+      },
+      "model": "trivial_baseline"
+    },
+    {
+      "candidate_groups": 150,
+      "metrics": {
+        "absent_gold_count": 23.0,
+        "canonical_candidate_recall_ceiling": 0.8351648351648352,
+        "canonical_precision@1": 0.05333333333333334,
+        "canonical_precision@10": 0.052772211088844355,
+        "canonical_precision@5": 0.07466666666666667,
+        "canonical_recall@1": 0.04395604395604396,
+        "canonical_recall@10": 0.4340659340659341,
+        "canonical_recall@5": 0.3076923076923077,
+        "precision@1": 0.05333333333333334,
+        "precision@10": 0.052772211088844355,
+        "precision@5": 0.07466666666666667,
+        "raw_candidate_recall_ceiling": 0.8351648351648352,
+        "raw_precision@1": 0.05333333333333334,
+        "raw_precision@10": 0.052772211088844355,
+        "raw_precision@5": 0.07466666666666667,
+        "raw_recall@1": 0.04395604395604396,
+        "raw_recall@10": 0.4340659340659341,
+        "raw_recall@5": 0.3076923076923077,
+        "recall@1": 0.04395604395604396,
+        "recall@10": 0.4340659340659341,
+        "recall@5": 0.3076923076923077,
+        "total_gold_entities": 182.0,
+        "total_questions": 150.0
+      },
+      "model": "feature_logistic_v3"
+    },
+    {
+      "candidate_groups": 150,
+      "metrics": {
+        "absent_gold_count": 23.0,
+        "canonical_candidate_recall_ceiling": 0.8351648351648352,
+        "canonical_precision@1": 0.37333333333333335,
+        "canonical_precision@10": 0.06346025384101536,
+        "canonical_precision@5": 0.104,
+        "canonical_recall@1": 0.3076923076923077,
+        "canonical_recall@10": 0.521978021978022,
+        "canonical_recall@5": 0.42857142857142855,
+        "precision@1": 0.37333333333333335,
+        "precision@10": 0.06346025384101536,
+        "precision@5": 0.104,
+        "raw_candidate_recall_ceiling": 0.8351648351648352,
+        "raw_precision@1": 0.3333333333333333,
+        "raw_precision@10": 0.06412825651302605,
+        "raw_precision@5": 0.1,
+        "raw_recall@1": 0.27472527472527475,
+        "raw_recall@10": 0.5274725274725275,
+        "raw_recall@5": 0.41208791208791207,
+        "recall@1": 0.3076923076923077,
+        "recall@10": 0.521978021978022,
+        "recall@5": 0.42857142857142855,
+        "total_gold_entities": 182.0,
+        "total_questions": 150.0
+      },
+      "model": "entity_ranker_v3"
+    }
+  ],
+  "graph": {
+    "build_command": "python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results/TIMESTAMPED_FILE.json",
+    "build_steps": [
+      "1. populate_from_experiments(EXPERIMENTS_DIR, graph)",
+      "2. ingest_directory('docs/', graph)",
+      "3. ingest_directory('sam-lm/docs/', graph)",
+      "4. ingest_directory('sam-lm/experiments/', graph)"
+    ],
+    "edge_count": 560,
+    "edge_type_counts": {
+      "contradicts": 1,
+      "depends_on": 201,
+      "derived_from": 348,
+      "validates": 10
+    },
+    "effective_config": {
+      "enable_associative_encoder": false,
+      "enable_cooccurrence_edges": false,
+      "enable_embedding_er": false,
+      "enable_normalization": false
+    },
+    "fixes_applied": [
+      "P0: entity filter, relations constrained 10K->116 edges, entity ranking",
+      "P1: key_findings surfaced as evidence in evidence_builder",
+      "P2: double-gate with corpus metric (honest hallucination measurement)"
+    ],
+    "node_count": 1866,
+    "timestamp": "2026-07-11T07:55:39.274669+00:00"
+  },
+  "model_dir": "models\\encoder\\entity_ranker_v3_20260711T075537Z",
+  "run_id": "entity_ranker_v3_20260711T075537Z",
+  "run_timestamp_utc": "2026-07-11T07:55:37.905171+00:00",
+  "seed": 20260710,
+  "selection": {
+    "baseline_gap_pp": 16.483516483516485,
+    "baseline_gate_15pp": true,
+    "baseline_recall@10": 0.35714285714285715,
+    "candidate_recall_ceiling": 0.8351648351648352,
+    "decision_rule": "recall@10, recall@5, recall@1 tie-break",
+    "proceed_to_frozen": false,
+    "val_gate_70pct": false,
+    "winner": "entity_ranker_v3",
+    "winner_recall@1": 0.3076923076923077,
+    "winner_recall@10": 0.521978021978022,
+    "winner_recall@5": 0.42857142857142855
+  },
+  "source_sha": "0ead1386499486769af7070e7976b30d433d1a98",
+  "split": "stack/encoder/data/val.jsonl",
+  "split_sha256": "f95e212502c7c5ad5a615a3e1921e62ef7e1e961a229f44be63e3f829fdacd09",
+  "test_split_read": false,
+  "train_split_sha256": "6b52b5b0fc2ae8accbc85df0b568b72355a5122994704a96329c257228fc9e40"
+}

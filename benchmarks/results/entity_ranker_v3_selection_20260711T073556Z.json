@@ -1,0 +1,180 @@
+{
+  "canonical_mapping": {
+    "canonical_patterns": {
+      "concept": "^Concept_[A-Z][a-zA-Z]+$",
+      "decision": "^Decision_[A-Z][a-zA-Z0-9]+$",
+      "experiment": "^Exp_\\d+.*$"
+    },
+    "deterministic": true,
+    "edge_type_used": [
+      "belongs_to",
+      "derived_from",
+      "mentioned_in"
+    ],
+    "frozen_test_inspection": false,
+    "many_to_one_targets": 10,
+    "mapped_nodes": 368,
+    "property_keys_used": [
+      "parent_id",
+      "parent_entity",
+      "experiment_id",
+      "source_entity",
+      "mentioned_in"
+    ],
+    "self_referential_mappings": 22,
+    "total_graph_nodes": 1866,
+    "unique_canonical_targets": 22,
+    "unmapped_nodes": 1498
+  },
+  "dataset_stats": {
+    "canonical_mapping_size": 368,
+    "canonical_mapping_unique_targets": 22,
+    "training_groups": 749,
+    "training_source_counts": {
+      "graph_alias_keyfinding": 112,
+      "graph_mined_paraphrase": 187,
+      "graph_relation": 75,
+      "real_train": 375
+    },
+    "validation_groups": 150
+  },
+  "evaluations": [
+    {
+      "candidate_groups": 150,
+      "metrics": {
+        "canonical_candidate_recall_ceiling": 0.33516483516483514,
+        "canonical_precision@1": 0.0,
+        "canonical_precision@10": 0.007357859531772575,
+        "canonical_precision@5": 0.014666666666666666,
+        "canonical_recall@1": 0.0,
+        "canonical_recall@10": 0.06043956043956044,
+        "canonical_recall@5": 0.06043956043956044,
+        "precision@1": 0.0,
+        "precision@10": 0.007357859531772575,
+        "precision@5": 0.014666666666666666,
+        "raw_candidate_recall_ceiling": 0.8351648351648352,
+        "raw_precision@1": 0.12666666666666668,
+        "raw_precision@10": 0.04275217100868404,
+        "raw_precision@5": 0.072,
+        "raw_recall@1": 0.1043956043956044,
+        "raw_recall@10": 0.3516483516483517,
+        "raw_recall@5": 0.2967032967032967,
+        "recall@1": 0.0,
+        "recall@10": 0.06043956043956044,
+        "recall@5": 0.06043956043956044,
+        "total_gold_entities": 182.0,
+        "total_questions": 150.0
+      },
+      "model": "trivial_baseline"
+    },
+    {
+      "candidate_groups": 150,
+      "metrics": {
+        "absent_gold_count": 23.0,
+        "canonical_candidate_recall_ceiling": 0.33516483516483514,
+        "canonical_precision@1": 0.02666666666666667,
+        "canonical_precision@10": 0.009364548494983277,
+        "canonical_precision@5": 0.013333333333333334,
+        "canonical_recall@1": 0.02197802197802198,
+        "canonical_recall@10": 0.07692307692307693,
+        "canonical_recall@5": 0.054945054945054944,
+        "precision@1": 0.02666666666666667,
+        "precision@10": 0.009364548494983277,
+        "precision@5": 0.013333333333333334,
+        "raw_candidate_recall_ceiling": 0.8351648351648352,
+        "raw_precision@1": 0.06,
+        "raw_precision@10": 0.05076820307281229,
+        "raw_precision@5": 0.07066666666666667,
+        "raw_recall@1": 0.04945054945054945,
+        "raw_recall@10": 0.4175824175824176,
+        "raw_recall@5": 0.29120879120879123,
+        "recall@1": 0.02197802197802198,
+        "recall@10": 0.07692307692307693,
+        "recall@5": 0.054945054945054944,
+        "total_gold_entities": 182.0,
+        "total_questions": 150.0
+      },
+      "model": "feature_logistic_v3"
+    },
+    {
+      "candidate_groups": 150,
+      "metrics": {
+        "absent_gold_count": 23.0,
+        "canonical_candidate_recall_ceiling": 0.33516483516483514,
+        "canonical_precision@1": 0.02666666666666667,
+        "canonical_precision@10": 0.02073578595317726,
+        "canonical_precision@5": 0.018666666666666668,
+        "canonical_recall@1": 0.02197802197802198,
+        "canonical_recall@10": 0.17032967032967034,
+        "canonical_recall@5": 0.07692307692307693,
+        "precision@1": 0.02666666666666667,
+        "precision@10": 0.02073578595317726,
+        "precision@5": 0.018666666666666668,
+        "raw_candidate_recall_ceiling": 0.8351648351648352,
+        "raw_precision@1": 0.2866666666666667,
+        "raw_precision@10": 0.07548430193720775,
+        "raw_precision@5": 0.10133333333333333,
+        "raw_recall@1": 0.23626373626373626,
+        "raw_recall@10": 0.6208791208791209,
+        "raw_recall@5": 0.4175824175824176,
+        "recall@1": 0.02197802197802198,
+        "recall@10": 0.17032967032967034,
+        "recall@5": 0.07692307692307693,
+        "total_gold_entities": 182.0,
+        "total_questions": 150.0
+      },
+      "model": "entity_ranker_v3"
+    }
+  ],
+  "graph": {
+    "build_command": "python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results/TIMESTAMPED_FILE.json",
+    "build_steps": [
+      "1. populate_from_experiments(EXPERIMENTS_DIR, graph)",
+      "2. ingest_directory('docs/', graph)",
+      "3. ingest_directory('sam-lm/docs/', graph)",
+      "4. ingest_directory('sam-lm/experiments/', graph)"
+    ],
+    "edge_count": 561,
+    "edge_type_counts": {
+      "contradicts": 1,
+      "depends_on": 202,
+      "derived_from": 348,
+      "validates": 10
+    },
+    "effective_config": {
+      "enable_associative_encoder": false,
+      "enable_cooccurrence_edges": false,
+      "enable_embedding_er": false,
+      "enable_normalization": false
+    },
+    "fixes_applied": [
+      "P0: entity filter, relations constrained 10K->116 edges, entity ranking",
+      "P1: key_findings surfaced as evidence in evidence_builder",
+      "P2: double-gate with corpus metric (honest hallucination measurement)"
+    ],
+    "node_count": 1866,
+    "timestamp": "2026-07-11T07:35:57.849669+00:00"
+  },
+  "model_dir": "models\\encoder\\entity_ranker_v3_20260711T073556Z",
+  "run_id": "entity_ranker_v3_20260711T073556Z",
+  "run_timestamp_utc": "2026-07-11T07:35:56.549671+00:00",
+  "seed": 20260710,
+  "selection": {
+    "baseline_gap_pp": 10.989010989010989,
+    "baseline_gate_15pp": false,
+    "baseline_recall@10": 0.06043956043956044,
+    "candidate_recall_ceiling": 0.33516483516483514,
+    "decision_rule": "recall@10, recall@5, recall@1 tie-break",
+    "proceed_to_frozen": false,
+    "val_gate_70pct": false,
+    "winner": "entity_ranker_v3",
+    "winner_recall@1": 0.02197802197802198,
+    "winner_recall@10": 0.17032967032967034,
+    "winner_recall@5": 0.07692307692307693
+  },
+  "source_sha": "3d09a5605bc79e83571d393e1f8510bf54068e31",
+  "split": "stack/encoder/data/val.jsonl",
+  "split_sha256": "f95e212502c7c5ad5a615a3e1921e62ef7e1e961a229f44be63e3f829fdacd09",
+  "test_split_read": false,
+  "train_split_sha256": "6b52b5b0fc2ae8accbc85df0b568b72355a5122994704a96329c257228fc9e40"
+}

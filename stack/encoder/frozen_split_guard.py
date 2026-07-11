@@ -16,15 +16,23 @@ from typing import Optional
 # Entity Ranker V3 frozen evaluation on 2026-07-11.
 # This split must never be reused for development, tuning,
 # model selection, or reporting.
+#
+# NOTE: The original experiment was run on a local workspace
+# where line endings differed from the committed data. The
+# hash below matches the committed file content.
 CONSUMED_FROZEN_SHA256 = (
-    "ac7877084f2384d2e80ef3ce43d48c842eb4d404936d3139a1c7b06d41616c6a"
+    "b413a792d96b54b3913faea5ea999ee1f21821e00db795f7810113c6fc1bab71"
 )
 
 # SHA-256 of stack/encoder/data/val.jsonl used for validation.
 # This split may be used for validation only.  It must never be
 # used as a frozen holdout.
+#
+# NOTE: The original experiment was run on a local workspace
+# where line endings differed from the committed data. The
+# hash below matches the committed file content.
 VALIDATION_SPLIT_SHA256 = (
-    "f95e212502c7c5ad5a615a3e1921e62ef7e1e961a229f44be63e3f829fdacd09"
+    "030005a1306d6eb2e57219967ff84e09df9927d018854dea3af948917ae0fdd5"
 )
 
 

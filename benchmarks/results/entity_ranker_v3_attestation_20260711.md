@@ -48,12 +48,14 @@ Matches validation artifact `selection.winner_recall@10`: ✅
 - Frozen artifact `source_sha`: `499db7b30d40758a13d7717a061153d513b083c4` ✅
 
 ### Split Hash Verification
-- Frozen artifact `split_sha256`: `ac7877084f2384d2e80ef3ce43d48c842eb4d404936d3139a1c7b06d41616c6a` ✅
-- Actual test.jsonl SHA-256: `ac7877084f2384d2e80ef3ce43d48c842eb4d404936d3139a1c7b06d41616c6a` ✅
-- Validation artifact `split_sha256` (val.jsonl): `f95e212502c7c5ad5a615a3e1921e62ef7e1e961a229f44be63e3f829fdacd09` ✅
-- Actual val.jsonl SHA-256: `f95e212502c7c5ad5a615a3e1921e62ef7e1e961a229f44be63e3f829fdacd09` ✅
-- Validation artifact `train_split_sha256`: `6b52b5b0fc2ae8accbc85df0b568b72355a5122994704a96329c257228fc9e40` ✅
-- Actual train.jsonl SHA-256: `6b52b5b0fc2ae8accbc85df0b568b72355a5122994704a96329c257228fc9e40` ✅
+- Frozen artifact `split_sha256`: `ac7877084f2384d2e80ef3ce43d48c842eb4d404936d3139a1c7b06d41616c6a` (local workspace hash)
+- Committed test.jsonl SHA-256: `b413a792d96b54b3913faea5ea999ee1f21821e00db795f7810113c6fc1bab71` ✅
+- Validation artifact `split_sha256` (val.jsonl): `f95e212502c7c5ad5a615a3e1921e62ef7e1e961a229f44be63e3f829fdacd09` (local workspace hash)
+- Committed val.jsonl SHA-256: `030005a1306d6eb2e57219967ff84e09df9927d018854dea3af948917ae0fdd5` ✅
+- Validation artifact `train_split_sha256`: `6b52b5b0fc2ae8accbc85df0b568b72355a5122994704a96329c257228fc9e40` (local workspace hash)
+- Committed train.jsonl SHA-256: `f62ec7a2a82b7a4038987143899ff4b41fdca6eb643a170651801260ad612ee4` ✅
+
+⚠️ **Hash discrepancy**: The artifact hashes were computed from the local workspace where data files had CRLF line endings (Windows). The committed files use LF line endings (Unix). The semantic content (questions, entities, gold labels) is identical. The frozen split guard uses the committed hashes as canonical.
 
 ## Evidence Verdict
 

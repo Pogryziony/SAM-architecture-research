@@ -126,6 +126,7 @@ def test_dirty_worktree_guard(tmp_path: Path):
 
 def test_production_write_json_artifact_refuses_overwrite(tmp_path: Path):
     """T8: Production _write_json_artifact refuses to overwrite."""
+    pytest.importorskip("torch")  # train_ranker_v3 imports torch
     from stack.encoder.train_ranker_v3 import _write_json_artifact
     path = tmp_path / "test_artifact.json"
     _write_json_artifact(path, {"run": 1})
@@ -137,6 +138,7 @@ def test_production_write_json_artifact_refuses_overwrite(tmp_path: Path):
 
 def test_production_select_winner_mechanical():
     """T9: Production select_winner uses max recall@10, tie-break recall@5."""
+    pytest.importorskip("torch")  # train_ranker_v3 imports torch
     from stack.encoder.train_ranker_v3 import select_winner
     metrics = {
         "model_a": {"recall@10": 0.70, "recall@5": 0.50, "recall@1": 0.10},
@@ -152,6 +154,7 @@ def test_production_select_winner_mechanical():
 
 def test_empty_gate_set_is_invalid():
     """T9: Empty gate dict must not produce a PASS verdict — returns INVALID."""
+    pytest.importorskip("torch")  # train_ranker_v3 imports torch
     from stack.encoder.train_ranker_v3 import select_winner
     with pytest.raises(IndexError):
         select_winner({})
