@@ -232,9 +232,9 @@ def train_ranker_v3(
     graph: Any,
     val_groups: Sequence[Mapping[str, Any]] | None = None,
     canonical_mapping: dict[str, str] | None = None,
-    epochs: int = 20,
+    epochs: int = 40,
     lr: float = 0.001,
-    patience: int = 5,
+    patience: int = 8,
 ) -> dict[str, Any]:
     """Train the V3 question-conditioned entity ranker.
 
@@ -266,10 +266,10 @@ def train_ranker_v3(
     # Build model
     model = QuestionConditionedEntityRanker(
         feature_dim=tokenizer.feature_dim,
-        embed_dim=64,
-        hidden_dim=128,
-        proj_dim=32,
-        dropout=0.2,
+        embed_dim=128,
+        hidden_dim=256,
+        proj_dim=64,
+        dropout=0.3,
     )
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
 
