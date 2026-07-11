@@ -1,0 +1,41 @@
+{
+  "architecture": "exhaustive canonical-vocabulary ranking with lexical and graph-derived candidate augmentation",
+  "diagnostic": "candidate_pool_v3",
+  "run_timestamp_utc": "2026-07-11T11:50:55.338170+00:00",
+  "split_results": {
+    "train": {
+      "canonical_pattern_nodes": 59,
+      "exhaustive_canonical_candidate_ceiling": 1.0,
+      "invariant_min_pool_ge_canonical": true,
+      "latency_p50_ms": 31.486299998505274,
+      "latency_p95_ms": 47.25459999826853,
+      "lexical_only_candidate_ceiling": 0.0,
+      "peak_rss_mb": 0.6015625,
+      "pool_size_max": 782,
+      "pool_size_mean": 473.9866666666667,
+      "pool_size_median": 553,
+      "pool_size_min": 80,
+      "pool_size_p95": 141,
+      "questions": 375,
+      "questions_with_missing_gold": 0,
+      "total_gold_entities": 504
+    },
+    "validation": {
+      "canonical_pattern_nodes": 59,
+      "exhaustive_canonical_candidate_ceiling": 1.0,
+      "invariant_min_pool_ge_canonical": true,
+      "latency_p50_ms": 20.06864999748359,
+      "latency_p95_ms": 33.070800000132294,
+      "lexical_only_candidate_ceiling": 0.0,
+      "peak_rss_mb": 0.33984375,
+      "pool_size_max": 636,
+      "pool_size_mean": 228.38,
+      "pool_size_median": 165.0,
+      "pool_size_min": 63,
+      "pool_size_p95": 73,
+      "questions": 150,
+      "questions_with_missing_gold": 0,
+      "total_gold_entities": 182
+    }
+  }
+}

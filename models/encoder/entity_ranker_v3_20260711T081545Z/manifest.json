@@ -1,0 +1,35 @@
+{
+  "manifest_schema_version": "1.0",
+  "run_id": "entity_ranker_v3_20260711T081545Z",
+  "training_source_sha": "ae9b6ee2f67ca2aaa7467e158d5318908d047511",
+  "architecture": "question_conditioned_dot_product_v3",
+  "seed": 20260710,
+  "validation_artifact": {
+    "path": "benchmarks/results/entity_ranker_v3_selection_20260711T081545Z.json",
+    "committed_sha256": "8f0542b73aaa4f0c528c02f3ee190005713ac707880045b497eb43987c34846d",
+    "committed_size": 6295
+  },
+  "frozen_artifact": {
+    "path": "benchmarks/results/entity_ranker_v3_frozen_20260711T084518Z.json",
+    "committed_sha256": "df2c51c66ca5e26b641c8dc3c3da355f8292d32525b2d22f791d5356a16e1538",
+    "committed_size": 3151
+  },
+  "files": {
+    "config.json": {
+      "path": "models/encoder/entity_ranker_v3_20260711T081545Z/config.json",
+      "committed_sha256": "c14051c80af3c72ee8a2d6c7915da69bd6de978c25f9a5cf9cd5866dd2ce6d95",
+      "committed_size": 343
+    },
+    "weights.pt": {
+      "path": "models/encoder/entity_ranker_v3_20260711T081545Z/weights.pt",
+      "committed_sha256": "8be5156f94b3d05fd24927592b48d1a1df38dccf4dbbecdfb3df815777f514c7",
+      "committed_size": 3487600,
+      "note": "weights tracked in git at commit b6d832d; .gitignore pattern models/**/*.pt prevents accidental future commits"
+    },
+    "vocab.json": {
+      "path": "models/encoder/entity_ranker_v3_20260711T081545Z/vocab.json",
+      "committed_sha256": "e69d55991720318689487832d1b38e16b60164b90e3b792d9adef7aa2ace8364",
+      "committed_size": 62575
+    }
+  }
+}

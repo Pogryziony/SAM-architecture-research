@@ -62,13 +62,13 @@ def _lexical_score(question: str, node: Any) -> int:
     )
 
 
-def candidate_pool(question: str, graph: Any) -> list[dict[str, Any]]:
+def candidate_pool(question: str, graph: Any, include_canonical_vocabulary: bool = True) -> list[dict[str, Any]]:
     """Build the same graph-backed candidate pool used before re-ranking.
 
-    In addition to lexical retrieval, all canonical-pattern nodes
-    (Exp_*, Concept_*, Decision_*) are always included to ensure
-    coverage when question text has no direct lexical overlap with
-    entity aliases.
+    When *include_canonical_vocabulary* is True (default), all
+    canonical-pattern nodes (Exp_*, Concept_*, Decision_*) are always
+    included to ensure exhaustive coverage.  When False, only nodes
+    found by the lexical and graph-derived pipeline appear.
     """
     from stack.encoder.canonical_mapping import _is_canonical_id
 
@@ -87,12 +87,13 @@ def candidate_pool(question: str, graph: Any) -> list[dict[str, Any]]:
         if node_id not in seen:
             seen.add(node_id)
             combined.append(node_id)
-    # Always include all canonical-pattern nodes for coverage
-    for node_id in sorted(graph._nodes.keys()):
-        if node_id not in seen and _is_canonical_id(node_id):
-            if graph.get_node(node_id) is not None:
-                seen.add(node_id)
-                combined.append(node_id)
+    # Always include all canonical-pattern nodes for coverage (exhaustive mode)
+    if include_canonical_vocabulary:
+        for node_id in sorted(graph._nodes.keys()):
+            if node_id not in seen and _is_canonical_id(node_id):
+                if graph.get_node(node_id) is not None:
+                    seen.add(node_id)
+                    combined.append(node_id)
     return [
         {"node_id": node_id, "lexical_score": _lexical_score(question, graph.get_node(node_id))}
         for node_id in combined

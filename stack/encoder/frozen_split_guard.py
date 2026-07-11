@@ -1,40 +1,96 @@
 """Frozen split guard — prevents reuse of consumed evaluation splits.
 
-The consumed frozen test split is permanently rejected.  Future
-evaluations must use a new, unlabeled holdout split.
+The consumed frozen test split is permanently rejected by raw LF hash,
+raw CRLF hash, and canonical semantic hash.  Future evaluations must
+use a new, unlabeled holdout split.
 
-This module must NOT read test.jsonl to determine the consumed hash.
-The hash is embedded as a constant derived from the original split.
+All consumed-hash constants are derived from the committed repository
+bytes.  This module must NOT read test.jsonl at import time to
+determine hashes.
 """
 from __future__ import annotations
 
 import hashlib
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-# SHA-256 of stack/encoder/data/test.jsonl as consumed by the
-# Entity Ranker V3 frozen evaluation on 2026-07-11.
-# This split must never be reused for development, tuning,
-# model selection, or reporting.
-#
-# NOTE: The original experiment was run on a local workspace
-# where line endings differed from the committed data. The
-# hash below matches the committed file content.
-CONSUMED_FROZEN_SHA256 = (
+from stack.encoder.semantic_hash import (
+    compute_canonical_semantic_sha256_path,
+)
+
+
+# ── Consumed split registry ──────────────────────────────────────────────
+
+@dataclass(frozen=True)
+class ConsumedSplit:
+    """Immutable record of a consumed evaluation split."""
+    name: str
+    raw_lf_sha256: str       # committed LF bytes
+    raw_crlf_sha256: str     # local CRLF bytes (from original experiment)
+    semantic_sha256: str     # canonical JSONL digest
+    consumed_utc: str
+    experiment_run_id: str
+    status: str = "consumed"
+
+    @property
+    def all_hashes(self) -> set[str]:
+        return {self.raw_lf_sha256, self.raw_crlf_sha256, self.semantic_sha256}
+
+
+# Raw LF hash (committed bytes):
+#   git show HEAD:stack/encoder/data/test.jsonl | sha256sum
+CONSUMED_FROZEN_RAW_LF = (
     "b413a792d96b54b3913faea5ea999ee1f21821e00db795f7810113c6fc1bab71"
 )
 
-# SHA-256 of stack/encoder/data/val.jsonl used for validation.
-# This split may be used for validation only.  It must never be
-# used as a frozen holdout.
-#
-# NOTE: The original experiment was run on a local workspace
-# where line endings differed from the committed data. The
-# hash below matches the committed file content.
-VALIDATION_SPLIT_SHA256 = (
-    "030005a1306d6eb2e57219967ff84e09df9927d018854dea3af948917ae0fdd5"
+# Raw CRLF hash (local Windows workspace during original experiment):
+CONSUMED_FROZEN_RAW_CRLF = (
+    "ac7877084f2384d2e80ef3ce43d48c842eb4d404936d3139a1c7b06d41616c6a"
 )
 
+# Canonical semantic hash (JSONL content, line-ending insensitive):
+CONSUMED_FROZEN_SEMANTIC = (
+    "37c6fe6e83972de703efdc09fde1c0c19363ac0fab1f5e07c67e06ad98071556"
+)
+
+CONSUMED_FROZEN = ConsumedSplit(
+    name="stack/encoder/data/test.jsonl",
+    raw_lf_sha256=CONSUMED_FROZEN_RAW_LF,
+    raw_crlf_sha256=CONSUMED_FROZEN_RAW_CRLF,
+    semantic_sha256=CONSUMED_FROZEN_SEMANTIC,
+    consumed_utc="2026-07-11T08:45:18Z",
+    experiment_run_id="entity_ranker_v3_frozen_20260711T084518Z",
+)
+
+# ── Validation split (must never be used as frozen holdout) ──────────────
+
+VALIDATION_RAW_LF = (
+    "030005a1306d6eb2e57219967ff84e09df9927d018854dea3af948917ae0fdd5"
+)
+VALIDATION_RAW_CRLF = (
+    "f95e212502c7c5ad5a615a3e1921e62ef7e1e961a229f44be63e3f829fdacd09"
+)
+VALIDATION_SEMANTIC = (
+    "82f859e5c9c9d4aba0e2bdc9f382d13c57c792125a7c4f00798d0b4eff6697c2"
+)
+
+# ── Exported constants for backward compatibility ────────────────────────
+
+CONSUMED_FROZEN_SHA256 = CONSUMED_FROZEN_RAW_LF
+VALIDATION_SPLIT_SHA256 = VALIDATION_RAW_LF
+
+
+# ── All consumed hashes (raw + semantic) ─────────────────────────────────
+
+def _consumed_hash_set() -> set[str]:
+    """All hashes that must be rejected."""
+    return CONSUMED_FROZEN.all_hashes | {
+        VALIDATION_RAW_LF, VALIDATION_RAW_CRLF, VALIDATION_SEMANTIC,
+    }
+
+
+# ── Public API ───────────────────────────────────────────────────────────
 
 class ConsumedSplitError(ValueError):
     """Raised when an attempt is made to reuse a consumed split."""
@@ -43,75 +99,50 @@ class ConsumedSplitError(ValueError):
 def check_split_not_consumed(
     split_path: Path,
     consumed_hashes: Optional[set[str]] = None,
-) -> str:
+) -> tuple[str, str]:
     """Verify that a split has not been consumed.
 
-    Reads *split_path* once, computes its SHA-256, and rejects it
-    if the hash matches any entry in *consumed_hashes*.
-
-    Args:
-        split_path: Path to the split file.
-        consumed_hashes: SHA-256 hashes of consumed splits.
-            Defaults to {CONSUMED_FROZEN_SHA256, VALIDATION_SPLIT_SHA256}
-            when evaluating a test-like split.
+    Reads *split_path* once, computes both raw and semantic SHA-256,
+    and rejects it if either matches a consumed hash.
 
     Returns:
-        The SHA-256 hex digest of *split_path*.
-
-    Raises:
-        ConsumedSplitError: If the split hash matches a consumed hash.
-        FileNotFoundError: If *split_path* does not exist.
+        (raw_sha256, semantic_sha256)
     """
     if consumed_hashes is None:
-        consumed_hashes = {CONSUMED_FROZEN_SHA256, VALIDATION_SPLIT_SHA256}
+        consumed_hashes = _consumed_hash_set()
 
     if not split_path.exists():
         raise FileNotFoundError(f"Split file not found: {split_path}")
 
     data = split_path.read_bytes()
-    file_hash = hashlib.sha256(data).hexdigest()
+    raw_hash = hashlib.sha256(data).hexdigest()
+    semantic_hash = compute_canonical_semantic_sha256_path(split_path)
 
-    if file_hash in consumed_hashes:
-        raise ConsumedSplitError(
-            f"Split {split_path} has SHA-256 {file_hash} which matches "
-            f"a consumed split. This split must never be reused for "
-            f"evaluation. Use a new, unlabeled holdout split instead."
-        )
+    for label, h in [("raw", raw_hash), ("semantic", semantic_hash)]:
+        if h in consumed_hashes:
+            raise ConsumedSplitError(
+                f"Split {split_path} has {label} SHA-256 {h} which matches "
+                f"a consumed split. This split must never be reused for "
+                f"evaluation. Use a new, unlabeled holdout split instead."
+            )
 
-    return file_hash
+    return raw_hash, semantic_hash
 
 
 def validate_new_holdout(
     split_path: Path,
     consumed_hashes: Optional[set[str]] = None,
-) -> str:
+) -> tuple[str, str]:
     """Validate that *split_path* is a new, unconsumed holdout.
 
-    Only permits splits whose SHA-256 does NOT match any consumed hash.
-    This is the function to call before a new frozen evaluation.
-
-    Args:
-        split_path: Path to the new holdout split.
-        consumed_hashes: Set of consumed hashes. Defaults to
-            {CONSUMED_FROZEN_SHA256}.
+    Rejects splits whose raw or semantic SHA-256 matches any consumed
+    split, including the validation split.
 
     Returns:
-        The SHA-256 hex digest of *split_path*.
-
-    Raises:
-        ConsumedSplitError: If the hash matches a consumed split.
-        FileNotFoundError: If *split_path* does not exist.
+        (raw_sha256, semantic_sha256)
     """
     if consumed_hashes is None:
-        consumed_hashes = {CONSUMED_FROZEN_SHA256}
+        consumed_hashes = _consumed_hash_set()
 
-    file_hash = check_split_not_consumed(split_path, consumed_hashes)
-
-    # Also reject if it matches the validation split
-    if file_hash == VALIDATION_SPLIT_SHA256:
-        raise ConsumedSplitError(
-            f"Split {split_path} matches the validation split. "
-            f"The validation split must not be used as a frozen holdout."
-        )
-
-    return file_hash
+    raw_hash, semantic_hash = check_split_not_consumed(split_path, consumed_hashes)
+    return raw_hash, semantic_hash
