@@ -207,10 +207,23 @@ def save_ranker_v3(
     config: dict,
     output_dir: str,
 ) -> None:
-    """Save ranker model, tokenizer, and config."""
-    os.makedirs(output_dir, exist_ok=True)
+    """Save ranker model, tokenizer, and config to an immutable directory.
 
-    torch.save(
+    The directory must already exist.  Fails if any output file already exists.
+    """
+    out = os.path.abspath(output_dir)
+    if not os.path.isdir(out):
+        raise NotADirectoryError(f"Output directory does not exist: {out}")
+
+    def _save(path: str, write_fn):
+        full = os.path.join(out, path)
+        if os.path.exists(full):
+            raise FileExistsError(
+                f"Refusing to overwrite existing artifact: {full}"
+            )
+        write_fn(full)
+
+    _save("weights.pt", lambda p: torch.save(
         {
             "model_state": model.state_dict(),
             "feature_dim": model.embedding.num_embeddings,
@@ -219,13 +232,14 @@ def save_ranker_v3(
             "proj_dim": model.proj_dim,
             "use_bilinear": model.use_bilinear,
         },
-        os.path.join(output_dir, "weights.pt"),
-    )
+        p,
+    ))
 
-    tokenizer.save_vocab(os.path.join(output_dir, "vocab.json"))
+    _save("vocab.json", lambda p: tokenizer.save_vocab(p))
 
-    with open(os.path.join(output_dir, "config.json"), "w", encoding="utf-8") as f:
-        json.dump(config, f, ensure_ascii=False, indent=2)
+    _save("config.json", lambda p: open(p, "w", encoding="utf-8").write(
+        json.dumps(config, ensure_ascii=False, indent=2)
+    ))
 
 
 def load_ranker_v3(

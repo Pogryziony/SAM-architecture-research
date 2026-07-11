@@ -8,14 +8,17 @@ Corrected training loop with:
 - Early stopping on validation recall@10 (recall@5 as tie-break)
 - CPU-only execution
 - Fixed random seeds
+- Immutable, timestamped output artifacts
 """
 from __future__ import annotations
 
 import hashlib
 import json
 import math
+import os
 import subprocess
 from collections import Counter
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -30,6 +33,7 @@ from stack.encoder.entity_text import build_entity_text
 from stack.encoder.canonical_mapping import (
     build_canonical_mapping,
     apply_canonical_mapping,
+    export_canonical_mapping_metadata,
 )
 from stack.encoder.hard_negative_miner import mine_hard_negatives_group
 from stack.encoder.trivial_baseline import candidate_pool, rank_candidates
@@ -697,6 +701,25 @@ def select_winner(metrics: Mapping[str, Mapping[str, float]]) -> str:
 
 # ── Main experiment ──
 
+def _require_new_path(path: Path) -> Path:
+    """Require that a path does not yet exist; fail if it does."""
+    if path.exists():
+        raise FileExistsError(
+            f"Refusing to overwrite existing artifact: {path}. "
+            "Each run must produce a unique timestamped artifact."
+        )
+    return path
+
+
+def _write_json_artifact(path: Path, data: dict[str, Any]) -> None:
+    """Atomically write a JSON artifact. Fails if path already exists."""
+    _require_new_path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    tmp.rename(path)
+
+
 def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
     """Run the full Entity Ranker V3 experiment: training and validation selection.
 
@@ -706,7 +729,7 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
     4. Train V3 ranker and feature-logistic ranker
     5. Evaluate all rankers on identical validation groups
     6. Mechanical selection
-    7. Save winner
+    7. Save winner to immutable timestamped paths
     """
     root = Path(root)
 
@@ -716,9 +739,19 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
             "Dirty worktree detected. Commit or stash changes before evaluation."
         )
 
+    # ── Timestamped run identity ──
+    utc_now = datetime.now(timezone.utc)
+    run_ts = utc_now.strftime("%Y%m%dT%H%M%SZ")
+    run_id = f"entity_ranker_v3_{run_ts}"
+    source_sha = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=root, text=True
+    ).strip()
+
     # Load splits
-    train = load_split(root / "stack/encoder/data/train.jsonl")
-    val = load_split(root / "stack/encoder/data/val.jsonl")
+    train_path = root / "stack/encoder/data/train.jsonl"
+    val_path = root / "stack/encoder/data/val.jsonl"
+    train = load_split(train_path)
+    val = load_split(val_path)
 
     # Build graph
     from benchmarks.run_benchmark import build_benchmark_graph
@@ -726,6 +759,7 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
 
     # Build canonical mapping (graph-derived, no test inspection)
     canonical_mapping = build_canonical_mapping(graph)
+    canonical_meta = export_canonical_mapping_metadata(canonical_mapping, graph)
 
     # Build the preregistered source-balanced training dataset. Natural V3
     # templates are used here instead of the legacy Stage 1C generator.
@@ -778,6 +812,10 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
     val_baseline = evaluate_trivial_baseline(val_groups, graph, canonical_mapping)
     candidate_ceiling = val_baseline["canonical_candidate_recall_ceiling"]
 
+    # ── Compute data hashes for provenance ──
+    train_hash = hashlib.sha256(train_path.read_bytes()).hexdigest()
+    val_hash = hashlib.sha256(val_path.read_bytes()).hexdigest()
+
     # Train rankers (reduced epochs for speed)
     logistic = train_feature_logistic(all_train_groups, graph, epochs=40)
     encoder_v3 = train_ranker_v3(
@@ -805,19 +843,18 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
     baseline_r10 = metrics["trivial_baseline"]["recall@10"]
 
     # Gate check
-    source_sha = subprocess.check_output(
-        ["git", "rev-parse", "HEAD"], cwd=root, text=True
-    ).strip()
-
     val_gate = winner_metrics["recall@10"] >= REQUIRED_VAL_RECALL10
     baseline_gap = winner_metrics["recall@10"] - baseline_r10 >= REQUIRED_BASELINE_GAP
 
-    # Save model
-    model_dir = root / "models/encoder/v3"
-    model_dir.mkdir(parents=True, exist_ok=True)
+    # ── Save model to immutable timestamped directory ──
+    model_dir = root / "models" / "encoder" / run_id
+    _require_new_path(model_dir)
+    model_dir.mkdir(parents=True)
 
     if winner_name == "entity_ranker_v3":
         config = {
+            "run_id": run_id,
+            "run_timestamp_utc": utc_now.isoformat(),
             "winner": winner_name,
             "source_sha": source_sha,
             "seed": SEED,
@@ -828,6 +865,8 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
         save_ranker_v3(encoder_v3["model"], encoder_v3["tokenizer"], config, str(model_dir))
     elif winner_name == "feature_logistic_v3":
         config = {
+            "run_id": run_id,
+            "run_timestamp_utc": utc_now.isoformat(),
             "winner": winner_name,
             "source_sha": source_sha,
             "seed": SEED,
@@ -837,23 +876,34 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
             "features": logistic["features"],
             "canonical_mapping_applied": True,
         }
-        (model_dir / "config.json").write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        (model_dir / "weights.json").write_text(json.dumps(logistic, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        _write_json_artifact(model_dir / "config.json", config)
+        _write_json_artifact(model_dir / "weights.json", logistic)
     else:
-        # Trivial baseline won — no model to save (stop)
-        pass
+        # Trivial baseline won — still record the result
+        config = {
+            "run_id": run_id,
+            "run_timestamp_utc": utc_now.isoformat(),
+            "winner": winner_name,
+            "source_sha": source_sha,
+            "seed": SEED,
+            "validation_only": True,
+        }
+        _write_json_artifact(model_dir / "config.json", config)
 
-    # Write selection log
-    selection_log = root / "benchmarks/results/entity_ranker_v3_selection_log.json"
-    val_split_path = root / "stack/encoder/data/val.jsonl"
+    # ── Write immutable selection log ──
+    selection_log = root / "benchmarks" / "results" / f"entity_ranker_v3_selection_{run_ts}.json"
     log = {
+        "run_id": run_id,
+        "run_timestamp_utc": utc_now.isoformat(),
         "source_sha": source_sha,
         "seed": SEED,
         "split": "stack/encoder/data/val.jsonl",
-        "split_sha256": hashlib.sha256(val_split_path.read_bytes()).hexdigest(),
+        "split_sha256": val_hash,
+        "train_split_sha256": train_hash,
         "graph": graph_meta,
+        "canonical_mapping": canonical_meta,
         "dataset_stats": {
-            "training_groups": len(train_groups),
+            "training_groups": len(all_train_groups),
             "training_source_counts": dict(source_counts),
             "validation_groups": len(val_groups),
             "canonical_mapping_size": len(canonical_mapping),
@@ -877,22 +927,32 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
             "proceed_to_frozen": val_gate and baseline_gap,
         },
         "test_split_read": False,
+        "model_dir": str(model_dir.relative_to(root)),
     }
-    selection_log.parent.mkdir(parents=True, exist_ok=True)
-    selection_log.write_text(json.dumps(log, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    _write_json_artifact(selection_log, log)
 
     return {
         "winner": winner_name,
         "metrics": metrics,
         "selection_log": str(selection_log),
+        "model_dir": str(model_dir),
         "source_sha": source_sha,
+        "run_id": run_id,
         "proceed_to_frozen": val_gate and baseline_gap,
     }
 
 
 if __name__ == "__main__":
     result = run_experiment_v3()
-    print(json.dumps({k: v for k, v in result.items() if k != "metrics"}, indent=2, sort_keys=True))
+    display = {
+        "winner": result["winner"],
+        "source_sha": result["source_sha"],
+        "run_id": result["run_id"],
+        "selection_log": result["selection_log"],
+        "model_dir": result["model_dir"],
+        "proceed_to_frozen": result["proceed_to_frozen"],
+    }
+    print(json.dumps(display, indent=2, sort_keys=True))
     print("\nMetrics:")
     for name, m in result["metrics"].items():
         print(f"  {name}: r@1={m.get('recall@1',0):.4f} r@5={m.get('recall@5',0):.4f} r@10={m.get('recall@10',0):.4f} p@10={m.get('precision@10',0):.4f}")

@@ -3,3 +3,6 @@ benchmarks/results.json
 benchmarks/router_results.json
 benchmarks/throughput_results.json
 models/*.pt
+models/encoder/v3/
+models/encoder/entity_ranker_v3_*/
+benchmarks/results/entity_ranker_v3_selection_*.json

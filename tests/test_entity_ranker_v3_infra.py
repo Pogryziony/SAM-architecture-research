@@ -269,3 +269,98 @@ def test_py_compile_all_new_modules():
         path = repo_root / module
         if path.exists():
             py_compile.compile(str(path), doraise=True)
+
+
+# ── T12: Artifact immutability ──
+
+def test_save_ranker_v3_refuses_overwrite(tmp_path: Path):
+    """T12: save_ranker_v3 must fail if output files already exist."""
+    torch = pytest.importorskip("torch")
+    from stack.encoder.entity_ranker_v3 import (
+        QuestionConditionedEntityRanker,
+        save_ranker_v3,
+    )
+    from stack.encoder.char_tokenizer import CharNgramTokenizer
+
+    out_dir = tmp_path / "model"
+    out_dir.mkdir()
+
+    tokenizer = CharNgramTokenizer()
+    tokenizer.add_words(["test"])
+    tokenizer.freeze()
+    model = QuestionConditionedEntityRanker(
+        tokenizer.feature_dim, embed_dim=8, hidden_dim=16, proj_dim=4
+    )
+
+    # First save should succeed
+    save_ranker_v3(model, tokenizer, {"test": True}, str(out_dir))
+
+    # Second save must fail on existing files
+    with pytest.raises(FileExistsError, match="Refusing to overwrite"):
+        save_ranker_v3(model, tokenizer, {"test": False}, str(out_dir))
+
+
+def test_second_run_cannot_overwrite_first_run(tmp_path: Path):
+    """T12 continued: A second run with the same timestamped path must fail."""
+    artifact = tmp_path / "selection.json"
+    artifact.write_text('{"first": true}')
+
+    def write_if_new(path: Path, data: dict) -> None:
+        if path.exists():
+            raise FileExistsError(f"Refusing to overwrite existing artifact: {path}")
+        path.write_text(json.dumps(data))
+
+    # First write: path doesn't exist yet — OK
+    # (already written above)
+
+    # Second write: path exists — must fail
+    with pytest.raises(FileExistsError, match="Refusing to overwrite"):
+        write_if_new(artifact, {"second": True})
+
+
+def test_require_new_path_rejects_existing(tmp_path: Path):
+    """T12 continued: _require_new_path rejects existing paths."""
+    from stack.encoder.train_ranker_v3 import _require_new_path
+
+    existing = tmp_path / "exists.json"
+    existing.write_text("{}")
+
+    with pytest.raises(FileExistsError, match="Refusing to overwrite"):
+        _require_new_path(existing)
+
+    # Non-existing path should be returned unchanged
+    new_path = tmp_path / "does_not_exist.json"
+    assert _require_new_path(new_path) == new_path
+
+
+def test_write_json_artifact_rejects_overwrite(tmp_path: Path):
+    """T12 continued: _write_json_artifact fails on existing file."""
+    from stack.encoder.train_ranker_v3 import _write_json_artifact
+
+    path = tmp_path / "artifact.json"
+    _write_json_artifact(path, {"run": 1})
+
+    with pytest.raises(FileExistsError, match="Refusing to overwrite"):
+        _write_json_artifact(path, {"run": 2})
+
+
+def test_save_ranker_v3_rejects_nonexistent_directory(tmp_path: Path):
+    """T12 continued: save_ranker_v3 fails if output directory doesn't exist."""
+    torch = pytest.importorskip("torch")
+    from stack.encoder.entity_ranker_v3 import (
+        QuestionConditionedEntityRanker,
+        save_ranker_v3,
+    )
+    from stack.encoder.char_tokenizer import CharNgramTokenizer
+
+    tokenizer = CharNgramTokenizer()
+    tokenizer.add_words(["test"])
+    tokenizer.freeze()
+    model = QuestionConditionedEntityRanker(
+        tokenizer.feature_dim, embed_dim=8, hidden_dim=16, proj_dim=4
+    )
+
+    nonexistent = str(tmp_path / "nonexistent_subdir")
+
+    with pytest.raises(NotADirectoryError):
+        save_ranker_v3(model, tokenizer, {}, nonexistent)
