@@ -839,6 +839,23 @@ class SynthesizingModel(ModelInterface):
         if not entries:
             return ""
 
+        # A constrained row lookup (for example "exactly 1 distractor")
+        # must not silently fall back to a different row such as +8.
+        constraint = re.search(
+            r"(?:exactly\s+|with\s+(?:exactly\s+)?)\+?(\d+)\s+distractor",
+            question,
+            re.IGNORECASE,
+        )
+        if constraint:
+            requested = constraint.group(1)
+            constrained = [
+                entry for entry in entries
+                if re.search(rf"(?<!\d)\+?{re.escape(requested)}(?!\d)", " ".join(entry))
+            ]
+            if not constrained:
+                return ""
+            entries = constrained
+
         # Score entries by overlap with question keywords
         q_words = set(re.findall(r'\w+', question.lower()))
         q_stopwords = {
@@ -1475,6 +1492,45 @@ class SynthesizingModel(ModelInterface):
         # 5. Polish morphology
         if self._language == "pl":
             answer = self._apply_polish_morphology(answer)
+
+        # Metric extraction can intentionally shorten a multi-number fact to
+        # "precision 50%". Preserve the grammatical owner from the question
+        # so the answer remains self-contained instead of becoming a bare value.
+        question = _extract_line(prompt, "QUESTION:") or ""
+        if len(answer) <= 180:
+            focus = ""
+            force_focus = False
+            match = re.search(
+                r"\b(?:precision|(?:overall\s+)?accuracy|recall)\s+of\s+(.+?)\?*$",
+                question,
+                re.IGNORECASE,
+            )
+            if match:
+                focus = match.group(1).strip()
+            else:
+                match = re.search(
+                    r"\bwhat\s+accuracy\s+did\s+(.+?)\s+achieve(.*?)\?*$",
+                    question,
+                    re.IGNORECASE,
+                )
+                if match:
+                    focus = (match.group(1) + match.group(2)).strip()
+            if not focus:
+                match = re.search(
+                    r"\bwhat\s+did\s+(.+?)\s+prove\s+about\s+(.+?)\?*$",
+                    question,
+                    re.IGNORECASE,
+                )
+                if match:
+                    focus = f"{match.group(1)} proved about {match.group(2)} that"
+                    force_focus = True
+            if focus:
+                clean_answer = answer.replace("**", "").strip()
+                focus_terms = set(re.findall(r"[a-z0-9]+", focus.casefold()))
+                answer_terms = set(re.findall(r"[a-z0-9]+", clean_answer.casefold()))
+                if force_focus or len(focus_terms & answer_terms) < 2:
+                    verb = "" if focus.endswith(" that") else " achieved"
+                    answer = f"{focus[0].upper() + focus[1:]}{verb} {clean_answer}"
 
         return answer
 

@@ -35,8 +35,12 @@ from benchmarks.realizer_contracts import (
     validate_distillation_record,
 )
 from nexus.graph.store import InMemoryGraphStore
+from nexus.graph import Path as GraphPath, PathStep
 from nexus.pipeline.config import ProductionNEXUSConfig
 from nexus.pipeline.runner import NEXUSRunner
+from nexus.graph.scoring import score_path
+from nexus.reasoning.audit import build_reasoning_audit
+from nexus.reasoning.evidence_builder import build_evidence_pack
 
 
 def _verification_dict(result: Any) -> dict[str, Any]:
@@ -93,6 +97,73 @@ def _build_record(
     return record, validate_distillation_record(record)
 
 
+def _build_acquired_record(
+    question: dict[str, Any],
+    runner: NEXUSRunner,
+    graph: InMemoryGraphStore,
+    *,
+    source_sha: str,
+) -> tuple[dict[str, Any] | None, list[str]]:
+    """Build a one-hop oracle record directly from an atomic source claim."""
+    entities = [str(value) for value in question.get("entities", [])]
+    if len(entities) != 2:
+        return None, ["invalid_acquisition_entities"]
+    claim_id, source_id = entities
+    edge = next(
+        (item for item in graph.get_outgoing(claim_id)
+         if item.type == "derived_from" and item.target == source_id),
+        None,
+    )
+    if edge is None:
+        return None, ["missing_acquisition_proof_edge"]
+    path = GraphPath(steps=[PathStep(edge=edge)])
+    path.score = score_path(path, set(entities))
+    question_text = str(question.get("question", ""))
+    target_answer = str(question.get("answer", ""))
+    evidence_pack = build_evidence_pack(
+        question_text,
+        [path],
+        graph,
+        question_intent="factual_lookup",
+        target_entity=claim_id,
+    )
+    # The shared source-family node is a split/leakage boundary, not a reason
+    # to include every other claim from that document in this example.
+    evidence_pack["node_facts"] = [
+        fact for fact in evidence_pack.get("node_facts", [])
+        if str(fact.get("text", "")).lstrip("[").startswith(claim_id)
+    ]
+    evidence_pack["neighbor_facts"] = []
+    target_verification = runner.verifier.verify(target_answer, evidence_pack)
+    audit = build_reasoning_audit(
+        [path], graph, evidence_pack, target_verification, target_answer,
+        answer_threshold=runner.config.readiness_answer_threshold,
+        conditional_threshold=runner.config.readiness_conditional_threshold,
+    ).to_dict()
+    normalized_hash = hashlib.sha256(normalize_question(question_text).encode("utf-8")).hexdigest()
+    record = {
+        "schema_version": SCHEMA_VERSION,
+        "id": stable_example_id(question_text, entities),
+        "source_question_id": str(question.get("id", "")),
+        "source_split": "train",
+        "question": question_text,
+        "normalized_question_sha256": normalized_hash,
+        "question_type": "factual",
+        "intent": "factual_lookup",
+        "canonical_entities": sorted(set(entities)),
+        "evidence_pack": evidence_pack,
+        "reasoning_audit": audit,
+        "answer": target_answer,
+        "target_verification": _verification_dict(target_verification),
+        "pipeline_answer": target_answer,
+        "pipeline_verifier_passed": bool(target_verification.passed),
+        "source_sha": source_sha,
+        "config_hash": runner.config.config_hash,
+        "generator_identity": "nexus_v1_atomic_claim_oracle_evidence",
+    }
+    return record, validate_distillation_record(record)
+
+
 def _write_exclusive(path: Path, payload: bytes) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("xb") as handle:
@@ -124,14 +195,25 @@ def build_distillation_dataset(
     rejected_records = 0
     seen_questions: set[str] = set()
     seen_ids: set[str] = set()
+    seen_semantic_targets: set[str] = set()
 
     for index, question in enumerate(questions):
+        semantic_target = str(question.get("semantic_target_id", "")).strip()
+        if semantic_target and semantic_target in seen_semantic_targets:
+            rejected["duplicate_semantic_target"] += 1
+            rejected_records += 1
+            continue
         normalized = normalize_question(str(question.get("question", "")))
         if normalized in seen_questions:
             rejected["duplicate_normalized_question"] += 1
             rejected_records += 1
             continue
-        record, errors = _build_record(question, runner, source_sha=source_sha)
+        if semantic_target:
+            record, errors = _build_acquired_record(
+                question, runner, graph, source_sha=source_sha,
+            )
+        else:
+            record, errors = _build_record(question, runner, source_sha=source_sha)
         if errors or record is None:
             rejected_records += 1
             for error in errors or ["unknown_record_error"]:
@@ -143,6 +225,15 @@ def build_distillation_dataset(
             continue
         seen_questions.add(normalized)
         seen_ids.add(record["id"])
+        if semantic_target:
+            seen_semantic_targets.add(semantic_target)
+            record["semantic_target_id"] = semantic_target
+            record["source_provenance"] = {
+                "path": str(question.get("source_path", "")),
+                "locator": str(question.get("source_locator", "")),
+                "sha256": str(question.get("source_sha256", "")),
+                "kind": str(question.get("kind", "")),
+            }
         accepted.append(record)
         if (index + 1) % 50 == 0:
             print(f"  {index + 1}/{len(questions)}: {len(accepted)} accepted")
@@ -221,6 +312,11 @@ def _load_train_questions(path: Path, limit: int | None) -> list[dict[str, Any]]
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", default="stack/encoder/data/train.jsonl")
+    parser.add_argument(
+        "--acquisition-manifest",
+        type=Path,
+        help="verified train-only acquisition manifest; takes precedence over --input",
+    )
     parser.add_argument("--output-dir", default="data/distillation/realizer_v1")
     parser.add_argument("--limit", type=int)
     parser.add_argument("--min-pairs", type=int, default=5000)
@@ -230,9 +326,20 @@ def main() -> int:
 
     source_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
     input_path = Path(args.input)
-    questions = _load_train_questions(input_path, args.limit)
+    if args.acquisition_manifest:
+        from benchmarks.acquire_realizer_train_data import (
+            augment_graph_with_claims,
+            load_verified_acquisition,
+        )
+        questions, _ = load_verified_acquisition(args.acquisition_manifest, _project_root)
+        questions = questions[:args.limit] if args.limit else questions
+        input_path = args.acquisition_manifest
+    else:
+        questions = _load_train_questions(input_path, args.limit)
     from benchmarks.run_benchmark import build_benchmark_graph
     graph, _ = build_benchmark_graph()
+    if args.acquisition_manifest:
+        graph = augment_graph_with_claims(graph, questions)
     manifest = build_distillation_dataset(
         questions,
         graph,

@@ -177,6 +177,45 @@ def _build_synth_prompt(
     return "\n".join(lines)
 
 
+def _merge_resolved_entity_evidence(
+    evidence_pack: dict[str, Any],
+    direct_pack: dict[str, Any],
+    question: str,
+) -> dict[str, Any]:
+    """Surface question-matching facts from resolved but disconnected nodes."""
+    if not direct_pack:
+        return evidence_pack
+    stopwords = {
+        "the", "and", "for", "from", "what", "which", "that", "this", "with",
+        "does", "did", "was", "were", "how", "many", "about", "have", "into",
+    }
+    q_terms = {
+        token for token in re.findall(r"[A-Za-zÀ-ž0-9_%+-]+", question.casefold())
+        if len(token) >= 3 and token not in stopwords
+    }
+    matching: list[tuple[int, dict[str, Any]]] = []
+    for fact in direct_pack.get("node_facts", []):
+        text = str(fact.get("text", ""))
+        terms = set(re.findall(r"[A-Za-zÀ-ž0-9_%+-]+", text.casefold()))
+        overlap = len(q_terms & terms)
+        if overlap >= 2:
+            matching.append((overlap, fact))
+    matching.sort(key=lambda item: item[0], reverse=True)
+
+    combined: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for fact in [item[1] for item in matching[:3]] + list(evidence_pack.get("node_facts", [])):
+        normalized = re.sub(r"\s+", " ", str(fact.get("text", ""))).strip().casefold()
+        if normalized and normalized not in seen:
+            combined.append(fact)
+            seen.add(normalized)
+        if len(combined) >= 8:
+            break
+    evidence_pack["node_facts"] = combined
+    evidence_pack["sources"] = sorted(set(evidence_pack.get("sources", [])) | set(direct_pack.get("sources", [])))
+    return evidence_pack
+
+
 def answer_question(
     question: str,
     graph: InMemoryGraphStore,
@@ -374,6 +413,9 @@ def answer_question(
         question, paths, graph,
         question_intent=parsed.intent, target_entity=target_entity,
     )
+    direct_pack = build_zero_hop_pack(graph, parsed.entity_ids, question=question)
+    evidence_pack = _merge_resolved_entity_evidence(evidence_pack, direct_pack, question)
+    evidence_json = json.dumps(evidence_pack, indent=2, ensure_ascii=False)
     timing["evidence_time"] = round(time.perf_counter() - t0, 6)
     result["evidence_pack"] = evidence_pack
 
@@ -422,6 +464,11 @@ def answer_question(
             question, paths, graph,
             question_intent=parsed.intent, target_entity=None,
         )
+        direct_pack_retry = build_zero_hop_pack(graph, parsed.entity_ids, question=question)
+        evidence_pack_retry = _merge_resolved_entity_evidence(
+            evidence_pack_retry, direct_pack_retry, question,
+        )
+        evidence_json_retry = json.dumps(evidence_pack_retry, indent=2, ensure_ascii=False)
         prompt_retry = build_prompt(question, evidence_json_retry)
         raw_answer_retry = model.generate(prompt_retry)
 

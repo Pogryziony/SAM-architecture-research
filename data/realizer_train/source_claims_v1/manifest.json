@@ -1,0 +1,879 @@
+{
+  "corpus_policy": "explicit_train_only_repository_sources_v1",
+  "counts_by_kind": {
+    "api_contract": 165,
+    "config_value": 3926,
+    "markdown_claim": 1067,
+    "markdown_field": 665,
+    "table_cell": 2459
+  },
+  "created_utc": "2026-07-13T13:38:57.122568+00:00",
+  "normalized_answers_unique": 8282,
+  "normalized_questions_unique": 8282,
+  "records": 8282,
+  "records_file": "source_claims.jsonl.xz",
+  "records_file_sha256": "530b3d18e06492de739f90dd800ab35c7ef14aaf3a7d5eac9479425a19bcf738",
+  "records_sha256": "ead353dcf48cc59193ccdf29d9bd94cd3c5841ec53415ab7bc92a7a37e77cfb3",
+  "rejected_duplicates": {
+    "duplicate_normalized_answer": 280,
+    "duplicate_normalized_question": 48
+  },
+  "schema_version": "nexus-realizer-acquisition-v1",
+  "semantic_targets_unique": 8282,
+  "source_families": 199,
+  "source_set_sha256": "a31a3ab885ec65871a25e8a27a041b43dd24615fd7909305faff6101f86cb32d",
+  "sources": [
+    {
+      "path": "ANALYSIS_AND_ROADMAP.md",
+      "sha256": "bdac16a16bc3f645671a3927c8012708f1f0e34c367b963ea1f947c18fa7ab84"
+    },
+    {
+      "path": "EXPERIMENT_ENTITY_RANKER_V3.md",
+      "sha256": "d3f7844706badd07098f0cda686a0e6d1f3d8aeb9b2c184c45618b12a88beca5"
+    },
+    {
+      "path": "EXPERIMENT_SAM_NEXUS_STACK.md",
+      "sha256": "3ce786e4074f702e304c2baae3411aca95965b39366dab738c43df38a5a0aee1"
+    },
+    {
+      "path": "PROTOCOL_VIOLATIONS.md",
+      "sha256": "7573ae51fdc62c98782b6f8474afb229a7338b03c61a9f478eef9b06a6b9d076"
+    },
+    {
+      "path": "README.md",
+      "sha256": "42b8b2671cb209ffd1033ab517b1ad6bc9226ccf1f17a0b5de97b900013485d3"
+    },
+    {
+      "path": "STACK_RESULTS.md",
+      "sha256": "02c529f42062546485ff589a3575d580485cea356e5a631c38fc03053f52ba3a"
+    },
+    {
+      "path": "STAGE1B_NEGATIVE.md",
+      "sha256": "3ff9e9f7bbec45626ef0707d214e3992ccf4fdaba5a828758f0e03206870ef2e"
+    },
+    {
+      "path": "STAGE1C_NEGATIVE.md",
+      "sha256": "2ab779406d76c68d9dde5f1394872a66e4ff420fe10d21397a4e5fa6c64d19f0"
+    },
+    {
+      "path": "STAGE1D_RESULT.md",
+      "sha256": "544e6ffac6b5927c3cac723b5e25b5db5f9e66b7ba6d27bef538e8a192a2f4c5"
+    },
+    {
+      "path": "STAGE1_NEGATIVE.md",
+      "sha256": "ec47ed479dd0fd0f901bb7df5566810d6615c9bb5697bebb3e00d82cbe843167"
+    },
+    {
+      "path": "STAGE2_NEGATIVE.md",
+      "sha256": "af8f09b206bb7a9721bba3c0fba3c43dcaac67defc33ebd56adaf12010f29494"
+    },
+    {
+      "path": "docs/graph-memory.md",
+      "sha256": "ce2cb1b0ab9c5a1a4e9075e8a9ad66f8fca6a27845534d944f65e724acea08eb"
+    },
+    {
+      "path": "docs/graph-reasoning.md",
+      "sha256": "5a7be5bfbb1c11588bc6d65bcc03a0bf6f6778d943c2cccbdbf59c1e18811a0d"
+    },
+    {
+      "path": "docs/nexus-auditability-roadmap.md",
+      "sha256": "7be242bc518809b7e39647f959d8c6f938c16a5e9414140a52e19bf3ce56f48f"
+    },
+    {
+      "path": "docs/rag-vs-graph-nexus.md",
+      "sha256": "1dd7ea4d1d58c64d9335e2f921aa62a675c53619ee73fe845cbb5ebaafe2269c"
+    },
+    {
+      "path": "models/encoder/config.json",
+      "sha256": "7f6c50ae8abcb50f33ce15cc319e7cb4c05821b8513bb503613cde927aaa3acf"
+    },
+    {
+      "path": "models/encoder/entity_ranker_v3_20260711T073556Z/config.json",
+      "sha256": "67af224fb940ebbb0a3af7151f24c71e739410a18b12895d0d54cf71dbf44ca0"
+    },
+    {
+      "path": "models/encoder/entity_ranker_v3_20260711T075537Z/config.json",
+      "sha256": "4cf80a8e70fa5ec0efc8eea55c97885286d9ae733d487c6e050e449570e566d5"
+    },
+    {
+      "path": "models/encoder/entity_ranker_v3_20260711T081545Z/config.json",
+      "sha256": "c14051c80af3c72ee8a2d6c7915da69bd6de978c25f9a5cf9cd5866dd2ce6d95"
+    },
+    {
+      "path": "models/encoder/stage1c/config.json",
+      "sha256": "90cb52c732bf4f7363c5577a6699f795d97fa57fc786449ca576368f95172944"
+    },
+    {
+      "path": "models/encoder/v3/config.json",
+      "sha256": "beb15449c0b847150c082c2c96d4068996f5eced4252badcbcc96b9be31d0ab5"
+    },
+    {
+      "path": "models/encoder_v2/config.json",
+      "sha256": "b36bc6913dfeb95ed8bd5a13e673b1691bfd762f18ce32036b5f8e8753ea98a3"
+    },
+    {
+      "path": "nexus/__init__.py",
+      "sha256": "3c664bd45a0ffb5e766f54f5dfc9e12c474fe797b758f1aab8297fcd9edafcd2"
+    },
+    {
+      "path": "nexus/demo_traversal.py",
+      "sha256": "f6cc5a27246f662ab6749103f2a0feacafba2704bc9323b90ab5e98cee3c3621"
+    },
+    {
+      "path": "nexus/graph/__init__.py",
+      "sha256": "9c7f58de503ae04af3166736c9514ab0e496e714398ec3bbc7623415a0923dac"
+    },
+    {
+      "path": "nexus/graph/scoring.py",
+      "sha256": "49f470b19fa8ce213c10b8f0a2b017849639b36f506b4711e460bfe7cad2b816"
+    },
+    {
+      "path": "nexus/graph/store.py",
+      "sha256": "f2d26c89e568f2406c7d9ca9e519684338967468ff2f028e4bc12c90bce65ce1"
+    },
+    {
+      "path": "nexus/graph/traversal.py",
+      "sha256": "f3cc588bb873d91d9295ff7dd106d7728b89fbad9651ed630fa56f458386f131"
+    },
+    {
+      "path": "nexus/ingestion/__init__.py",
+      "sha256": "71081cd896309f0eb9e2a0593b2c58be2b5011ba83942ed56320e080f4573c5a"
+    },
+    {
+      "path": "nexus/ingestion/deduplicator.py",
+      "sha256": "1f140158035aced13c9d645c9ad1107c7ec5d3b1d4e7330550ae9a821eb30de3"
+    },
+    {
+      "path": "nexus/ingestion/entity_extractor.py",
+      "sha256": "b75467bbb9e4d15b6eca50274015668af5c5972c938e33ce617af9748ea2be5b"
+    },
+    {
+      "path": "nexus/ingestion/ingest_docs.py",
+      "sha256": "d86cfd869959a100735514c93688d6058de76a898a8b7b3d1ab2eed2534f2fc2"
+    },
+    {
+      "path": "nexus/ingestion/ingest_generic.py",
+      "sha256": "1b7b3f011471f2b2c398244226746628127b0409c85da0662272a397e9a990cb"
+    },
+    {
+      "path": "nexus/ingestion/normalizer.py",
+      "sha256": "4506686c40b1a9814579553e54637b9b617eecfe8b2168ca69aa00e65b5a5dd2"
+    },
+    {
+      "path": "nexus/ingestion/populate_from_experiments.py",
+      "sha256": "22455abb06ff3658e18473ed988e79ed607a7a34744da1a10e23b68c03d8a9c3"
+    },
+    {
+      "path": "nexus/ingestion/relation_extractor.py",
+      "sha256": "b7dcc118add29bd27602e26e85c23e27b524b9a8b95164e886c1a32959cae8cb"
+    },
+    {
+      "path": "nexus/pipeline/__init__.py",
+      "sha256": "ec448e774b0d89a4e6f224bd546a6a44222f6839d069fbbe7b9109c1f82e3e8f"
+    },
+    {
+      "path": "nexus/pipeline/config.py",
+      "sha256": "bc141d89b55993ab0c7a9202aefca382e9e61a91729bf704dd45e4d773064f46"
+    },
+    {
+      "path": "nexus/pipeline/runner.py",
+      "sha256": "fa77ea2e81b23625a393cb6f7304137a033ede32a251f9964d671e43020fd86f"
+    },
+    {
+      "path": "nexus/query/__init__.py",
+      "sha256": "9aa73109f9f68b3606515542b4310d580b8e4717c4acccebfd14d3f5beacfa17"
+    },
+    {
+      "path": "nexus/query/embedding_resolver.py",
+      "sha256": "22bf872655a268bdb8e59409ec3ca93df44767226de0361774b294a539d57812"
+    },
+    {
+      "path": "nexus/query/parser.py",
+      "sha256": "06a444716c3b7a897916dcaa6080b72a39599fb9e360da22741f8aa4febe5bd7"
+    },
+    {
+      "path": "nexus/realizer/__init__.py",
+      "sha256": "44930770814876ac7620ad88d804313e93a298c321e3e9ce0def8638c7127ae8"
+    },
+    {
+      "path": "nexus/realizer/model.py",
+      "sha256": "0405f3bd65ec4c1344d273b582925c92fd3877420a37f021133c98692ef7d019"
+    },
+    {
+      "path": "nexus/realizer/tokenizer.py",
+      "sha256": "40fec2070cd1aff1c82d09746bbbe998cee9be5394757e57683c15f9477c16fc"
+    },
+    {
+      "path": "nexus/reasoning/__init__.py",
+      "sha256": "44dcf05cfe0a7cbde8c959a1c4daa33b9b40c735190f01055c229b8de55489f7"
+    },
+    {
+      "path": "nexus/reasoning/answer.py",
+      "sha256": "15149e613add9004c1d87921f2ac1aba556e46845244a3bf1c90a25f139268ee"
+    },
+    {
+      "path": "nexus/reasoning/audit.py",
+      "sha256": "474974cd052b2b2e6d906e0801604408f6f7711a4a5d196119f57d4e01b16b06"
+    },
+    {
+      "path": "nexus/reasoning/evidence_builder.py",
+      "sha256": "f9fc7ee95f54f144d20f98ceca379e31416a745d331f0e6253744f93bdedc704"
+    },
+    {
+      "path": "nexus/reasoning/model_interface.py",
+      "sha256": "e2a5deab3ac974835ec059bb73bde342a34bf3a8ee90d119c44c8aafa0660c48"
+    },
+    {
+      "path": "nexus/reasoning/post_edit.py",
+      "sha256": "e3f20d9a581e6bdc425e0eb6f2fadd18f4491047b5cbb54a9e35643f20b7e408"
+    },
+    {
+      "path": "nexus/reasoning/prompt_template.py",
+      "sha256": "52c8e17ce51623a98746abb9597b3ec3f44f4601629b1d7db3486ba8d5513b99"
+    },
+    {
+      "path": "nexus/reasoning/router.py",
+      "sha256": "e8f02954f47e03923063837d092090dd30830d0c594ac6c1ec9db5513da01707"
+    },
+    {
+      "path": "nexus/reasoning/verifier.py",
+      "sha256": "49b7a85e76f786a39662e03201fd8b291e056a53474a8dfdc1027f0173a53a2f"
+    },
+    {
+      "path": "nexus/utils/__init__.py",
+      "sha256": "a16e1b8670ac4cb7644666c00797e5efe0c21ecd6b6647e33b9ae4d2dd1fe4b8"
+    },
+    {
+      "path": "nexus/utils/canonical_labels.py",
+      "sha256": "dcb826ade2c376c3a3de10a843f9fbc3e0496ccc12a50c073d54fa0d6455e775"
+    },
+    {
+      "path": "nexus/utils/config.py",
+      "sha256": "55169e802daa14c8d5cb403987c70c6476e3abc0be718a4612a2f432eb8e6e4d"
+    },
+    {
+      "path": "sam-lm/configs/dense_openbook.yaml",
+      "sha256": "da89e7828fd22ef487b967f6ebf6d8e5b60147f2cbfb17ce90120bb1b4913162"
+    },
+    {
+      "path": "sam-lm/configs/dense_openbook_dense.yaml",
+      "sha256": "66d6bbf98c86fb41465c75e99e6a1a825a7480fb96fadf7c0740a30ae9089789"
+    },
+    {
+      "path": "sam-lm/configs/dense_overfit_100.yaml",
+      "sha256": "11b2384863f79da35d857e135fc6b15dc5404bb9d4026662ce3ea9f9eeb97ac1"
+    },
+    {
+      "path": "sam-lm/configs/dense_smoke.yaml",
+      "sha256": "decbc92a0f13d78069013ff730883d41de19b702a78215b81d38bf05cdc1b805"
+    },
+    {
+      "path": "sam-lm/configs/dense_tiny.yaml",
+      "sha256": "1eb9556acbc43021adafc032157dd3972e19a3660e109234aefa34c5395fec37"
+    },
+    {
+      "path": "sam-lm/configs/dense_tiny_dense.yaml",
+      "sha256": "5cb97638c61c9751ab6f8238b498b8bfb36ee68b09432766b925e780d4053fa0"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_1m.yaml",
+      "sha256": "ccf367ecb3a39b3929fa416049c8a4e241516605d21b8b3124b38bd58178d351"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_chain_set_bce_dense.yaml",
+      "sha256": "ce1b87522fb92c347104c23f31969f7a573b4339ecfeec382306cb1fb31607ec"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_chain_set_bce_hardneg_dense.yaml",
+      "sha256": "28750f4fd36342a72415058c808f2fa1451abee869ae9f805e6e97099035072e"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_chain_set_infonce_dense.yaml",
+      "sha256": "176c6a1a87676e1691d55e10323c46aeec13b9ecddc331be0ce5cdcdd6d0f766"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_chain_set_plus_graph_expansion_dense.yaml",
+      "sha256": "2d7277b48e90c481d98ca67fc8b93a19a00444072ce2b389e409378bb1a361ae"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_classifier_compact_16k.yaml",
+      "sha256": "1bf4305c6603b228c3fe30db41427336bd388f41f86b15d298f1fcedb3b377aa"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_compact_16k.yaml",
+      "sha256": "7ae81ecf62c3d11b77c5774a90a889326201bd9a59b86036747328a9a3bef96e"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_compact_16k_improved.yaml",
+      "sha256": "b08f4fb34b6ca05b032d6b596c4dd3a0749c0a3515001ab6bba2a98fed2a6096"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_compact_16k_subkey_loss.yaml",
+      "sha256": "c68b017ecf013441858cb87477097100ea7c3baf587b55da2e6500a73050cf4c"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_compact_16k_subkey_margin.yaml",
+      "sha256": "899b5dc9abd75b2e94577b7bb7438287f7a37c8bcddee8f046737c9d1013e313"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_compact_16k_top16.yaml",
+      "sha256": "195a06d5534052f29cf73a71c43ead6fb73636c3d3d44cb9bd95ddd7ce0e9f7c"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_compact_16k_top32.yaml",
+      "sha256": "49303c80bc8942823a164925d526b2f75b5506ac1077378e9470de5857ba501f"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_compact_16k_top64.yaml",
+      "sha256": "a069e17f7eb8338075d485e4bbfc74294233987cb1ea64c982b24570cdab9a10"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_compact_overfit_100.yaml",
+      "sha256": "eb27abdbff74f8b655e6537c1aa965ae915991c73c8cd36a9205f3a9f46384e7"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_contrastive.yaml",
+      "sha256": "9d9aba1cec0f738e86ce9a5efa253bd965bac5c575af68f5128b8be3a239841c"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_contrastive_50k.yaml",
+      "sha256": "5f3a65d14d02baeb09cc9af59ce694f498177e4653900d3257ccfa65bebb34e5"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_dense_cosine_compact_16k.yaml",
+      "sha256": "078f10838a057d0985483188f280a225244a59fb1e2fb612f1977e61f2829e8f"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_dual_encoder_50k.yaml",
+      "sha256": "ada78fc933c9970b5b381c5e97ce9d303a15eefc81284487ae08e8be55cd0816"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_dual_encoder_dense.yaml",
+      "sha256": "d0fbbd0d68993e19c9a6f409a1f8d8d2e1b3f57cff4a8a76277981f3a4bc9d6d"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_iterative_chain_dense.yaml",
+      "sha256": "48a9c3c7c035288ef66283c9dc7ed8ef1e44aea98ef400a914a5f11c91f1ef15"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_iterative_chain_teacher_forced_dense.yaml",
+      "sha256": "098dbc441ce54041e6ffcf9b83d7ab470fc9b4cdc06c49363dadc4eded76741c"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_live_slots.yaml",
+      "sha256": "6f36422e46b7929f3a3f1f13716c72c127715bdf5184bd106c2ec053ee87a6d3"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_overfit_100.yaml",
+      "sha256": "9e4f56cd30c8e170557c4f18aba2263eb6e119a4e244cd3b0af9f2717ee69f14"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_slot_graph_expansion_dense.yaml",
+      "sha256": "fa7016401b2b73b1bb110ef3bcba5609f725dac7467b216bfcd54b6bbb07b9ec"
+    },
+    {
+      "path": "sam-lm/configs/retrieval_smoke.yaml",
+      "sha256": "bf8d3a4dcd9ea45b7d8bd1d00f797891401e054ba94758c90084a1b049bff88f"
+    },
+    {
+      "path": "sam-lm/configs/sam_chain_fixed_top_by_hop_dense.yaml",
+      "sha256": "b8d9bcb3a26f3cd30804b7c57d3a21af1a456f4effe3b09db240466f57902404"
+    },
+    {
+      "path": "sam-lm/configs/sam_chain_learned_selector_dense.yaml",
+      "sha256": "7d76f13278b7015fc8c6cb76ae686521ad5727e2e74b5dfe245840cbc6245956"
+    },
+    {
+      "path": "sam-lm/configs/sam_chain_learned_selector_top_by_hop_dense.yaml",
+      "sha256": "98c3d0722c8c2f1a50c3afea59b935c944d714ed139ed41c7e7154c83e022db8"
+    },
+    {
+      "path": "sam-lm/configs/sam_chain_oracle_filter_top16_dense.yaml",
+      "sha256": "3ac065a59ffe4b5357a964bc8295dc31e2f5f81f568b21ddee05f4fa01059108"
+    },
+    {
+      "path": "sam-lm/configs/sam_chain_oracle_filter_top32_dense.yaml",
+      "sha256": "fd47f6ba971e1929523dfcc01bdd0837107f0470733190a197b518281f0fd384"
+    },
+    {
+      "path": "sam-lm/configs/sam_chain_oracle_filter_top64_dense.yaml",
+      "sha256": "41b346067588bce1d369c0c239ede160a50d7732efe9b6fc9ddac2edf010119d"
+    },
+    {
+      "path": "sam-lm/configs/sam_chain_oracle_filter_top8_dense.yaml",
+      "sha256": "508a4bcf1406699a2972e617626c1c552dc8414526680b3b1ec8e3566e1560f5"
+    },
+    {
+      "path": "sam-lm/configs/sam_chain_retrieved_equal_budget_dense.yaml",
+      "sha256": "4f340fdec36e3c49b9f8eeb0d3f6842f8ec50a0e5622c0498de3126e932b5ae8"
+    },
+    {
+      "path": "sam-lm/configs/sam_chain_retrieved_top16_dense.yaml",
+      "sha256": "47e7dd4ea02a0452239f5963fcd734eaa130c616828da302625f970cbdf129cb"
+    },
+    {
+      "path": "sam-lm/configs/sam_chain_retrieved_top32_dense.yaml",
+      "sha256": "2960c55451cfedf32f26ffb518c770f47ba07185df1991613db2d41691bb54e0"
+    },
+    {
+      "path": "sam-lm/configs/sam_chain_retrieved_top4_dense.yaml",
+      "sha256": "81a851499de00817dc6afff26c3e55d42893c4e738c0208d5981f301064d7e20"
+    },
+    {
+      "path": "sam-lm/configs/sam_chain_retrieved_top64_dense.yaml",
+      "sha256": "1cfaa6cfc289755a3792910f2f80f4f7f5d27bef4b675fa5ca35fdba1c9a0df7"
+    },
+    {
+      "path": "sam-lm/configs/sam_chain_retrieved_top8_dense.yaml",
+      "sha256": "14300ed9ea1a27f8a5a47ffa91107bacec1bfcc3c1940308f54149d61c79d8d0"
+    },
+    {
+      "path": "sam-lm/configs/sam_chain_selector_curriculum_dense.yaml",
+      "sha256": "2779dabd420a9af4a52052ac33e2b0f222239b38766333259c96d759ca2695bd"
+    },
+    {
+      "path": "sam-lm/configs/sam_memory_adapter_dense.yaml",
+      "sha256": "9e5c4b75e961c89fbe3715b30fccff338e479f67d7f44babb160a297314f6c2b"
+    },
+    {
+      "path": "sam-lm/configs/sam_noise_oracle_plus_0_dense.yaml",
+      "sha256": "ff79d92bc984606411c768777d8e1e7bc191b62b76adc5aaf45e028072d95012"
+    },
+    {
+      "path": "sam-lm/configs/sam_noise_oracle_plus_16_dense.yaml",
+      "sha256": "458eac19654441fa4b08d0a1b50306e0ed67f23ce99903d17e690fad0c2f3a17"
+    },
+    {
+      "path": "sam-lm/configs/sam_noise_oracle_plus_1_dense.yaml",
+      "sha256": "d2bbdf672c91e012fc0cfcfd9aef8225e8bf8680f2fc0286b82d008d2f419edd"
+    },
+    {
+      "path": "sam-lm/configs/sam_noise_oracle_plus_2_dense.yaml",
+      "sha256": "30fc7d2e4eeaf6ac1ce48056406a3d3339d21a273aae82f70be4ee1e21e44e12"
+    },
+    {
+      "path": "sam-lm/configs/sam_noise_oracle_plus_32_dense.yaml",
+      "sha256": "2d12932ab506ebac71710a962107a9b81f3597f4680e142b40b5c419117700f5"
+    },
+    {
+      "path": "sam-lm/configs/sam_noise_oracle_plus_4_dense.yaml",
+      "sha256": "34ade1b5aea3654675066481f69114e0698ffb7e29bb651e4d86a077cd50454a"
+    },
+    {
+      "path": "sam-lm/configs/sam_noise_oracle_plus_8_dense.yaml",
+      "sha256": "7623b5c596f8b129251ec734fb7c57b68616da57211f683822fb8670453d9a4b"
+    },
+    {
+      "path": "sam-lm/configs/sam_noise_plus_1_forced_gate_dense.yaml",
+      "sha256": "aac899b65fbce561b074112a8d3ddb327401c2f8667a4efacda0833f489f4f55"
+    },
+    {
+      "path": "sam-lm/configs/sam_noise_plus_1_normal_gate_dense.yaml",
+      "sha256": "654cdcec9bbd337c49cbd95840bd7f62740f6e4efa492e80b3caf53c34fef578"
+    },
+    {
+      "path": "sam-lm/configs/sam_noise_plus_2_forced_gate_dense.yaml",
+      "sha256": "97a611537b349f537d16a867a36ff5c60164c9e55baeebdf63bc356565f22d55"
+    },
+    {
+      "path": "sam-lm/configs/sam_noise_plus_2_normal_gate_dense.yaml",
+      "sha256": "cd0b98759522bba40811d153af719b72a626f5fa6bc8c249af45e7e5cf157738"
+    },
+    {
+      "path": "sam-lm/configs/sam_noise_plus_4_forced_gate_dense.yaml",
+      "sha256": "2d64ee61f4577550b0a81a332e7cb76449ef0b3880712ddeeea6204546687b96"
+    },
+    {
+      "path": "sam-lm/configs/sam_noise_plus_4_normal_gate_dense.yaml",
+      "sha256": "9851df2a6bf501881d634c54ecf38a066a578c1d0dcb3bbf9a60ca5cc77743a3"
+    },
+    {
+      "path": "sam-lm/configs/sam_noise_plus_8_forced_gate_dense.yaml",
+      "sha256": "3cd982ed70d1ccf0541426955dd200c1c4096b4465cce550e9911383fef1d5cb"
+    },
+    {
+      "path": "sam-lm/configs/sam_noise_plus_8_normal_gate_dense.yaml",
+      "sha256": "128ff1da8897e6ca74d94d607220e4c3e73ef6a9b521199882dfd2d50e3e7b16"
+    },
+    {
+      "path": "sam-lm/configs/sam_oracle_overfit_100.yaml",
+      "sha256": "5a269b11b5122b8520bb56e53b7ea4c893301b2654a9091ed4ddef93b6020c7f"
+    },
+    {
+      "path": "sam-lm/configs/sam_oracle_text_dense.yaml",
+      "sha256": "cc5ec9694d99943845ec13d8b0e2e58b1457a3fdb3867331aaf08c5d4ecc198a"
+    },
+    {
+      "path": "sam-lm/configs/sam_oracle_text_overfit_100.yaml",
+      "sha256": "a90f1255ebb07a880254e415e4b13640174d43f19c3795aadb112ecfa6bb9107"
+    },
+    {
+      "path": "sam-lm/configs/sam_realistic_oracle_plus_16_dense.yaml",
+      "sha256": "8ae01c16e66681355b2b855b0c5cf8b253bf1213240a2bb4853677413c510bf1"
+    },
+    {
+      "path": "sam-lm/configs/sam_realistic_oracle_plus_1_dense.yaml",
+      "sha256": "24340af14510ae0e8ee4a7f14915a9b7a5db81bfed304e29c42b89cb24fb2617"
+    },
+    {
+      "path": "sam-lm/configs/sam_realistic_oracle_plus_2_dense.yaml",
+      "sha256": "2575689f9f7f88e939e331614410a937aa13e9ff1166d04d57b055cba9ec0e59"
+    },
+    {
+      "path": "sam-lm/configs/sam_realistic_oracle_plus_32_dense.yaml",
+      "sha256": "57e1df0019f1f40fc20c7a7022467c020650f5666a0863b6167c899136880f39"
+    },
+    {
+      "path": "sam-lm/configs/sam_realistic_oracle_plus_4_dense.yaml",
+      "sha256": "63c7e33a2c640fbb42804b3067d9b2868cfa4802859972428f3fc903e95f7d13"
+    },
+    {
+      "path": "sam-lm/configs/sam_realistic_oracle_plus_8_dense.yaml",
+      "sha256": "4534cfec8aeaecb18877cba06d63f2b18fb92e7d880e920a9dd0eacc14ddcd9b"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_chain_aware_dense.yaml",
+      "sha256": "ea65d65168f9a90a6f2fe9c393f744105fa8312b8f5fe2b0a3a1bdec43a30a4b"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_compact_16k.yaml",
+      "sha256": "ba0f7f5742b0487b7eb966d42348e38ac83c06a69dfd674abf187de401ee11d0"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_compact_overfit_100.yaml",
+      "sha256": "5ffbe180456cf533b6204774b246e047d3741ae4465a8c5f87f5bc201b9b5e5a"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_dual_encoder_dense.yaml",
+      "sha256": "3fb2899617047e4fc3832efb0fba29b9e8b04f397b9cc038b54113e6b0f17a43"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_ext_oracle_filter_dense.yaml",
+      "sha256": "82c94281c908badc2898a5bdb1e8c0914f7efca17add26a637414db7d1a078d9"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_ext_oracle_filter_top16_dense.yaml",
+      "sha256": "387ad1eaf42df4305ac73b579f96b9c6cb911d451e269e1180291be0ea39c619"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_ext_oracle_filter_top32_dense.yaml",
+      "sha256": "8726f752fccbda92011df228588ff9a1c3c9919845144f7a643c99e0227725b9"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_ext_oracle_filter_top64_dense.yaml",
+      "sha256": "f68e9a2de2fc4a43b3af6f80ce65d9e67bd33831ea976b1df612bf633e29342d"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_ext_oracle_filter_top8_dense.yaml",
+      "sha256": "2e6f822b95c2105f3cb1f59e95ae140af7432fd925f38ab048747ced63924cd2"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_ext_top1_dense.yaml",
+      "sha256": "70f7bed31fb2c45e7ab09b85e82191e0549489581aa841996bfb142560029dc9"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_ext_top3_dense.yaml",
+      "sha256": "7370b54a82cc7fcdc69142da89891c67fdc44faf54c80378d7ba184f0df4640e"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_ext_weighted_t005_top32_dense.yaml",
+      "sha256": "83d8067739601c3ebf0fcc7477c7d7fb9223674c1585650106f6e16e4f0eab4e"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_ext_weighted_t01_dense.yaml",
+      "sha256": "126fe1932970ddce633fa2aa2f25072777cff4d25e83fa9f0e6d50c4f81f28fd"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_ext_weighted_top3_dense.yaml",
+      "sha256": "5fa593c8a373c91ef3eba845a4cf74eee9a7a8d5b4a2932e39d40a5e9c258525"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_external_text_dense.yaml",
+      "sha256": "cc90ee8a82433760045cb124c77c2e3e2e6749094b2c130276877a9239c58ded"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_external_text_dense_top32.yaml",
+      "sha256": "247089d626c25859844b43ddddcd4a781df350e4b3fbdb895e3446b3e13d9fb9"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_fixed_top4_dense.yaml",
+      "sha256": "371ef884dc62ab74307e5d90c32e738f2e8dd7d22a2d651a0ebff72545666379"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_fixed_top8_dense.yaml",
+      "sha256": "de3eb70c892c2eb12565764f2db87eaf8c92a9097b43c7f30f342e442fcf369b"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_hidden_adapter_dense.yaml",
+      "sha256": "993d2ea24f659567f38aa46e8c0abe7aeaabe3aa5193a9f6f0a319d6855af824"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_multi_query_union_top16_dense.yaml",
+      "sha256": "3f8cf2a6cf26bac27777983e913ffb6992182b94073b558c1326a06c5a2378f7"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_multi_query_union_top8_dense.yaml",
+      "sha256": "e0aca2ab946a1718eac045667f4a75859dd9355dedcfb4173d01470d1ed1dccf"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_oracle_slots_dense.yaml",
+      "sha256": "846b35bae12784f29debcba0ecd958e4982d38fb7e14c43b15c318c8db172001"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_overfit_100.yaml",
+      "sha256": "2c1a9e6a3463d69c5ceb46f4fbed9d75b51526df8039bbb3fd558316bfeee95b"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_score_gap_003_dense.yaml",
+      "sha256": "07067bf3175314ac7e118f357983d7f69dd38b91e97abafac86697fb5c8a63d2"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_softmax_mass_09_dense.yaml",
+      "sha256": "538dfcc6ac404aa942e94e31331435e3d8fcef0697fb20adc1a4fc4746d96a58"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_threshold_abs_02_dense.yaml",
+      "sha256": "e2566b9076b6bb023cf3bd8cc72bb4fd14ba8b6d5c2ed0406074f5170d4e2d07"
+    },
+    {
+      "path": "sam-lm/configs/sam_retrieved_threshold_rel_005_dense.yaml",
+      "sha256": "4304c99e72309185bf3f0fc4bbc2b1085cd2a03960f8246a447f18b3f859ace9"
+    },
+    {
+      "path": "sam-lm/configs/sam_smoke.yaml",
+      "sha256": "fbf30c4f5a7bfccb83026b4fdd792cf915117229028392775015f5585d405a44"
+    },
+    {
+      "path": "sam-lm/configs/sam_tiny.yaml",
+      "sha256": "aa44c7b228c91115fa918b2d45d6a9edf9895ab9b7d4d5ce02cd22b559f7d828"
+    },
+    {
+      "path": "sam-lm/configs/sam_tiny_dense.yaml",
+      "sha256": "feba360f7af0c99a4cf05dc5e23752cf8234af2b9e4fc6d7ad16728a0f202280"
+    },
+    {
+      "path": "sam-lm/docs/SAM-architecture-and-implementation-plan.md",
+      "sha256": "2e1fd111d55ce3ae0f7a7fca86efe93486768c2199cf0bfd750259418f832b34"
+    },
+    {
+      "path": "sam-lm/docs/architecture.md",
+      "sha256": "ca20cf691d40527770cbb281254ce4f5a19e7be7c368d34600903f5b04b8a70f"
+    },
+    {
+      "path": "sam-lm/docs/current-status.md",
+      "sha256": "f396aae41fc9b928a6585eab72ed786cd3c828f50972fa16cef0185aa47c69c4"
+    },
+    {
+      "path": "sam-lm/docs/experiment-0-13a-noisy-memory.md",
+      "sha256": "b81ee957188cd296724cd0065a5a2743283f2f65349a5eb932801140bcd02392"
+    },
+    {
+      "path": "sam-lm/docs/experiment-0.md",
+      "sha256": "9749b3eaa058ccc701a152ebcfa29f70ecc1ce87390969c27689777948e69c89"
+    },
+    {
+      "path": "sam-lm/docs/experiment-index.md",
+      "sha256": "b4abc7f8beb3a21731eabe55e64ec1e8a8fd72fbb025594ddc7ac132030e1dd8"
+    },
+    {
+      "path": "sam-lm/docs/experiments.md",
+      "sha256": "2eb37f4090272fabaf022376eb1814dbb6c6b99fa7aca7898d20efcf50a10978"
+    },
+    {
+      "path": "sam-lm/docs/getting-started.md",
+      "sha256": "7f9360ab4b0136581886e8d564cde0aea58cd5fbd6be9724a6b798586fadc5b1"
+    },
+    {
+      "path": "sam-lm/docs/glossary.md",
+      "sha256": "1ee0394f0860073a65030e3fdddce15c996bf3f2709c2591e7a0dc8ac8f6b63a"
+    },
+    {
+      "path": "sam-lm/docs/index.md",
+      "sha256": "f22ff7b543e35a3a5f7c8c87fdb92a2523710934396ea0dc088200ec868026ad"
+    },
+    {
+      "path": "sam-lm/docs/metrics.md",
+      "sha256": "2e06d40ef73475ac963f4a33551960157bed4f523091a534649b485352d1d541"
+    },
+    {
+      "path": "sam-lm/docs/repository-map.md",
+      "sha256": "974b45f5597ecd85f398d97fb2d9e909c5280002aeb1f0d5c38de0a12f211609"
+    },
+    {
+      "path": "sam-lm/docs/roadmap.md",
+      "sha256": "7648f9ed7a045e3359f123c767681efee716c7820cc7c4a65e4ddf6628fec13d"
+    },
+    {
+      "path": "sam-lm/docs/thesis.md",
+      "sha256": "e6fc4e3d7c13650b2338f1a00215350fa5d79eb8eb6ecfc6c5c2b265141675c9"
+    },
+    {
+      "path": "sam-lm/docs/troubleshooting.md",
+      "sha256": "654bdcfe73301e6bff0615c04e388148d25deb548b56f037ad5a093032d39421"
+    },
+    {
+      "path": "sam-lm/experiments/diagnosis_report.md",
+      "sha256": "742b098e5a460f3b157cd2c38899060c7685e5c57b6d57c3546d2a02cc3b81bd"
+    },
+    {
+      "path": "sam-lm/experiments/experiment_0_10_report.md",
+      "sha256": "1f98ba10aa50230b7e15351fb3be36839ed40cf2f5f83d0654910a70b421ff13"
+    },
+    {
+      "path": "sam-lm/experiments/experiment_0_11_report.md",
+      "sha256": "94b69788711e804bf1374293155cf8fe5083a38c7486eb702b6bc28084003a7e"
+    },
+    {
+      "path": "sam-lm/experiments/experiment_0_12_report.md",
+      "sha256": "ccb9dd8b77ae559b182126b37185525e1863dfe7d7663351639678568f41a4cd"
+    },
+    {
+      "path": "sam-lm/experiments/experiment_0_13A_noisy_memory_report.md",
+      "sha256": "883c1778c1306101ed8d7865b490918cff8256f06854ea9b6aa6870a6417d2bc"
+    },
+    {
+      "path": "sam-lm/experiments/experiment_0_2_report.md",
+      "sha256": "51c7778cdd0a12f96d626284d81b27f8ed96855aa061fb2e06ecc803d649e127"
+    },
+    {
+      "path": "sam-lm/experiments/experiment_0_3_report.md",
+      "sha256": "547328511d81911f7e18d9424f861f38e05457162c76cd9315eae1f5d04fe3fb"
+    },
+    {
+      "path": "sam-lm/experiments/experiment_0_5_report.md",
+      "sha256": "a6e16b94a0b44db3f26206f58ef669c5bbeac004074c4545756d091ec08b9015"
+    },
+    {
+      "path": "sam-lm/experiments/experiment_0_6_final_report.md",
+      "sha256": "751ea385665d25aae88722b92b8f9addb13806f31529a3b116c5bbf0d456590b"
+    },
+    {
+      "path": "sam-lm/experiments/experiment_0_6_report.md",
+      "sha256": "659738d090dc548c563ab8debde225458204c7dc120e665c0caf3bfb86628c89"
+    },
+    {
+      "path": "sam-lm/experiments/experiment_0_7_report.md",
+      "sha256": "59482985226d8bb2b4474bdbab1a538be032ef7590b00f93700bc2a7503a311b"
+    },
+    {
+      "path": "sam-lm/experiments/experiment_0_8_report.md",
+      "sha256": "5f1705bfb465457ed26713069f7b329eb88051bbde649201b3278761d1a37605"
+    },
+    {
+      "path": "sam-lm/experiments/experiment_0_9_report.md",
+      "sha256": "659632d88d9a81a725eccf4418af94aa4570b65771ce7ddbb473a430250ff19f"
+    },
+    {
+      "path": "stack/__init__.py",
+      "sha256": "9fd6a0755c80eb6cfc5c7a71ee4551d5e7d27e3b096a1fd150e3ca9fc67c365e"
+    },
+    {
+      "path": "stack/dialogue/__init__.py",
+      "sha256": "cacdf15c445cb32186402fa346eb2e1fe9e78d86411c5c5e814941762fa4a866"
+    },
+    {
+      "path": "stack/dialogue/state.py",
+      "sha256": "a288d6902f3ea8d58d1c7c0247db465782e6e0bcf22f5b92e089fab4bef7d412"
+    },
+    {
+      "path": "stack/encoder/augment.py",
+      "sha256": "7ba1df85b6df84a887d99f8e31ac7013acae4c8ef154591e124427250fc6b4f9"
+    },
+    {
+      "path": "stack/encoder/c2_c3.py",
+      "sha256": "3e82d1a79f81905eee8a29b27905b9d0c8bfab3e48a58ed30d8a98ee5e68a2b0"
+    },
+    {
+      "path": "stack/encoder/canonical_mapping.py",
+      "sha256": "f640df491f934a275b3cc728709f23c9b9bc433a656e532c92430f6b2bdf1bcf"
+    },
+    {
+      "path": "stack/encoder/char_tokenizer.py",
+      "sha256": "cbdadd20e779b214de864a6f77f97e1a1937bf14777fa8dd94e4f3d98fb33a8d"
+    },
+    {
+      "path": "stack/encoder/create_paraphrases.py",
+      "sha256": "adaf1b90e82aca1f0d1f7bd8993f2ce94cb548ff684f56b2b5b98b966fd3f52f"
+    },
+    {
+      "path": "stack/encoder/entity_ranker_v3.py",
+      "sha256": "199a5b78ef5b93211e18ce7f802f87cfb7af5fd93843a0192dc2c7b66747ba2c"
+    },
+    {
+      "path": "stack/encoder/entity_text.py",
+      "sha256": "22667cb690aba9186d147ddf856c1be45cbb38bb6e0387ede4e67acc078087e3"
+    },
+    {
+      "path": "stack/encoder/eval_gates.py",
+      "sha256": "54320a95344cfd668e556eabcb2b0b60f86cc59fa0368d4d76e435dec7ff0363"
+    },
+    {
+      "path": "stack/encoder/evaluation_contract.py",
+      "sha256": "a66e1151da23d81425a8fad39579fc8b7dde64253cf2e865ea540c0fd68d22d0"
+    },
+    {
+      "path": "stack/encoder/experiment_guard.py",
+      "sha256": "48c9a011cc2efb194cec1257633d41c5ad463b11035d76ac8790f42aa84d8ae7"
+    },
+    {
+      "path": "stack/encoder/frozen_split_guard.py",
+      "sha256": "e85c6b6a48f9d9085ac6afa2355bb1d178af1cafd0b826df9ad9522c58188173"
+    },
+    {
+      "path": "stack/encoder/hard_negative_miner.py",
+      "sha256": "e8bf65243e7e94ca79b348dfdda8d0997c353ba498d6fb995bce3365a13aeb5b"
+    },
+    {
+      "path": "stack/encoder/intent_rules.py",
+      "sha256": "1964ae99a7ac989d1a4f11e58371c86f5953de487cdb628aadbc3bd65bbe69b3"
+    },
+    {
+      "path": "stack/encoder/loader.py",
+      "sha256": "557e3d35689b657caaa1831bf55df4a6bbb12a730e9bdffc42b3b1d6b4393863"
+    },
+    {
+      "path": "stack/encoder/model.py",
+      "sha256": "8ed7f0b71f85bc4246d996ad965d13a69e565fa185c85445e037578dee4f6701"
+    },
+    {
+      "path": "stack/encoder/model_bundle.py",
+      "sha256": "ba00b55735ab1c969ef834dd09262825c7d0efe640f9fd229343ad738df2a128"
+    },
+    {
+      "path": "stack/encoder/natural_templates.py",
+      "sha256": "0fdc1ef65c718b2c447ba771a690ec32ffd8e33a97279a7c3a2a82281685c346"
+    },
+    {
+      "path": "stack/encoder/semantic_hash.py",
+      "sha256": "f3147461c7680246205fc2a287450c423a9c130d7591790729f5686675c196d1"
+    },
+    {
+      "path": "stack/encoder/split_dataset.py",
+      "sha256": "e2cae4bde2f97e22080d898c5db26ca8f9655dd1b0850c3bd39c4f780ff9b8c2"
+    },
+    {
+      "path": "stack/encoder/stage1c.py",
+      "sha256": "846c68e123ee8eb47671c11c76d97ee12fe7b1d6ce07fed17e98a0160e349763"
+    },
+    {
+      "path": "stack/encoder/train.py",
+      "sha256": "8088d391587d9ecb8dcf0e86464b5aabb51a77eb3a05f51eeb631289eb4f4a04"
+    },
+    {
+      "path": "stack/encoder/train_ranker_v3.py",
+      "sha256": "f25ea5c25c7adf53c1ec86f71000bdf2f2acf7601095d69c771f876e7101d4e7"
+    },
+    {
+      "path": "stack/encoder/trivial_baseline.py",
+      "sha256": "d08d10f8e927dfe6a73a51eb3f8a4f02b0bf66071d024c87d3b3ced1232e2242"
+    },
+    {
+      "path": "stack/normalization/__init__.py",
+      "sha256": "730c8f8bcca505385884b2c5de7c2cf95718877e6ed470e38073b5152fdd3638"
+    },
+    {
+      "path": "stack/normalization/lemmatizer.py",
+      "sha256": "6946661f6f1bf94c921fd0a8e6c280ef0fdfa9e59e4c8a19348f97b036559aae"
+    }
+  ]
+}

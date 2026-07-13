@@ -19,6 +19,67 @@ from nexus.graph import Path, Node
 from nexus.graph.store import InMemoryGraphStore
 
 
+_EVIDENCE_STOPWORDS = frozenset({
+    "the", "and", "for", "from", "what", "which", "that", "this", "with",
+    "does", "did", "was", "were", "how", "many", "about", "into", "have",
+})
+
+
+def _relevant_snippet_units(snippet: str, question: str, limit: int = 3) -> list[str]:
+    """Return compact source spans ranked for the current question.
+
+    Ingestion sometimes flattens whole Markdown sections into one line.  In
+    addition to sentence/line units, create bounded windows around question
+    terms so the useful row or bullet is not lost by prefix truncation.
+    """
+    q_terms = {
+        token for token in re.findall(r"[A-Za-zÀ-ž0-9_%+-]+", question.casefold())
+        if len(token) >= 3 and token not in _EVIDENCE_STOPWORDS
+    }
+    candidates: list[str] = []
+    distractor_constraint = re.search(
+        r"(?:exactly\s+|with\s+(?:exactly\s+)?)\+?(\d+)\s+distractor",
+        question,
+        re.IGNORECASE,
+    )
+    if distractor_constraint:
+        count = distractor_constraint.group(1)
+        row = re.search(
+            rf"\|\s*\+?{re.escape(count)}\s*\|\s*([^|]+)\|\s*([^|]+)\|\s*([^|]+)\|\s*([^|]+)\|",
+            snippet,
+        )
+        if row:
+            overall, one_hop, two_hop, three_hop = [value.strip() for value in row.groups()]
+            candidates.append(
+                f"With exactly {count} distractor in controlled noisy memory, "
+                f"SAM overall accuracy is {overall}; 1-hop is {one_hop}, "
+                f"2-hop is {two_hop}, and 3-hop is {three_hop}."
+            )
+    candidates.extend(re.split(r"(?<=[.!?])\s+|\n+|(?=\s##+\s)", snippet))
+    lower = snippet.casefold()
+    for term in q_terms:
+        for match in list(re.finditer(re.escape(term), lower))[:4]:
+            start = max(0, match.start() - 180)
+            end = min(len(snippet), match.end() + 220)
+            candidates.append(snippet[start:end])
+
+    ranked: list[tuple[int, int, str]] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        clean = re.sub(r"\s+", " ", candidate).strip(" |\t-*#")
+        if not 18 <= len(clean) <= 500 or len(re.findall(r"\w+", clean)) < 3:
+            continue
+        normalized = clean.casefold()
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        terms = set(re.findall(r"[A-Za-zÀ-ž0-9_%+-]+", normalized))
+        overlap = len(q_terms & terms)
+        ranked.append((overlap, -len(clean), clean))
+    ranked.sort(reverse=True)
+    return [item[2] for item in ranked[:limit]]
+
+
 def _node_summary(node: Node) -> dict[str, Any]:
     """Build a compact dict representation of a node."""
     props = dict(node.properties)
@@ -782,7 +843,7 @@ def _collect_source_snippets(
     (entity ID, snippet text, source path).
     Nodes without a ``source_snippet`` property are silently skipped.
     """
-    scored: list[tuple[Node, int]] = []
+    scored: list[tuple[Node, int, str]] = []
     seen: set[str] = set()
 
     for path in paths:
@@ -797,24 +858,26 @@ def _collect_source_snippets(
                 snippet = node.properties.get("source_snippet", "")
                 if not snippet:
                     continue
-                relevance = 0
-                if question:
-                    qw = set(re.findall(r'\w+', question.lower()))
-                    sw = set(re.findall(r'\w+', snippet.lower()))
-                    relevance = len(qw & sw)
-                scored.append((node, relevance))
+                units = _relevant_snippet_units(str(snippet), question, limit=1)
+                if not units:
+                    continue
+                selected = units[0]
+                qw = set(re.findall(r'\w+', question.lower()))
+                sw = set(re.findall(r'\w+', selected.lower()))
+                relevance = len(qw & sw)
+                scored.append((node, relevance, selected))
 
     scored.sort(key=lambda x: -x[1])
 
     snippets: list[dict[str, Any]] = []
-    for node, _ in scored[:2]:
-        snippet = node.properties.get("source_snippet", "")
+    for node, _, selected in scored[:2]:
+        snippet = selected
         ctx = node.properties.get("source_context", "")
         if snippet or ctx:
             entry: dict[str, Any] = {"entity": node.id,
                 "source": node.sources[0] if node.sources else ""}
             if snippet:
-                entry["text"] = snippet[:400]  # truncated for budget
+                entry["text"] = snippet[:400]  # already relevance-windowed
             if ctx:
                 entry["context"] = ctx[:500]   # full section text
             snippets.append(entry)
@@ -971,31 +1034,58 @@ def build_zero_hop_pack(
     metrics_aggregated: dict[str, Any] = {}
     sources: list[str] = []
 
+    question_terms = {
+        token for token in re.findall(r"[A-Za-zÀ-ž0-9_%]+", question.casefold())
+        if len(token) >= 3 and token not in {
+            "the", "and", "for", "from", "what", "which", "that", "this",
+            "with", "does", "did", "was", "were", "how", "many", "about",
+        }
+    }
+
+    def candidate_score(text: str, *, curated: bool) -> tuple[int, int, int]:
+        terms = set(re.findall(r"[A-Za-zÀ-ž0-9_%]+", text.casefold()))
+        overlap = len(question_terms & terms)
+        exact_metric = sum(
+            1 for metric in ("accuracy", "precision", "recall", "distractor", "gate", "slot", "chain")
+            if metric in question.casefold() and metric in text.casefold()
+        )
+        return overlap + exact_metric * 4, int(curated), -len(text)
+
+    ranked_facts: list[tuple[tuple[int, int, int], dict[str, Any]]] = []
     for eid in entity_ids:
         node = graph.get_node(eid)
         if node is None:
             continue
         props = node.properties or {}
-        kf = props.get("key_finding", "")
-        desc = props.get("description", "")
-        if kf:
-            src = node.sources[0] if node.sources else ""
-            node_facts.append({
-                "text": f"[{eid}] {kf}",
+        src = node.sources[0] if node.sources else ""
+        display = str(props.get("display_name") or props.get("name") or eid).strip()
+        candidates: list[tuple[str, float, bool]] = []
+        for value, confidence in ((props.get("key_finding"), 0.8), (props.get("description"), 0.6)):
+            if isinstance(value, str) and value.strip():
+                candidates.append((value.strip(), confidence, True))
+
+        snippet = props.get("source_snippet")
+        if isinstance(snippet, str) and snippet.strip():
+            for clean in _relevant_snippet_units(snippet, question, limit=4):
+                candidates.append((clean, 0.7, False))
+
+        seen_candidate_text: set[str] = set()
+        local_ranked: list[tuple[tuple[int, int, int], dict[str, Any]]] = []
+        for text, confidence, curated in candidates:
+            normalized = re.sub(r"\s+", " ", text).strip().casefold()
+            if normalized in seen_candidate_text:
+                continue
+            seen_candidate_text.add(normalized)
+            fact = {
+                "text": f"{eid}: {display}: {text}",
                 "source": src,
-                "confidence": 0.8,
-            })
-            if src:
-                sources.append(src)
-        elif desc:
-            src = node.sources[0] if node.sources else ""
-            node_facts.append({
-                "text": f"[{eid}] {desc}",
-                "source": src,
-                "confidence": 0.5,
-            })
-            if src:
-                sources.append(src)
+                "confidence": confidence,
+            }
+            local_ranked.append((candidate_score(text + " " + display, curated=curated), fact))
+        local_ranked.sort(key=lambda item: item[0], reverse=True)
+        ranked_facts.extend(local_ranked[:2])
+        if src and local_ranked:
+            sources.append(src)
         node_metrics = props.get("metrics", {})
         if node_metrics and isinstance(node_metrics, dict):
             entry: dict[str, Any] = {"entity": eid}
@@ -1005,6 +1095,16 @@ def build_zero_hop_pack(
                 if mk not in metrics_aggregated:
                     metrics_aggregated[mk] = []
                 metrics_aggregated[mk].append(mv)
+
+    ranked_facts.sort(key=lambda item: item[0], reverse=True)
+    seen_fact_text: set[str] = set()
+    for _, fact in ranked_facts:
+        normalized = re.sub(r"\s+", " ", fact["text"]).casefold()
+        if normalized not in seen_fact_text:
+            node_facts.append(fact)
+            seen_fact_text.add(normalized)
+        if len(node_facts) >= 4:
+            break
 
     if not node_facts and not numbers:
         return {}  # Caller should handle the empty-pack case

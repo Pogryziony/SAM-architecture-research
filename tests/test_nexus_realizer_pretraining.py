@@ -8,6 +8,12 @@ from pathlib import Path
 
 import pytest
 
+from benchmarks.acquire_realizer_train_data import (
+    acquire_claim_records,
+    discover_sources,
+    load_verified_acquisition,
+    write_acquisition,
+)
 from benchmarks.build_distillation_dataset import build_distillation_dataset
 from benchmarks.check_realizer_readiness import evaluate_readiness, estimate_parameter_count
 from benchmarks.realizer_contracts import (
@@ -64,6 +70,36 @@ def _safe_record(record_id: str, question: str, entities: list[str]) -> dict:
 def test_normalization_and_stable_id_ignore_punctuation_and_entity_order():
     assert normalize_question("  What's Alpha? ") == normalize_question("WHAT’S alpha")
     assert stable_example_id("Alpha?", ["B", "A"]) == stable_example_id("alpha", ["A", "B"])
+
+
+def test_train_only_acquisition_is_large_unique_and_excludes_evaluation_sources(tmp_path: Path):
+    root = Path.cwd()
+    sources = discover_sources(root)
+    relative = [path.relative_to(root).as_posix() for path in sources]
+    assert relative
+    assert not any(path.startswith("benchmarks/") for path in relative)
+    assert not any(Path(path).name.casefold() in {"test.jsonl", "val.jsonl", "validation.jsonl"} for path in relative)
+    assert not any("/results/" in f"/{path}/" for path in relative)
+
+    records, manifest = acquire_claim_records(root)
+    assert len(records) >= 5000
+    assert manifest["semantic_targets_unique"] == len(records)
+    assert manifest["normalized_questions_unique"] == len(records)
+    assert manifest["normalized_answers_unique"] == len(records)
+    assert manifest["source_families"] >= 100
+    assert {"config_value", "table_cell", "markdown_claim", "api_contract"} <= set(manifest["counts_by_kind"])
+
+    output = tmp_path / "acquisition"
+    write_acquisition(output, records, manifest)
+    loaded, loaded_manifest = load_verified_acquisition(output / "manifest.json", root)
+    assert loaded == records
+    assert loaded_manifest["records_sha256"] == manifest["records_sha256"]
+    assert loaded_manifest["records_file_sha256"] != ""
+
+    records_path = output / "source_claims.jsonl.xz"
+    records_path.write_bytes(records_path.read_bytes() + b"tampered")
+    with pytest.raises(ValueError, match="hash mismatch"):
+        load_verified_acquisition(output / "manifest.json", root)
 
 
 def test_distillation_contract_rejects_legacy_and_tampered_records():
@@ -294,6 +330,28 @@ def test_stage2_uses_scalar_judge_scores_and_registered_deltas(tmp_path: Path):
     assert isinstance(artifact["metrics"]["relevance_rate"], float)
     assert "accuracy_delta_vs_baseline" in artifact["metrics"]
     assert artifact["registered_baseline_sha256"]
+
+
+def test_registered_stage2_relevance_gate_passes_on_canonical_graph(tmp_path: Path):
+    from benchmarks.run_benchmark import build_benchmark_graph
+
+    questions = [
+        json.loads(line)
+        for line in Path("benchmarks/qa-dataset/questions.jsonl").read_text(encoding="utf-8").splitlines()
+        if line
+    ][:30]
+    baseline = json.loads(Path("training/stage2_baseline_v1.json").read_text(encoding="utf-8"))
+    graph, _ = build_benchmark_graph()
+    artifact = run_stage2(
+        questions,
+        graph,
+        ProductionNEXUSConfig.lexical_only(),
+        "a" * 40,
+        str(tmp_path / "registered-stage2.json"),
+        baseline,
+    )
+    assert artifact["metrics"]["relevance_rate"] >= 0.77
+    assert artifact["status"] == "PASS"
 
 
 def test_training_rejects_forged_ready_status(tmp_path: Path):
