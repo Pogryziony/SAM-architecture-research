@@ -1,4 +1,8 @@
-"""CPU PyTorch preflight for the actual NEXUS Realizer model."""
+"""CPU PyTorch preflight for the actual NEXUS Realizer model.
+
+The filename deliberately does not match ``test_nexus_*`` because the legacy
+optional-dependency test collects that pattern with PyTorch imports blocked.
+"""
 
 from __future__ import annotations
 

@@ -58,8 +58,13 @@ def build_model(config: dict[str, Any]):
 
         def forward(self, source, target):
             target_length = target.shape[1]
-            causal_mask = nn.Transformer.generate_square_subsequent_mask(
-                target_length, device=target.device
+            causal_mask = torch.triu(
+                torch.ones(
+                    (target_length, target_length),
+                    device=target.device,
+                    dtype=torch.bool,
+                ),
+                diagonal=1,
             )
             hidden = self.transformer(
                 self._embed(source),
