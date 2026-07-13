@@ -243,8 +243,8 @@ class InMemoryGraphStore:
 
         # Collect candidates: all (norm_name, node_id) that share at least one trigram
         trigram_hits: dict[str, int] = {}  # node_id → shared trigram count
-        for tg in query_trigrams:
-            for norm_name, nid in self._trigram_index.get(tg, ()):
+        for tg in sorted(query_trigrams):
+            for norm_name, nid in sorted(self._trigram_index.get(tg, ())):
                 if candidate_ids is not None and nid not in candidate_ids:
                     continue
                 trigram_hits[nid] = trigram_hits.get(nid, 0) + 1
@@ -257,7 +257,7 @@ class InMemoryGraphStore:
         # Require at least 2 shared trigrams for short strings to avoid false positives.
         best_nid: Optional[str] = None
         best_score: float = 0.0
-        for nid, shared in trigram_hits.items():
+        for nid, shared in sorted(trigram_hits.items()):
             if shared < 2:
                 continue
             node_tgs = self._node_trigrams.get(nid, set())
@@ -266,7 +266,7 @@ class InMemoryGraphStore:
             # Containment: how much of the SMALLER set is covered by the intersection
             min_size = min(len(query_trigrams), len(node_tgs))
             score = shared / min_size if min_size > 0 else 0.0
-            if score > best_score:
+            if score > best_score or (score == best_score and best_nid is not None and nid < best_nid):
                 best_score = score
                 best_nid = nid
 
