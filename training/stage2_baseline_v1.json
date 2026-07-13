@@ -1,0 +1,11 @@
+{
+  "accuracy_mean": 0.1694,
+  "hallucination_mean": 0.4114,
+  "naturalness_mean": 35.0,
+  "provenance": {
+    "implementation": "benchmarks/stage2_gate_eval.py",
+    "note": "Registered legacy SynthesizingModel baseline on the same 30-question Stage 2 protocol.",
+    "sample_size": 30
+  },
+  "schema_version": "nexus-stage2-baseline-v1"
+}

@@ -15,6 +15,7 @@ import time
 from typing import Any
 
 from nexus.graph.store import InMemoryGraphStore
+from nexus.graph import EDGE_TYPES
 from nexus.graph.traversal import traverse_with_intent
 from nexus.query.parser import parse_question
 from nexus.reasoning.evidence_builder import (
@@ -37,6 +38,30 @@ _INSUFFICIENCY_PATTERNS = [
     "no evidence",
     "unable to determine",
 ]
+
+
+def _explicit_relation_claim(question: str) -> tuple[str, str, str] | None:
+    """Parse the benchmark/API form ``Does A have the rel relation to B?``.
+
+    This narrow parser is intentionally fail-closed and only accepts the
+    registered relation vocabulary.  It prevents an absent relation from
+    being answered with unrelated facts about either endpoint.
+    """
+    match = re.fullmatch(
+        r"\s*does\s+(.+?)\s+have\s+the\s+([a-z_]+)\s+relation\s+to\s+(.+?)\?\s*",
+        question,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        return None
+    source, relation, target = match.group(1), match.group(2).casefold(), match.group(3)
+    if relation not in EDGE_TYPES:
+        return None
+    return source, relation, target
+
+
+def _graph_has_relation(graph: InMemoryGraphStore, source: str, relation: str, target: str) -> bool:
+    return any(edge.type == relation and edge.target == target for edge in graph.get_outgoing(source))
 
 
 def is_insufficient_answer(answer: str) -> bool:
@@ -257,6 +282,17 @@ def answer_question(
     # Edge case: no entities found
     if not parsed.entity_ids:
         result["answer"] = "Insufficient evidence to answer. No relevant entities found in the question."
+        result["verification"] = VerificationResult(
+            supported_count=0,
+            hallucination_rate=0.0,
+            passed=True,
+        )
+        result["timing"] = timing
+        return _attach_reasoning_audit(result, graph, [], config, max_paths)
+
+    explicit_relation = _explicit_relation_claim(question)
+    if explicit_relation and not _graph_has_relation(graph, *explicit_relation):
+        result["answer"] = "Insufficient evidence for that relation."
         result["verification"] = VerificationResult(
             supported_count=0,
             hallucination_rate=0.0,

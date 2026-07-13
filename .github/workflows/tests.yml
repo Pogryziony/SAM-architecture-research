@@ -86,4 +86,4 @@ jobs:
           git diff --exit-code -- models/
 
       - name: Run optional torch collection tests
-        run: python -m pytest tests/test_optional_torch_collection.py -v --tb=short
+        run: python -m pytest tests/test_optional_torch_collection.py tests/test_realizer_torch.py -v --tb=short
