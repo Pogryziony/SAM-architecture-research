@@ -32,6 +32,7 @@ if str(_project_root) not in sys.path:
 from nexus.graph.store import InMemoryGraphStore
 from nexus.pipeline.config import ProductionNEXUSConfig
 from nexus.pipeline.runner import NEXUSRunner
+from benchmarks.realizer_contracts import sha256_json
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -61,12 +62,11 @@ def run_stage2(
     config: ProductionNEXUSConfig,
     source_sha: str,
     output_path: str,
+    baseline: dict[str, Any],
 ) -> dict:
     """Revalidate Stage 2 realization gates."""
     from benchmarks.naturalness_eval import score_naturalness
     from benchmarks.relevance_judge import RelevanceJudge
-    from nexus.reasoning.verifier import Verifier
-
     runner = NEXUSRunner(graph, config)
     relevance_judge = RelevanceJudge()
 
@@ -89,16 +89,36 @@ def run_stage2(
         question_type = str(q.get("question_type", "factual_lookup"))
 
         # Score naturalness
-        nat_score = score_naturalness(answer)
+        evidence = qr.evidence_pack
+        facts = [
+            str(item.get("text", ""))
+            for item in evidence.get("node_facts", [])
+            if isinstance(item, dict) and item.get("text")
+        ]
+        edge_types = sorted({
+            str(edge.get("type", ""))
+            for path in evidence.get("paths", [])
+            for edge in path.get("edges", [])
+            if isinstance(edge, dict) and edge.get("type")
+        })
+        nat_detail = score_naturalness(answer, facts, edge_types)
+        nat_score = float(nat_detail["total"])
         naturalness_scores.append(nat_score)
 
         # Score relevance (3 args: question, answer, question_type)
         rel = relevance_judge.judge(q["question"], answer, question_type)
-        relevance_results.append(rel)
+        relevance_results.append(rel["verdict"])
 
         # Score accuracy
         from benchmarks.run_benchmark import compute_key_fact_score
-        acc = compute_key_fact_score(answer, ground_truth)
+        acc_raw = compute_key_fact_score(answer, ground_truth)
+        if isinstance(acc_raw, dict):
+            acc = acc_raw.get("fuzzy_accuracy")
+            if acc is None:
+                acc = acc_raw.get("exact_accuracy")
+        else:
+            acc = acc_raw
+        acc = float(acc or 0.0)
         accuracy_scores.append(acc)
 
         # Hallucination
@@ -109,6 +129,7 @@ def run_stage2(
             "question": q["question"][:200],
             "answer": answer[:500],
             "naturalness": nat_score,
+            "naturalness_detail": nat_detail,
             "relevance": rel,
             "accuracy": acc,
             "hallucination_rate": qr.hallucination_rate,
@@ -120,33 +141,54 @@ def run_stage2(
     # Compute metrics
     nat_mean = sum(naturalness_scores) / max(1, len(naturalness_scores))
     acc_mean = sum(accuracy_scores) / max(1, len(accuracy_scores))
-    rel_pass = sum(1 for r in relevance_results if r == "relevant") / max(1, len(relevance_results))
+    rel_pass = sum(1.0 if r == "yes" else 0.5 if r == "partial" else 0.0 for r in relevance_results) / max(1, len(relevance_results))
     hal_mean = sum(hallucination_rates) / max(1, len(hallucination_rates))
+    for key in ("naturalness_mean", "accuracy_mean", "hallucination_mean"):
+        if not isinstance(baseline.get(key), (int, float)):
+            raise ValueError(f"registered baseline missing numeric {key}")
+    naturalness_delta = nat_mean - float(baseline["naturalness_mean"])
+    accuracy_delta = acc_mean - float(baseline["accuracy_mean"])
+    hallucination_delta = hal_mean - float(baseline["hallucination_mean"])
+    gates_passed = (
+        rel_pass >= 0.77
+        and naturalness_delta >= 5.0
+        and hallucination_delta <= 0.0
+        and accuracy_delta >= -0.02
+    )
 
     artifact = {
+        "schema_version": "nexus-stage2-v1",
         "stage": "stage2_realization_l1",
         "created_utc": utc_now.isoformat(),
         "source_sha": source_sha,
         "config_hash": config.config_hash,
         "entity_resolution": "entity_ranker_v3" if config.pipeline_id.entity_ranker_v3_enabled else "lexical",
         "questions_total": len(questions),
+        "question_set_sha256": sha256_json(questions),
         "metrics": {
             "naturalness_mean": round(nat_mean, 3),
             "relevance_rate": round(rel_pass, 4),
             "accuracy_mean": round(acc_mean, 4),
             "hallucination_mean": round(hal_mean, 4),
+            "naturalness_improvement": round(naturalness_delta, 4),
+            "accuracy_delta_vs_baseline": round(accuracy_delta, 4),
+            "hallucination_delta_vs_baseline": round(hallucination_delta, 4),
         },
+        "registered_baseline": baseline,
+        "registered_baseline_sha256": sha256_json(baseline),
         "gates": {
-            "naturalness_improvement": {"value": nat_mean, "threshold": 5.0, "note": "baseline comparison TBD — historical baseline was +38.5"},
+            "naturalness_improvement": {"value": naturalness_delta, "threshold": 5.0, "passed": naturalness_delta >= 5.0},
             "relevance": {"value": rel_pass, "threshold": 0.77, "passed": rel_pass >= 0.77},
-            "hallucination": {"value": hal_mean, "threshold": "baseline_registered", "note": "must not exceed registered baseline"},
-            "accuracy": {"value": acc_mean, "threshold": "baseline - 2pp", "note": "must not drop more than 2pp below baseline"},
+            "hallucination": {"value": hallucination_delta, "threshold": 0.0, "passed": hallucination_delta <= 0.0},
+            "accuracy": {"value": accuracy_delta, "threshold": -0.02, "passed": accuracy_delta >= -0.02},
         },
         "per_question": results,
-        "status": "PASS" if rel_pass >= 0.77 else "FAIL (relevance below 77%)",
+        "status": "PASS" if gates_passed else "FAIL",
     }
 
     out = Path(output_path)
+    if out.exists():
+        raise FileExistsError(f"Refusing to overwrite: {out}")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(artifact, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
 
@@ -279,6 +321,7 @@ def main():
     parser.add_argument("--limit", type=int, default=30)
     parser.add_argument("--output-dir", default="benchmarks/results")
     parser.add_argument("--er3", action="store_true", help="Use Entity Ranker V3")
+    parser.add_argument("--baseline", default="training/stage2_baseline_v1.json")
     args = parser.parse_args()
 
     from benchmarks.run_benchmark import build_benchmark_graph
@@ -297,7 +340,9 @@ def main():
         questions = questions[:args.limit]
         out = f"{args.output_dir}/stage2_{ts}.json"
         print(f"Stage 2: {len(questions)} questions")
-        result = run_stage2(questions, graph, config, source_sha, out)
+        baseline_path = Path(args.baseline)
+        baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+        result = run_stage2(questions, graph, config, source_sha, out, baseline)
         print(f"  Relevance: {result['metrics']['relevance_rate']:.4f} (gate: 0.77)")
         print(f"  Status: {result['status']}")
 

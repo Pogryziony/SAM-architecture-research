@@ -3,3 +3,7 @@ benchmarks/results.json
 benchmarks/router_results.json
 benchmarks/throughput_results.json
 models/**/*.pt
+data/distillation/realizer_v1/
+training/output*/
+**/model.pt
+**/*.safetensors

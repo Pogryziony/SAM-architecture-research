@@ -1,7 +1,7 @@
 # EXPERIMENT: NEXUS Realizer v1 — CPU-First Evidence-to-Answer Model
 
 **Pre-registered**: 2026-07-11
-**Status**: PREREGISTERED — training blocked until Stage 4 entry conditions are met.
+**Status**: PRE-TRAINING INFRASTRUCTURE READY — training remains blocked by immutable gates.
 **Repository**: SAM-architecture-research
 
 ---
@@ -15,11 +15,17 @@ a language interface that reads structured evidence and produces answers.
 
 ## Entry Conditions
 
-1. Stage 2 relevance >= 77% (currently 60% — BLOCKED)
+1. Stage 2 relevance >= 77%
 2. Stage 2 naturalness >= 5pt improvement over baseline
 3. Stage 2 hallucination no worse than baseline
-4. `data/distillation/pairs.jsonl` >= 5000 verifier-passed unique pairs
-5. No pairs derived from validation or holdout labels
+4. Realizer v1 manifest >= 5000 verifier-passed unique pairs under the
+   `nexus-realizer-v1` contract
+5. No pairs derived from validation or holdout labels; zero entity-family
+   overlap between train and validation
+
+The historical `data/distillation/pairs.jsonl` file is not eligible: its
+records predate structured evidence, proof audit, split identity, and source
+hash requirements.
 
 ## Architecture
 
@@ -31,7 +37,7 @@ Output: grounded natural-language answer
 ### Model
 
 - Base: Small transformer or T5-style encoder-decoder (≤ 50M params)
-- Tokenizer: character n-gram or BPE
+- Tokenizer: deterministic UTF-8 byte/character tokenizer (259 symbols)
 - Input serialization: `[QUESTION] <text> [EVIDENCE] <json> [ANSWER]`
 - Maximum evidence length: 1024 tokens
 - CPU-first training with deterministic seed handling
@@ -98,6 +104,22 @@ Per example:
 - Training log: committed
 - Validation artifact: committed
 - Per-example predictions: committed
+
+## Pre-training implementation
+
+- `training/nexus_realizer_v1.json` freezes the 2.78M-parameter CPU model and
+  optimizer configuration.
+- `benchmarks/run_nexus_oracle.py` evaluates the 181-case oracle contract.
+- `benchmarks/build_distillation_dataset.py` creates hash-verified,
+  entity-family-disjoint data.
+- `benchmarks/check_realizer_readiness.py` aggregates all gates into one
+  `READY_FOR_TRAINING` or `BLOCKED` artifact.
+- `benchmarks/train_nexus_realizer.py` provides no-write preflight,
+  overfit-smoke, and guarded training modes. Weight paths inside git are
+  rejected.
+
+Current diagnostic results and remaining blockers are documented in
+`docs/nexus-realizer-pretraining-status.md`.
 
 ## Budget Compliance
 

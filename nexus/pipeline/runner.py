@@ -41,6 +41,7 @@ class QuestionResult:
     graph_paths_count: int = 0
     path_scores: list[float] = field(default_factory=list)
     evidence_pack_keys: list[str] = field(default_factory=list)
+    evidence_pack: dict[str, Any] = field(default_factory=dict)
     answer: str = ""
     raw_answer: str = ""
     verifier_passed: bool = False
@@ -55,6 +56,7 @@ class QuestionResult:
     counter_evidence_count: int = 0
     provenance_coverage: float = 0.0
     proof_valid: bool = False
+    reasoning_audit: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -119,7 +121,9 @@ class NEXUSRunner:
                 evaluation_mode="predicted",
             )
 
-        model = self.model or get_available_model()
+        if self.model is None:
+            self.model = get_available_model()
+        model = self.model
         pipeline_start = time.perf_counter()
 
         results: list[QuestionResult] = []
@@ -174,7 +178,9 @@ class NEXUSRunner:
                 evaluation_mode="oracle",
             )
 
-        model = self.model or get_available_model()
+        if self.model is None:
+            self.model = get_available_model()
+        model = self.model
         pipeline_start = time.perf_counter()
         results: list[QuestionResult] = []
         answered = 0
@@ -336,6 +342,7 @@ class NEXUSRunner:
             ep = result.get("evidence_pack", {})
             if isinstance(ep, dict):
                 qr.evidence_pack_keys = sorted(ep.keys())
+                qr.evidence_pack = ep
 
             timing = result.get("timing", {})
             if isinstance(timing, dict):
@@ -346,6 +353,7 @@ class NEXUSRunner:
 
             audit = result.get("reasoning_audit", {})
             if isinstance(audit, dict):
+                qr.reasoning_audit = audit
                 qr.reasoning_readiness_score = float(
                     audit.get("readiness_score", 0.0)
                 )
@@ -408,6 +416,7 @@ class NEXUSRunner:
                     "graph_paths_count": qr.graph_paths_count,
                     "path_scores": qr.path_scores,
                     "evidence_pack_keys": qr.evidence_pack_keys,
+                    "evidence_pack": qr.evidence_pack,
                     "answer": qr.answer[:500],
                     "verifier_passed": qr.verifier_passed,
                     "hallucination_rate": qr.hallucination_rate,
@@ -421,6 +430,7 @@ class NEXUSRunner:
                     "counter_evidence_count": qr.counter_evidence_count,
                     "provenance_coverage": qr.provenance_coverage,
                     "proof_valid": qr.proof_valid,
+                    "reasoning_audit": qr.reasoning_audit,
                 }
                 for qr in result.per_question
             ],
