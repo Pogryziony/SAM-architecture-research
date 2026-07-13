@@ -365,7 +365,7 @@ class InMemoryGraphStore:
 
         # Filter: require at least 2 token matches for confidence
         hits = [(nid, count) for nid, count in node_hits.items() if count >= 2]
-        hits.sort(key=lambda x: x[1], reverse=True)
+        hits.sort(key=lambda x: (-x[1], x[0]))
         return hits
 
     # ── Traversal ──

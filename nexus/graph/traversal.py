@@ -103,7 +103,9 @@ def beam_search(
             path.score = score_path(path, query_entities)
             scored.append((next_node, steps, visited, path.score))
 
-        scored.sort(key=lambda x: x[3], reverse=True)
+        scored.sort(key=lambda x: (-x[3], x[0], tuple(
+            (step.edge.type, step.from_node, step.to_node) for step in x[1]
+        )))
         active_paths = [(node, steps, visited) for node, steps, visited, _ in scored[:beam_width]]
 
     # Return all completed paths, sorted by score

@@ -95,7 +95,9 @@ def extract_relations(
     edges = []
     new_entities = []
     entity_names = {e["name"] for e in entities}
-    entity_names_lower = {n.lower(): n for n in entity_names}
+    entity_names_lower: dict[str, str] = {}
+    for entity_name in sorted(entity_names, key=lambda value: (value.casefold(), value)):
+        entity_names_lower.setdefault(entity_name.lower(), entity_name)
 
     def find_or_create(name: str, etype: str = "Entity") -> str:
         """Find an entity by name, or create a new one and return its name."""
@@ -105,15 +107,24 @@ def extract_relations(
             return entity_names_lower[norm]
         # Normalized match with underscores
         norm_us = norm.replace(" ", "_").replace("-", "_")
-        for ename in entity_names:
-            if ename.lower().replace(" ", "_").replace("-", "_") == norm_us:
-                return ename
+        normalized_matches = [
+            ename for ename in entity_names
+            if ename.lower().replace(" ", "_").replace("-", "_") == norm_us
+        ]
+        if normalized_matches:
+            return min(normalized_matches, key=lambda value: (value.casefold(), value))
         # Substring match
+        substring_matches: list[str] = []
         for ename in entity_names:
             en_lower = ename.lower()
             if norm in en_lower or en_lower in norm:
                 if len(norm) >= 4 and len(en_lower) >= 4:
-                    return ename
+                    substring_matches.append(ename)
+        if substring_matches:
+            return min(
+                substring_matches,
+                key=lambda value: (abs(len(value) - len(name)), len(value), value.casefold(), value),
+            )
         # Create new entity
         if len(name.strip()) >= 2 and name.strip() not in entity_names:
             entity_names.add(name)

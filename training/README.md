@@ -9,16 +9,21 @@ split, and reproducibility hashes.
 
 1. Build the oracle benchmark from the registered validation and relation-gold
    sources with `benchmarks/run_nexus_oracle.py`.
-2. Build at least 5,000 verifier-passed pairs with
-   `benchmarks/build_distillation_dataset.py`. The builder accepts only a train
-   source and creates entity-family-disjoint train/validation files.
-3. Produce a Stage 2 artifact containing the four preregistered baseline deltas:
+2. Acquire atomic train-only source claims with
+   `benchmarks/acquire_realizer_train_data.py`. It creates one target per
+   source property/table cell/claim/API contract and rejects semantic,
+   question, and answer duplicates.
+3. Build at least 5,000 verifier-passed pairs with
+   `benchmarks/build_distillation_dataset.py --acquisition-manifest ...`.
+   The builder verifies every source hash and creates source-family-disjoint
+   train/validation files.
+4. Produce a Stage 2 artifact containing the four preregistered baseline deltas:
    relevance, naturalness, hallucination, and accuracy.
-4. Run `benchmarks/check_realizer_readiness.py` and resolve every blocking gate.
-5. Install `pip install -e '.[train]'`, then run
+5. Run `benchmarks/check_realizer_readiness.py` and resolve every blocking gate.
+6. Install `pip install -e '.[train]'`, then run
    `benchmarks/train_nexus_realizer.py --mode preflight` and
    `--mode overfit-smoke`.
-6. Start `--mode train` only with the valid readiness artifact. The output
+7. Start `--mode train` only with the valid readiness artifact. The output
    directory must be outside this repository; its weight SHA-256 is recorded
    in an external manifest.
 

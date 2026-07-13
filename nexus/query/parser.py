@@ -199,7 +199,7 @@ def spot_entities(
                     matched_node_ids.add(nid)
                     wb_matched.add(nid)
 
-    results.sort(key=lambda x: x[0])
+    results.sort(key=lambda x: (x[0], x[3]))
     return results, wb_matched
 
 
@@ -729,7 +729,7 @@ def _rank_entities(
     metric_q = _is_metric_question(question) if question else False
     concept_q = _is_concept_question(question) if question else False
 
-    def _score(eid: str) -> tuple[float, float, int]:
+    def _score(eid: str) -> tuple[float, float, float, int, str]:
         node = graph.get_node(eid)
         node_type = node.type if node else ""
 
@@ -798,7 +798,7 @@ def _rank_entities(
         # candidates during the final cap. This makes the parser handoff
         # monotonic with respect to the selected encoder baseline.
         protected = 1.0 if eid in protected_ids else 0.0
-        return (protected, base_score, type_prior, name_len)
+        return (protected, base_score, type_prior, name_len, eid.casefold())
 
     ranked = sorted(unique, key=_score, reverse=True)
     return ranked[:config.max_entry_nodes]

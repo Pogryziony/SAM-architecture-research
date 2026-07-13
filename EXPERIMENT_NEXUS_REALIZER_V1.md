@@ -1,7 +1,7 @@
 # EXPERIMENT: NEXUS Realizer v1 — CPU-First Evidence-to-Answer Model
 
 **Pre-registered**: 2026-07-11
-**Status**: PRE-TRAINING INFRASTRUCTURE READY — training remains blocked by immutable gates.
+**Status**: PRE-TRAINING GATES PASSED — training not started.
 **Repository**: SAM-architecture-research
 
 ---
@@ -112,13 +112,16 @@ Per example:
 - `benchmarks/run_nexus_oracle.py` evaluates the 181-case oracle contract.
 - `benchmarks/build_distillation_dataset.py` creates hash-verified,
   entity-family-disjoint data.
+- `benchmarks/acquire_realizer_train_data.py` extracts unique atomic targets
+  from an explicit train-only repository corpus; it does not paraphrase the
+  existing questions or read validation/test labels.
 - `benchmarks/check_realizer_readiness.py` aggregates all gates into one
   `READY_FOR_TRAINING` or `BLOCKED` artifact.
 - `benchmarks/train_nexus_realizer.py` provides no-write preflight,
   overfit-smoke, and guarded training modes. Weight paths inside git are
   rejected.
 
-Current diagnostic results and remaining blockers are documented in
+Current verified results and the launch procedure are documented in
 `docs/nexus-realizer-pretraining-status.md`.
 
 ## Budget Compliance

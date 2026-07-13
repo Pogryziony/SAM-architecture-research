@@ -17,7 +17,7 @@ from nexus.graph import Node, Edge, Path, PathStep
 from nexus.graph.store import InMemoryGraphStore
 from nexus.query.parser import detect_intent, spot_entities, parse_question
 from nexus.reasoning.verifier import Verifier, VerificationResult, extract_claims
-from nexus.reasoning.evidence_builder import build_evidence_pack, _fact_from_step
+from nexus.reasoning.evidence_builder import build_evidence_pack, build_zero_hop_pack, _fact_from_step
 from nexus.reasoning.answer import answer_question
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
@@ -66,6 +66,31 @@ def simple_path_graph():
     g.add_node(Node(id="B", type="Entity", properties={"name": "Beta"}))
     g.add_edge(Edge(type="derived_from", source="B", target="A", confidence=0.9))
     return g
+
+
+def test_zero_hop_uses_relevant_source_row_and_preserves_exact_constraint():
+    graph = InMemoryGraphStore()
+    graph.add_node(Node(
+        id="Sam_Does_Not_Collapse_With_One_Distractor",
+        type="Concept",
+        properties={
+            "name": "SAM does not collapse with one distractor",
+            "source_snippet": (
+                "| Distractors | Overall | 1-hop | 2-hop | 3-hop | "
+                "| 1 | 99.82% | 99.90% | 99.86% | 99.50% | "
+                "| 8 | 91.58% | 95.90% | 92.95% | 79.33% |"
+            ),
+        },
+        sources=["docs/noisy-memory.md"],
+    ))
+    question = "What accuracy does SAM achieve with exactly 1 distractor in controlled noisy memory?"
+    pack = build_zero_hop_pack(
+        graph, ["Sam_Does_Not_Collapse_With_One_Distractor"], question,
+    )
+    evidence = " ".join(item["text"] for item in pack["node_facts"])
+    assert "exactly 1 distractor" in evidence
+    assert "99.82%" in evidence
+    assert "91.58%" not in pack["node_facts"][0]["text"]
 
 
 @pytest.fixture

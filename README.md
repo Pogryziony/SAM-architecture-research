@@ -39,7 +39,7 @@ comes from the graph.
 | Entity Ranker V3 | ✅ **REPORTED PASS / REPRODUCIBILITY INCOMPLETE** — validation canonical recall@10=77.47% and historical frozen canonical recall@10=79.64%. Aggregate artifacts and non-weight model files are committed. Weights are intentionally external and are not currently published; future evaluation requires a local `weights.pt` matching the recorded SHA-256. Per-question frozen predictions and the original canonical-mapping snapshot were not captured. The consumed frozen split is permanently locked. |
 | Realization L1 (Stage 2) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
 | Dialogue state (Stage 3) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
-| Realization L2 (Stage 4) | 🧱 Pre-training pipeline implemented; training blocked by data volume, split balance, Stage 2 relevance, and missing PyTorch runtime — see [status](docs/nexus-realizer-pretraining-status.md) |
+| Realization L2 (Stage 4) | ✅ Pre-training gates passed: 7,127 unique verified pairs, leakage-safe 80/20 split, Stage 2 relevance 78.33%; training not started — see [status](docs/nexus-realizer-pretraining-status.md) |
 | End-to-end QA | ❌ Not validated — stack halted at Stage 1b |
 
 ### Quick start (NEXUS)

@@ -66,7 +66,10 @@ def rank_paths(
     """Score and sort paths by relevance. Returns paths with scores set."""
     for path in paths:
         path.score = score_path(path, query_entities, edge_type_weights)
-    paths.sort(key=lambda p: p.score, reverse=True)
+    paths.sort(key=lambda p: (
+        -p.score,
+        tuple((step.edge.type, step.from_node, step.to_node) for step in p.steps),
+    ))
     return _deduplicate_paths(paths)
 
 
@@ -76,7 +79,11 @@ def _deduplicate_paths(paths: list[Path]) -> list[Path]:
         return paths
 
     # Sort by length (longest first) and score
-    paths = sorted(paths, key=lambda p: (p.length, p.score), reverse=True)
+    paths = sorted(paths, key=lambda p: (
+        -p.length,
+        -p.score,
+        tuple((step.edge.type, step.from_node, step.to_node) for step in p.steps),
+    ))
 
     keep = []
     for i, path in enumerate(paths):
