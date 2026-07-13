@@ -555,7 +555,8 @@ def _collect_numbers_by_metric(
                 # Case 1: node has a 'metrics' dict (e.g., experiment nodes)
                 metrics = node.properties.get("metrics")
                 if metrics and isinstance(metrics, dict):
-                    for key, value in metrics.items():
+                    for key in sorted(metrics):
+                        value = metrics[key]
                         if key not in by_metric:
                             by_metric[key] = []
                         by_metric[key].append({"entity": node_id, "value": str(value)})
@@ -578,8 +579,8 @@ def _collect_numbers_by_metric(
 
     # ── Proactive collection: follow derived_from edges to collect Metric nodes ──
     # from experiment/run nodes that appeared in traversal paths.
-    for exp_id in exp_node_ids:
-        for edge in graph.get_edges(exp_id, "in"):
+    for exp_id in sorted(exp_node_ids):
+        for edge in sorted(graph.get_edges(exp_id, "in"), key=lambda item: (item.source, item.target, item.type)):
             if edge.type != "derived_from":
                 continue
             neighbor_id = edge.source  # derived_from source → target
@@ -608,7 +609,7 @@ def _collect_numbers_by_metric(
             # If the neighbor is a run node, also follow ITS incoming derived_from
             # to find its metric children
             if neighbor.type == "Experiment":
-                for inner_edge in graph.get_edges(neighbor_id, "in"):
+                for inner_edge in sorted(graph.get_edges(neighbor_id, "in"), key=lambda item: (item.source, item.target, item.type)):
                     if inner_edge.type != "derived_from":
                         continue
                     inner_id = inner_edge.source
@@ -669,7 +670,8 @@ def _collect_numbers(
                 metrics = node.properties.get("metrics")
                 if metrics and isinstance(metrics, dict) and metrics:
                     entry: dict[str, Any] = {"entity": node_id}
-                    entry.update(metrics)
+                    for k in sorted(metrics):
+                        entry[k] = metrics[k]
                     numbers.append(entry)
 
                 # Case 2: Metric-type node with name/value properties
@@ -688,8 +690,8 @@ def _collect_numbers(
                         numbers.append(entry)
 
     # ── Proactive collection: follow derived_from edges to Metric nodes ──
-    for exp_id in exp_node_ids:
-        for edge in graph.get_edges(exp_id, "in"):
+    for exp_id in sorted(exp_node_ids):
+        for edge in sorted(graph.get_edges(exp_id, "in"), key=lambda item: (item.source, item.target, item.type)):
             if edge.type != "derived_from":
                 continue
             neighbor_id = edge.source
@@ -716,7 +718,7 @@ def _collect_numbers(
 
             # If neighbor is a run node, also collect its metric children
             if neighbor.type == "Experiment":
-                for inner_edge in graph.get_edges(neighbor_id, "in"):
+                for inner_edge in sorted(graph.get_edges(neighbor_id, "in"), key=lambda item: (item.source, item.target, item.type)):
                     if inner_edge.type != "derived_from":
                         continue
                     inner_id = inner_edge.source
@@ -822,8 +824,8 @@ def _collect_neighbor_key_findings(
                 "_relevance": relevance,
             })
 
-    # Sort by relevance descending
-    neighbor_facts.sort(key=lambda nf: -nf["_relevance"])
+    # Sort by relevance descending; tie-break on entity name for determinism.
+    neighbor_facts.sort(key=lambda nf: (-nf["_relevance"], nf["entity"].casefold()))
     # Strip internal key
     for nf in neighbor_facts:
         del nf["_relevance"]

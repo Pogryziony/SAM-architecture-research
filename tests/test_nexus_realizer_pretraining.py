@@ -268,10 +268,11 @@ def test_readiness_aggregates_all_gates_and_blocks_runtime_or_data(tmp_path: Pat
     config = json.loads(Path("training/nexus_realizer_v1.json").read_text())
     config["data"]["minimum_pairs"] = 5
     stage2 = {
-        "schema_version": "nexus-stage2-v1", "source_sha": "a", "config_hash": "b",
+        "schema_version": "nexus-stage2-v1", "source_sha": "a", "source_tree_sha": "t", "config_hash": "b",
         "registered_baseline_sha256": "c", "questions_total": 30,
-        "question_set_sha256": "d",
-        "per_question": [{} for _ in range(30)], "status": "PASS",
+        "question_set_sha256": "d", "canonical_content_sha256": "e",
+        "case_order": [f"q{i}" for i in range(30)],
+        "per_question": [{"evidence": {}} for _ in range(30)], "status": "PASS",
         "metrics": {"relevance_rate": 0.8, "naturalness_improvement": 6.0, "hallucination_delta_vs_baseline": 0.0, "accuracy_delta_vs_baseline": -0.01},
     }
     result = evaluate_readiness(config, manifest, root, _valid_oracle_artifact(), stage2, torch_available=True)
@@ -330,6 +331,10 @@ def test_stage2_uses_scalar_judge_scores_and_registered_deltas(tmp_path: Path):
     assert isinstance(artifact["metrics"]["relevance_rate"], float)
     assert "accuracy_delta_vs_baseline" in artifact["metrics"]
     assert artifact["registered_baseline_sha256"]
+    assert artifact["case_order"] == ["q1"]
+    assert artifact["per_question"][0]["evidence"]
+    assert artifact["canonical_content_sha256"]
+    assert artifact["serialized_file_sha256"]
 
 
 def test_registered_stage2_relevance_gate_passes_on_canonical_graph(tmp_path: Path):

@@ -56,6 +56,44 @@ STAGE3_GATES = {
 # Stage 2 — Realization L1
 # ═══════════════════════════════════════════════════════════════════════
 
+def _canonicalize_stage2(value: Any, *, preserve_list: bool = False) -> Any:
+    if isinstance(value, dict):
+        return {
+            key: _canonicalize_stage2(item, preserve_list=key in {"per_question", "case_order"})
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        items = [_canonicalize_stage2(item) for item in value]
+        if preserve_list:
+            return items
+        return sorted(items, key=lambda item: json.dumps(item, sort_keys=True, ensure_ascii=False))
+    return value
+
+
+def _canonical_stage2_payload(artifact: dict[str, Any]) -> dict[str, Any]:
+    """Return the reproducibility payload, excluding runtime-only fields."""
+    payload = json.loads(json.dumps(artifact, ensure_ascii=False))
+    for key in ("created_utc", "canonical_content_sha256", "serialized_file_sha256"):
+        payload.pop(key, None)
+    for row in payload.get("per_question", []):
+        if isinstance(row, dict):
+            row.pop("latency_ms", None)
+    return _canonicalize_stage2(payload)
+
+
+def _write_stage2_artifact(artifact: dict[str, Any], output_path: str) -> None:
+    artifact["canonical_content_sha256"] = sha256_json(_canonical_stage2_payload(artifact))
+    out = Path(output_path)
+    if out.exists():
+        raise FileExistsError(f"Refusing to overwrite: {out}")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    serialized = json.dumps(artifact, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+    out.write_text(serialized, encoding="utf-8")
+    artifact["serialized_file_sha256"] = hashlib.sha256(out.read_bytes()).hexdigest()
+    # Rewrite once with the final file hash; it is intentionally not canonical.
+    out.write_text(json.dumps(artifact, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
 def run_stage2(
     questions: list[dict],
     graph: InMemoryGraphStore,
@@ -63,8 +101,12 @@ def run_stage2(
     source_sha: str,
     output_path: str,
     baseline: dict[str, Any],
+    *,
+    dataset_sha256: str = "",
+    source_tree_sha: str = "",
+    protocol: str = "registered_stage2_v1",
 ) -> dict:
-    """Revalidate Stage 2 realization gates."""
+    """Revalidate Stage 2 realization gates with reproducible protocol metadata."""
     from benchmarks.naturalness_eval import score_naturalness
     from benchmarks.relevance_judge import RelevanceJudge
     runner = NEXUSRunner(graph, config)
@@ -134,6 +176,7 @@ def run_stage2(
             "accuracy": acc,
             "hallucination_rate": qr.hallucination_rate,
             "entity_resolution_method": qr.entity_resolution_method,
+            "evidence": evidence,
             "latency_ms": latency,
             "failure_category": qr.failure_category,
         })
@@ -161,9 +204,19 @@ def run_stage2(
         "stage": "stage2_realization_l1",
         "created_utc": utc_now.isoformat(),
         "source_sha": source_sha,
+        "source_tree_sha": source_tree_sha,
+        "dataset_sha256": dataset_sha256,
+        "protocol": protocol,
+        "effective_config": {
+            "config_hash": config.config_hash,
+            "entity_resolution": "entity_ranker_v3" if config.pipeline_id.entity_ranker_v3_enabled else "lexical",
+            "question_limit": len(questions),
+            "question_order": "questions.jsonl source order",
+        },
         "config_hash": config.config_hash,
         "entity_resolution": "entity_ranker_v3" if config.pipeline_id.entity_ranker_v3_enabled else "lexical",
         "questions_total": len(questions),
+        "case_order": [q.get("id", str(i)) for i, q in enumerate(questions)],
         "question_set_sha256": sha256_json(questions),
         "metrics": {
             "naturalness_mean": round(nat_mean, 3),
@@ -186,11 +239,7 @@ def run_stage2(
         "status": "PASS" if gates_passed else "FAIL",
     }
 
-    out = Path(output_path)
-    if out.exists():
-        raise FileExistsError(f"Refusing to overwrite: {out}")
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(artifact, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
+    _write_stage2_artifact(artifact, output_path)
 
     return artifact
 
@@ -322,6 +371,7 @@ def main():
     parser.add_argument("--output-dir", default="benchmarks/results")
     parser.add_argument("--er3", action="store_true", help="Use Entity Ranker V3")
     parser.add_argument("--baseline", default="training/stage2_baseline_v1.json")
+    parser.add_argument("--dataset-manifest", default="", help="Optional hash-identified distillation manifest")
     args = parser.parse_args()
 
     from benchmarks.run_benchmark import build_benchmark_graph
@@ -332,6 +382,10 @@ def main():
         if args.er3 else ProductionNEXUSConfig.lexical_only()
     )
     source_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+    source_tree_sha = subprocess.check_output(["git", "rev-parse", "HEAD^{tree}"], text=True).strip()
+    dataset_sha256 = ""
+    if args.dataset_manifest:
+        dataset_sha256 = hashlib.sha256(Path(args.dataset_manifest).read_bytes()).hexdigest()
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
     if args.stage in ("2", "both"):
@@ -342,7 +396,11 @@ def main():
         print(f"Stage 2: {len(questions)} questions")
         baseline_path = Path(args.baseline)
         baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
-        result = run_stage2(questions, graph, config, source_sha, out, baseline)
+        result = run_stage2(
+            questions, graph, config, source_sha, out, baseline,
+            dataset_sha256=dataset_sha256, source_tree_sha=source_tree_sha,
+            protocol=f"registered_stage2_v1_limit_{args.limit}",
+        )
         print(f"  Relevance: {result['metrics']['relevance_rate']:.4f} (gate: 0.77)")
         print(f"  Status: {result['status']}")
 

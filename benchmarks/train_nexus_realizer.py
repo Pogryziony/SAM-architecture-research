@@ -171,11 +171,18 @@ def validate_readiness_for_training(
         errors.append("readiness contains failed checks")
     if readiness.get("blocking_checks"):
         errors.append("readiness contains blocking checks")
+    canonical_payload = {
+        "schema_version": readiness.get("schema_version"),
+        "status": readiness.get("status"),
+        "checks": checks,
+        "blocking_checks": readiness.get("blocking_checks", []),
+        "input_hashes": sorted(readiness.get("inputs", {}).values()),
+    }
     expected = hashlib.sha256(
-        json.dumps(checks, sort_keys=True, separators=(",", ":")).encode()
+        json.dumps(canonical_payload, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
-    if readiness.get("readiness_sha256") != expected:
-        errors.append("readiness check hash mismatch")
+    if readiness.get("readiness_canonical_sha256") != expected:
+        errors.append("readiness canonical payload hash mismatch")
     input_hashes = set(readiness.get("inputs", {}).values())
     if sha256_file(manifest_path) not in input_hashes:
         errors.append("readiness does not identify this dataset manifest")
