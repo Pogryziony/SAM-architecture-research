@@ -24,6 +24,8 @@ def _node_summary(node: Node) -> dict[str, Any]:
     props = dict(node.properties)
     # Include key fields, trim long strings
     summary: dict[str, Any] = {"id": node.id, "type": node.type}
+    if node.sources:
+        summary["sources"] = sorted(set(node.sources))
     # Add the most informative property
     for key in ("description", "key_finding", "title", "question", "name"):
         if key in props and props[key]:
@@ -36,13 +38,16 @@ def _node_summary(node: Node) -> dict[str, Any]:
 
 def _edge_summary(step) -> dict[str, Any]:
     """Build a compact dict for an edge with direction info."""
-    return {
+    summary = {
         "type": step.edge.type,
         "from": step.from_node,
         "to": step.to_node,
         "confidence": round(step.edge.confidence, 2),
         "reversed": step.reversed,
     }
+    if step.edge.evidence:
+        summary["evidence"] = step.edge.evidence
+    return summary
 
 
 def _fact_from_step(step, graph: InMemoryGraphStore) -> str:

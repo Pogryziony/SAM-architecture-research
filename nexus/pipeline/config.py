@@ -84,6 +84,8 @@ class ProductionNEXUSConfig(NEXUSConfig):
                     "beam_width": self.beam_width,
                     "edge_confidence_threshold": self.edge_confidence_threshold,
                     "hallucination_threshold": self.hallucination_threshold,
+                    "readiness_answer_threshold": self.readiness_answer_threshold,
+                    "readiness_conditional_threshold": self.readiness_conditional_threshold,
                     "fuzzy_cutoff": self.fuzzy_cutoff,
                     "enable_associative_encoder": self.enable_associative_encoder,
                     "enable_embedding_er": self.enable_embedding_er,
@@ -114,6 +116,8 @@ class ProductionNEXUSConfig(NEXUSConfig):
                 "beam_width": self.beam_width,
                 "edge_confidence_threshold": self.edge_confidence_threshold,
                 "hallucination_threshold": self.hallucination_threshold,
+                "readiness_answer_threshold": self.readiness_answer_threshold,
+                "readiness_conditional_threshold": self.readiness_conditional_threshold,
                 "fuzzy_cutoff": self.fuzzy_cutoff,
                 "enable_associative_encoder": self.enable_associative_encoder,
                 "enable_embedding_er": self.enable_embedding_er,
@@ -217,5 +221,13 @@ def validate_config(config: ProductionNEXUSConfig) -> list[str]:
         errors.append("max_depth must be >= 1")
     if config.beam_width < 1:
         errors.append("beam_width must be >= 1")
+    if not 0.0 <= config.readiness_conditional_threshold <= 1.0:
+        errors.append("readiness_conditional_threshold must be within [0, 1]")
+    if not 0.0 <= config.readiness_answer_threshold <= 1.0:
+        errors.append("readiness_answer_threshold must be within [0, 1]")
+    if config.readiness_conditional_threshold > config.readiness_answer_threshold:
+        errors.append(
+            "readiness_conditional_threshold must be <= readiness_answer_threshold"
+        )
 
     return errors
