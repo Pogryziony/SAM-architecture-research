@@ -49,6 +49,12 @@ class QuestionResult:
     failure_category: str = ""
     per_stage_latency_ms: dict[str, float] = field(default_factory=dict)
     lexical_fallback_used: bool = False
+    reasoning_readiness_score: float = 0.0
+    reasoning_action: str = "abstain"
+    proof_steps_count: int = 0
+    counter_evidence_count: int = 0
+    provenance_coverage: float = 0.0
+    proof_valid: bool = False
 
 
 @dataclass
@@ -62,6 +68,7 @@ class PipelineResult:
     total_latency_ms: float = 0.0
     per_question: list[QuestionResult] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
+    evaluation_mode: str = "predicted"
 
 
 class NEXUSRunner:
@@ -109,6 +116,7 @@ class NEXUSRunner:
                 config_hash=self.config.config_hash,
                 source_sha=source_sha,
                 errors=errors,
+                evaluation_mode="predicted",
             )
 
         model = self.model or get_available_model()
@@ -138,6 +146,62 @@ class NEXUSRunner:
             questions_failed=failed,
             total_latency_ms=round(total_latency, 3),
             per_question=results,
+            evaluation_mode="predicted",
+        )
+
+    def run_oracle(
+        self,
+        questions: list[dict[str, Any]],
+        source_sha: str = "",
+    ) -> PipelineResult:
+        """Evaluate NEXUS with gold entry entities, independently of SAM/ER3.
+
+        Every record must contain a non-empty ``gold_entities`` list.  This
+        mode is fail-closed so an incomplete benchmark cannot silently fall
+        back to lexical entity resolution.
+        """
+        errors = validate_config(self.config)
+        for index, record in enumerate(questions):
+            gold_entities = record.get("gold_entities")
+            if not isinstance(gold_entities, list) or not gold_entities:
+                qid = str(record.get("id", index))
+                errors.append(f"question {qid} missing non-empty gold_entities")
+        if errors:
+            return PipelineResult(
+                config_hash=self.config.config_hash,
+                source_sha=source_sha,
+                errors=errors,
+                evaluation_mode="oracle",
+            )
+
+        model = self.model or get_available_model()
+        pipeline_start = time.perf_counter()
+        results: list[QuestionResult] = []
+        answered = 0
+        failed = 0
+        for record in questions:
+            qr = self._run_single(
+                str(record.get("id", "")),
+                str(record["question"]),
+                model,
+                entry_nodes_override=[str(item) for item in record["gold_entities"]],
+            )
+            results.append(qr)
+            if qr.failure_category:
+                failed += 1
+            else:
+                answered += 1
+
+        total_latency = (time.perf_counter() - pipeline_start) * 1000
+        return PipelineResult(
+            config_hash=self.config.config_hash,
+            source_sha=source_sha,
+            questions_total=len(questions),
+            questions_answered=answered,
+            questions_failed=failed,
+            total_latency_ms=round(total_latency, 3),
+            per_question=results,
+            evaluation_mode="oracle",
         )
 
     def _load_er3(self):
@@ -192,7 +256,11 @@ class NEXUSRunner:
         return apply_canonical_mapping(ranked_ids, mapping, top_k=10)
 
     def _run_single(
-        self, qid: str, question: str, model: ModelInterface
+        self,
+        qid: str,
+        question: str,
+        model: ModelInterface,
+        entry_nodes_override: list[str] | None = None,
     ) -> QuestionResult:
         qr = QuestionResult(
             question_id=qid,
@@ -202,7 +270,24 @@ class NEXUSRunner:
 
         try:
             # ── Entity resolution: ER3 or lexical parser ──
-            if self.config.pipeline_id.entity_ranker_v3_enabled:
+            if entry_nodes_override is not None:
+                oracle_entities = list(entry_nodes_override)[:self.config.max_entry_nodes]
+                qr.predicted_entities = oracle_entities
+                qr.entity_resolution_method = "oracle"
+                qr.selected_entry_nodes = oracle_entities
+                qr.lexical_fallback_used = False
+                result = answer_question(
+                    question,
+                    self.graph,
+                    model=model,
+                    verifier=self.verifier,
+                    config=self.config,
+                    entry_nodes_override=oracle_entities,
+                )
+                parsed = result.get("parsed_query")
+                if parsed:
+                    qr.parsed_intent = parsed.intent
+            elif self.config.pipeline_id.entity_ranker_v3_enabled:
                 er3_entities = self._resolve_entities_er3(question)
                 qr.predicted_entities = er3_entities
                 qr.entity_resolution_method = "entity_ranker_v3"
@@ -233,10 +318,12 @@ class NEXUSRunner:
                     qr.lexical_fallback_used = True
 
             # ── Continue with answer_question if lexical ──
-            if not self.config.pipeline_id.entity_ranker_v3_enabled:
+            if (entry_nodes_override is None
+                    and not self.config.pipeline_id.entity_ranker_v3_enabled):
                 result = result_raw
 
             qr.graph_paths_count = result.get("path_count", 0)
+            qr.path_scores = list(result.get("path_scores", []))
             qr.cascade_level = result.get("cascade_level", 0)
             qr.answer = result.get("answer", "")
             qr.raw_answer = result.get("raw_answer", "")
@@ -257,8 +344,24 @@ class NEXUSRunner:
                     for k, v in timing.items()
                 }
 
+            audit = result.get("reasoning_audit", {})
+            if isinstance(audit, dict):
+                qr.reasoning_readiness_score = float(
+                    audit.get("readiness_score", 0.0)
+                )
+                qr.reasoning_action = str(
+                    audit.get("recommended_action", "abstain")
+                )
+                qr.proof_steps_count = len(audit.get("proof_steps", []))
+                qr.counter_evidence_count = len(audit.get("counter_evidence", []))
+                qr.provenance_coverage = float(
+                    audit.get("provenance_coverage", 0.0)
+                )
+                qr.proof_valid = bool(audit.get("proof_valid", False))
+
             # Check lexical fallback
-            if (not self.config.enable_associative_encoder
+            if (entry_nodes_override is None
+                    and not self.config.enable_associative_encoder
                     and not self.config.pipeline_id.entity_ranker_v3_enabled):
                 qr.lexical_fallback_used = True
 
@@ -286,6 +389,7 @@ class NEXUSRunner:
 
         data = {
             "pipeline": "nexus_v1",
+            "evaluation_mode": result.evaluation_mode,
             "config_hash": result.config_hash,
             "source_sha": result.source_sha,
             "questions_total": result.questions_total,
@@ -311,6 +415,12 @@ class NEXUSRunner:
                     "failure_category": qr.failure_category,
                     "per_stage_latency_ms": qr.per_stage_latency_ms,
                     "lexical_fallback_used": qr.lexical_fallback_used,
+                    "reasoning_readiness_score": qr.reasoning_readiness_score,
+                    "reasoning_action": qr.reasoning_action,
+                    "proof_steps_count": qr.proof_steps_count,
+                    "counter_evidence_count": qr.counter_evidence_count,
+                    "provenance_coverage": qr.provenance_coverage,
+                    "proof_valid": qr.proof_valid,
                 }
                 for qr in result.per_question
             ],

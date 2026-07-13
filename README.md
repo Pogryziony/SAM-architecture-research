@@ -70,6 +70,7 @@ for p in paths:
 - [Analysis & Roadmap](ANALYSIS_AND_ROADMAP.md) — full architecture, roadmap, research questions
 - [Graph Memory Model](docs/graph-memory.md) — data model, node/edge types, construction pipeline
 - [Graph Reasoning](docs/graph-reasoning.md) — traversal, path scoring, evidence building, verification
+- [Auditability & Reasoning Roadmap](docs/nexus-auditability-roadmap.md) — proof traces, provenance, oracle evaluation, and staged acceptance gates
 - [RAG vs NEXUS](docs/rag-vs-graph-nexus.md) — detailed comparison, when to use which
 
 ### Repository structure

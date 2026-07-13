@@ -25,6 +25,7 @@ from nexus.reasoning.model_interface import (
     DummyModel, ModelInterface, SynthesizingModel, get_available_model,
 )
 from nexus.reasoning.verifier import Verifier, VerificationResult
+from nexus.reasoning.audit import build_reasoning_audit
 from nexus.reasoning.post_edit import edit_answer
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
@@ -42,6 +43,27 @@ def is_insufficient_answer(answer: str) -> bool:
     """Detect refusal / insufficiency in a model answer using known patterns."""
     lower = answer.lower()
     return any(pat in lower for pat in _INSUFFICIENCY_PATTERNS)
+
+
+def _attach_reasoning_audit(
+    result: dict[str, Any],
+    graph: InMemoryGraphStore,
+    paths: list[Any],
+    config: NEXUSConfig,
+    max_paths: int,
+) -> dict[str, Any]:
+    """Attach the deterministic audit without changing answer semantics."""
+    audit = build_reasoning_audit(
+        paths[:max_paths],
+        graph,
+        result.get("evidence_pack", {}),
+        result.get("verification"),
+        result.get("answer", ""),
+        answer_threshold=config.readiness_answer_threshold,
+        conditional_threshold=config.readiness_conditional_threshold,
+    )
+    result["reasoning_audit"] = audit.to_dict()
+    return result
 
 
 def _tier3_generate_answer(
@@ -188,9 +210,11 @@ def answer_question(
         "verification": None,
         "parsed_query": None,
         "path_count": 0,
+        "path_scores": [],
         "post_edit_changes": None,
         "cascade_level": 0,
         "resolution_confidence": 0.0,
+        "reasoning_audit": {},
     }
 
     # Per-step timing breakdown
@@ -205,7 +229,7 @@ def answer_question(
             passed=True,
         )
         result["timing"] = timing
-        return result
+        return _attach_reasoning_audit(result, graph, [], config, max_paths)
 
     # ── Step 1: Parse ──
     t0 = time.perf_counter()
@@ -239,7 +263,7 @@ def answer_question(
             passed=True,
         )
         result["timing"] = timing
-        return result
+        return _attach_reasoning_audit(result, graph, [], config, max_paths)
 
     # ── Step 2: Traverse ──
     t0 = time.perf_counter()
@@ -255,6 +279,7 @@ def answer_question(
     )
     timing["traverse_time"] = round(time.perf_counter() - t0, 6)
     result["path_count"] = len(paths)
+    result["path_scores"] = [round(path.score, 6) for path in paths]
 
     # Class B fix: path_count == 0 but entities resolved (e.g., fuzzy match, no
     # outgoing edges).  Build a 0-hop evidence pack directly from entity nodes
@@ -271,7 +296,7 @@ def answer_question(
             result["cascade_level"] = 3
             result["verification"] = verifier.verify(answer_direct, direct_pack)
             result["timing"] = timing
-            return result
+            return _attach_reasoning_audit(result, graph, [], config, max_paths)
 
     # Edge case: no paths found
     if not paths:
@@ -282,7 +307,7 @@ def answer_question(
             passed=True,
         )
         result["timing"] = timing
-        return result
+        return _attach_reasoning_audit(result, graph, [], config, max_paths)
 
     # ── Step 3: Build evidence ──
     t0 = time.perf_counter()
@@ -420,7 +445,7 @@ def answer_question(
     if "prompt_text" not in result:
         result["prompt_text"] = prompt
 
-    return result
+    return _attach_reasoning_audit(result, graph, paths, config, max_paths)
 
 
 def run_smoke_test():

@@ -87,6 +87,11 @@ class NEXUSConfig:
     # Verification
     hallucination_threshold: float = 0.2
 
+    # Deterministic reasoning-audit policy.  These thresholds only classify
+    # the diagnostic recommendation; they do not rewrite model answers.
+    readiness_answer_threshold: float = 0.70
+    readiness_conditional_threshold: float = 0.40
+
     # Post-edit — disabled by default; masks model's true accuracy
     post_edit_enabled: bool = False
 
