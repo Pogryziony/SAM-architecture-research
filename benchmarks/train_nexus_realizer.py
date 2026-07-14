@@ -201,8 +201,11 @@ def run(
     mode: str,
     readiness_path: Path | None = None,
     output_dir: Path | None = None,
+    epoch_override: int | None = None,
 ) -> dict[str, Any]:
     manifest, config, splits = load_training_inputs(manifest_path, config_path)
+    if epoch_override is not None and epoch_override > 0:
+        config["training"]["epochs"] = epoch_override
     if mode == "train":
         if readiness_path is None:
             raise ValueError("--readiness is required for training")
@@ -292,25 +295,35 @@ def run(
     patience_limit = int(config["training"]["early_stopping_patience"])
     best_validation = float("inf")
     best_state = None
+    best_epoch = -1
     patience = 0
     epochs_completed = 0
+    epoch_history: list[dict[str, Any]] = []
     rng = random.Random(seed)
+    total_batches = 0
     for epoch in range(steps):
+        epoch_start = time.perf_counter()
         order = list(range(len(train_examples)))
         rng.shuffle(order)
         model.train()
         epoch_losses: list[float] = []
+        epoch_grad_norms: list[float] = []
         for offset in range(0, len(order), batch_size):
             examples = [train_examples[index] for index in order[offset: offset + batch_size]]
             batch_source, batch_target = _batch(examples, torch)
             optimizer.zero_grad(set_to_none=True)
             loss = _loss(model, batch_source, batch_target, torch)
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            epoch_grad_norms.append(float(grad_norm))
             optimizer.step()
             epoch_losses.append(float(loss.detach()))
-        losses.append(sum(epoch_losses) / len(epoch_losses))
+            total_batches += 1
+        train_loss = sum(epoch_losses) / len(epoch_losses)
+        mean_grad_norm = sum(epoch_grad_norms) / len(epoch_grad_norms)
+        losses.append(train_loss)
         scheduler.step()
+        current_lr = scheduler.get_last_lr()[0]
 
         model.eval()
         validation_losses: list[float] = []
@@ -320,14 +333,47 @@ def run(
                 validation_losses.append(float(_loss(model, val_source, val_target, torch)))
         validation_loss = sum(validation_losses) / len(validation_losses)
         epochs_completed = epoch + 1
+        epoch_elapsed = time.perf_counter() - epoch_start
+        total_elapsed = time.perf_counter() - started
+
         if validation_loss < best_validation - 1e-6:
             best_validation = validation_loss
             best_state = {name: value.detach().cpu().clone() for name, value in model.state_dict().items()}
+            best_epoch = epochs_completed
             patience = 0
+            improved = True
         else:
             patience += 1
-            if patience >= patience_limit:
-                break
+            improved = False
+
+        epoch_info: dict[str, Any] = {
+            "epoch": epochs_completed,
+            "train_loss": round(train_loss, 6),
+            "validation_loss": round(validation_loss, 6),
+            "best_validation_loss": round(best_validation, 6),
+            "best_epoch": best_epoch,
+            "learning_rate": round(current_lr, 8),
+            "grad_norm_mean": round(mean_grad_norm, 4),
+            "elapsed_s": round(total_elapsed, 1),
+            "epoch_s": round(epoch_elapsed, 1),
+            "patience": patience,
+            "improved": improved,
+        }
+        epoch_history.append(epoch_info)
+
+        # Per-epoch progress line
+        flag = "*" if improved else " "
+        print(
+            f"[{flag}] epoch {epochs_completed:>3d}/{steps} | "
+            f"train {train_loss:.4f} | val {validation_loss:.4f} "
+            f"(best {best_validation:.4f} @ {best_epoch}) | "
+            f"lr {current_lr:.2e} | grad {mean_grad_norm:.2f} | "
+            f"{total_elapsed:.0f}s"
+        )
+
+        if patience >= patience_limit:
+            print(f"Early stopping at epoch {epochs_completed} (patience={patience_limit})")
+            break
 
     if best_state is None:
         raise RuntimeError("training produced no valid checkpoint")
@@ -351,6 +397,7 @@ def run(
         "priority_evidence_coverage": coverage_summary,
         "elapsed_seconds": round(time.perf_counter() - started, 3),
         "weights": {"path": str(weights), "sha256": weights_sha},
+        "epoch_history": epoch_history,
     }
     (output_dir / "manifest.json").write_text(
         json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -365,11 +412,13 @@ def main() -> int:
     parser.add_argument("--mode", choices=("preflight", "overfit-smoke", "train"), default="preflight")
     parser.add_argument("--readiness", type=Path)
     parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--epochs", type=int, default=None, help="Override config epochs (for quick runs)")
     args = parser.parse_args()
     try:
         result = run(
             args.manifest, args.config, mode=args.mode,
             readiness_path=args.readiness, output_dir=args.output_dir,
+            epoch_override=args.epochs,
         )
     except (ValueError, RuntimeError, FileNotFoundError) as exc:
         print(json.dumps({"status": "BLOCKED", "error": str(exc)}, sort_keys=True))
