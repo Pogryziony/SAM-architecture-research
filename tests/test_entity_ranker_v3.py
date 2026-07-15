@@ -59,6 +59,7 @@ def test_question_changes_relative_entity_ordering():
     """T1: Different questions produce different entity rankings."""
     import torch
 
+    torch.manual_seed(20260710)
     scorer = _build_interaction_scorer()
     scorer.eval()
 
