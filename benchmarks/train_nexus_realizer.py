@@ -407,7 +407,7 @@ def run(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--manifest", required=True, type=Path)
+    parser.add_argument("--manifest", type=Path, help="Path to dataset manifest (required unless --list-presets)")
     parser.add_argument("--config", default="training/nexus_realizer_v1.json", type=Path)
     parser.add_argument("--mode", choices=("preflight", "overfit-smoke", "train"), default="preflight")
     parser.add_argument("--preset", default=None, help="Training intensity preset (smoke/quick/pilot/standard/full)")

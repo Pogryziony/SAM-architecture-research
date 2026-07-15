@@ -374,7 +374,7 @@ def main() -> int:
     from stack.encoder.training_presets import apply_preset, list_presets, get_preset
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--manifest", required=True, type=Path)
+    parser.add_argument("--manifest", type=Path, help="Path to dataset manifest (required unless --list-presets)")
     parser.add_argument("--config", default="training/nexus_realizer_v1.json", type=Path)
     parser.add_argument("--mode", choices=("pilot", "train"), default="pilot")
     parser.add_argument("--preset", default=None, help="Training intensity preset (smoke/quick/pilot/standard/full)")
