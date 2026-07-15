@@ -244,10 +244,17 @@ def save_ranker_v3(
 
 def load_ranker_v3(
     model_dir: str,
+    *,
+    weights_path: str | None = None,
 ) -> tuple[QuestionConditionedEntityRanker, CharNgramTokenizer, dict]:
-    """Load a trained V3 ranker and its metadata."""
+    """Load a trained V3 ranker and its metadata.
+
+    ``weights_path`` is explicit so a checkpoint kept outside Git can be
+    verified by the caller and then loaded from that exact same path.
+    """
+    resolved_weights = weights_path or os.path.join(model_dir, "weights.pt")
     ckpt = torch.load(
-        os.path.join(model_dir, "weights.pt"),
+        resolved_weights,
         map_location="cpu",
         weights_only=True,
     )

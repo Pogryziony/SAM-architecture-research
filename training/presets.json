@@ -31,7 +31,7 @@
       "epochs": 50,
       "patience": 10,
       "batch_size": 16,
-      "note": "Pelny trening produkcyjny — maksymalna liczba epok"
+      "note": "Rozszerzony przebieg eksperymentalny — wymaga osobnej zgody po udanym pilocie"
     }
   },
   "model_defaults": {

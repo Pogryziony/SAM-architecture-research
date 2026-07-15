@@ -1,6 +1,6 @@
 # STACK_RESULTS.md — SAM+NEXUS Associative-Symbolic Stack
 
-**Date**: 2026-07-10
+**Date**: 2026-07-16
 **Tag**: stack-v1 (pending)
 **Repository**: SAM-architecture-research
 
@@ -14,10 +14,10 @@
 | 0 | Canonical Baseline | Historical R3 artifact is incomplete for serialized-artifact validation (missing effective graph config/edge counts); prior PASS is retracted | ❌ INVALID / RETRACTED |
 | 1 | Associative Encoder v1 | Failed: intent 65.3% < 85% | ❌ STOP |
 | 1b/1D | Associative Encoder v2 + validated parser handoff | Current validated frozen entity_recall 65.82% (181/275) with validation-selected threshold 0.20 and cap 200. All six immutable gates pass. | ✅ HONEST PASS |
-| ER3 | Entity Ranker V3 | **REPORTED PASS / REPRODUCIBILITY INCOMPLETE**. Historical artifacts report 77.47% validation and 79.64% frozen canonical recall@10. Weights are intentionally external and not currently published; per-question frozen predictions and the original mapping snapshot were not captured. The consumed split is permanently locked. | ✅ REPORTED PASS |
-| 2 | Realization L1 | 3/4: naturalness +38.5, hallucination, accuracy. Relevance 60% pre-existing. Built on unvalidated Stage 1b foundation. | ⚠️ UNVALIDATED |
-| 3 | Dialogue State | ALL 3/3: ref resolution 71.9%, no regression, 2.7ms. Built on unvalidated Stage 1b foundation. | ⚠️ UNVALIDATED |
-| 4 | Realization L2 | Entry conditions not met (relevance gate + distillation pairs) | ⏭️ SKIPPED |
+| ER3 | Entity Ranker V3 | **VALIDATION PASS / EXTERNAL CHECKPOINT REQUIRED**. Latest clean retrain reports 72.53% validation canonical recall@10 and +39.0pp over the trivial baseline. Weights are intentionally external; the historical frozen claim remains non-repeatable because that split is consumed. | ⚠️ PARTIAL |
+| 2 | Realization L1 | Earlier registered pre-training run reported relevance 78.33%; committed July 15 artifacts are only 5-case smoke runs. Corrected 30-case, three-seed rerun required. | ⚠️ RERUN REQUIRED |
+| 3 | Dialogue State | Latest 110-turn canonical run: reference resolution 15.62%, resolver p50 12.166ms. The runner previously bypassed ER3; corrected injected-resolver rerun is required. | ❌ FAIL |
+| 4 | Realization L2 | 7,127 unique pairs and one completed 50-epoch run. Post-training answer metrics regressed; decoder fixed, short pilot pending. | ⚠️ BLOCKED |
 | 5 | Freeze | This document | 🔄 |
 
 ---
@@ -61,7 +61,7 @@ Model: 555K params, char n-gram hashing, 1-layer GRU, entity re-ranker over lexi
 
 ---
 
-## Stage 2 — Realization L1 (Partial)
+## Stage 2 — Realization L1 (Rerun required)
 
 | Gate | Value | Threshold |
 |------|-------|-----------|
@@ -70,38 +70,47 @@ Model: 555K params, char n-gram hashing, 1-layer GRU, entity re-ranker over lexi
 | accuracy | 16.9% | ≥14.9% |
 | relevance | 60.0% | ≥77.0% (FAIL — pre-existing) |
 
-Naturalness exceeded target by 7.7×. Relevance failure is pre-existing (identical to old model) — evidence retrieval quality limitation, not synthesizer.
+The table above is historical. A later registered pre-training run reported
+78.33% relevance, but the two Stage 2 artifacts committed on July 15 contain
+only five cases. They are smoke evidence and cannot replace the registered
+30-case protocol. The corrected runner now enforces that distinction and uses
+an external SHA-256 sidecar for exact serialized-file identity.
 
 ---
 
-## Stage 3 — Dialogue State (Unvalidated)
+## Stage 3 — Dialogue State (Current FAIL)
 
 | Gate | Value | Threshold |
 |------|-------|-----------|
-| reference resolution | 71.9% | ≥70% |
-| single-turn regression | 0.0pp | ≤2pp |
-| state latency p50 | 2.7 ms | ≤5 ms |
+| reference resolution | 15.62% | ≥70% |
+| single-turn accuracy | 39.13% | diagnostic |
+| resolver latency p50 | 12.166 ms | ≤5 ms |
 
-50 dialogues, 110 turns. Recency decay 0.7, context window 5. These measurements are historical and remain unvalidated because Stage 1B failed.
+The latest canonical run contains 110 turns and fails both blocking gates. It
+used direct lexical parsing instead of the configured ER3 resolver. Stage 3 now
+runs through an injected resolver and limits dialogue-state updates to the
+highest-ranked entity, but no improved result is claimed until the exact
+external ER3 checkpoint is supplied and the full protocol is rerun.
 
 ---
 
-## Stage 4 — Realization L2 (Skipped)
+## Stage 4 — Realization L2 (Pilot blocked)
 
-Entry conditions not met:
-- Stage 2 relevance gate failed (60% < 77%)
-- data/distillation/pairs.jsonl has < 5000 pairs
-- Naturalness not plateaued (single measurement)
+The current external dataset contains 7,127 verifier-passed unique pairs. The
+first 50-epoch CPU run converged in loss but regressed in relevance, accuracy,
+naturalness and hallucination. Decoder repetition has been mitigated. The next
+authorized sequence is 1→3→5 epochs only after Stage 0, registered Stage 2,
+Stage 3, readiness, preflight and overfit-smoke all pass.
 
 ---
 
 ## Open Problems
 
-1. **Evidence quality bottleneck**: Relevance at 60% across all realizers. The synthesizer can't improve beyond what evidence provides. Fix: structured metric ingestion, better entity→evidence mapping.
-2. **Entity resolution robustness**: Embedding-based ER works (100% resolution) but requires all-MiniLM (86 MB). Char-ngram encoder is lighter (6.6 MB) but depends on candidate quality.
-3. **Router held-out validation**: Router policy trained on 15 questions. Needs full 200q per-arm data.
-4. **Oracle test rebuild**: Identical prompts, 1 injected GT line — ceiling measurement still unreliable.
-5. **Latency budget experiment**: Relevance-rank truncation at 800/1100/1566 tokens — not measured.
+1. **Stage 0 baseline**: current 30-case artifact has no valid RAG answers and is registered as INVALID.
+2. **Registered Stage 2 evidence**: must be regenerated on exactly 30 cases for three hash seeds.
+3. **Dialogue resolution**: Stage 3 requires the external ER3 checkpoint and must improve both resolution and latency.
+4. **External artifact availability**: weights stay outside Git but need a durable, hash-verified location.
+5. **Pilot answer quality**: decoder coherence alone is insufficient; relevance, accuracy, naturalness and hallucination must improve together.
 
 ---
 

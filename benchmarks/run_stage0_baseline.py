@@ -46,6 +46,14 @@ def load_questions(path: str, limit: int | None = None) -> list[dict[str, Any]]:
     return questions
 
 
+def _answer_ok(answer: Any, error: Any = None) -> bool:
+    return bool(
+        isinstance(answer, str)
+        and len(answer.strip()) >= 10
+        and not error
+    )
+
+
 def run_rag_baseline(questions: list[dict], model_name: str = "qwen2.5:latest") -> list[dict]:
     """Run RAG baseline using the existing rag_baseline module."""
     from benchmarks.rag_baseline import initialize_rag_pipeline, run_rag_pipeline
@@ -138,8 +146,15 @@ def run_stage0(
         rag_err = rag_result.get("rag_error", "")
 
         # Only count as answered if non-empty AND no error
-        nexus_ok = bool(nexus_ans and len(nexus_ans.strip()) >= 10)
-        rag_ok = bool(rag_ans and len(rag_ans.strip()) >= 10 and not rag_err)
+        nexus_failure = (
+            nexus_result.per_question[i].failure_category
+            if i < len(nexus_result.per_question) else "missing_result"
+        )
+        nexus_error = (
+            nexus_failure if nexus_failure.startswith("exception:") else ""
+        )
+        nexus_ok = _answer_ok(nexus_ans, nexus_error)
+        rag_ok = _answer_ok(rag_ans, rag_err)
 
         ns = compute_fact_score(nexus_ans or "", str(ground_truth))
         rs = compute_fact_score(rag_ans or "", str(ground_truth))
@@ -162,8 +177,9 @@ def run_stage0(
             "nexus_accuracy": ns.get("fuzzy_accuracy", 0.0) if nexus_ok else None,
             "rag_accuracy": rs.get("fuzzy_accuracy", 0.0) if rag_ok else None,
             "rag_error": rag_err if rag_err else None,
+            "nexus_error": nexus_error if nexus_error else None,
             "nexus_parsed_intent": nexus_result.per_question[i].parsed_intent if i < len(nexus_result.per_question) else "",
-            "nexus_failure": nexus_result.per_question[i].failure_category if i < len(nexus_result.per_question) else "",
+            "nexus_failure": nexus_failure,
         })
 
     # ── Paired comparison ──
@@ -199,6 +215,13 @@ def run_stage0(
         "per_question": per_question,
     }
 
+    publication_errors = validate_artifact(artifact)
+    artifact["status"] = "VALID" if not publication_errors else "INVALID"
+    artifact["publication_guard"] = {
+        "status": "PASS" if not publication_errors else "FAIL",
+        "errors": publication_errors,
+    }
+
     out_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = out_path.with_suffix(out_path.suffix + ".tmp")
     tmp.write_text(
@@ -226,11 +249,11 @@ def validate_artifact(artifact: dict) -> list[str]:
     # Both arms must have non-empty results
     nexus_answered = sum(
         1 for pq in per_q
-        if pq.get("nexus_answer") and len(pq["nexus_answer"].strip()) >= 10
+        if _answer_ok(pq.get("nexus_answer"), pq.get("nexus_error"))
     )
     rag_answered = sum(
         1 for pq in per_q
-        if pq.get("rag_answer") and len(pq["rag_answer"].strip()) >= 10
+        if _answer_ok(pq.get("rag_answer"), pq.get("rag_error"))
     )
     rag_errors = sum(1 for pq in per_q if pq.get("rag_error"))
     nexus_errors = sum(1 for pq in per_q if pq.get("nexus_error"))
@@ -243,6 +266,11 @@ def validate_artifact(artifact: dict) -> list[str]:
         errors.append("NEXUS arm has zero non-empty answers")
     if rag_answered == 0 and rag_errors == 0:
         errors.append("RAG arm has zero non-empty answers")
+
+    if artifact.get("nexus", {}).get("answered") != nexus_answered:
+        errors.append("NEXUS answered count does not match valid per-question answers")
+    if artifact.get("rag", {}).get("answered") != rag_answered:
+        errors.append("RAG answered count does not match valid per-question answers")
 
     # Same denominator
     if artifact["questions_total"] == 0:
@@ -262,8 +290,14 @@ def validate_artifact(artifact: dict) -> list[str]:
         errors.append("Paired comparison has zero paired questions")
 
     # Question ID match between arms
-    nexus_ids = {pq.get("question_id") for pq in per_q if pq.get("nexus_answer")}
-    rag_ids = {pq.get("question_id") for pq in per_q if pq.get("rag_answer")}
+    nexus_ids = {
+        pq.get("question_id") for pq in per_q
+        if _answer_ok(pq.get("nexus_answer"), pq.get("nexus_error"))
+    }
+    rag_ids = {
+        pq.get("question_id") for pq in per_q
+        if _answer_ok(pq.get("rag_answer"), pq.get("rag_error"))
+    }
     if nexus_ids and rag_ids and nexus_ids != rag_ids:
         errors.append("NEXUS and RAG arms answered different question sets")
 

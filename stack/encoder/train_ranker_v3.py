@@ -18,6 +18,7 @@ import math
 import os
 import subprocess
 from collections import Counter
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -46,6 +47,38 @@ SEED = 20260710
 K_MAX = 10
 REQUIRED_VAL_RECALL10 = 0.70
 REQUIRED_BASELINE_GAP = 0.15
+
+
+@dataclass(frozen=True)
+class ER3TrainingConfig:
+    """Effective ER3 training parameters recorded with every run."""
+
+    epochs: int = 40
+    patience: int = 8
+    batch_size: int = 1
+    learning_rate: float = 0.001
+    feature_learning_rate: float = 0.08
+    weight_decay: float = 1e-5
+    hard_negative_k: int = 10
+    seed: int = SEED
+    embed_dim: int = 128
+    hidden_dim: int = 256
+    proj_dim: int = 64
+    dropout: float = 0.3
+
+    def validate(self) -> None:
+        for key in ("epochs", "patience", "batch_size", "hard_negative_k"):
+            if int(getattr(self, key)) < 1:
+                raise ValueError(f"{key} must be >= 1")
+        if self.learning_rate <= 0 or self.feature_learning_rate <= 0:
+            raise ValueError("learning rates must be positive")
+        if self.weight_decay < 0:
+            raise ValueError("weight_decay must be >= 0")
+        if not 0.0 <= self.dropout < 1.0:
+            raise ValueError("dropout must be within [0, 1)")
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
 
 
 # ── Data loading ──
@@ -235,6 +268,13 @@ def train_ranker_v3(
     epochs: int = 40,
     lr: float = 0.001,
     patience: int = 8,
+    batch_size: int = 1,
+    weight_decay: float = 1e-5,
+    seed: int = SEED,
+    embed_dim: int = 128,
+    hidden_dim: int = 256,
+    proj_dim: int = 64,
+    dropout: float = 0.3,
 ) -> dict[str, Any]:
     """Train the V3 question-conditioned entity ranker.
 
@@ -243,7 +283,9 @@ def train_ranker_v3(
     as model selection when a canonical mapping is supplied.
     """
     torch.set_num_threads(1)
-    torch.manual_seed(SEED)
+    if batch_size < 1:
+        raise ValueError("batch_size must be >= 1")
+    torch.manual_seed(seed)
 
     # Build a graph-wide entity vocabulary. Graph text is public model input,
     # not validation supervision, and prevents unseen validation candidates
@@ -266,12 +308,14 @@ def train_ranker_v3(
     # Build model
     model = QuestionConditionedEntityRanker(
         feature_dim=tokenizer.feature_dim,
-        embed_dim=128,
-        hidden_dim=256,
-        proj_dim=64,
-        dropout=0.3,
+        embed_dim=embed_dim,
+        hidden_dim=hidden_dim,
+        proj_dim=proj_dim,
+        dropout=dropout,
     )
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
+    optimizer = torch.optim.Adam(
+        model.parameters(), lr=lr, weight_decay=weight_decay
+    )
 
     best_val_recall10 = 0.0
     best_val_recall5 = 0.0
@@ -287,7 +331,10 @@ def train_ranker_v3(
         # Shuffle groups
         import random as _rm
         group_order = list(range(len(groups)))
-        _rm.Random(SEED + epoch).shuffle(group_order)
+        _rm.Random(seed + epoch).shuffle(group_order)
+
+        optimizer.zero_grad()
+        pending_batch = 0
 
         for gi in group_order:
             group = groups[gi]
@@ -327,11 +374,18 @@ def train_ranker_v3(
             # gold entity is rewarded; no positive is discarded via argmax.
             loss = multi_positive_listwise_loss(scores, pos_in_group)
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+            (loss / batch_size).backward()
+            pending_batch += 1
+            if pending_batch >= batch_size:
+                optimizer.step()
+                optimizer.zero_grad()
+                pending_batch = 0
             total_loss += loss.item()
             n_steps += 1
+
+        if pending_batch:
+            optimizer.step()
+            optimizer.zero_grad()
 
         avg_loss = total_loss / max(n_steps, 1)
 
@@ -720,7 +774,10 @@ def _write_json_artifact(path: Path, data: dict[str, Any]) -> None:
     tmp.rename(path)
 
 
-def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
+def run_experiment_v3(
+    root: str | Path = ".",
+    training_config: ER3TrainingConfig | None = None,
+) -> dict[str, Any]:
     """Run the full Entity Ranker V3 experiment: training and validation selection.
 
     1. Load train/val splits
@@ -732,6 +789,8 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
     7. Save winner to immutable timestamped paths
     """
     root = Path(root)
+    training_config = training_config or ER3TrainingConfig()
+    training_config.validate()
 
     # Guard: clean worktree
     if not check_worktree_clean(root):
@@ -776,7 +835,8 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
             candidate_ids,
             source,
             graph,
-            hard_negative_k=10,
+            hard_negative_k=training_config.hard_negative_k,
+            seed=training_config.seed,
         )
         if group is not None:
             train_groups.append(group)
@@ -816,10 +876,28 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
     train_hash = hashlib.sha256(train_path.read_bytes()).hexdigest()
     val_hash = hashlib.sha256(val_path.read_bytes()).hexdigest()
 
-    # Train rankers (reduced epochs for speed)
-    logistic = train_feature_logistic(all_train_groups, graph, epochs=40)
+    # Train both candidates with the exact resolved training configuration.
+    logistic = train_feature_logistic(
+        all_train_groups,
+        graph,
+        epochs=training_config.epochs,
+        lr=training_config.feature_learning_rate,
+    )
     encoder_v3 = train_ranker_v3(
-        all_train_groups, graph, val_groups, canonical_mapping=canonical_mapping
+        all_train_groups,
+        graph,
+        val_groups,
+        canonical_mapping=canonical_mapping,
+        epochs=training_config.epochs,
+        lr=training_config.learning_rate,
+        patience=training_config.patience,
+        batch_size=training_config.batch_size,
+        weight_decay=training_config.weight_decay,
+        seed=training_config.seed,
+        embed_dim=training_config.embed_dim,
+        hidden_dim=training_config.hidden_dim,
+        proj_dim=training_config.proj_dim,
+        dropout=training_config.dropout,
     )
 
     metrics = {
@@ -857,7 +935,8 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
             "run_timestamp_utc": utc_now.isoformat(),
             "winner": winner_name,
             "source_sha": source_sha,
-            "seed": SEED,
+            "seed": training_config.seed,
+            "effective_training_config": training_config.to_dict(),
             "validation_only": True,
             "architecture": "question_conditioned_dot_product_v3",
             "canonical_mapping_applied": True,
@@ -869,7 +948,8 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
             "run_timestamp_utc": utc_now.isoformat(),
             "winner": winner_name,
             "source_sha": source_sha,
-            "seed": SEED,
+            "seed": training_config.seed,
+            "effective_training_config": training_config.to_dict(),
             "validation_only": True,
             "kind": "feature_logistic_v3",
             "weights": logistic["weights"],
@@ -885,7 +965,8 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
             "run_timestamp_utc": utc_now.isoformat(),
             "winner": winner_name,
             "source_sha": source_sha,
-            "seed": SEED,
+            "seed": training_config.seed,
+            "effective_training_config": training_config.to_dict(),
             "validation_only": True,
         }
         _write_json_artifact(model_dir / "config.json", config)
@@ -896,7 +977,8 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
         "run_id": run_id,
         "run_timestamp_utc": utc_now.isoformat(),
         "source_sha": source_sha,
-        "seed": SEED,
+        "seed": training_config.seed,
+        "effective_training_config": training_config.to_dict(),
         "split": "stack/encoder/data/val.jsonl",
         "split_sha256": val_hash,
         "train_split_sha256": train_hash,
@@ -938,6 +1020,7 @@ def run_experiment_v3(root: str | Path = ".") -> dict[str, Any]:
         "model_dir": str(model_dir),
         "source_sha": source_sha,
         "run_id": run_id,
+        "effective_training_config": training_config.to_dict(),
         "proceed_to_frozen": val_gate and baseline_gap,
     }
 

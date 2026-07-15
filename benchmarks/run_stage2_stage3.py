@@ -31,6 +31,7 @@ if str(_project_root) not in sys.path:
 
 from nexus.graph.store import InMemoryGraphStore
 from nexus.pipeline.config import ProductionNEXUSConfig
+from nexus.pipeline.entity_resolver import EntityResolver
 from nexus.pipeline.runner import NEXUSRunner
 from benchmarks.realizer_contracts import sha256_json
 
@@ -50,6 +51,12 @@ STAGE3_GATES = {
     "single_turn_regression": {"threshold": 0.02, "operator": "<="},
     "dialogue_latency_p50_ms": {"threshold": 5.0, "operator": "<="},
 }
+
+
+def stage2_protocol_for_limit(limit: int) -> str:
+    if limit < 1:
+        raise ValueError("Stage 2 limit must be >= 1")
+    return "registered_stage2_v1" if limit == 30 else f"smoke_stage2_{limit}"
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -73,7 +80,12 @@ def _canonicalize_stage2(value: Any, *, preserve_list: bool = False) -> Any:
 def _canonical_stage2_payload(artifact: dict[str, Any]) -> dict[str, Any]:
     """Return the reproducibility payload, excluding runtime-only fields."""
     payload = json.loads(json.dumps(artifact, ensure_ascii=False))
-    for key in ("created_utc", "canonical_content_sha256", "serialized_file_sha256"):
+    for key in (
+        "created_utc",
+        "canonical_content_sha256",
+        "serialized_file_sha256",
+        "serialized_sha256_sidecar",
+    ):
         payload.pop(key, None)
     for row in payload.get("per_question", []):
         if isinstance(row, dict):
@@ -82,16 +94,24 @@ def _canonical_stage2_payload(artifact: dict[str, Any]) -> dict[str, Any]:
 
 
 def _write_stage2_artifact(artifact: dict[str, Any], output_path: str) -> None:
-    artifact["canonical_content_sha256"] = sha256_json(_canonical_stage2_payload(artifact))
     out = Path(output_path)
     if out.exists():
         raise FileExistsError(f"Refusing to overwrite: {out}")
     out.parent.mkdir(parents=True, exist_ok=True)
+    sidecar = out.with_suffix(out.suffix + ".sha256")
+    if sidecar.exists():
+        raise FileExistsError(f"Refusing to overwrite: {sidecar}")
+    artifact["serialized_sha256_sidecar"] = sidecar.name
+    artifact["canonical_content_sha256"] = sha256_json(
+        _canonical_stage2_payload(artifact)
+    )
     serialized = json.dumps(artifact, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
     out.write_text(serialized, encoding="utf-8")
-    artifact["serialized_file_sha256"] = hashlib.sha256(out.read_bytes()).hexdigest()
-    # Rewrite once with the final file hash; it is intentionally not canonical.
-    out.write_text(json.dumps(artifact, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
+    digest = hashlib.sha256(out.read_bytes()).hexdigest()
+    sidecar.write_text(f"{digest}  {out.name}\n", encoding="ascii")
+    # Returned for callers/tests, but intentionally not written into the file
+    # whose bytes it authenticates.
+    artifact["serialized_file_sha256"] = digest
 
 
 def run_stage2(
@@ -105,6 +125,7 @@ def run_stage2(
     dataset_sha256: str = "",
     source_tree_sha: str = "",
     protocol: str = "registered_stage2_v1",
+    entity_resolver: EntityResolver | None = None,
 ) -> dict:
     """Revalidate Stage 2 realization gates with reproducible protocol metadata.
 
@@ -120,7 +141,7 @@ def run_stage2(
         )
     from benchmarks.naturalness_eval import score_naturalness
     from benchmarks.relevance_judge import RelevanceJudge
-    runner = NEXUSRunner(graph, config)
+    runner = NEXUSRunner(graph, config, entity_resolver=entity_resolver)
     relevance_judge = RelevanceJudge()
 
     results = []
@@ -210,6 +231,11 @@ def run_stage2(
         and accuracy_delta >= -0.02
     )
 
+    protocol_kind = "registered" if is_registered else "smoke_or_adhoc"
+    registered_gate_status = (
+        ("PASS" if gates_passed else "FAIL")
+        if is_registered else "NOT_APPLICABLE"
+    )
     artifact = {
         "schema_version": "nexus-stage2-v1",
         "stage": "stage2_realization_l1",
@@ -218,6 +244,9 @@ def run_stage2(
         "source_tree_sha": source_tree_sha,
         "dataset_sha256": dataset_sha256,
         "protocol": protocol,
+        "protocol_kind": protocol_kind,
+        "execution_status": "COMPLETE",
+        "registered_gate_status": registered_gate_status,
         "effective_config": {
             "config_hash": config.config_hash,
             "entity_resolution": "entity_ranker_v3" if config.pipeline_id.entity_ranker_v3_enabled else "lexical",
@@ -247,7 +276,11 @@ def run_stage2(
             "accuracy": {"value": accuracy_delta, "threshold": -0.02, "passed": accuracy_delta >= -0.02},
         },
         "per_question": results,
-        "status": "PASS" if gates_passed else "FAIL",
+        "status": (
+            registered_gate_status
+            if is_registered
+            else ("SMOKE_PASS" if gates_passed else "SMOKE_FAIL")
+        ),
     }
 
     _write_stage2_artifact(artifact, output_path)
@@ -265,10 +298,12 @@ def run_stage3(
     config: ProductionNEXUSConfig,
     source_sha: str,
     output_path: str,
+    entity_resolver: EntityResolver | None = None,
 ) -> dict:
     """Revalidate Stage 3 dialogue gates."""
     from stack.dialogue.state import DialogueState
-    from nexus.query.parser import parse_question
+    from stack.pipeline.resolver import DialogueAwareResolver, LexicalResolver
+    from nexus.reasoning.model_interface import get_available_model
 
     turns = []
     with open(dialogues_path, encoding="utf-8") as f:
@@ -278,6 +313,7 @@ def run_stage3(
                 turns.append(json.loads(line))
 
     state = DialogueState()
+    shared_model = get_available_model()
     utc_now = datetime.now(timezone.utc)
 
     total_turns = 0
@@ -285,10 +321,13 @@ def run_stage3(
     single_turn_correct = 0
     single_turn_total = 0
     latencies = []
+    pipeline_latencies = []
     per_dialogue = []
 
     current_dialogue_id = None
     dialogue_turns = []
+    active_resolver: EntityResolver | None = None
+    active_runner: NEXUSRunner | None = None
 
     for turn in turns:
         did = turn.get("dialogue_id", "")
@@ -298,38 +337,69 @@ def run_stage3(
             dialogue_turns = []
             current_dialogue_id = did
             state = DialogueState()
+            active_resolver = (
+                DialogueAwareResolver(entity_resolver, state)
+                if entity_resolver is not None
+                else LexicalResolver(dialogue_state=state, config=config)
+            )
+            active_runner = NEXUSRunner(
+                graph,
+                config,
+                model=shared_model,
+                entity_resolver=active_resolver,
+                dialogue_state=state,
+            )
 
         question = turn["question"]
         t0 = time.perf_counter()
-        parsed = parse_question(question, graph, config=config, dialogue_state=state)
-        lat = round((time.perf_counter() - t0) * 1000, 3)
+        if active_runner is None:
+            raise RuntimeError("Stage 3 runner was not initialized")
+        pipeline_result = active_runner.run(
+            [{"id": turn.get("id", ""), "question": question}],
+            source_sha=source_sha,
+        )
+        if pipeline_result.errors or not pipeline_result.per_question:
+            raise RuntimeError(
+                "Stage 3 pipeline failed: " + "; ".join(pipeline_result.errors)
+            )
+        qr = pipeline_result.per_question[0]
+        pipeline_lat = round((time.perf_counter() - t0) * 1000, 3)
+        lat = qr.resolver_latency_ms or pipeline_lat
         latencies.append(lat)
+        pipeline_latencies.append(pipeline_lat)
         total_turns += 1
 
-        # Update dialogue state with resolved entities
-        state.update(parsed.entity_ids)
+        # Avoid contaminating future turns with the full top-K list.  Only the
+        # highest-ranked selected entity becomes active dialogue context.
+        state_update_entities = qr.selected_entry_nodes[:1]
+        state.update(state_update_entities)
 
         # Use gt_entities field (correct dataset field name)
         gold_entities = set(turn.get("gt_entities", turn.get("entities", [])))
         is_context = turn.get("resolution_source") == "context"
 
         if is_context:
-            if gold_entities and parsed.entity_ids:
-                if gold_entities & set(parsed.entity_ids):
+            if gold_entities and qr.selected_entry_nodes:
+                if gold_entities & set(qr.selected_entry_nodes):
                     resolved_correct += 1
 
         if not is_context:
             single_turn_total += 1
-            if gold_entities & set(parsed.entity_ids):
+            if gold_entities & set(qr.selected_entry_nodes):
                 single_turn_correct += 1
 
         dialogue_turns.append({
             "turn_id": turn.get("id", ""),
             "question": question[:200],
-            "parsed_entities": parsed.entity_ids[:10],
+            "parsed_entities": qr.selected_entry_nodes[:10],
+            "resolver_name": qr.resolver_name,
+            "resolver_candidates": qr.resolution_candidates,
+            "candidate_pool_size": qr.candidate_pool_size,
+            "state_update_entities": state_update_entities,
             "gold_entities": sorted(gold_entities),
             "is_context_reference": is_context,
-            "latency_ms": lat,
+            "resolver_latency_ms": lat,
+            "pipeline_latency_ms": pipeline_lat,
         })
 
     if dialogue_turns:
@@ -343,6 +413,11 @@ def run_stage3(
     single_turn_acc = single_turn_correct / max(1, single_turn_total)
     latencies.sort()
     p50_lat = latencies[len(latencies) // 2] if latencies else 0
+    pipeline_latencies.sort()
+    pipeline_p50 = (
+        pipeline_latencies[len(pipeline_latencies) // 2]
+        if pipeline_latencies else 0
+    )
 
     artifact = {
         "stage": "stage3_dialogue",
@@ -353,6 +428,7 @@ def run_stage3(
             "reference_resolution": round(ref_resolution, 4),
             "single_turn_accuracy": round(single_turn_acc, 4),
             "dialogue_latency_p50_ms": round(p50_lat, 3),
+            "pipeline_latency_p50_ms": round(pipeline_p50, 3),
         },
         "gates": {
             "reference_resolution": ref_resolution,
@@ -381,6 +457,11 @@ def main():
     parser.add_argument("--limit", type=int, default=30)
     parser.add_argument("--output-dir", default="benchmarks/results")
     parser.add_argument("--er3", action="store_true", help="Use Entity Ranker V3")
+    parser.add_argument(
+        "--er3-dir",
+        default="models/encoder/entity_ranker_v3_20260715T191041Z",
+    )
+    parser.add_argument("--weights-path", default=None)
     parser.add_argument("--baseline", default="training/stage2_baseline_v1.json")
     parser.add_argument("--dataset-manifest", default="", help="Optional hash-identified distillation manifest")
     args = parser.parse_args()
@@ -388,10 +469,18 @@ def main():
     from benchmarks.run_benchmark import build_benchmark_graph
     graph, _ = build_benchmark_graph()
 
-    config = (
-        ProductionNEXUSConfig.with_entity_ranker_v3()
-        if args.er3 else ProductionNEXUSConfig.lexical_only()
-    )
+    entity_resolver: EntityResolver | None = None
+    if args.er3:
+        from stack.pipeline.resolver import ER3Resolver
+
+        config = ProductionNEXUSConfig.with_entity_ranker_v3(args.er3_dir)
+        entity_resolver = ER3Resolver.from_directory(
+            args.er3_dir,
+            graph,
+            weights_path=args.weights_path,
+        )
+    else:
+        config = ProductionNEXUSConfig.lexical_only()
     source_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
     source_tree_sha = subprocess.check_output(["git", "rev-parse", "HEAD^{tree}"], text=True).strip()
     dataset_sha256 = ""
@@ -410,7 +499,8 @@ def main():
         result = run_stage2(
             questions, graph, config, source_sha, out, baseline,
             dataset_sha256=dataset_sha256, source_tree_sha=source_tree_sha,
-            protocol=f"registered_stage2_v1_limit_{args.limit}",
+            protocol=stage2_protocol_for_limit(args.limit),
+            entity_resolver=entity_resolver,
         )
         print(f"  Relevance: {result['metrics']['relevance_rate']:.4f} (gate: 0.77)")
         print(f"  Status: {result['status']}")
@@ -421,7 +511,10 @@ def main():
             print("Stage 3: dialogues.jsonl not found — skipping")
         else:
             out = f"{args.output_dir}/stage3_{ts}.json"
-            result = run_stage3(str(dialogues_path), graph, config, source_sha, out)
+            result = run_stage3(
+                str(dialogues_path), graph, config, source_sha, out,
+                entity_resolver=entity_resolver,
+            )
             print(f"Stage 3: {result['total_turns']} turns")
             print(f"  Reference resolution: {result['metrics']['reference_resolution']:.4f} (gate: 0.70)")
             print(f"  Status: {result['status']}")

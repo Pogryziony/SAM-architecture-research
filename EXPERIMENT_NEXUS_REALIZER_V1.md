@@ -1,7 +1,7 @@
 # EXPERIMENT: NEXUS Realizer v1 — CPU-First Evidence-to-Answer Model
 
 **Pre-registered**: 2026-07-11
-**Status**: PRE-TRAINING GATES PASSED — training not started.
+**Status**: FIRST TRAINING COMPLETE, DEPLOYMENT REJECTED — corrected pilot blocked pending Stage 0/2/3 reruns.
 **Repository**: SAM-architecture-research
 
 ---
@@ -48,7 +48,8 @@ Output: grounded natural-language answer
 - Optimizer: AdamW with cosine annealing
 - Learning rate: 1e-4 (to be validated on learning curves)
 - Seed: 20260711
-- Epoch limit: 50 with early stopping (patience 10 on validation loss)
+- Pilot order: 1, then 3, then at most 5 epochs with generation-aware checks
+- Extended limit: 50 only after a separate decision based on registered pilot metrics
 - Batch size: 16
 - Train/validation split: 80/20 by entity-family to reduce leakage
 
@@ -123,6 +124,20 @@ Per example:
 
 Current verified results and the launch procedure are documented in
 `docs/nexus-realizer-pretraining-status.md`.
+
+## First-run outcome and protocol amendment
+
+The first external CPU run completed 50 epochs and reduced training loss from
+191.815 to 1.867, with best validation loss 1.778. It nevertheless regressed on
+all registered answer-quality measures. Decoder diagnostics showed that the
+byte-level greedy autoregressive path entered repetition loops. Repetition
+penalty `1.2` and no-repeat trigram blocking removed the observed loops.
+
+This does not retroactively make the trained checkpoint acceptable. The next
+run must use the corrected generation-aware trainer and proceed through 1, 3
+and 5 epochs. Every run records the effective preset values. Training stops on
+non-finite loss, validation regression, repetition recurrence or worsening
+registered answer-quality metrics.
 
 ## Budget Compliance
 

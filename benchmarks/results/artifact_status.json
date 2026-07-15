@@ -1,0 +1,14 @@
+{
+  "schema_version": "nexus-artifact-status-v1",
+  "artifacts": {
+    "stage0_v2_30.json": {
+      "status": "INVALID",
+      "superseded": false,
+      "reasons": [
+        "RAG arm produced 0 valid answers and 30 errors",
+        "paired comparison contains 0 paired questions"
+      ],
+      "note": "Preserved as execution evidence; it must not be used as a Stage 0 baseline."
+    }
+  }
+}

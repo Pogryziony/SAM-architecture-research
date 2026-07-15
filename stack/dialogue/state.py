@@ -132,7 +132,7 @@ class DialogueState:
         Returns:
             List of (entity_id, activation_strength) tuples.
         """
-        return sorted(self._activation.items(), key=lambda x: -x[1])[:top_k]
+        return sorted(self._activation.items(), key=lambda x: (-x[1], x[0]))[:top_k]
     
     def get_activation(self, entity_id: str) -> float:
         """Get the current activation of a specific entity.
@@ -156,6 +156,21 @@ class DialogueState:
             against the dialogue state rather than fresh global search.
         """
         return len(_detect_pronouns(question)) > 0
+
+    def resolve_references(self, question: str, graph) -> list[str]:
+        """Resolve every detected reference without exposing stack internals.
+
+        This method is the small dependency-injection contract consumed by
+        ``nexus.query.parser``.  Keeping reference detection here preserves the
+        architectural direction ``stack -> nexus``.
+        """
+
+        resolved: list[str] = []
+        for reference in _detect_pronouns(question):
+            entity_id = self.resolve_reference(reference, graph)
+            if entity_id and entity_id not in resolved:
+                resolved.append(entity_id)
+        return resolved
     
     def resolve_reference(self, pronoun_or_ref: str, graph) -> str | None:
         """Resolve pronoun/definite reference to highest-activation type-compatible node.

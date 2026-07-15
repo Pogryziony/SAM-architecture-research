@@ -14,7 +14,7 @@ import random
 import sys
 import time
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 _project_root = Path(__file__).parent.parent.resolve()
 if str(_project_root) not in sys.path:
@@ -56,6 +56,35 @@ def load_training_inputs(manifest_path: Path, config_path: Path) -> tuple[dict[s
                 raise ValueError(f"record split mismatch in {split} at index {index}")
     assert_no_split_leakage(splits)
     return manifest, config, splits
+
+
+def apply_training_overrides(
+    config: dict[str, Any], overrides: Mapping[str, Any] | None
+) -> dict[str, Any]:
+    """Apply validated runtime parameters to the effective training config."""
+
+    training = config.setdefault("training", {})
+    allowed = {
+        "epochs", "early_stopping_patience", "batch_size",
+        "learning_rate", "weight_decay", "max_parameters",
+    }
+    for key, value in (overrides or {}).items():
+        if value is None:
+            continue
+        target = "early_stopping_patience" if key == "patience" else key
+        if target not in allowed:
+            continue
+        if target in {"epochs", "early_stopping_patience", "batch_size"}:
+            if not isinstance(value, int) or value < 1:
+                raise ValueError(f"{target} must be a positive integer")
+        if target == "learning_rate" and float(value) <= 0:
+            raise ValueError("learning_rate must be positive")
+        training[target] = value
+    return config
+
+
+def effective_config_sha256(config: dict[str, Any]) -> str:
+    return hashlib.sha256(canonical_json(config).encode("utf-8")).hexdigest()
 
 
 def _evidence_units(record: dict[str, Any]) -> dict[str, list[Any]]:
@@ -202,10 +231,14 @@ def run(
     readiness_path: Path | None = None,
     output_dir: Path | None = None,
     epoch_override: int | None = None,
+    training_overrides: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     manifest, config, splits = load_training_inputs(manifest_path, config_path)
     if epoch_override is not None and epoch_override > 0:
-        config["training"]["epochs"] = epoch_override
+        training_overrides = {**(training_overrides or {}), "epochs": epoch_override}
+    apply_training_overrides(config, training_overrides)
+    effective_training = dict(config["training"])
+    effective_hash = effective_config_sha256(config)
     if mode == "train":
         if readiness_path is None:
             raise ValueError("--readiness is required for training")
@@ -261,6 +294,8 @@ def run(
             "target_shape": list(target.shape),
             "loss": round(float(loss.detach()), 6),
             "priority_evidence_coverage": coverage_summary,
+            "effective_training_config": effective_training,
+            "effective_config_sha256": effective_hash,
             "weights_written": False,
         }
 
@@ -288,6 +323,8 @@ def run(
             "initial_loss": round(first_loss, 6),
             "final_loss": round(final_loss, 6),
             "steps": steps,
+            "effective_training_config": effective_training,
+            "effective_config_sha256": effective_hash,
             "weights_written": False,
         }
 
@@ -388,6 +425,8 @@ def run(
         "status": "TRAINING_COMPLETE",
         "dataset_sha256": manifest["dataset_sha256"],
         "config_sha256": hashlib.sha256(config_path.read_bytes()).hexdigest(),
+        "effective_config_sha256": effective_hash,
+        "effective_training_config": effective_training,
         "parameter_count": params,
         "initial_loss": round(first_loss, 6),
         "final_loss": round(final_loss, 6),
@@ -415,6 +454,9 @@ def main() -> int:
     parser.add_argument("--readiness", type=Path)
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--epochs", type=int, default=None, help="Override config epochs (for quick runs)")
+    parser.add_argument("--patience", type=int, default=None)
+    parser.add_argument("--batch-size", type=int, default=None)
+    parser.add_argument("--lr", type=float, default=None)
     args = parser.parse_args()
 
     if args.list_presets:
@@ -428,17 +470,30 @@ def main() -> int:
 
     if args.preset:
         from stack.encoder.training_presets import apply_preset
-        cli = {"epochs": args.epochs}
+        cli = {
+            "epochs": args.epochs,
+            "patience": args.patience,
+            "batch_size": args.batch_size,
+            "learning_rate": args.lr,
+        }
         cli = {k: v for k, v in cli.items() if v is not None}
         preset_params = apply_preset(args.preset, model_type="realizer", cli_overrides=cli)
-        if args.epochs is None:
-            args.epochs = preset_params["epochs"]
-        print(f"Preset '{args.preset}': epochs={args.epochs}")
+        training_overrides = preset_params
+        print(f"Preset '{args.preset}': {training_overrides}")
+    else:
+        training_overrides = {
+            "epochs": args.epochs,
+            "patience": args.patience,
+            "batch_size": args.batch_size,
+            "learning_rate": args.lr,
+        }
     try:
+        if args.manifest is None:
+            raise ValueError("--manifest is required unless --list-presets is used")
         result = run(
             args.manifest, args.config, mode=args.mode,
             readiness_path=args.readiness, output_dir=args.output_dir,
-            epoch_override=args.epochs,
+            training_overrides=training_overrides,
         )
     except (ValueError, RuntimeError, FileNotFoundError) as exc:
         print(json.dumps({"status": "BLOCKED", "error": str(exc)}, sort_keys=True))

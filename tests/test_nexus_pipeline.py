@@ -1004,12 +1004,12 @@ from benchmarks.run_stage0_baseline import validate_artifact
 class TestStage0Guard:
     def test_valid_artifact_passes(self):
         artifact = {
-            "nexus": {"answered": 25, "mean_accuracy": 0.32},
-            "rag": {"answered": 25, "mean_accuracy": 0.28},
+            "nexus": {"answered": 1, "mean_accuracy": 0.32},
+            "rag": {"answered": 1, "mean_accuracy": 0.28},
             "questions_total": 30,
             "per_question": [{"question_id": "q1", "nexus_answer": "Answer text here ok", "rag_answer": "RAG answer too"}],
             "source_sha": "abc123",
-            "paired_comparison": {"paired_n": 25},
+            "paired_comparison": {"paired_n": 1},
         }
         assert not validate_artifact(artifact)
 

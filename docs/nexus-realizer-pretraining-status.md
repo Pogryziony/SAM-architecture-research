@@ -1,73 +1,93 @@
-# NEXUS Realizer v1 — pre-training status
+# NEXUS Realizer v1 — training status
 
-**Decision: READY TO LAUNCH TRAINING in the PyTorch training environment.**
+**Decision: BLOCKED pending regenerated Stage 0, registered Stage 2 and Stage 3 evidence.**
 
-Training has not started. The repository-side data, quality, leakage, oracle,
-budget, and artifact-policy gates pass. The final launch command must still run
-the readiness check in the same environment that has the `train` extra; the
-command remains fail-closed unless its exact status is `READY_FOR_TRAINING`.
+The repository has enough unique train-only data and a working CPU Realizer,
+but it is no longer correct to describe the model as “not trained”. The first
+50-epoch run completed externally. Its loss converged, yet post-training answer
+quality regressed because the original greedy byte decoder entered repetition
+loops. Repetition penalty `1.2` plus no-repeat trigram blocking removed those
+loops in decoder diagnostics, but the corrected model path has not yet passed
+the complete registered evaluation suite.
 
-## Verified result (2026-07-13)
+## Confirmed results
 
-| Gate | Observed | Required | Status |
-|---|---:|---:|---|
-| Unique acquired train-only targets | 8,282 | >= 5,000 candidates | PASS |
-| Verifier/audit-passed pairs | 7,127 | >= 5,000 | PASS |
-| Validation share after source-family grouping | 20.12% | 15–25% | PASS |
-| Semantic-target overlap between splits | 0 | 0 | PASS |
-| Source-file overlap between splits | 0 | 0 | PASS |
-| Stage 2 relevance | 78.33% | >= 77% | PASS |
-| Stage 2 naturalness improvement | +22.40 | >= +5 | PASS |
-| Stage 2 hallucination delta | -0.0512 | <= 0 | PASS |
-| Stage 2 accuracy delta | +0.1534 | >= -0.02 | PASS |
-| Oracle cases | 181 | >= 150 | PASS |
-| Oracle proof validity | 96.13% | >= 95% | PASS |
-| Oracle gold-path recall | 85.71% | >= 80% | PASS |
-| Oracle provenance coverage | 96.13% | >= 90% | PASS |
-| Top-three evidence retention | 100% | 100% | PASS |
-| Estimated parameters | 2,779,200 | <= 50M | PASS |
-| CPU PyTorch forward/backward preflight | passed in GitHub Actions | pass | PASS |
+| Area | Result | Status |
+|---|---:|---|
+| Unique acquired train-only targets | 8,282 | PASS |
+| Verifier/audit-passed pairs | 7,127 | PASS |
+| Train/validation records | 5,693 / 1,434 | PASS |
+| Validation share | 20.12% | PASS |
+| Known split leakage | 0 | PASS |
+| Realizer parameters | 2,770,752 | PASS, below 50M |
+| First CPU training | 50 epochs, best validation loss 1.778 | COMPLETE, historical |
+| Original post-training relevance, 30 cases | 58.33% | REGRESSION |
+| Original post-training hallucination, 30 cases | 90.32% | REGRESSION |
+| Decoder diagnostic | repetition penalty + trigram block removed loops | IMPLEMENTED |
+| Current committed Stage 0 | RAG 0/30, paired N=0 | INVALID |
+| Current committed Stage 2 | two 5-case smoke runs | NOT A REGISTERED GATE |
+| Latest Stage 3 | 15.62% resolution, 12.166ms p50 | FAIL |
 
-The 8,282 candidates come from 199 source families and contain one record per
-source property, Markdown table cell, authored claim, or public API contract.
-They are not paraphrases of the old question set. Acquisition rejects repeated
-semantic targets, normalized questions, and normalized answers. It excludes
-evaluation/result code, generated result directories, and all validation,
-test, and holdout labels.
+Model weights and generated datasets remain outside Git. Their manifests and
+SHA-256 values identify the required external artifacts.
 
-The dataset builder accepted 7,127 records and rejected 1,155 fail-closed,
-primarily because the target verifier did not support the authored wording.
-Accepted records contain only the atomic fact being trained and its one-hop
-`claim -> source` proof; other claims from the same source document are not
-included as neighbor context. The generated clean dataset is about 26 MB
-(5,693 train and 1,434 validation records).
+## Integrity fixes in the current implementation
 
-## Reproduction and launch order
+- Presets now flow into the actual Realizer and ER3 trainers instead of being
+  printed without changing the training loop.
+- Effective training parameters and their canonical hash are written to run
+  manifests.
+- `--list-presets` works without PyTorch for Realizer v2.
+- ER3 loads the exact external file that passed size and SHA-256 verification.
+- NEXUS receives entity resolution through an injected structured result; it
+  no longer imports `stack.*` or inspects resolver private fields.
+- Stage 2 uses exactly `registered_stage2_v1` for 30 cases. Other sizes are
+  smoke runs and cannot report a registered PASS.
+- Stage 2 serialized artifacts use a `.sha256` sidecar, avoiding a
+  self-referential hash.
+- Stage 3 runs through the injected resolver and records candidates, scores,
+  selected entry nodes, state updates and separate resolver/pipeline latency.
+
+## Required order before the next pilot
+
+1. Materialize the external ER3 checkpoint identified by its manifest.
+2. Reproduce the 7,127-pair dataset from exact Git blobs and confirm all hashes.
+3. Run a valid 30-case Stage 0 with both NEXUS and RAG producing answers.
+4. Run registered Stage 2 on exactly 30 cases for `PYTHONHASHSEED=0,1,42`.
+5. Run the complete 110-turn Stage 3 with the injected ER3 resolver.
+6. Regenerate readiness, preflight and overfit-smoke evidence.
+7. Only if every blocking check passes, run Realizer pilots for 1, 3 and at
+   most 5 epochs.
+
+## Safe command outline
 
 ```bash
-python benchmarks/acquire_realizer_train_data.py \
-  --output data/realizer_train/source_claims_v1
+# Metadata-only; does not need torch.
+python benchmarks/train_nexus_realizer_v2.py --list-presets
 
-python benchmarks/build_distillation_dataset.py \
-  --acquisition-manifest data/realizer_train/source_claims_v1/manifest.json \
-  --output-dir data/distillation/realizer_v1 \
-  --min-pairs 5000
+# Registered Stage 2 uses exactly 30 cases.
+PYTHONHASHSEED=0 python benchmarks/run_stage2_stage3.py \
+  --stage 2 --limit 30 --output-dir /tmp/nexus-stage2-seed0
 
-python benchmarks/run_nexus_oracle.py \
-  --output /tmp/nexus-oracle-realizer-v1.json
-
+# ER3 evaluation requires the external checkpoint.
+ER3_WEIGHTS_PATH=/external/er3/weights.pt \
 python benchmarks/run_stage2_stage3.py \
-  --stage 2 --limit 30 --output-dir /tmp/nexus-stage2-realizer-v1
+  --stage 3 --er3 \
+  --er3-dir models/encoder/entity_ranker_v3_20260715T191041Z \
+  --output-dir /tmp/nexus-stage3
 
-pip install -e '.[train]'
+# After readiness passes: deliberately short generation-aware pilots.
+python benchmarks/train_nexus_realizer_v2.py \
+  --mode pilot --preset smoke --manifest /external/realizer/manifest.json
 
-python benchmarks/check_realizer_readiness.py \
-  --dataset-manifest data/distillation/realizer_v1/manifest.json \
-  --oracle-artifact /tmp/nexus-oracle-realizer-v1.json \
-  --stage2-artifact /tmp/nexus-stage2-realizer-v1/STAGE2_FILE.json \
-  --output /tmp/nexus-realizer-v1-readiness.json
+python benchmarks/train_nexus_realizer_v2.py \
+  --mode pilot --preset quick --epochs 3 \
+  --manifest /external/realizer/manifest.json
+
+python benchmarks/train_nexus_realizer_v2.py \
+  --mode pilot --preset quick --epochs 5 \
+  --manifest /external/realizer/manifest.json
 ```
 
-Start `benchmarks/train_nexus_realizer.py --mode train` only after the last
-artifact says `READY_FOR_TRAINING`. Model weights must remain outside the
-repository; their SHA-256 is recorded in the external training manifest.
+Do not run the 12-, 25- or 50-epoch presets until the 1→3→5 sequence improves
+registered relevance, accuracy, naturalness and hallucination simultaneously.
