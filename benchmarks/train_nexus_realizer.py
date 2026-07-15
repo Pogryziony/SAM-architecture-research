@@ -410,10 +410,30 @@ def main() -> int:
     parser.add_argument("--manifest", required=True, type=Path)
     parser.add_argument("--config", default="training/nexus_realizer_v1.json", type=Path)
     parser.add_argument("--mode", choices=("preflight", "overfit-smoke", "train"), default="preflight")
+    parser.add_argument("--preset", default=None, help="Training intensity preset (smoke/quick/pilot/standard/full)")
+    parser.add_argument("--list-presets", action="store_true", help="List available presets and exit")
     parser.add_argument("--readiness", type=Path)
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--epochs", type=int, default=None, help="Override config epochs (for quick runs)")
     args = parser.parse_args()
+
+    if args.list_presets:
+        from stack.encoder.training_presets import list_presets, get_preset
+        for name in list_presets():
+            p = get_preset(name)
+            note = p.pop("note", "")
+            print(f"  {name:12s} epochs={p['epochs']:>3d}  patience={p.get('patience', '?'):>3d}")
+            if note: print(f"               {note}")
+        return 0
+
+    if args.preset:
+        from stack.encoder.training_presets import apply_preset
+        cli = {"epochs": args.epochs}
+        cli = {k: v for k, v in cli.items() if v is not None}
+        preset_params = apply_preset(args.preset, model_type="realizer", cli_overrides=cli)
+        if args.epochs is None:
+            args.epochs = preset_params["epochs"]
+        print(f"Preset '{args.preset}': epochs={args.epochs}")
     try:
         result = run(
             args.manifest, args.config, mode=args.mode,
