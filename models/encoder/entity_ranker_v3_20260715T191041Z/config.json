@@ -1,0 +1,10 @@
+{
+  "run_id": "entity_ranker_v3_20260715T191041Z",
+  "run_timestamp_utc": "2026-07-15T19:10:41.301864+00:00",
+  "winner": "entity_ranker_v3",
+  "source_sha": "d149229a51190ad5e1a9d0acdadf8a2914321c38",
+  "seed": 20260710,
+  "validation_only": true,
+  "architecture": "question_conditioned_dot_product_v3",
+  "canonical_mapping_applied": true
+}
