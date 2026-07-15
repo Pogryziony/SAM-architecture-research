@@ -1,0 +1,2014 @@
+{
+  "created_utc": "2026-07-15T20:01:07.115364+00:00",
+  "gates": {
+    "dialogue_latency_p50_ms": 12.166,
+    "latency_pass": false,
+    "ref_res_pass": false,
+    "reference_resolution": 0.15625
+  },
+  "metrics": {
+    "dialogue_latency_p50_ms": 12.166,
+    "reference_resolution": 0.1562,
+    "single_turn_accuracy": 0.3913
+  },
+  "per_dialogue": [
+    {
+      "dialogue_id": "d001",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 58.699,
+          "parsed_entities": [
+            "Exp_0_6_Validation",
+            "Sam_Oracle_Memory",
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants",
+            "Sam_Does_Not_Collapse_With_One_Distractor"
+          ],
+          "question": "What was the overall accuracy of the SAM oracle memory experiment?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 4.456,
+          "parsed_entities": [
+            "Realistic_Distractor_Replay",
+            "Test_Topk_Caps",
+            "Exp_0_6_Validation",
+            "Experiment_0.12",
+            "Integrated_Into_The_Model's_Internal_Computation"
+          ],
+          "question": "How many parameters did it have?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 5.527,
+          "parsed_entities": [
+            "Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants",
+            "Experiment_0.6_—_Full_Validation",
+            "Sam_Does_Not_Collapse_With_One_Distractor",
+            "Gate_1_(rec@8_≥_80%):_Passed",
+            "Sam_Oracle_Memory_Works"
+          ],
+          "question": "And what about the core-only baseline?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 7.602,
+          "parsed_entities": [
+            "Sam_Does_Not_Collapse_With_One_Distractor",
+            "Two_Hop_Improves_Substantially",
+            "Realistic_Retrieved_Memory_Sam",
+            "Selectivity_Mechanisms",
+            "External_Text_Query"
+          ],
+          "question": "Why did that baseline fail at 3-hop?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d002",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_11_ChainRetrieval"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 20.716,
+          "parsed_entities": [
+            "Concept_ChainRetrieval",
+            "Chain_Set_Bce",
+            "Slot_Selector_(sam/model/slot_Selector.py)",
+            "Chain_Set_Bce_Retriever_(experiment_0.11)",
+            "Experiment_0.13b_—_Realistic_Retrieval_Distractor_Replay_(in_Progress)"
+          ],
+          "question": "Tell me about the chain-set BCE retriever experiment.",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_11_ChainRetrieval"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 4.087,
+          "parsed_entities": [
+            "Nodes_(entities)_+_Edges_(relationships)",
+            "Document_Chunks_+_Embeddings",
+            "Step_3:_Relation_Extraction",
+            "Knowledge_Record_Format",
+            "Explicitly"
+          ],
+          "question": "What was its all_required@32 result?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_10_RequiredSet",
+            "Exp_0_11_ChainRetrieval"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 18.199,
+          "parsed_entities": [
+            "Concept_RetrievalMismatch",
+            "Multi_Query_Retrieval_Results",
+            "Test_Chain_Set_With_External_Text_Query",
+            "Implementation_Prepared_But_Not_Run",
+            "Realistic_Distractor_Replay"
+          ],
+          "question": "How does that compare to the dual encoder retriever?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d003",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_Diagnosis"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 13.687,
+          "parsed_entities": [
+            "Exp_0_Diagnosis",
+            "Experiment_0_—_Pipeline_Diagnosis",
+            "Step_3:_Relation_Extraction",
+            "Experiment_0.10_—_Required_Set_Retrieval_Diagnostics",
+            "Sam_Lm_Experiment_0_—_Diagnosis_Report"
+          ],
+          "question": "What did the pipeline diagnosis experiment find?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_Diagnosis"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 6.396,
+          "parsed_entities": [
+            "Experiment_0_—_Pipeline_Diagnosis",
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Three_Hop_Reasoning_Solvable",
+            "Graph_Reasoning_—_Traversal_As_The_Reasoning_Engine",
+            "Dual_Encoder_Retrieval_Works_Standalone"
+          ],
+          "question": "What were the three bugs it discovered?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d004",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_13A_NoisyMemory"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 28.914,
+          "parsed_entities": [
+            "Sam_Does_Not_Collapse_With_One_Distractor",
+            "Sam_Tolerates_Mild_Noise_Very_Well",
+            "\"the_Latent_Memory_Path_Is_Fragile\"",
+            "Integration_Step",
+            "Realistic_Retrieved_Memory_Sam"
+          ],
+          "question": "What accuracy did SAM achieve with exactly 1 distractor?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_13A_NoisyMemory"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 2.68,
+          "parsed_entities": [
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Significance_For_0.12_Results",
+            "Experiment_0.13b",
+            "Sam_Does_Not_Collapse_With_One_Distractor",
+            "\"the_Latent_Memory_Path_Is_Fragile\""
+          ],
+          "question": "And with 8 distractors?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_13A_NoisyMemory"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 10.42,
+          "parsed_entities": [
+            "Gate_Is",
+            "Sam_Does_Not_Collapse_With_One_Distractor",
+            "Gate_2",
+            "Sam_Tolerates_Mild_Noise_Very_Well",
+            "Integration_Step"
+          ],
+          "question": "Does that mean the gate is the bottleneck?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Concept_NoiseTolerance"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 2.98,
+          "parsed_entities": [
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Experiment_0.13b",
+            "Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants",
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Experiment_0.10_—_Required_Set_Retrieval_Diagnostics"
+          ],
+          "question": "No, what proved it's not?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d005",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_2_CompactPKM"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 2.856,
+          "parsed_entities": [
+            "Exp_0_2_CompactPKM",
+            "Retrieved_Memory",
+            "Repository_Map",
+            "Current_Status",
+            "Excessive_K"
+          ],
+          "question": "What is product-key memory?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_2_CompactPKM"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 27.308,
+          "parsed_entities": [
+            "Add_Slot_Specific_Key_Embeddings",
+            "Increase_Key_Dimensionality",
+            "Original_Gates_(experiments_0.0–0.6)",
+            "Experiment_0.6_—_Full_Validation",
+            "Decision_Gates"
+          ],
+          "question": "Why does SAM use it instead of dense retrieval?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d006",
+      "turns": [
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 18.58,
+          "parsed_entities": [
+            "Graph_Construction_Cost_Is_Prohibitive",
+            "Graph_Reasoning_—_Traversal_As_The_Reasoning_Engine",
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "The_Core_Difference_(in_One_Sentence)",
+            "The_Reasoning_Pipeline"
+          ],
+          "question": "What is the role of the verifier in NEXUS?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 2.3,
+          "parsed_entities": [
+            "Nodes_(entities)_+_Edges_(relationships)",
+            "Prototype_(phase_1_2):_In_Memory_Python",
+            "Document_Chunks_+_Embeddings",
+            "Step_3:_Relation_Extraction",
+            "Step_5:_Source_Annotation"
+          ],
+          "question": "Is it rule-based or LLM-based?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 2.094,
+          "parsed_entities": [
+            "Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants",
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Experiment_0.6_—_Full_Validation",
+            "All_Knowledge_Inside_Dense_Weights",
+            "Diagnose_Selector_Noise_Quality"
+          ],
+          "question": "What threshold does it use?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d007",
+      "turns": [
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 27.454,
+          "parsed_entities": [
+            "Nexus_Approach",
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "The_Core_Difference_(in_One_Sentence)",
+            "Query_Vector",
+            "Graph_Memory_—_Nexus_Knowledge_Store"
+          ],
+          "question": "How does NEXUS differ from RAG?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 15.295,
+          "parsed_entities": [
+            "Query_Vector",
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "The_Core_Difference_(in_One_Sentence)",
+            "Nexus_Approach",
+            "All_Knowledge_Inside_Dense_Weights"
+          ],
+          "question": "Specifically, how does its knowledge store compare to vector databases?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d008",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_Diagnosis"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 37.327,
+          "parsed_entities": [
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Experiment_0_—_Pipeline_Diagnosis",
+            "goal_experiment",
+            "Training_Time_Optimizer_Memory_+_Cold_Slots"
+          ],
+          "question": "What experiment proved that retrieval is the bottleneck?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_11_ChainRetrieval"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 8.884,
+          "parsed_entities": [
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Experiment_0_—_Pipeline_Diagnosis",
+            "Selection",
+            "Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants",
+            "Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair"
+          ],
+          "question": "And what experiment solved it?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_10_RequiredSet",
+            "Exp_0_11_ChainRetrieval"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 23.987,
+          "parsed_entities": [
+            "Concept_RetrievalMismatch",
+            "Final_Recommendation",
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Experiment_0.10_—_Required_Set_Retrieval_Diagnostics",
+            "Selection"
+          ],
+          "question": "Why did the dual encoder fail at retrieving chains?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d009",
+      "turns": [
+        {
+          "gold_entities": [
+            "Concept_NoiseTolerance",
+            "Exp_0_13A_NoisyMemory"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 21.636,
+          "parsed_entities": [
+            "Exp_0_13A_NoisyMemory",
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Experiment_0_—_Pipeline_Diagnosis",
+            "The_Situation_Before_0.13a",
+            "Semantically_Misleading"
+          ],
+          "question": "What was the key finding of the noise tolerance experiment?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Concept_SelectorBottleneck",
+            "Exp_0_12_Selection"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 7.315,
+          "parsed_entities": [
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Experiment_0_—_Pipeline_Diagnosis",
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Experiment_0.6_—_Full_Validation",
+            "The_Situation_Before_0.13a"
+          ],
+          "question": "So what IS the real bottleneck then?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 2.791,
+          "parsed_entities": [
+            "Experiment_0_—_Pipeline_Diagnosis",
+            "Experiment_0.6_—_Full_Validation",
+            "Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants",
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "Nodes_(entities)_+_Edges_(relationships)"
+          ],
+          "question": "And what was done about it?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d010",
+      "turns": [
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 16.648,
+          "parsed_entities": [
+            "Node_Types",
+            "Step_3:_Relation_Extraction",
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "Nodes_(entities)_+_Edges_(relationships)",
+            "Prototype_(phase_1_2):_In_Memory_Python"
+          ],
+          "question": "What are the node types in NEXUS?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 2.543,
+          "parsed_entities": [
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "Nodes_(entities)_+_Edges_(relationships)",
+            "Prototype_(phase_1_2):_In_Memory_Python",
+            "Step_3:_Relation_Extraction",
+            "The_Core_Difference_(in_One_Sentence)"
+          ],
+          "question": "And the edge types?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d011",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_10_RequiredSet",
+            "Exp_0_11_ChainRetrieval"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 18.753,
+          "parsed_entities": [
+            "Chain_Set_Bce",
+            "Concept_RetrievalMismatch",
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Validation_Results",
+            "Slot_Selector_(sam/model/slot_Selector.py)"
+          ],
+          "question": "Compare the dual encoder and chain-set BCE retrievers.",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_11_ChainRetrieval"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 4.764,
+          "parsed_entities": [
+            "Slot_Selector_(sam/model/slot_Selector.py)",
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Experiment_0.10_—_Required_Set_Retrieval_Diagnostics",
+            "Required_Set_Retrieval_Metrics_(experiment_0.10+)",
+            "Controlled_Random_Distractors"
+          ],
+          "question": "Which one achieved 100% all_required@32?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d012",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 32.958,
+          "parsed_entities": [
+            "Oracle_Text_Memory",
+            "\"the_Latent_Memory_Path_Is_Fragile\"",
+            "Realistic_Retrieved_Memory_Sam",
+            "Sam_Oracle_Memory_Works",
+            "Sam_Does_Not_Collapse_With_One_Distractor"
+          ],
+          "question": "What accuracy did the oracle text memory achieve?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 21.964,
+          "parsed_entities": [
+            "Latent_Memory",
+            "Test_Chain_Set_With_External_Text_Query",
+            "Realistic_Distractor_Replay",
+            "Test_Topk_Caps",
+            "Pkm_(product_Key_Memory)"
+          ],
+          "question": "How does that compare to oracle latent memory?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Concept_ArchitectureWorks"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 5.959,
+          "parsed_entities": [
+            "\"the_Latent_Memory_Path_Is_Fragile\"",
+            "Integration_Step",
+            "Significance_For_0.12_Results",
+            "Experiment_0",
+            "Sam_Does_Not_Collapse_With_One_Distractor"
+          ],
+          "question": "What does this prove about the architecture?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d013",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 11.415,
+          "parsed_entities": [
+            "Concept_RetrievalMismatch",
+            "Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants",
+            "Experiment_0.10_—_Required_Set_Retrieval_Diagnostics",
+            "Experiment_0.6_—_Full_Validation",
+            "Three_Hop_Reasoning_Solvable"
+          ],
+          "question": "What is the query projection mismatch problem?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 15.655,
+          "parsed_entities": [
+            "Multi_Query_Retrieval_Results",
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Retrieval_≠_Accuracy",
+            "Retrieval_Is_Solved",
+            "Implementation_Prepared_But_Not_Run"
+          ],
+          "question": "How did it affect retrieval accuracy?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d014",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 26.399,
+          "parsed_entities": [
+            "Memory_Modes",
+            "Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants",
+            "Realistic_Retrieved_Memory_Sam",
+            "Sam_Oracle_Memory_Works",
+            "Two_Hop_Improves_Substantially"
+          ],
+          "question": "What are the six memory modes in SAM?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 6.947,
+          "parsed_entities": [
+            "Experiment_0.6_—_Full_Validation",
+            "Slot_Selector_(sam/model/slot_Selector.py)",
+            "Gate_1_(rec@8_≥_80%):_Passed",
+            "Step_5:_Path_Selection",
+            "Experiment_0.5_—_Dense_Dataset_Fix"
+          ],
+          "question": "Which one is used as the placebo control?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d015",
+      "turns": [
+        {
+          "gold_entities": [
+            "Concept_SelectorBottleneck",
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 40.962,
+          "parsed_entities": [
+            "Concept_SelectorBottleneck",
+            "Concept_PivotToNEXUS",
+            "\"gate_Suppression_Explains_Selector_Failure\"",
+            "Gate_Suppression_Is_Not_The_Bottleneck",
+            "\"sam_Collapses_With_Any_Noise\""
+          ],
+          "question": "What is the relationship between the selector bottleneck and the pivot to NEXUS?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_12_Selection"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 10.159,
+          "parsed_entities": [
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Selector_Precision",
+            "End_To_End_Pipeline_Validation",
+            "Controlled_Random_Distractors",
+            "Revalidate_Learned_Selector"
+          ],
+          "question": "So the selector's precision was the problem?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 20.091,
+          "parsed_entities": [
+            "End_To_End_Pipeline_Validation",
+            "Revalidate_Learned_Selector",
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "The_Core_Difference_(in_One_Sentence)",
+            "Hard_Negative_Training"
+          ],
+          "question": "And the solution was graph traversal instead of flat selection?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d016",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_13A_NoisyMemory",
+            "Exp_0_13B_RealisticDistractors"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 13.27,
+          "parsed_entities": [
+            "Exp_0_13B_RealisticDistractors",
+            "Sam_Does_Not_Collapse_With_One_Distractor",
+            "Sam_Tolerates_Mild_Noise_Very_Well",
+            "Experiment_0.13b",
+            "confirmed_1"
+          ],
+          "question": "What's the difference between controlled and realistic distractors?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_13B_RealisticDistractors"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 10.097,
+          "parsed_entities": [
+            "Experiment_0.13b",
+            "Realistic_Retrieval_Distractor_Replay",
+            "Slot_Selector_(sam/model/slot_Selector.py)",
+            "Controlled_Random_Distractors",
+            "Semantically_Misleading"
+          ],
+          "question": "Which experiment tested realistic ones?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d017",
+      "turns": [
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS",
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 35.586,
+          "parsed_entities": [
+            "Exp_0_6_Validation",
+            "Graph_Reasoning_—_Traversal_As_The_Reasoning_Engine",
+            "Slot_Selector_(sam/model/slot_Selector.py)",
+            "Prototype_(phase_1_2):_In_Memory_Python",
+            "Step_5:_Source_Annotation"
+          ],
+          "question": "Walk me through the evolution from experiment 0.6 to the pivot.",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 35.294,
+          "parsed_entities": [
+            "Graph_Memory_—_Nexus_Knowledge_Store",
+            "B_(compact_Pkm)_Partially_Works",
+            "Improve_Compact_Pkm_Retrieval",
+            "Nodes_(entities)_+_Edges_(relationships)",
+            "Add_Slot_Specific_Key_Embeddings"
+          ],
+          "question": "So 0.6 proved memory works but retrieval fails?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_11_ChainRetrieval"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 5.466,
+          "parsed_entities": [
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Sam_Lm_Experiment_0.3_—_Pkm_Retrieval_Diagnosis_And_Repair",
+            "Experiment_0_Results_(poc_Validation)",
+            "Experiment_0_—_Pipeline_Diagnosis",
+            "Validation_Results"
+          ],
+          "question": "And 0.11 solved retrieval?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_12_Selection"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 12.105,
+          "parsed_entities": [
+            "Experiment_0_—_Pipeline_Diagnosis",
+            "Slot_To_Slot_Similarity_Pretraining",
+            "Selection",
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Exp_0_Diagnosis"
+          ],
+          "question": "Then 0.12 found the selector is the new bottleneck?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d018",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_5_DenseDataset"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 20.958,
+          "parsed_entities": [
+            "Exp_0_5_DenseDataset",
+            "Concept_RetrievalMismatch",
+            "Experiment_0_—_Pipeline_Diagnosis",
+            "Experiment_0.6_—_Full_Validation",
+            "Gate_1_(rec@8_≥_80%):_Passed"
+          ],
+          "question": "What was the Rec@8 of the dual encoder on the dense dataset?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_Diagnosis"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 11.993,
+          "parsed_entities": [
+            "Experiment_0.6_—_Full_Validation",
+            "Gate_1_(rec@8_≥_80%):_Passed",
+            "Experiment_0.5_—_Dense_Dataset_Fix",
+            "Experiment_0_—_Pipeline_Diagnosis",
+            "dense_dataset_fix"
+          ],
+          "question": "And what was it on the original sparse dataset?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_5_DenseDataset"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 16.366,
+          "parsed_entities": [
+            "Exp_0_5_DenseDataset",
+            "All_Knowledge_Inside_Dense_Weights",
+            "Randomly_Sampled_From_Live_Slots",
+            "Slot_Wise_Memory_Reader",
+            "Oracle_Plus_Distractors"
+          ],
+          "question": "That's a huge jump. How did the dense dataset achieve this?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d019",
+      "turns": [
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 8.552,
+          "parsed_entities": [
+            "Experimental_Validation_Plan",
+            "Graph_Memory_—_Nexus_Knowledge_Store",
+            "Nexus_Approach",
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "Nodes_(entities)_+_Edges_(relationships)"
+          ],
+          "question": "What NEXUS stands for?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 6.248,
+          "parsed_entities": [
+            "Experimental_Validation_Plan",
+            "Decision_PivotToNEXUS",
+            "Scaling_Knowledge_Requires_Scaling_Compute",
+            "Prototype_(phase_1_2):_In_Memory_Python",
+            "Knowledge_Updates_Require_Retraining"
+          ],
+          "question": "Why is it called non-parametric?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d020",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 49.408,
+          "parsed_entities": [
+            "Exp_0_6_Validation",
+            "Original_Gates_(experiments_0.0–0.6)",
+            "Decision_Gates",
+            "Gate_1",
+            "Controlled_Noisy_Memory_(0.13a)"
+          ],
+          "question": "How many live memory slots did the SAM experiments use?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 2.918,
+          "parsed_entities": [
+            "Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants",
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Experiment_0.10_—_Required_Set_Retrieval_Diagnostics",
+            "[repository_Map](repository_Map.md)",
+            "[current_Status](current_Status.md)"
+          ],
+          "question": "And what's the key_dim?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_2_CompactPKM"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 2.393,
+          "parsed_entities": [
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "Test_Chain_Set_With_External_Text_Query",
+            "The_Core_Difference_(in_One_Sentence)",
+            "Realistic_Distractor_Replay",
+            "Verifier_Is_Rule_Based"
+          ],
+          "question": "How do the subkeys work?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d021",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_12_Selection"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 11.509,
+          "parsed_entities": [
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Revalidate_Learned_Selector",
+            "Rag_(retrieval_Augmented_Generation)",
+            "End_To_End_Pipeline_Validation"
+          ],
+          "question": "What was the learned slot selector's precision?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_12_Selection"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 1.479,
+          "parsed_entities": [
+            "Nexus_Realizer_V1_—_Pre_Training_Status",
+            "Add_Retrieve()_Support_For_Dual_Encoder",
+            "Fix_The_Retriever_Query_Path",
+            "Self.dual.query_Proj",
+            "prompt_lens"
+          ],
+          "question": "And its recall?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Concept_SelectorBottleneck",
+            "Exp_0_12_Selection"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 14.962,
+          "parsed_entities": [
+            "Identical_To_Core_Only",
+            "Slot_3",
+            "Slot_2",
+            "Slot_1",
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance"
+          ],
+          "question": "Why is high recall but low precision a problem?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d022",
+      "turns": [
+        {
+          "gold_entities": [
+            "Concept_ArchitectureWorks",
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 41.026,
+          "parsed_entities": [
+            "Iterative_Querying",
+            "Experiment_0.6_—_Full_Validation",
+            "Experimental_Validation_Plan",
+            "Experiment_0_Results_(poc_Validation)",
+            "Experiment_0_—_Pipeline_Diagnosis"
+          ],
+          "question": "What is the most important validation of the SAM architecture?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Concept_ArchitectureWorks"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 17.891,
+          "parsed_entities": [
+            "Original_Gates_(experiments_0.0–0.6)",
+            "Decision_Gates",
+            "Gate_1",
+            "Memory_Value_Construction_(uniform_Averaging)",
+            "Sam_Does_Not_Collapse_With_One_Distractor"
+          ],
+          "question": "Does this mean the core+memory pattern is valid?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d023",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 54.394,
+          "parsed_entities": [
+            "Oracle_Text_Memory",
+            "Exp_0_6_Validation",
+            "Concept_OracleMemory",
+            "Raw_Question_Text",
+            "Intermediate_Transformer_Hidden_States"
+          ],
+          "question": "Compare SAM's oracle memory accuracy to oracle text memory.",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 1.389,
+          "parsed_entities": [
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Intermediate_Transformer_Hidden_States",
+            "Raw_Question_Text",
+            "Pkm_Recall_Vs_Dual_Encoder_Recall",
+            "Controlled_Random_Distractors"
+          ],
+          "question": "Which was slightly higher?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 5.191,
+          "parsed_entities": [
+            "Intermediate_Transformer_Hidden_States",
+            "Raw_Question_Text",
+            "The_Core_Difference_(in_One_Sentence)",
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "End_To_End_Pipeline_Validation"
+          ],
+          "question": "Is the difference statistically meaningful?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d024",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_11_ChainRetrieval",
+            "Exp_0_13A_NoisyMemory",
+            "Exp_0_6_Validation",
+            "Exp_0_Diagnosis"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 14.007,
+          "parsed_entities": [
+            "Nodes_(entities)_+_Edges_(relationships)",
+            "Document_Chunks_+_Embeddings",
+            "Step_3:_Relation_Extraction",
+            "Knowledge_Record_Format",
+            "Explicitly"
+          ],
+          "question": "What was the chronological order of the four research phases?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_12_Selection",
+            "Exp_0_13A_NoisyMemory"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 16.836,
+          "parsed_entities": [
+            "Experiment_0.6_—_Full_Validation",
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "The_Core_Difference_(in_One_Sentence)",
+            "Gate_1_(rec@8_≥_80%):_Passed",
+            "Iterative_Querying"
+          ],
+          "question": "What came after the retrieval revolution?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d025",
+      "turns": [
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 15.867,
+          "parsed_entities": [
+            "The_Reasoning_Pipeline",
+            "Nodes_(entities)_+_Edges_(relationships)",
+            "Document_Chunks_+_Embeddings",
+            "Core_Principle",
+            "Explicitly"
+          ],
+          "question": "What is the NEXUS reasoning pipeline?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 1.729,
+          "parsed_entities": [
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "The_Core_Difference_(in_One_Sentence)",
+            "Nexus_Approach",
+            "Query_Vector",
+            "Core_Principle"
+          ],
+          "question": "How does step 6 work?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 0.942,
+          "parsed_entities": [
+            "Experiment_0",
+            "Exp_0_8_Aggregation",
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "Nodes_(entities)_+_Edges_(relationships)",
+            "The_Core_Difference_(in_One_Sentence)"
+          ],
+          "question": "And step 8?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d026",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 29.194,
+          "parsed_entities": [
+            "Exp_0_6_Validation",
+            "Sam_Oracle_Memory",
+            "Sam_Lm_Experiment_0.2_—_Compact_Live_Slot_Retrieval_And_Oracle_Diagnostics",
+            "Sam_Lm_Experiment_0.6_—_Final_Validation_Report",
+            "Exp_0_6_Validation_oracle_text_memory"
+          ],
+          "question": "Jaka była ogólna dokładność eksperymentu SAM oracle memory?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 5.758,
+          "parsed_entities": [
+            "Exp_0_6_Validation",
+            "Decision_PivotToNEXUS",
+            "Data_Model",
+            "Path",
+            "Mid"
+          ],
+          "question": "Ile parametrów miał ten model?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 3.011,
+          "parsed_entities": [
+            "Decision_PivotToNEXUS",
+            "Path",
+            "Hop_Degrades_First_Under_Noise",
+            "Concept_SelectorBottleneck",
+            "Hop"
+          ],
+          "question": "A jak wypadł na 3-hop bez pamięci?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d027",
+      "turns": [
+        {
+          "gold_entities": [
+            "Concept_SelectorBottleneck",
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 8.631,
+          "parsed_entities": [
+            "Decision_PivotToNEXUS",
+            "Concept_RetrievalMismatch",
+            "Problems"
+          ],
+          "question": "Dlaczego projekt przeszedł do NEXUS?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Concept_SelectorBottleneck"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 6.567,
+          "parsed_entities": [
+            "Decision_PivotToNEXUS",
+            "Exp_0_12_Selection",
+            "Concept_SelectorBottleneck",
+            "mlp_transition_scorer"
+          ],
+          "question": "Czyli płaski MLP nie radził sobie z selekcją grafową?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d028",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_2_CompactPKM"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 4.496,
+          "parsed_entities": [
+            "Exp_0_2_CompactPKM",
+            "Changes_Made_For_Experiment_0.2",
+            "Dual_Encoder_(experiment_0.6)",
+            "Experiment_0.6",
+            "Experiment_0"
+          ],
+          "question": "Co to jest product-key memory?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_2_CompactPKM"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 3.587,
+          "parsed_entities": [
+            "Exp_0_2_CompactPKM",
+            "Decision_PivotToNEXUS",
+            "Concept_PivotToNEXUS",
+            "can_trace_the_exact_chain:_test"
+          ],
+          "question": "Dlaczego to jest lepsze niż gęste wyszukiwanie?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 4.756,
+          "parsed_entities": [
+            "Exp_0_13A_NoisyMemory",
+            "Exp_0_6_Validation",
+            "Decision_PivotToNEXUS",
+            "sparse_associative_memory",
+            "sam"
+          ],
+          "question": "Ile podkluczy używa SAM?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d029",
+      "turns": [
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 16.24,
+          "parsed_entities": [
+            "Decision_PivotToNEXUS",
+            "Concept_SelectorBottleneck",
+            "type_index:_dict[str,_list[str]]_#_node_type"
+          ],
+          "question": "Jakie są typy węzłów w grafie NEXUS?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 0.379,
+          "parsed_entities": [
+            "type_index:_dict[str,_list[str]]_#_node_type"
+          ],
+          "question": "A typy krawędzi?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d030",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_12_Selection"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 4.338,
+          "parsed_entities": [
+            "Exp_0_13A_NoisyMemory",
+            "Exp_0_12_Selection",
+            "Concept_SelectorBottleneck",
+            "previous_failures_the",
+            "slot_a_✓"
+          ],
+          "question": "Jaka była precyzja selektora slotów?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_12_Selection"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 0.499,
+          "parsed_entities": [
+            "Root_Cause_Of_Poor_Recall",
+            "Recall"
+          ],
+          "question": "A recall?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Concept_SelectorBottleneck"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 1.585,
+          "parsed_entities": [
+            "Root_Cause_Of_Poor_Recall",
+            "Decision_PivotToNEXUS",
+            "Concept_PivotToNEXUS",
+            "can_trace_the_exact_chain:_test"
+          ],
+          "question": "Dlaczego to jest wąskie gardło?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d031",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 26.444,
+          "parsed_entities": [
+            "Experiment_0_Results_(poc_Validation)",
+            "Original_Gates_(experiments_0.0–0.6)",
+            "Decision_Gates",
+            "Gate_1",
+            "Validation"
+          ],
+          "question": "Which experiments belong to the Core Validation phase?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 4.486,
+          "parsed_entities": [
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Nodes_(entities)_+_Edges_(relationships)",
+            "Controlled_Random_Distractors",
+            "Retriever_To_Sam_Integration",
+            "Document_Chunks_+_Embeddings"
+          ],
+          "question": "What was the purpose of that phase?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d032",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_13B_RealisticDistractors"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 28.632,
+          "parsed_entities": [
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Sam_Does_Not_Collapse_With_One_Distractor",
+            "Sam_Tolerates_Mild_Noise_Very_Well",
+            "Experiment_0.6_—_Full_Validation",
+            "Original_Gates_(experiments_0.0–0.6)"
+          ],
+          "question": "What is the latest experiment and what does it test?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_13A_NoisyMemory",
+            "Exp_0_13B_RealisticDistractors"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 2.096,
+          "parsed_entities": [
+            "Experiment_0.13b_—_Realistic_Retrieval_Distractor_Replay_(in_Progress)",
+            "Integration_Step",
+            "Quality",
+            "realistic_retrieval_distractor_replay",
+            "Exp_0_13B_RealisticDistractors"
+          ],
+          "question": "Is it harder than 0.13A?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d033",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 22.375,
+          "parsed_entities": [
+            "Exp_0_6_Validation",
+            "Dataset",
+            "Randomly_Sampled_From_Live_Slots",
+            "Oracle_Plus_Distractors",
+            "N_Random_Distractors"
+          ],
+          "question": "What was the dataset size for the dense synthetic experiments?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_5_DenseDataset"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 12.166,
+          "parsed_entities": [
+            "Original_Gates_(experiments_0.0–0.6)",
+            "Decision_Gates",
+            "Gate_1",
+            "Slot_Selector_(sam/model/slot_Selector.py)",
+            "Learn_Separate_Queries_Per_Hop"
+          ],
+          "question": "How many examples per slot did that provide?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d034",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_13A_NoisyMemory"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 18.129,
+          "parsed_entities": [
+            "Exp_0_13A_NoisyMemory",
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "The_Situation_Before_0.13a",
+            "Semantically_Misleading",
+            "Oracle_Filter"
+          ],
+          "question": "What is the controlled noisy memory path?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 14.511,
+          "parsed_entities": [
+            "Exp_0_6_Validation",
+            "Learn_Separate_Queries_Per_Hop",
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Experiment_0.12",
+            "Oracle_Filter"
+          ],
+          "question": "How is it different from oracle memory?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d035",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_10_RequiredSet",
+            "Exp_0_11_ChainRetrieval"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 24.76,
+          "parsed_entities": [
+            "Concept_ChainRetrieval",
+            "Chain_Set_Bce",
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Chain_Set_Bce_Retriever_(experiment_0.11)",
+            "Slot_Graph_Expander_(experiment_0.11)"
+          ],
+          "question": "What experiment directly preceded the chain-set BCE retriever?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_10_RequiredSet"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 10.325,
+          "parsed_entities": [
+            "Concept_RetrievalMismatch",
+            "Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants",
+            "Experiment_0.10_—_Required_Set_Retrieval_Diagnostics",
+            "Slot_Selector_(sam/model/slot_Selector.py)",
+            "Retrieved_Memory_Injection_Path_Works"
+          ],
+          "question": "What did it discover about dual encoder results?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d036",
+      "turns": [
+        {
+          "gold_entities": [
+            "Concept_SelectorBottleneck",
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 31.526,
+          "parsed_entities": [
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "The_Core_Difference_(in_One_Sentence)",
+            "The_Hybrid_Approach",
+            "Nexus_Approach",
+            "Query_Vector"
+          ],
+          "question": "What prompted the pivot from SAM to NEXUS?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_12_Selection",
+            "Exp_0_13A_NoisyMemory"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 7.694,
+          "parsed_entities": [
+            "Integration_Step",
+            "Multi_Query_Retrieval_Results",
+            "Experiment_1",
+            "Nodes_(entities)_+_Edges_(relationships)",
+            "Implementation_Prepared_But_Not_Run"
+          ],
+          "question": "Was that decision justified by experiments?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d037",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 14.855,
+          "parsed_entities": [
+            "Iterative_Querying",
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "\"the_Latent_Memory_Path_Is_Fragile\"",
+            "Randomly_Sampled_From_Live_Slots",
+            "Oracle_Plus_Distractors"
+          ],
+          "question": "What are SAM's core model parameters?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_6_Validation"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 13.326,
+          "parsed_entities": [
+            "Slot_Selector_(sam/model/slot_Selector.py)",
+            "Nodes_(entities)_+_Edges_(relationships)",
+            "Test_Chain_Set_With_External_Text_Query",
+            "Document_Chunks_+_Embeddings",
+            "Realistic_Distractor_Replay"
+          ],
+          "question": "How many in the memory component?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d038",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_10_RequiredSet"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 12.417,
+          "parsed_entities": [
+            "Concept_RetrievalMismatch",
+            "Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants",
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Experiment_0.10_—_Required_Set_Retrieval_Diagnostics",
+            "Required_Set_Retrieval_Metrics_(experiment_0.10+)"
+          ],
+          "question": "What was the all_required@64 for the dual encoder?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_10_RequiredSet",
+            "Exp_0_11_ChainRetrieval"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 7.727,
+          "parsed_entities": [
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Controlled_Random_Distractors",
+            "The_Situation_Before_0.13a",
+            "Semantically_Misleading",
+            "Failure_Analysis"
+          ],
+          "question": "That seems very low — explain why.",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d039",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_12_Selection"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 37.605,
+          "parsed_entities": [
+            "Slot_Selector",
+            "Exp_0_9_OracleFilter",
+            "Realistic_Retrieved_Memory_Sam",
+            "Selectivity_Mechanisms",
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training"
+          ],
+          "question": "What accuracy did the learned slot selector achieve with oracle filter?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_11_ChainRetrieval",
+            "Exp_0_12_Selection"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 8.257,
+          "parsed_entities": [
+            "\"the_Latent_Memory_Path_Is_Fragile\"",
+            "Integration_Step",
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "The_Core_Difference_(in_One_Sentence)"
+          ],
+          "question": "What does this prove about chain candidates?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d040",
+      "turns": [
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 19.832,
+          "parsed_entities": [
+            "Concept_PivotToNEXUS",
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "The_Core_Difference_(in_One_Sentence)",
+            "Step_3:_Relation_Extraction",
+            "Nexus_Approach"
+          ],
+          "question": "What phase comes after the pivot to NEXUS?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 6.859,
+          "parsed_entities": [
+            "Step_3:_Relation_Extraction",
+            "Experiment_0.7_0.9_—_Retrieval_Interface_And_Selection_Variants",
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Experiment_0.10_—_Required_Set_Retrieval_Diagnostics",
+            "relation_extraction"
+          ],
+          "question": "What are the key architectural differences?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d041",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_13A_NoisyMemory"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 23.384,
+          "parsed_entities": [
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Experiment_0_—_Pipeline_Diagnosis",
+            "Sam_Tolerates_Mild_Noise_Very_Well",
+            "Controlled_Random_Distractors",
+            "Sam_Does_Not_Collapse_With_One_Distractor"
+          ],
+          "question": "What happened at 16 distractors in the noise experiment?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_13A_NoisyMemory"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 4.855,
+          "parsed_entities": [
+            "Experiment_0_—_Pipeline_Diagnosis",
+            "Required_Set_Retrieval_Metrics_(experiment_0.10+)",
+            "Experiment_0_Results_(poc_Validation)",
+            "Experiment_0",
+            "Nodes_(entities)_+_Edges_(relationships)"
+          ],
+          "question": "Was the 3-hop specifically hurt?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d042",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_13A_NoisyMemory"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 14.47,
+          "parsed_entities": [
+            "Hop_Reasoning",
+            "Current_Status",
+            "Updated:_2026_06_18",
+            "Sam_Tolerates_Mild_Noise_Very_Well",
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison"
+          ],
+          "question": "At what noise level does 3-hop reasoning collapse?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_13A_NoisyMemory"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 1.177,
+          "parsed_entities": [
+            "Threshold/margin_Selection_Results",
+            "Sam_Tolerates_Mild_Noise_Very_Well",
+            "\"gate_Suppression_Explains_Selector_Failure\"",
+            "Training_Time_Optimizer_Memory_+_Cold_Slots",
+            "Sam_Does_Not_Collapse_With_One_Distractor"
+          ],
+          "question": "Between 8 and 16 then?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d043",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_13A_NoisyMemory"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 12.461,
+          "parsed_entities": [
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Experiment_0.6_—_Full_Validation",
+            "Gate_1_(rec@8_≥_80%):_Passed",
+            "Memory_Gate_Is_Functional",
+            "Sam_Does_Not_Collapse_With_One_Distractor"
+          ],
+          "question": "What does SAM's gate do exactly?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Concept_NoiseTolerance",
+            "Exp_0_13A_NoisyMemory"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 29.771,
+          "parsed_entities": [
+            "Sam_Does_Not_Collapse_With_One_Distractor",
+            "Sam_Tolerates_Mild_Noise_Very_Well",
+            "\"the_Latent_Memory_Path_Is_Fragile\"",
+            "Integration_Step",
+            "Experiment_0_—_Pipeline_Diagnosis"
+          ],
+          "question": "And what did the noise experiment prove about it?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d044",
+      "turns": [
+        {
+          "gold_entities": [
+            "Exp_0_11_ChainRetrieval"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 32.409,
+          "parsed_entities": [
+            "Exp_0_11_ChainRetrieval",
+            "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+            "Controlled_Random_Distractors",
+            "The_Situation_Before_0.13a",
+            "Semantically_Misleading"
+          ],
+          "question": "Which experiment first showed that chain retrieval works?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Exp_0_11_ChainRetrieval",
+            "Exp_0_12_Selection"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 21.678,
+          "parsed_entities": [
+            "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training",
+            "Exactly_The_Correct_Required_Slots",
+            "Test_On_Real_World_Tasks",
+            "Pkm_(product_Key_Memory)",
+            "Iterative_Querying"
+          ],
+          "question": "And did SAM actually use those chains effectively?",
+          "turn_id": ""
+        }
+      ]
+    },
+    {
+      "dialogue_id": "d045",
+      "turns": [
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": false,
+          "latency_ms": 14.316,
+          "parsed_entities": [
+            "Nexus_Approach",
+            "Graph_Reasoning_—_Traversal_As_The_Reasoning_Engine",
+            "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison",
+            "Nodes_(entities)_+_Edges_(relationships)",
+            "Graph_Construction_Cost_Is_Prohibitive"
+          ],
+          "question": "What compute resources does NEXUS target?",
+          "turn_id": ""
+        },
+        {
+          "gold_entities": [
+            "Decision_PivotToNEXUS"
+          ],
+          "is_context_reference": true,
+          "latency_ms": 0.624,
+          "parsed_entities": [
+            "Decision_PivotToNEXUS",
+            "All_Knowledge_Inside_Dense_Weights",
+            "Memory_Wall",
+            "Hbm2e_Vram",
+            "Nvme_Ssd"
+          ],
+          "question": "Why no GPUs?",
+          "turn_id": ""
+        }
+      ]
+    }
+  ],
+  "source_sha": "df3819553a2dfc2ce9e090f683d688ba0de8abc5",
+  "stage": "stage3_dialogue",
+  "status": "FAIL",
+  "total_turns": 110
+}
