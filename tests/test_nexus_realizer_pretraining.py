@@ -326,6 +326,7 @@ def test_stage2_uses_scalar_judge_scores_and_registered_deltas(tmp_path: Path):
         "a" * 40,
         str(tmp_path / "stage2.json"),
         {"schema_version": "nexus-stage2-baseline-v1", "naturalness_mean": 35.0, "accuracy_mean": 0.1, "hallucination_mean": 0.5},
+        protocol="smoke_test_stage2",
     )
     assert isinstance(artifact["metrics"]["naturalness_mean"], float)
     assert isinstance(artifact["metrics"]["relevance_rate"], float)

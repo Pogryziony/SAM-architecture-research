@@ -106,7 +106,18 @@ def run_stage2(
     source_tree_sha: str = "",
     protocol: str = "registered_stage2_v1",
 ) -> dict:
-    """Revalidate Stage 2 realization gates with reproducible protocol metadata."""
+    """Revalidate Stage 2 realization gates with reproducible protocol metadata.
+
+    'registered_stage2_v1' requires exactly 30 questions with deterministic
+    ordering. Non-matching runs are designated as smoke/ad-hoc and cannot
+    claim PASS against the registered gate.
+    """
+    is_registered = protocol == "registered_stage2_v1"
+    if is_registered and len(questions) != 30:
+        raise ValueError(
+            f"registered_stage2_v1 requires exactly 30 questions, got {len(questions)}. "
+            "Use a different protocol name for ad-hoc/smoke runs."
+        )
     from benchmarks.naturalness_eval import score_naturalness
     from benchmarks.relevance_judge import RelevanceJudge
     runner = NEXUSRunner(graph, config)
