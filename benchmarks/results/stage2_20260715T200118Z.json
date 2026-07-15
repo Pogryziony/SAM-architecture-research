@@ -1,0 +1,4191 @@
+{
+  "canonical_content_sha256": "01f2e7ae0edf5aa42d21870d5ddc36196cf4449ba1cc268e82ea356270123633",
+  "case_order": [
+    "q001",
+    "q002",
+    "q003",
+    "q004",
+    "q005"
+  ],
+  "config_hash": "4c2202373759fbf8",
+  "created_utc": "2026-07-15T20:01:18.434364+00:00",
+  "dataset_sha256": "",
+  "effective_config": {
+    "config_hash": "4c2202373759fbf8",
+    "entity_resolution": "lexical",
+    "question_limit": 5,
+    "question_order": "questions.jsonl source order"
+  },
+  "entity_resolution": "lexical",
+  "gates": {
+    "accuracy": {
+      "passed": true,
+      "threshold": -0.02,
+      "value": 0.29725999999999997
+    },
+    "hallucination": {
+      "passed": true,
+      "threshold": 0.0,
+      "value": -0.011399999999999966
+    },
+    "naturalness_improvement": {
+      "passed": true,
+      "threshold": 5.0,
+      "value": 29.179999999999993
+    },
+    "relevance": {
+      "passed": true,
+      "threshold": 0.77,
+      "value": 1.0
+    }
+  },
+  "metrics": {
+    "accuracy_delta_vs_baseline": 0.2973,
+    "accuracy_mean": 0.4667,
+    "hallucination_delta_vs_baseline": -0.0114,
+    "hallucination_mean": 0.4,
+    "naturalness_improvement": 29.18,
+    "naturalness_mean": 64.18,
+    "relevance_rate": 1.0
+  },
+  "per_question": [
+    {
+      "accuracy": 0.3333,
+      "answer": "The SAM oracle memory experiment achieved 100% accuracy",
+      "entity_resolution_method": "alias",
+      "evidence": {
+        "confidence_signals": {
+          "has_key_finding": 0.0,
+          "numeric_match": 1.0,
+          "path_count_signal": 1.0
+        },
+        "facts": [
+          "Experiment 0.6 — Full Validation depends on Experiment 0.5 — Dense Dataset Fix (confidence: 1.00)",
+          "Experiment 0.6 — Full Validation is a dependency of Experiment 0.7 — External Text Query (confidence: 1.00)",
+          "Experiment 0.6 — Full Validation validates Concept_ArchitectureWorks (confidence: 0.95)",
+          "Experiment 0.6 — Full Validation validates Concept_OracleMemory (confidence: 0.95)",
+          "Experiment 0.6 — Full Validation validates Concept_RetrievalMismatch (confidence: 0.95)",
+          "Experiment 0.6 — Full Validation supports Experiment 0.6 — Full Validation — core_only (confidence: 1.00)",
+          "Experiment 0.6 — Full Validation supports Experiment 0.6 — Full Validation — dense_baseline (confidence: 1.00)"
+        ],
+        "neighbor_facts": [
+          {
+            "entity": "Decision_PivotToNEXUS",
+            "text": "Pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning)",
+            "type": "Decision"
+          },
+          {
+            "entity": "Exp_0_13A_NoisyMemory",
+            "text": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+            "type": "Experiment"
+          },
+          {
+            "entity": "Exp_0_12_Selection",
+            "text": "Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.",
+            "type": "Experiment"
+          },
+          {
+            "entity": "Exp_0_3_PKM_Candidates",
+            "text": "Candidate gen: SOLVED (100%). Ranking generalizes poorly (29% val).",
+            "type": "Experiment"
+          },
+          {
+            "entity": "Exp_0_8_Aggregation",
+            "text": "Tested weighted, threshold, softmax-mass, score-gap selection.",
+            "type": "Experiment"
+          }
+        ],
+        "node_facts": [
+          {
+            "confidence": 0.7,
+            "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+            "text": "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance: Experiment 0.13A — Controlled Noisy Memory Tolerance: y Tolerance ## What was this experiment trying to learn? **The question:** *How much memory noise can SAM tolerate?* ## Why this experiment mattered ### The situation before 0.13A Experiment 0.12 had shown a puzzling result: - **Chain-set retriever:** all_required@32 = 100% — perfect retrieval - **Oracle filter** (remove distractors, keep only required slots): **100% accuracy** — SAM core works - **Learned"
+          },
+          {
+            "confidence": 0.7,
+            "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+            "text": "Sam_Does_Not_Collapse_With_One_Distractor: SAM does NOT collapse with one distractor: ry bottleneck with controlled random noise.** ## What this experiment tells us ### Confirmed 1. **SAM does NOT collapse with one distractor** — 99.82% with +1 (vs 100% clean) 2. **SAM tolerates mild noise very well** — up to +8 distractors, overall accuracy stays above core_only by a large margin (91.6% vs 68.7%) 3. **3-hop is first to degrade** — still 79.3% at +8 (vs 22% core-only), but drops sharp"
+          },
+          {
+            "confidence": 0.7,
+            "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+            "text": "Sam_Does_Not_Collapse_With_One_Distractor: SAM does NOT collapse with one distractor: ed gate did not significantly change results — **gate suppression is NOT the primary bottleneck with controlled random noise.** ## What this experiment tells us ### Confirmed 1. **SAM does NOT collapse with one distractor** — 99.82% with +1 (vs 100% clean) 2. **SAM tolerates mild noise very well** — up to +8 distractors, overall accuracy stays above core_only by a large margin (91.6% vs 68.7%) 3. **3"
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Concept_OracleMemory",
+            "text": "[This concept is directly validated by the experiment] Concept_OracleMemory: Proves SAM core CAN use external memory — 100% accuracy"
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Concept_ArchitectureWorks",
+            "text": "[This concept is directly validated by the experiment] Concept_ArchitectureWorks: Oracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid"
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Concept_RetrievalMismatch",
+            "text": "[This concept is directly validated by the experiment] Concept_RetrievalMismatch: Dual encoder query projection mismatch prevents SAM from using retrieved memory"
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Experiment 0.6 — Full Validation",
+            "text": "Exp_0_6_Validation: Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified."
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Experiment 0.5 — Dense Dataset Fix",
+            "text": "Exp_0_5_DenseDataset: Dense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED."
+          }
+        ],
+        "numbers": [
+          {
+            "core_accuracy": "68.74%",
+            "entity": "Exp_0_6_Validation",
+            "oracle_accuracy": "99.87%"
+          },
+          {
+            "entity": "Exp_0_5_DenseDataset",
+            "gate_1": "PASSED",
+            "value_1": "99.0%"
+          },
+          {
+            "entity": "Concept_ArchitectureWorks",
+            "oracle_accuracy": "100%"
+          },
+          {
+            "accuracy": "100%",
+            "entity": "Concept_OracleMemory"
+          },
+          {
+            "best_val_loss": "0.3700108007380837",
+            "entity": "Metric_Exp_0_6_Validation_core_only_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_core_only_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_core_only_param_count",
+            "parameter_count": "15704192"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_core_only_total_wall_s",
+            "wall_time": "739.08s"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_core_only_val_accuracy_overall",
+            "overall_accuracy": "68.74%"
+          },
+          {
+            "1-hop_accuracy": "91.5%",
+            "entity": "Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "22.0%",
+            "entity": "Metric_Exp_0_6_Validation_core_only_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "71.14%",
+            "entity": "Metric_Exp_0_6_Validation_core_only_val_accuracy_two_hop"
+          },
+          {
+            "best_val_loss": "0.37028213632734197",
+            "entity": "Metric_Exp_0_6_Validation_dense_baseline_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_dense_baseline_param_count",
+            "parameter_count": "14586624"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_dense_baseline_total_wall_s",
+            "wall_time": "792.92s"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_dense_baseline_val_accuracy_overall",
+            "overall_accuracy": "68.74%"
+          },
+          {
+            "1-hop_accuracy": "91.5%",
+            "entity": "Metric_Exp_0_6_Validation_dense_baseline_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "22.0%",
+            "entity": "Metric_Exp_0_6_Validation_dense_baseline_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "71.14%",
+            "entity": "Metric_Exp_0_6_Validation_dense_baseline_val_accuracy_two_hop"
+          },
+          {
+            "best_val_loss": "1.834816569328308",
+            "entity": "Metric_Exp_0_6_Validation_dense_baseline_early_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_dense_baseline_early_param_count",
+            "parameter_count": "34224128"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_dense_baseline_early_total_wall_s",
+            "wall_time": "789.33s"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_dense_baseline_early_val_accuracy_overall",
+            "overall_accuracy": "5.9%"
+          },
+          {
+            "1-hop_accuracy": "6.0%",
+            "entity": "Metric_Exp_0_6_Validation_dense_baseline_early_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "5.5%",
+            "entity": "Metric_Exp_0_6_Validation_dense_baseline_early_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "6.0%",
+            "entity": "Metric_Exp_0_6_Validation_dense_baseline_early_val_accuracy_two_hop"
+          },
+          {
+            "best_val_loss": "0.003523793485015631",
+            "entity": "Metric_Exp_0_6_Validation_dense_openbook_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_dense_openbook_param_count",
+            "parameter_count": "34224128"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_dense_openbook_total_wall_s",
+            "wall_time": "931.21s"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_dense_openbook_val_accuracy_overall",
+            "overall_accuracy": "100.0%"
+          },
+          {
+            "1-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_6_Validation_dense_openbook_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_6_Validation_dense_openbook_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_6_Validation_dense_openbook_val_accuracy_two_hop"
+          },
+          {
+            "best_val_loss": "0.008343427399859616",
+            "entity": "Metric_Exp_0_6_Validation_oracle_memory_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_oracle_memory_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_oracle_memory_param_count",
+            "parameter_count": "15704192"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_oracle_memory_total_wall_s",
+            "wall_time": "799.73s"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_oracle_memory_val_accuracy_overall",
+            "overall_accuracy": "99.87%"
+          },
+          {
+            "1-hop_accuracy": "99.5%",
+            "entity": "Metric_Exp_0_6_Validation_oracle_memory_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_6_Validation_oracle_memory_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_6_Validation_oracle_memory_val_accuracy_two_hop"
+          },
+          {
+            "best_val_loss": "0.002351394929481964",
+            "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_param_count",
+            "parameter_count": "15753344"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_total_wall_s",
+            "wall_time": "1659.78s"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_val_accuracy_overall",
+            "overall_accuracy": "100.0%"
+          },
+          {
+            "1-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_pkm_retrieval_early_num_live_slots",
+            "live_slots": "4781"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_pkm_retrieval_early_param_count",
+            "parameter_count": "2185216"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_pkm_retrieval_early_total_wall_s",
+            "wall_time": "86.94s"
+          },
+          {
+            "best_val_loss": "0.3690845841483066",
+            "entity": "Metric_Exp_0_6_Validation_random_memory_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_random_memory_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_random_memory_param_count",
+            "parameter_count": "15704192"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_random_memory_total_wall_s",
+            "wall_time": "1347.81s"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_random_memory_val_accuracy_overall",
+            "overall_accuracy": "68.74%"
+          },
+          {
+            "1-hop_accuracy": "91.5%",
+            "entity": "Metric_Exp_0_6_Validation_random_memory_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "22.0%",
+            "entity": "Metric_Exp_0_6_Validation_random_memory_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "71.14%",
+            "entity": "Metric_Exp_0_6_Validation_random_memory_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_retrieval_dual_encoder_total_wall_s",
+            "wall_time": "1020.01s"
+          },
+          {
+            "best_val_loss": "0.368800970127708",
+            "entity": "Metric_Exp_0_6_Validation_retrieved_memory_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_retrieved_memory_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_retrieved_memory_param_count",
+            "parameter_count": "15704192"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_retrieved_memory_total_wall_s",
+            "wall_time": "767.85s"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_retrieved_memory_val_accuracy_overall",
+            "overall_accuracy": "68.74%"
+          },
+          {
+            "1-hop_accuracy": "91.5%",
+            "entity": "Metric_Exp_0_6_Validation_retrieved_memory_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "22.0%",
+            "entity": "Metric_Exp_0_6_Validation_retrieved_memory_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "71.14%",
+            "entity": "Metric_Exp_0_6_Validation_retrieved_memory_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_retrieved_memory_val_recall_at_1",
+            "recall@1": "1.0%"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_retrieved_memory_val_recall_at_32",
+            "recall@32": "34.61%"
+          },
+          {
+            "entity": "Metric_Exp_0_6_Validation_retrieved_memory_val_recall_at_8",
+            "recall@8": "8.34%"
+          },
+          {
+            "best_val_loss": "0.36868088182650116",
+            "entity": "Metric_Exp_0_7_ExternalText_external_text_query_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_7_ExternalText_external_text_query_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_7_ExternalText_external_text_query_param_count",
+            "parameter_count": "16689792"
+          },
+          {
+            "entity": "Metric_Exp_0_7_ExternalText_external_text_query_total_wall_s",
+            "wall_time": "840.62s"
+          },
+          {
+            "entity": "Metric_Exp_0_7_ExternalText_external_text_query_val_accuracy_overall",
+            "overall_accuracy": "68.68%"
+          },
+          {
+            "1-hop_accuracy": "91.5%",
+            "entity": "Metric_Exp_0_7_ExternalText_external_text_query_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "22.0%",
+            "entity": "Metric_Exp_0_7_ExternalText_external_text_query_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "71.05%",
+            "entity": "Metric_Exp_0_7_ExternalText_external_text_query_val_accuracy_two_hop"
+          }
+        ],
+        "numbers_by_metric": {
+          "1-hop_accuracy": [
+            {
+              "entity": "Metric_Exp_0_6_Validation_core_only_val_accuracy_single_hop",
+              "value": "91.5%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_baseline_val_accuracy_single_hop",
+              "value": "91.5%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_baseline_early_val_accuracy_single_hop",
+              "value": "6.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_openbook_val_accuracy_single_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_memory_val_accuracy_single_hop",
+              "value": "99.5%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_val_accuracy_single_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_random_memory_val_accuracy_single_hop",
+              "value": "91.5%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_retrieved_memory_val_accuracy_single_hop",
+              "value": "91.5%"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_external_text_query_val_accuracy_single_hop",
+              "value": "91.5%"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_hidden_adapter_val_accuracy_single_hop",
+              "value": "91.5%"
+            }
+          ],
+          "2-hop_accuracy": [
+            {
+              "entity": "Metric_Exp_0_6_Validation_core_only_val_accuracy_two_hop",
+              "value": "71.14%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_baseline_val_accuracy_two_hop",
+              "value": "71.14%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_baseline_early_val_accuracy_two_hop",
+              "value": "6.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_openbook_val_accuracy_two_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_memory_val_accuracy_two_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_val_accuracy_two_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_random_memory_val_accuracy_two_hop",
+              "value": "71.14%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_retrieved_memory_val_accuracy_two_hop",
+              "value": "71.14%"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_external_text_query_val_accuracy_two_hop",
+              "value": "71.05%"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_hidden_adapter_val_accuracy_two_hop",
+              "value": "71.0%"
+            }
+          ],
+          "3-hop_accuracy": [
+            {
+              "entity": "Metric_Exp_0_6_Validation_core_only_val_accuracy_three_hop",
+              "value": "22.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_baseline_val_accuracy_three_hop",
+              "value": "22.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_baseline_early_val_accuracy_three_hop",
+              "value": "5.5%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_openbook_val_accuracy_three_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_memory_val_accuracy_three_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_val_accuracy_three_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_random_memory_val_accuracy_three_hop",
+              "value": "22.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_retrieved_memory_val_accuracy_three_hop",
+              "value": "22.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_external_text_query_val_accuracy_three_hop",
+              "value": "22.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_hidden_adapter_val_accuracy_three_hop",
+              "value": "22.0%"
+            }
+          ],
+          "accuracy": [
+            {
+              "entity": "Concept_OracleMemory",
+              "value": "100%"
+            }
+          ],
+          "best_val_loss": [
+            {
+              "entity": "Metric_Exp_0_6_Validation_core_only_best_val_loss",
+              "value": "0.3700108007380837"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_baseline_best_val_loss",
+              "value": "0.37028213632734197"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_baseline_early_best_val_loss",
+              "value": "1.834816569328308"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_openbook_best_val_loss",
+              "value": "0.003523793485015631"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_memory_best_val_loss",
+              "value": "0.008343427399859616"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_best_val_loss",
+              "value": "0.002351394929481964"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_random_memory_best_val_loss",
+              "value": "0.3690845841483066"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_retrieved_memory_best_val_loss",
+              "value": "0.368800970127708"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_external_text_query_best_val_loss",
+              "value": "0.36868088182650116"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_hidden_adapter_best_val_loss",
+              "value": "0.3687771645345186"
+            }
+          ],
+          "core_accuracy": [
+            {
+              "entity": "Exp_0_6_Validation",
+              "value": "68.74%"
+            }
+          ],
+          "gate_1": [
+            {
+              "entity": "Exp_0_5_DenseDataset",
+              "value": "PASSED"
+            }
+          ],
+          "live_slots": [
+            {
+              "entity": "Metric_Exp_0_6_Validation_core_only_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_memory_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_pkm_retrieval_early_num_live_slots",
+              "value": "4781"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_random_memory_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_retrieved_memory_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_external_text_query_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_hidden_adapter_num_live_slots",
+              "value": "1650"
+            }
+          ],
+          "oracle_accuracy": [
+            {
+              "entity": "Exp_0_6_Validation",
+              "value": "99.87%"
+            },
+            {
+              "entity": "Concept_ArchitectureWorks",
+              "value": "100%"
+            }
+          ],
+          "overall_accuracy": [
+            {
+              "entity": "Metric_Exp_0_6_Validation_core_only_val_accuracy_overall",
+              "value": "68.74%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_baseline_val_accuracy_overall",
+              "value": "68.74%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_baseline_early_val_accuracy_overall",
+              "value": "5.9%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_openbook_val_accuracy_overall",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_memory_val_accuracy_overall",
+              "value": "99.87%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_val_accuracy_overall",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_random_memory_val_accuracy_overall",
+              "value": "68.74%"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_retrieved_memory_val_accuracy_overall",
+              "value": "68.74%"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_external_text_query_val_accuracy_overall",
+              "value": "68.68%"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_hidden_adapter_val_accuracy_overall",
+              "value": "68.66%"
+            }
+          ],
+          "parameter_count": [
+            {
+              "entity": "Metric_Exp_0_6_Validation_core_only_param_count",
+              "value": "15704192"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_baseline_param_count",
+              "value": "14586624"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_baseline_early_param_count",
+              "value": "34224128"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_openbook_param_count",
+              "value": "34224128"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_memory_param_count",
+              "value": "15704192"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_param_count",
+              "value": "15753344"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_pkm_retrieval_early_param_count",
+              "value": "2185216"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_random_memory_param_count",
+              "value": "15704192"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_retrieved_memory_param_count",
+              "value": "15704192"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_external_text_query_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_hidden_adapter_param_count",
+              "value": "16689792"
+            }
+          ],
+          "recall@1": [
+            {
+              "entity": "Metric_Exp_0_6_Validation_retrieved_memory_val_recall_at_1",
+              "value": "1.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_external_text_query_val_recall_at_1",
+              "value": "3.97%"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_hidden_adapter_val_recall_at_1",
+              "value": "0.08%"
+            }
+          ],
+          "recall@32": [
+            {
+              "entity": "Metric_Exp_0_6_Validation_retrieved_memory_val_recall_at_32",
+              "value": "34.61%"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_external_text_query_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_hidden_adapter_val_recall_at_32",
+              "value": "2.84%"
+            }
+          ],
+          "recall@8": [
+            {
+              "entity": "Metric_Exp_0_6_Validation_retrieved_memory_val_recall_at_8",
+              "value": "8.34%"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_external_text_query_val_recall_at_8",
+              "value": "23.32%"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_hidden_adapter_val_recall_at_8",
+              "value": "0.95%"
+            }
+          ],
+          "value_1": [
+            {
+              "entity": "Exp_0_5_DenseDataset",
+              "value": "99.0%"
+            }
+          ],
+          "wall_time": [
+            {
+              "entity": "Metric_Exp_0_6_Validation_core_only_total_wall_s",
+              "value": "739.08s"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_baseline_total_wall_s",
+              "value": "792.92s"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_baseline_early_total_wall_s",
+              "value": "789.33s"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_dense_openbook_total_wall_s",
+              "value": "931.21s"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_memory_total_wall_s",
+              "value": "799.73s"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_oracle_text_memory_total_wall_s",
+              "value": "1659.78s"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_pkm_retrieval_early_total_wall_s",
+              "value": "86.94s"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_random_memory_total_wall_s",
+              "value": "1347.81s"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_retrieval_dual_encoder_total_wall_s",
+              "value": "1020.01s"
+            },
+            {
+              "entity": "Metric_Exp_0_6_Validation_retrieved_memory_total_wall_s",
+              "value": "767.85s"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_external_text_query_total_wall_s",
+              "value": "840.62s"
+            },
+            {
+              "entity": "Metric_Exp_0_7_ExternalText_hidden_adapter_total_wall_s",
+              "value": "837.6s"
+            }
+          ]
+        },
+        "paths": [
+          {
+            "edges": [
+              {
+                "confidence": 1.0,
+                "evidence": "Experiment Exp_0_6_Validation builds on Exp_0_5_DenseDataset",
+                "from": "Exp_0_6_Validation",
+                "reversed": false,
+                "to": "Exp_0_5_DenseDataset",
+                "type": "depends_on"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_6_Validation",
+                "key_finding": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+                "question": "Does SAM work end-to-end with retrieval?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_6_report.md"
+                ],
+                "title": "Experiment 0.6 — Full Validation",
+                "type": "Experiment"
+              },
+              {
+                "id": "Exp_0_5_DenseDataset",
+                "key_finding": "Dense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.",
+                "question": "Can retrieval work with better data?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_5_report.md"
+                ],
+                "title": "Experiment 0.5 — Dense Dataset Fix",
+                "type": "Experiment"
+              }
+            ],
+            "score": 0.077
+          },
+          {
+            "edges": [
+              {
+                "confidence": 1.0,
+                "evidence": "Experiment Exp_0_7_ExternalText builds on Exp_0_6_Validation",
+                "from": "Exp_0_6_Validation",
+                "reversed": true,
+                "to": "Exp_0_7_ExternalText",
+                "type": "depends_on"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_6_Validation",
+                "key_finding": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+                "question": "Does SAM work end-to-end with retrieval?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_6_report.md"
+                ],
+                "title": "Experiment 0.6 — Full Validation",
+                "type": "Experiment"
+              },
+              {
+                "id": "Exp_0_7_ExternalText",
+                "key_finding": "External text query bypasses hidden-state projection. Tested topK sweep.",
+                "question": "Can external-text-query fix the projection mismatch?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_7_report.md"
+                ],
+                "title": "Experiment 0.7 — External Text Query",
+                "type": "Experiment"
+              }
+            ],
+            "score": 0.077
+          },
+          {
+            "edges": [
+              {
+                "confidence": 0.95,
+                "evidence": "Experiment Exp_0_6_Validation validates Concept_ArchitectureWorks",
+                "from": "Exp_0_6_Validation",
+                "reversed": false,
+                "to": "Concept_ArchitectureWorks",
+                "type": "validates"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_6_Validation",
+                "key_finding": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+                "question": "Does SAM work end-to-end with retrieval?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_6_report.md"
+                ],
+                "title": "Experiment 0.6 — Full Validation",
+                "type": "Experiment"
+              },
+              {
+                "description": "Oracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid",
+                "id": "Concept_ArchitectureWorks",
+                "sources": [
+                  "ANALYSIS_AND_ROADMAP.md"
+                ],
+                "type": "Concept"
+              }
+            ],
+            "score": 0.069
+          },
+          {
+            "edges": [
+              {
+                "confidence": 0.95,
+                "evidence": "Experiment Exp_0_6_Validation validates Concept_OracleMemory",
+                "from": "Exp_0_6_Validation",
+                "reversed": false,
+                "to": "Concept_OracleMemory",
+                "type": "validates"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_6_Validation",
+                "key_finding": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+                "question": "Does SAM work end-to-end with retrieval?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_6_report.md"
+                ],
+                "title": "Experiment 0.6 — Full Validation",
+                "type": "Experiment"
+              },
+              {
+                "description": "Proves SAM core CAN use external memory — 100% accuracy",
+                "id": "Concept_OracleMemory",
+                "sources": [
+                  "ANALYSIS_AND_ROADMAP.md"
+                ],
+                "type": "Concept"
+              }
+            ],
+            "score": 0.069
+          },
+          {
+            "edges": [
+              {
+                "confidence": 0.95,
+                "evidence": "Experiment Exp_0_6_Validation validates Concept_RetrievalMismatch",
+                "from": "Exp_0_6_Validation",
+                "reversed": false,
+                "to": "Concept_RetrievalMismatch",
+                "type": "validates"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_6_Validation",
+                "key_finding": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+                "question": "Does SAM work end-to-end with retrieval?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_6_report.md"
+                ],
+                "title": "Experiment 0.6 — Full Validation",
+                "type": "Experiment"
+              },
+              {
+                "description": "Dual encoder query projection mismatch prevents SAM from using retrieved memory",
+                "id": "Concept_RetrievalMismatch",
+                "sources": [
+                  "ANALYSIS_AND_ROADMAP.md"
+                ],
+                "type": "Concept"
+              }
+            ],
+            "score": 0.069
+          },
+          {
+            "edges": [
+              {
+                "confidence": 1.0,
+                "evidence": "Metrics from exp_0_6/core_only",
+                "from": "Exp_0_6_Validation",
+                "reversed": true,
+                "to": "Exp_0_6_Validation_core_only",
+                "type": "derived_from"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_6_Validation",
+                "key_finding": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+                "question": "Does SAM work end-to-end with retrieval?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_6_report.md"
+                ],
+                "title": "Experiment 0.6 — Full Validation",
+                "type": "Experiment"
+              },
+              {
+                "id": "Exp_0_6_Validation_core_only",
+                "sources": [
+                  "experiments\\exp_0_6\\core_only\\metrics.json"
+                ],
+                "title": "Experiment 0.6 — Full Validation — core_only",
+                "type": "Experiment"
+              }
+            ],
+            "score": 0.055
+          },
+          {
+            "edges": [
+              {
+                "confidence": 1.0,
+                "evidence": "Metrics from exp_0_6/dense_baseline",
+                "from": "Exp_0_6_Validation",
+                "reversed": true,
+                "to": "Exp_0_6_Validation_dense_baseline",
+                "type": "derived_from"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_6_Validation",
+                "key_finding": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+                "question": "Does SAM work end-to-end with retrieval?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_6_report.md"
+                ],
+                "title": "Experiment 0.6 — Full Validation",
+                "type": "Experiment"
+              },
+              {
+                "id": "Exp_0_6_Validation_dense_baseline",
+                "sources": [
+                  "experiments\\exp_0_6\\dense_baseline\\metrics.json"
+                ],
+                "title": "Experiment 0.6 — Full Validation — dense_baseline",
+                "type": "Experiment"
+              }
+            ],
+            "score": 0.055
+          }
+        ],
+        "question": "What was the overall accuracy of the SAM oracle memory experiment?",
+        "snippets": [],
+        "sources": [
+          "ANALYSIS_AND_ROADMAP.md",
+          "Experiment Exp_0_6_Validation builds on Exp_0_5_DenseDataset",
+          "Experiment Exp_0_6_Validation validates Concept_ArchitectureWorks",
+          "Experiment Exp_0_6_Validation validates Concept_OracleMemory",
+          "Experiment Exp_0_6_Validation validates Concept_RetrievalMismatch",
+          "Experiment Exp_0_7_ExternalText builds on Exp_0_6_Validation",
+          "Metrics from exp_0_6/core_only",
+          "Metrics from exp_0_6/dense_baseline",
+          "experiments\\exp_0_6\\core_only\\metrics.json",
+          "experiments\\exp_0_6\\dense_baseline\\metrics.json",
+          "sam-lm/experiments/exp_0_5_report.md",
+          "sam-lm/experiments/exp_0_6_report.md",
+          "sam-lm/experiments/exp_0_7_report.md",
+          "sam-lm\\docs\\architecture.md",
+          "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "sam-lm\\docs\\experiments.md"
+        ]
+      },
+      "failure_category": "",
+      "hallucination_rate": 0.0,
+      "latency_ms": 4215.021,
+      "naturalness": 66.5,
+      "naturalness_detail": {
+        "aggregation": 25.0,
+        "connectors": 0.0,
+        "detail": {
+          "edge_types_provided": [
+            "depends_on",
+            "derived_from",
+            "validates"
+          ],
+          "mean_sentence_length": 8.0,
+          "num_facts": 8,
+          "num_sentences": 1,
+          "sentence_lengths": [
+            8
+          ]
+        },
+        "referring": 12.5,
+        "repetition": 20.0,
+        "sentence_length": 9.0,
+        "total": 66.5
+      },
+      "question": "What was the overall accuracy of the SAM oracle memory experiment?",
+      "question_id": "q001",
+      "relevance": {
+        "checks": {
+          "asked_metric": true,
+          "directiveness": true,
+          "focus_entity": true,
+          "max_unrelated": true
+        },
+        "reasons": [
+          "[PASS] Focus entity present",
+          "[PASS] Asked metric present",
+          "[PASS] No more than N unrelated facts",
+          "[PASS] Answer is direct (no preamble dodge)"
+        ],
+        "score": 4,
+        "verdict": "yes"
+      }
+    },
+    {
+      "accuracy": 0.0,
+      "answer": "Experiment 0.13A — Controlled Noisy Memory Tolerance: cts ~3.5 slots (~1.75 distractors on average) - **QA accuracy with selector:** **68.74%** — back to core_only The suspicion was that even 1–2 distractors in the memory might cause SAM's gate to suppress the memory completely, crashing QA from 100% down to the core-only baseline. If this suspicion was correct, the retrieval + selector path would need near-perfect precision, which is very difficult.",
+      "entity_resolution_method": "fuzzy",
+      "evidence": {
+        "facts": [],
+        "neighbor_facts": [],
+        "node_facts": [
+          {
+            "confidence": 0.7,
+            "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+            "text": "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance: Experiment 0.13A — Controlled Noisy Memory Tolerance: cts ~3.5 slots (~1.75 distractors on average) - **QA accuracy with selector:** **68.74%** — back to core_only The suspicion was that even 1–2 distractors in the memory might cause SAM's gate to suppress the memory completely, crashing QA from 100% down to the core-only baseline. If this suspicion was correct, the retrieval + selector path would need near-perfect precision, which is very difficult."
+          },
+          {
+            "confidence": 0.7,
+            "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+            "text": "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance: Experiment 0.13A — Controlled Noisy Memory Tolerance: (remove distractors, keep only required slots): **100% accuracy** — SAM core works - **Learned selector:** 96.6% recall, selects ~3.5 slots (~1.75 distractors on average) - **QA accuracy with selector:** **68.74%** — back to core_only The suspicion was that even 1–2 distractors in the memory might cause SAM's gate to suppress the memory completely, crashing QA from 100% down to the core-only baseline. I"
+          },
+          {
+            "confidence": 0.7,
+            "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+            "text": "Sam_Does_Not_Collapse_With_One_Distractor: SAM does NOT collapse with one distractor: ld noise very well** — up to +8 distractors, overall accuracy stays above core_only by a large margin (91.6% vs 68.7%) 3. **3-hop is first to degrade** — still 79.3% at +8 (vs 22% core-only), but drops sharply between +8 and +16 4. **The collapse point is between +8 and +16 distractors** — somewhere in that range, the noise overwhelms the aggregation 5."
+          },
+          {
+            "confidence": 0.7,
+            "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+            "text": "Sam_Tolerates_Mild_Noise_Very_Well: SAM tolerates mild noise very well: ry bottleneck with controlled random noise.** ## What this experiment tells us ### Confirmed 1. **SAM does NOT collapse with one distractor** — 99.82% with +1 (vs 100% clean) 2. **SAM tolerates mild noise very well** — up to +8 distractors, overall accuracy stays above core_only by a large margin (91.6% vs 68.7%) 3. **3-hop is first to degrade** — still 79.3% at +8 (vs 22% core-only), but drops sharp"
+          }
+        ],
+        "numbers": [],
+        "numbers_by_metric": {},
+        "paths": [],
+        "question": "What accuracy did the SAM core-only baseline achieve?",
+        "sources": [
+          "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "sam-lm\\experiments\\experiment_0_6_final_report.md"
+        ]
+      },
+      "failure_category": "no_graph_paths",
+      "hallucination_rate": 1.0,
+      "latency_ms": 34.454,
+      "naturalness": 77.1,
+      "naturalness_detail": {
+        "aggregation": 12.5,
+        "connectors": 20.0,
+        "detail": {
+          "edge_types_provided": [],
+          "mean_sentence_length": 35.0,
+          "num_facts": 4,
+          "num_sentences": 2,
+          "sentence_lengths": [
+            52,
+            18
+          ]
+        },
+        "referring": 20.0,
+        "repetition": 19.6,
+        "sentence_length": 5.0,
+        "total": 77.1
+      },
+      "question": "What accuracy did the SAM core-only baseline achieve?",
+      "question_id": "q002",
+      "relevance": {
+        "checks": {
+          "asked_metric": true,
+          "directiveness": true,
+          "focus_entity": true,
+          "max_unrelated": true
+        },
+        "reasons": [
+          "[PASS] Focus entity present",
+          "[PASS] Asked metric present",
+          "[PASS] No more than N unrelated facts",
+          "[PASS] Answer is direct (no preamble dodge)"
+        ],
+        "score": 4,
+        "verdict": "yes"
+      }
+    },
+    {
+      "accuracy": 1.0,
+      "answer": "the ChainRetrieval experiment Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+      "entity_resolution_method": "alias",
+      "evidence": {
+        "confidence_signals": {
+          "has_key_finding": 0.5,
+          "numeric_match": 0.5,
+          "path_count_signal": 0.2
+        },
+        "facts": [
+          "Concept_ChainRetrieval is validated by Experiment 0.11 — Chain-Aware Retrieval (confidence: 0.95)"
+        ],
+        "neighbor_facts": [
+          {
+            "entity": "Exp_0_10_RequiredSet",
+            "text": "all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.",
+            "type": "Experiment"
+          },
+          {
+            "entity": "Exp_0_12_Selection",
+            "text": "Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.",
+            "type": "Experiment"
+          }
+        ],
+        "node_facts": [
+          {
+            "confidence": 0.6,
+            "source": "ANALYSIS_AND_ROADMAP.md",
+            "text": "Concept_ChainRetrieval: Concept_ChainRetrieval: Chain-set BCE retriever achieves 100% all_required@32 — retrieval is solved"
+          },
+          {
+            "confidence": 0.7,
+            "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+            "text": "Controlled_Random_Distractors: controlled random distractors: The question:** *How much memory noise can SAM tolerate?* ## Why this experiment mattered ### The situation before 0.13A Experiment 0.12 had shown a puzzling result: - **Chain-set retriever:** all_required@32 = 100% — perfect retrieval - **Oracle filter** (remove distractors, keep only required slots): **100% accuracy** — SAM core works - **Learned selector:** 96.6% recall, selects"
+          },
+          {
+            "confidence": 0.7,
+            "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+            "text": "Controlled_Random_Distractors: controlled random distractors: The question:** *How much memory noise can SAM tolerate?* ## Why this experiment mattered ### The situation before 0.13A Experiment 0.12 had shown a puzzling result: - **Chain-set retriever:** all_required@32 = 100% — perfect retrieval - **Oracle filter** (remove distractors, keep only required slots): **100% accuracy** — SAM core works - **Learned selector:** 96.6% recall, selects ~3.5 slots (~1"
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Concept_ChainRetrieval",
+            "text": "Concept_ChainRetrieval: Chain-set BCE retriever achieves 100% all_required@32 — retrieval is solved"
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Experiment 0.11 — Chain-Aware Retrieval",
+            "text": "Exp_0_11_ChainRetrieval: Chain-set BCE: all_required@32 = 100%. But SAM still = core_only."
+          }
+        ],
+        "numbers": [
+          {
+            "chain_accuracy": "100%",
+            "entity": "Concept_ChainRetrieval"
+          },
+          {
+            "all_required@32": "100%",
+            "entity": "Exp_0_11_ChainRetrieval"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_chain_set_bce_total_wall_s",
+            "wall_time": "891.14s"
+          },
+          {
+            "best_val_loss": "0.36886117219924924",
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_param_count",
+            "parameter_count": "16689792"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_total_wall_s",
+            "wall_time": "1277.7s"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_overall",
+            "overall_accuracy": "68.66%"
+          },
+          {
+            "1-hop_accuracy": "91.5%",
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "22.0%",
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "71.0%",
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_recall_at_1",
+            "recall@1": "5.29%"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_recall_at_32",
+            "recall@32": "100.0%"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_recall_at_8",
+            "recall@8": "30.71%"
+          }
+        ],
+        "numbers_by_metric": {
+          "1-hop_accuracy": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_single_hop",
+              "value": "91.5%"
+            }
+          ],
+          "2-hop_accuracy": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_two_hop",
+              "value": "71.0%"
+            }
+          ],
+          "3-hop_accuracy": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_three_hop",
+              "value": "22.0%"
+            }
+          ],
+          "all_required@32": [
+            {
+              "entity": "Exp_0_11_ChainRetrieval",
+              "value": "100%"
+            }
+          ],
+          "best_val_loss": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_best_val_loss",
+              "value": "0.36886117219924924"
+            }
+          ],
+          "chain_accuracy": [
+            {
+              "entity": "Concept_ChainRetrieval",
+              "value": "100%"
+            }
+          ],
+          "live_slots": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_num_live_slots",
+              "value": "1650"
+            }
+          ],
+          "overall_accuracy": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_overall",
+              "value": "68.66%"
+            }
+          ],
+          "parameter_count": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_param_count",
+              "value": "16689792"
+            }
+          ],
+          "recall@1": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_recall_at_1",
+              "value": "5.29%"
+            }
+          ],
+          "recall@32": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_recall_at_32",
+              "value": "100.0%"
+            }
+          ],
+          "recall@8": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_recall_at_8",
+              "value": "30.71%"
+            }
+          ],
+          "wall_time": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_chain_set_bce_total_wall_s",
+              "value": "891.14s"
+            },
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_total_wall_s",
+              "value": "1277.7s"
+            }
+          ]
+        },
+        "paths": [
+          {
+            "edges": [
+              {
+                "confidence": 0.95,
+                "evidence": "Experiment Exp_0_11_ChainRetrieval validates Concept_ChainRetrieval",
+                "from": "Concept_ChainRetrieval",
+                "reversed": true,
+                "to": "Exp_0_11_ChainRetrieval",
+                "type": "validates"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "description": "Chain-set BCE retriever achieves 100% all_required@32 — retrieval is solved",
+                "id": "Concept_ChainRetrieval",
+                "sources": [
+                  "ANALYSIS_AND_ROADMAP.md"
+                ],
+                "type": "Concept"
+              },
+              {
+                "id": "Exp_0_11_ChainRetrieval",
+                "key_finding": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+                "question": "Can chain-aware retrieval solve the multi-hop bottleneck?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_11_report.md"
+                ],
+                "title": "Experiment 0.11 — Chain-Aware Retrieval",
+                "type": "Experiment"
+              }
+            ],
+            "score": 0.069
+          }
+        ],
+        "question": "What was the breakthrough result of the chain-set BCE retriever?",
+        "snippets": [],
+        "sources": [
+          "ANALYSIS_AND_ROADMAP.md",
+          "Experiment Exp_0_11_ChainRetrieval validates Concept_ChainRetrieval",
+          "docs\\graph-memory.md",
+          "sam-lm/experiments/exp_0_11_report.md",
+          "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "sam-lm\\experiments\\experiment_0_11_report.md"
+        ]
+      },
+      "failure_category": "verifier_failed",
+      "hallucination_rate": 1.0,
+      "latency_ms": 21.106,
+      "naturalness": 47.3,
+      "naturalness_detail": {
+        "aggregation": 18.8,
+        "connectors": 0.0,
+        "detail": {
+          "edge_types_provided": [
+            "validates"
+          ],
+          "mean_sentence_length": 6.5,
+          "num_facts": 5,
+          "num_sentences": 2,
+          "sentence_lengths": [
+            8,
+            5
+          ]
+        },
+        "referring": 4.0,
+        "repetition": 20.0,
+        "sentence_length": 4.5,
+        "total": 47.3
+      },
+      "question": "What was the breakthrough result of the chain-set BCE retriever?",
+      "question_id": "q003",
+      "relevance": {
+        "checks": {
+          "asked_metric": true,
+          "directiveness": true,
+          "focus_entity": true,
+          "max_unrelated": true
+        },
+        "reasons": [
+          "[PASS] Focus entity present",
+          "[PASS] Asked metric present",
+          "[PASS] No more than N unrelated facts",
+          "[PASS] Answer is direct (no preamble dodge)"
+        ],
+        "score": 4,
+        "verdict": "yes"
+      }
+    },
+    {
+      "accuracy": 0.5,
+      "answer": "The learned slot selector in experiment 0.12 achieved precision 50%",
+      "entity_resolution_method": "alias",
+      "evidence": {
+        "confidence_signals": {
+          "has_key_finding": 0.0,
+          "numeric_match": 0.0,
+          "path_count_signal": 1.0
+        },
+        "facts": [
+          "Experiment 0.12 — Candidate Selection & Memory-Use Training depends on Experiment 0.11 — Chain-Aware Retrieval (confidence: 1.00)",
+          "Experiment 0.12 — Candidate Selection & Memory-Use Training is a dependency of Experiment 0.13A — Controlled Noisy Memory Tolerance (confidence: 1.00)",
+          "Experiment 0.12 — Candidate Selection & Memory-Use Training validates Concept_ArchitectureWorks (confidence: 0.95)",
+          "Experiment 0.12 — Candidate Selection & Memory-Use Training validates Concept_PivotToNEXUS (confidence: 0.95)",
+          "Experiment 0.12 — Candidate Selection & Memory-Use Training validates Concept_SelectorBottleneck (confidence: 0.95)",
+          "Experiment 0.12 — Candidate Selection & Memory-Use Training contradicts Concept_RetrievalMismatch (confidence: 0.85)",
+          "Experiment 0.12 — Candidate Selection & Memory-Use Training supports Experiment 0.12 — Candidate Selection & Memory-Use Training — equal_budget (confidence: 1.00)"
+        ],
+        "neighbor_facts": [
+          {
+            "entity": "Concept_NoiseTolerance",
+            "text": "SAM tolerates controlled random noise (+8 distractors -> 91.6%), gate is NOT the bottleneck",
+            "type": "Concept"
+          },
+          {
+            "entity": "Exp_0_13B_RealisticDistractors",
+            "text": "Testing in progress. Code implemented.",
+            "type": "Experiment"
+          },
+          {
+            "entity": "Concept_ChainRetrieval",
+            "text": "Chain-set BCE retriever achieves 100% all_required@32 — retrieval is solved",
+            "type": "Concept"
+          },
+          {
+            "entity": "Decision_PivotToNEXUS",
+            "text": "Pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning)",
+            "type": "Decision"
+          },
+          {
+            "entity": "Exp_0_10_RequiredSet",
+            "text": "all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.",
+            "type": "Experiment"
+          },
+          {
+            "entity": "Exp_0_6_Validation",
+            "text": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+            "type": "Experiment"
+          }
+        ],
+        "node_facts": [
+          {
+            "confidence": 0.7,
+            "source": "sam-lm\\docs\\experiments.md",
+            "text": "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training: Experiment 0.12 — Candidate Selection and Memory-Use Training: Findings:** - **Oracle filter** (only required slots from chain candidates): **100% accuracy** — proves the chain candidates are sufficient and the retrieved-memory path works - **Learned selector**: recall 96.6%, precision 50% - Selects ~3.5 slots per example (vs ~1.89 required) - ~1.75 distractors injected into memory - QA accuracy: **68.74% — identical to core_only** - Fixed top-by-hop: also = core_on"
+          },
+          {
+            "confidence": 0.7,
+            "source": "sam-lm\\docs\\experiments.md",
+            "text": "Experiment_0.12_—_Candidate_Selection_And_Memory_Use_Training: Experiment 0.12 — Candidate Selection and Memory-Use Training: :** - **Oracle filter** (only required slots from chain candidates): **100% accuracy** — proves the chain candidates are sufficient and the retrieved-memory path works - **Learned selector**: recall 96.6%, precision 50% - Selects ~3.5 slots per example (vs ~1.89 required) - ~1.75 distractors injected into memory - QA accuracy: **68.74% — identical to core_only** - Fixed top-by-hop: also = core_only (ranki"
+          },
+          {
+            "confidence": 0.7,
+            "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+            "text": "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance: Experiment 0.13A — Controlled Noisy Memory Tolerance: fect precision, which is very difficult. ### The alternative possibility Maybe the selector's distractors were not \"random\" distractors — they might be **semantically misleading** slots that look plausible but are wrong, or there might be a training-dynamics problem: the gate shuts because it never sees noise during training, then never learns to re-open during finetuning."
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Concept_SelectorBottleneck",
+            "text": "[This concept is directly validated by the experiment] Concept_SelectorBottleneck: Learned selector precision is the critical bottleneck (50% precision, 96.6% recall)"
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Experiment 0.12 — Candidate Selection & Memory-Use Training",
+            "text": "Exp_0_12_Selection: Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck."
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Concept_ArchitectureWorks",
+            "text": "[This concept is directly validated by the experiment] Concept_ArchitectureWorks: Oracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid"
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Concept_PivotToNEXUS",
+            "text": "[This concept is directly validated by the experiment] Concept_PivotToNEXUS: Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture"
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Concept_RetrievalMismatch",
+            "text": "[This concept is directly validated by the experiment] Concept_RetrievalMismatch: Dual encoder query projection mismatch prevents SAM from using retrieved memory"
+          }
+        ],
+        "numbers": [
+          {
+            "entity": "Exp_0_12_Selection",
+            "oracle_accuracy": "100%",
+            "precision": "50%",
+            "recall": "96.6%"
+          },
+          {
+            "all_required@32": "100%",
+            "entity": "Exp_0_11_ChainRetrieval"
+          },
+          {
+            "entity": "Exp_0_13A_NoisyMemory",
+            "random_accuracy": "91.6%"
+          },
+          {
+            "entity": "Concept_ArchitectureWorks",
+            "oracle_accuracy": "100%"
+          },
+          {
+            "entity": "Concept_SelectorBottleneck",
+            "precision": "50%",
+            "recall": "96.6%"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_chain_set_bce_total_wall_s",
+            "wall_time": "891.14s"
+          },
+          {
+            "best_val_loss": "0.36886117219924924",
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_param_count",
+            "parameter_count": "16689792"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_total_wall_s",
+            "wall_time": "1277.7s"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_overall",
+            "overall_accuracy": "68.66%"
+          },
+          {
+            "1-hop_accuracy": "91.5%",
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "22.0%",
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "71.0%",
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_recall_at_1",
+            "recall@1": "5.29%"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_recall_at_32",
+            "recall@32": "100.0%"
+          },
+          {
+            "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_recall_at_8",
+            "recall@8": "30.71%"
+          },
+          {
+            "best_val_loss": "0.34879747823665014",
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_param_count",
+            "parameter_count": "16689792"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_total_wall_s",
+            "wall_time": "4341.29s"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_overall",
+            "overall_accuracy": "68.74%"
+          },
+          {
+            "1-hop_accuracy": "91.5%",
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "22.0%",
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "71.14%",
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_val_recall_at_1",
+            "recall@1": "5.29%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_val_recall_at_32",
+            "recall@32": "100.0%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_val_recall_at_8",
+            "recall@8": "30.71%"
+          },
+          {
+            "best_val_loss": "0.34883784607837076",
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_param_count",
+            "parameter_count": "16689792"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_total_wall_s",
+            "wall_time": "4734.56s"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_overall",
+            "overall_accuracy": "68.68%"
+          },
+          {
+            "1-hop_accuracy": "91.7%",
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "22.0%",
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "70.95%",
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_recall_at_1",
+            "recall@1": "5.29%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_recall_at_32",
+            "recall@32": "100.0%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_recall_at_8",
+            "recall@8": "30.71%"
+          },
+          {
+            "best_val_loss": "0.3486243497070513",
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_param_count",
+            "parameter_count": "16925121"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_total_wall_s",
+            "wall_time": "5537.81s"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_overall",
+            "overall_accuracy": "68.74%"
+          },
+          {
+            "1-hop_accuracy": "91.5%",
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "22.0%",
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "71.14%",
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_val_recall_at_1",
+            "recall@1": "5.29%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_val_recall_at_32",
+            "recall@32": "100.0%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_val_recall_at_8",
+            "recall@8": "30.71%"
+          },
+          {
+            "best_val_loss": "0.000828306263092121",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_param_count",
+            "parameter_count": "16689792"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_total_wall_s",
+            "wall_time": "2934.25s"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_overall",
+            "overall_accuracy": "100.0%"
+          },
+          {
+            "1-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_recall_at_1",
+            "recall@1": "5.29%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_recall_at_32",
+            "recall@32": "100.0%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_recall_at_8",
+            "recall@8": "30.71%"
+          },
+          {
+            "best_val_loss": "0.000828306263092121",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_param_count",
+            "parameter_count": "16689792"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_total_wall_s",
+            "wall_time": "4919.1s"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_overall",
+            "overall_accuracy": "100.0%"
+          },
+          {
+            "1-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_recall_at_1",
+            "recall@1": "5.29%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_recall_at_32",
+            "recall@32": "100.0%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_recall_at_8",
+            "recall@8": "30.71%"
+          },
+          {
+            "best_val_loss": "0.0008280974190290037",
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_param_count",
+            "parameter_count": "16689792"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_total_wall_s",
+            "wall_time": "2504.95s"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_overall",
+            "overall_accuracy": "100.0%"
+          },
+          {
+            "1-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_two_hop"
+          }
+        ],
+        "numbers_by_metric": {
+          "1-hop_accuracy": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_single_hop",
+              "value": "91.5%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_single_hop",
+              "value": "91.5%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_single_hop",
+              "value": "91.7%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_single_hop",
+              "value": "91.5%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_single_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_single_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_single_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_single_hop",
+              "value": "99.9%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_accuracy_single_hop",
+              "value": "92.8%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_accuracy_single_hop",
+              "value": "99.8%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_accuracy_single_hop",
+              "value": "98.1%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_accuracy_single_hop",
+              "value": "95.9%"
+            }
+          ],
+          "2-hop_accuracy": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_two_hop",
+              "value": "71.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_two_hop",
+              "value": "71.14%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_two_hop",
+              "value": "70.95%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_two_hop",
+              "value": "71.14%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_two_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_two_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_two_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_two_hop",
+              "value": "99.86%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_accuracy_two_hop",
+              "value": "77.45%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_accuracy_two_hop",
+              "value": "99.55%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_accuracy_two_hop",
+              "value": "98.14%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_accuracy_two_hop",
+              "value": "92.95%"
+            }
+          ],
+          "3-hop_accuracy": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_three_hop",
+              "value": "22.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_three_hop",
+              "value": "22.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_three_hop",
+              "value": "22.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_three_hop",
+              "value": "22.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_three_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_three_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_three_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_three_hop",
+              "value": "99.5%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_accuracy_three_hop",
+              "value": "39.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_accuracy_three_hop",
+              "value": "98.17%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_accuracy_three_hop",
+              "value": "95.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_accuracy_three_hop",
+              "value": "79.33%"
+            }
+          ],
+          "all_required@32": [
+            {
+              "entity": "Exp_0_11_ChainRetrieval",
+              "value": "100%"
+            }
+          ],
+          "best_val_loss": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_best_val_loss",
+              "value": "0.36886117219924924"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_best_val_loss",
+              "value": "0.34879747823665014"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_best_val_loss",
+              "value": "0.34883784607837076"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_best_val_loss",
+              "value": "0.3486243497070513"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_best_val_loss",
+              "value": "0.000828306263092121"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_best_val_loss",
+              "value": "0.000828306263092121"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_best_val_loss",
+              "value": "0.0008280974190290037"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_best_val_loss",
+              "value": "0.004734468000058673"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_best_val_loss",
+              "value": "0.3307452324189638"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_best_val_loss",
+              "value": "0.013207156246429996"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_best_val_loss",
+              "value": "0.04440618711474695"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_best_val_loss",
+              "value": "0.13692973641972792"
+            }
+          ],
+          "live_slots": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_num_live_slots",
+              "value": "1650"
+            }
+          ],
+          "oracle_accuracy": [
+            {
+              "entity": "Exp_0_12_Selection",
+              "value": "100%"
+            },
+            {
+              "entity": "Concept_ArchitectureWorks",
+              "value": "100%"
+            }
+          ],
+          "overall_accuracy": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_accuracy_overall",
+              "value": "68.66%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_overall",
+              "value": "68.74%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_overall",
+              "value": "68.68%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_overall",
+              "value": "68.74%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_overall",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_overall",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_overall",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_overall",
+              "value": "99.82%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_accuracy_overall",
+              "value": "75.42%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_accuracy_overall",
+              "value": "99.39%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_accuracy_overall",
+              "value": "97.63%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_accuracy_overall",
+              "value": "91.58%"
+            }
+          ],
+          "parameter_count": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_param_count",
+              "value": "16925121"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_param_count",
+              "value": "16689792"
+            }
+          ],
+          "precision": [
+            {
+              "entity": "Exp_0_12_Selection",
+              "value": "50%"
+            },
+            {
+              "entity": "Concept_SelectorBottleneck",
+              "value": "50%"
+            }
+          ],
+          "random_accuracy": [
+            {
+              "entity": "Exp_0_13A_NoisyMemory",
+              "value": "91.6%"
+            }
+          ],
+          "recall": [
+            {
+              "entity": "Exp_0_12_Selection",
+              "value": "96.6%"
+            },
+            {
+              "entity": "Concept_SelectorBottleneck",
+              "value": "96.6%"
+            }
+          ],
+          "recall@1": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_recall_at_1",
+              "value": "5.29%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_val_recall_at_1",
+              "value": "5.29%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_recall_at_1",
+              "value": "5.29%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_val_recall_at_1",
+              "value": "5.29%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_recall_at_1",
+              "value": "5.29%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_recall_at_1",
+              "value": "5.29%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_recall_at_1",
+              "value": "3.97%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_recall_at_1",
+              "value": "3.97%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_recall_at_1",
+              "value": "3.97%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_recall_at_1",
+              "value": "3.97%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_recall_at_1",
+              "value": "3.97%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_recall_at_1",
+              "value": "3.97%"
+            }
+          ],
+          "recall@32": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_recall_at_32",
+              "value": "100.0%"
+            }
+          ],
+          "recall@8": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_val_recall_at_8",
+              "value": "30.71%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_val_recall_at_8",
+              "value": "30.71%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_recall_at_8",
+              "value": "30.71%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_val_recall_at_8",
+              "value": "30.71%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_recall_at_8",
+              "value": "30.71%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_recall_at_8",
+              "value": "30.71%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_recall_at_8",
+              "value": "23.32%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_recall_at_8",
+              "value": "23.32%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_recall_at_8",
+              "value": "23.32%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_recall_at_8",
+              "value": "23.32%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_recall_at_8",
+              "value": "23.32%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_recall_at_8",
+              "value": "23.32%"
+            }
+          ],
+          "wall_time": [
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_chain_set_bce_total_wall_s",
+              "value": "891.14s"
+            },
+            {
+              "entity": "Metric_Exp_0_11_ChainRetrieval_sam_chain_aware_total_wall_s",
+              "value": "1277.7s"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_total_wall_s",
+              "value": "4341.29s"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_total_wall_s",
+              "value": "4734.56s"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_total_wall_s",
+              "value": "5537.81s"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_total_wall_s",
+              "value": "2934.25s"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_total_wall_s",
+              "value": "4919.1s"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_total_wall_s",
+              "value": "2504.95s"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_total_wall_s",
+              "value": "2082.44s"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_total_wall_s",
+              "value": "2106.59s"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_total_wall_s",
+              "value": "2019.91s"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_total_wall_s",
+              "value": "2031.95s"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_total_wall_s",
+              "value": "2063.62s"
+            }
+          ]
+        },
+        "paths": [
+          {
+            "edges": [
+              {
+                "confidence": 1.0,
+                "evidence": "Experiment Exp_0_12_Selection builds on Exp_0_11_ChainRetrieval",
+                "from": "Exp_0_12_Selection",
+                "reversed": false,
+                "to": "Exp_0_11_ChainRetrieval",
+                "type": "depends_on"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_12_Selection",
+                "key_finding": "Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.",
+                "question": "Can we select the right slots from chain retrieval?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_12_report.md"
+                ],
+                "title": "Experiment 0.12 — Candidate Selection & Memory-Use Training",
+                "type": "Experiment"
+              },
+              {
+                "id": "Exp_0_11_ChainRetrieval",
+                "key_finding": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+                "question": "Can chain-aware retrieval solve the multi-hop bottleneck?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_11_report.md"
+                ],
+                "title": "Experiment 0.11 — Chain-Aware Retrieval",
+                "type": "Experiment"
+              }
+            ],
+            "score": 0.077
+          },
+          {
+            "edges": [
+              {
+                "confidence": 1.0,
+                "evidence": "Experiment Exp_0_13A_NoisyMemory builds on Exp_0_12_Selection",
+                "from": "Exp_0_12_Selection",
+                "reversed": true,
+                "to": "Exp_0_13A_NoisyMemory",
+                "type": "depends_on"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_12_Selection",
+                "key_finding": "Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.",
+                "question": "Can we select the right slots from chain retrieval?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_12_report.md"
+                ],
+                "title": "Experiment 0.12 — Candidate Selection & Memory-Use Training",
+                "type": "Experiment"
+              },
+              {
+                "id": "Exp_0_13A_NoisyMemory",
+                "key_finding": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+                "question": "How much memory noise can SAM tolerate?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_13A_report.md"
+                ],
+                "title": "Experiment 0.13A — Controlled Noisy Memory Tolerance",
+                "type": "Experiment"
+              }
+            ],
+            "score": 0.077
+          },
+          {
+            "edges": [
+              {
+                "confidence": 0.95,
+                "evidence": "Experiment Exp_0_12_Selection validates Concept_ArchitectureWorks",
+                "from": "Exp_0_12_Selection",
+                "reversed": false,
+                "to": "Concept_ArchitectureWorks",
+                "type": "validates"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_12_Selection",
+                "key_finding": "Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.",
+                "question": "Can we select the right slots from chain retrieval?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_12_report.md"
+                ],
+                "title": "Experiment 0.12 — Candidate Selection & Memory-Use Training",
+                "type": "Experiment"
+              },
+              {
+                "description": "Oracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid",
+                "id": "Concept_ArchitectureWorks",
+                "sources": [
+                  "ANALYSIS_AND_ROADMAP.md"
+                ],
+                "type": "Concept"
+              }
+            ],
+            "score": 0.069
+          },
+          {
+            "edges": [
+              {
+                "confidence": 0.95,
+                "evidence": "Experiment Exp_0_12_Selection validates Concept_PivotToNEXUS",
+                "from": "Exp_0_12_Selection",
+                "reversed": false,
+                "to": "Concept_PivotToNEXUS",
+                "type": "validates"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_12_Selection",
+                "key_finding": "Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.",
+                "question": "Can we select the right slots from chain retrieval?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_12_report.md"
+                ],
+                "title": "Experiment 0.12 — Candidate Selection & Memory-Use Training",
+                "type": "Experiment"
+              },
+              {
+                "description": "Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture",
+                "id": "Concept_PivotToNEXUS",
+                "sources": [
+                  "ANALYSIS_AND_ROADMAP.md"
+                ],
+                "type": "Concept"
+              }
+            ],
+            "score": 0.069
+          },
+          {
+            "edges": [
+              {
+                "confidence": 0.95,
+                "evidence": "Experiment Exp_0_12_Selection validates Concept_SelectorBottleneck",
+                "from": "Exp_0_12_Selection",
+                "reversed": false,
+                "to": "Concept_SelectorBottleneck",
+                "type": "validates"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_12_Selection",
+                "key_finding": "Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.",
+                "question": "Can we select the right slots from chain retrieval?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_12_report.md"
+                ],
+                "title": "Experiment 0.12 — Candidate Selection & Memory-Use Training",
+                "type": "Experiment"
+              },
+              {
+                "description": "Learned selector precision is the critical bottleneck (50% precision, 96.6% recall)",
+                "id": "Concept_SelectorBottleneck",
+                "sources": [
+                  "ANALYSIS_AND_ROADMAP.md"
+                ],
+                "type": "Concept"
+              }
+            ],
+            "score": 0.069
+          },
+          {
+            "edges": [
+              {
+                "confidence": 0.85,
+                "evidence": "Experiment Exp_0_12_Selection partially contradicts Concept_RetrievalMismatch",
+                "from": "Exp_0_12_Selection",
+                "reversed": false,
+                "to": "Concept_RetrievalMismatch",
+                "type": "contradicts"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_12_Selection",
+                "key_finding": "Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.",
+                "question": "Can we select the right slots from chain retrieval?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_12_report.md"
+                ],
+                "title": "Experiment 0.12 — Candidate Selection & Memory-Use Training",
+                "type": "Experiment"
+              },
+              {
+                "description": "Dual encoder query projection mismatch prevents SAM from using retrieved memory",
+                "id": "Concept_RetrievalMismatch",
+                "sources": [
+                  "ANALYSIS_AND_ROADMAP.md"
+                ],
+                "type": "Concept"
+              }
+            ],
+            "score": 0.058
+          },
+          {
+            "edges": [
+              {
+                "confidence": 1.0,
+                "evidence": "Metrics from exp_0_12/chain_equal_budget",
+                "from": "Exp_0_12_Selection",
+                "reversed": true,
+                "to": "Exp_0_12_Selection_equal_budget",
+                "type": "derived_from"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_12_Selection",
+                "key_finding": "Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.",
+                "question": "Can we select the right slots from chain retrieval?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_12_report.md"
+                ],
+                "title": "Experiment 0.12 — Candidate Selection & Memory-Use Training",
+                "type": "Experiment"
+              },
+              {
+                "id": "Exp_0_12_Selection_equal_budget",
+                "sources": [
+                  "experiments\\exp_0_12\\chain_equal_budget\\retrieved_memory_external_text_query\\metrics.json"
+                ],
+                "title": "Experiment 0.12 — Candidate Selection & Memory-Use Training — equal_budget",
+                "type": "Experiment"
+              }
+            ],
+            "score": 0.055
+          }
+        ],
+        "question": "What was the precision of the learned slot selector in experiment 0.12?",
+        "snippets": [],
+        "sources": [
+          "ANALYSIS_AND_ROADMAP.md",
+          "Experiment Exp_0_12_Selection builds on Exp_0_11_ChainRetrieval",
+          "Experiment Exp_0_12_Selection partially contradicts Concept_RetrievalMismatch",
+          "Experiment Exp_0_12_Selection validates Concept_ArchitectureWorks",
+          "Experiment Exp_0_12_Selection validates Concept_PivotToNEXUS",
+          "Experiment Exp_0_12_Selection validates Concept_SelectorBottleneck",
+          "Experiment Exp_0_13A_NoisyMemory builds on Exp_0_12_Selection",
+          "Metrics from exp_0_12/chain_equal_budget",
+          "experiments\\exp_0_12\\chain_equal_budget\\retrieved_memory_external_text_query\\metrics.json",
+          "sam-lm/experiments/exp_0_11_report.md",
+          "sam-lm/experiments/exp_0_12_report.md",
+          "sam-lm/experiments/exp_0_13A_report.md",
+          "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "sam-lm\\docs\\experiments.md",
+          "sam-lm\\docs\\index.md"
+        ]
+      },
+      "failure_category": "",
+      "hallucination_rate": 0.0,
+      "latency_ms": 46.398,
+      "naturalness": 72.5,
+      "naturalness_detail": {
+        "aggregation": 25.0,
+        "connectors": 0.0,
+        "detail": {
+          "edge_types_provided": [
+            "contradicts",
+            "depends_on",
+            "derived_from",
+            "validates"
+          ],
+          "mean_sentence_length": 10.0,
+          "num_facts": 8,
+          "num_sentences": 1,
+          "sentence_lengths": [
+            10
+          ]
+        },
+        "referring": 12.5,
+        "repetition": 20.0,
+        "sentence_length": 15.0,
+        "total": 72.5
+      },
+      "question": "What was the precision of the learned slot selector in experiment 0.12?",
+      "question_id": "q004",
+      "relevance": {
+        "checks": {
+          "asked_metric": true,
+          "directiveness": true,
+          "focus_entity": true,
+          "max_unrelated": true
+        },
+        "reasons": [
+          "[PASS] Focus entity present",
+          "[PASS] Asked metric present",
+          "[PASS] No more than N unrelated facts",
+          "[PASS] Answer is direct (no preamble dodge)"
+        ],
+        "score": 4,
+        "verdict": "yes"
+      }
+    },
+    {
+      "accuracy": 0.5,
+      "answer": "random accuracy 91.6%.",
+      "entity_resolution_method": "alias",
+      "evidence": {
+        "confidence_signals": {
+          "has_key_finding": 0.5,
+          "numeric_match": 1.0,
+          "path_count_signal": 1.0
+        },
+        "facts": [
+          "Experiment 0.13A — Controlled Noisy Memory Tolerance depends on Experiment 0.12 — Candidate Selection & Memory-Use Training (confidence: 1.00)",
+          "Experiment 0.13A — Controlled Noisy Memory Tolerance is a dependency of Experiment 0.13B — Realistic Retrieval Distractor Replay (confidence: 1.00)",
+          "Experiment 0.13A — Controlled Noisy Memory Tolerance validates Concept_ArchitectureWorks (confidence: 0.95)",
+          "Experiment 0.13A — Controlled Noisy Memory Tolerance validates Concept_NoiseTolerance (confidence: 0.95)",
+          "Experiment 0.13A — Controlled Noisy Memory Tolerance validates Concept_PivotToNEXUS (confidence: 0.95)",
+          "Experiment 0.13A — Controlled Noisy Memory Tolerance supports Experiment 0.13A — Controlled Noisy Memory Tolerance — noise_+0 (confidence: 1.00)",
+          "Experiment 0.13A — Controlled Noisy Memory Tolerance supports Experiment 0.13A — Controlled Noisy Memory Tolerance — noise_+1 (confidence: 1.00)"
+        ],
+        "neighbor_facts": [
+          {
+            "entity": "Concept_RetrievalMismatch",
+            "text": "Dual encoder query projection mismatch prevents SAM from using retrieved memory",
+            "type": "Concept"
+          },
+          {
+            "entity": "Decision_PivotToNEXUS",
+            "text": "Pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning)",
+            "type": "Decision"
+          },
+          {
+            "entity": "Exp_0_11_ChainRetrieval",
+            "text": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+            "type": "Experiment"
+          },
+          {
+            "entity": "Concept_SelectorBottleneck",
+            "text": "Learned selector precision is the critical bottleneck (50% precision, 96.6% recall)",
+            "type": "Concept"
+          },
+          {
+            "entity": "Exp_0_6_Validation",
+            "text": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+            "type": "Experiment"
+          }
+        ],
+        "node_facts": [
+          {
+            "confidence": 0.7,
+            "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+            "text": "Controlled_Random_Distractors: controlled random distractors: The question:** *How much memory noise can SAM tolerate?"
+          },
+          {
+            "confidence": 0.7,
+            "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+            "text": "Controlled_Random_Distractors: controlled random distractors: The question:** *How much memory noise can SAM tolerate?* ## Why this experiment mattered ### The situation before 0.13A Experiment 0.12 had shown a puzzling result: - **Chain-set retriever:** all_required@32 = 100% — perfect retrieval - **Oracle filter** (remov"
+          },
+          {
+            "confidence": 0.7,
+            "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+            "text": "Semantically_Misleading: semantically misleading: Experiment 0.13A — Controlled Noisy Memory Tolerance ## What was this experiment trying to learn? **The question:** *How much memory noise can SAM tolerate?* ## Why this experiment mattered ### The situation before 0.13A Experiment 0.12 had shown a puzzling result: - **Chain-set retriever:** all_required@32 = 100% — perfect retrieval - **Oracle filter** (remove distractors"
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Concept_NoiseTolerance",
+            "text": "[This concept is directly validated by the experiment] Concept_NoiseTolerance: SAM tolerates controlled random noise (+8 distractors -> 91.6%), gate is NOT the bottleneck"
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Experiment 0.13A — Controlled Noisy Memory Tolerance",
+            "text": "Exp_0_13A_NoisyMemory: SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck."
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Concept_PivotToNEXUS",
+            "text": "[This concept is directly validated by the experiment] Concept_PivotToNEXUS: Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture"
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Concept_ArchitectureWorks",
+            "text": "[This concept is directly validated by the experiment] Concept_ArchitectureWorks: Oracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid"
+          },
+          {
+            "confidence": 1.0,
+            "confidence_label": "HIGH (manually curated)",
+            "source": "Experiment 0.12 — Candidate Selection & Memory-Use Training",
+            "text": "Exp_0_12_Selection: Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck."
+          }
+        ],
+        "numbers": [
+          {
+            "entity": "Exp_0_13A_NoisyMemory",
+            "random_accuracy": "91.6%"
+          },
+          {
+            "entity": "Exp_0_12_Selection",
+            "oracle_accuracy": "100%",
+            "precision": "50%",
+            "recall": "96.6%"
+          },
+          {
+            "entity": "Concept_ArchitectureWorks",
+            "oracle_accuracy": "100%"
+          },
+          {
+            "distractor": "8",
+            "entity": "Concept_NoiseTolerance",
+            "plus_distractor": "8",
+            "random_accuracy": "91.6%"
+          },
+          {
+            "best_val_loss": "0.34879747823665014",
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_param_count",
+            "parameter_count": "16689792"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_total_wall_s",
+            "wall_time": "4341.29s"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_overall",
+            "overall_accuracy": "68.74%"
+          },
+          {
+            "1-hop_accuracy": "91.5%",
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "22.0%",
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "71.14%",
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_val_recall_at_1",
+            "recall@1": "5.29%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_val_recall_at_32",
+            "recall@32": "100.0%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_equal_budget_val_recall_at_8",
+            "recall@8": "30.71%"
+          },
+          {
+            "best_val_loss": "0.34883784607837076",
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_param_count",
+            "parameter_count": "16689792"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_total_wall_s",
+            "wall_time": "4734.56s"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_overall",
+            "overall_accuracy": "68.68%"
+          },
+          {
+            "1-hop_accuracy": "91.7%",
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "22.0%",
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "70.95%",
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_recall_at_1",
+            "recall@1": "5.29%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_recall_at_32",
+            "recall@32": "100.0%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_recall_at_8",
+            "recall@8": "30.71%"
+          },
+          {
+            "best_val_loss": "0.3486243497070513",
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_param_count",
+            "parameter_count": "16925121"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_total_wall_s",
+            "wall_time": "5537.81s"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_overall",
+            "overall_accuracy": "68.74%"
+          },
+          {
+            "1-hop_accuracy": "91.5%",
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "22.0%",
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "71.14%",
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_val_recall_at_1",
+            "recall@1": "5.29%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_val_recall_at_32",
+            "recall@32": "100.0%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_learned_selector_val_recall_at_8",
+            "recall@8": "30.71%"
+          },
+          {
+            "best_val_loss": "0.000828306263092121",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_param_count",
+            "parameter_count": "16689792"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_total_wall_s",
+            "wall_time": "2934.25s"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_overall",
+            "overall_accuracy": "100.0%"
+          },
+          {
+            "1-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_recall_at_1",
+            "recall@1": "5.29%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_recall_at_32",
+            "recall@32": "100.0%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_recall_at_8",
+            "recall@8": "30.71%"
+          },
+          {
+            "best_val_loss": "0.000828306263092121",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_param_count",
+            "parameter_count": "16689792"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_total_wall_s",
+            "wall_time": "4919.1s"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_overall",
+            "overall_accuracy": "100.0%"
+          },
+          {
+            "1-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_recall_at_1",
+            "recall@1": "5.29%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_recall_at_32",
+            "recall@32": "100.0%"
+          },
+          {
+            "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_recall_at_8",
+            "recall@8": "30.71%"
+          },
+          {
+            "best_val_loss": "0.0008280974190290037",
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_param_count",
+            "parameter_count": "16689792"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_total_wall_s",
+            "wall_time": "2504.95s"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_overall",
+            "overall_accuracy": "100.0%"
+          },
+          {
+            "1-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "100.0%",
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_recall_at_1",
+            "recall@1": "3.97%"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_recall_at_32",
+            "recall@32": "100.0%"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_recall_at_8",
+            "recall@8": "23.32%"
+          },
+          {
+            "best_val_loss": "0.004734468000058673",
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_best_val_loss"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_num_live_slots",
+            "live_slots": "1650"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_param_count",
+            "parameter_count": "16689792"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_total_wall_s",
+            "wall_time": "2082.44s"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_overall",
+            "overall_accuracy": "99.82%"
+          },
+          {
+            "1-hop_accuracy": "99.9%",
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_single_hop"
+          },
+          {
+            "3-hop_accuracy": "99.5%",
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_three_hop"
+          },
+          {
+            "2-hop_accuracy": "99.86%",
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_two_hop"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_recall_at_1",
+            "recall@1": "3.97%"
+          },
+          {
+            "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_recall_at_32",
+            "recall@32": "100.0%"
+          }
+        ],
+        "numbers_by_metric": {
+          "1-hop_accuracy": [
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_single_hop",
+              "value": "91.5%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_single_hop",
+              "value": "91.7%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_single_hop",
+              "value": "91.5%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_single_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_single_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_single_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_single_hop",
+              "value": "99.9%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_accuracy_single_hop",
+              "value": "92.8%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_accuracy_single_hop",
+              "value": "99.8%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_accuracy_single_hop",
+              "value": "98.1%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_accuracy_single_hop",
+              "value": "95.9%"
+            }
+          ],
+          "2-hop_accuracy": [
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_two_hop",
+              "value": "71.14%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_two_hop",
+              "value": "70.95%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_two_hop",
+              "value": "71.14%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_two_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_two_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_two_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_two_hop",
+              "value": "99.86%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_accuracy_two_hop",
+              "value": "77.45%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_accuracy_two_hop",
+              "value": "99.55%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_accuracy_two_hop",
+              "value": "98.14%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_accuracy_two_hop",
+              "value": "92.95%"
+            }
+          ],
+          "3-hop_accuracy": [
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_three_hop",
+              "value": "22.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_three_hop",
+              "value": "22.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_three_hop",
+              "value": "22.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_three_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_three_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_three_hop",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_three_hop",
+              "value": "99.5%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_accuracy_three_hop",
+              "value": "39.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_accuracy_three_hop",
+              "value": "98.17%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_accuracy_three_hop",
+              "value": "95.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_accuracy_three_hop",
+              "value": "79.33%"
+            }
+          ],
+          "best_val_loss": [
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_best_val_loss",
+              "value": "0.34879747823665014"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_best_val_loss",
+              "value": "0.34883784607837076"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_best_val_loss",
+              "value": "0.3486243497070513"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_best_val_loss",
+              "value": "0.000828306263092121"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_best_val_loss",
+              "value": "0.000828306263092121"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_best_val_loss",
+              "value": "0.0008280974190290037"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_best_val_loss",
+              "value": "0.004734468000058673"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_best_val_loss",
+              "value": "0.3307452324189638"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_best_val_loss",
+              "value": "0.013207156246429996"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_best_val_loss",
+              "value": "0.04440618711474695"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_best_val_loss",
+              "value": "0.13692973641972792"
+            }
+          ],
+          "distractor": [
+            {
+              "entity": "Concept_NoiseTolerance",
+              "value": "8"
+            }
+          ],
+          "live_slots": [
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_num_live_slots",
+              "value": "1650"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_num_live_slots",
+              "value": "1650"
+            }
+          ],
+          "oracle_accuracy": [
+            {
+              "entity": "Exp_0_12_Selection",
+              "value": "100%"
+            },
+            {
+              "entity": "Concept_ArchitectureWorks",
+              "value": "100%"
+            }
+          ],
+          "overall_accuracy": [
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_val_accuracy_overall",
+              "value": "68.74%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_accuracy_overall",
+              "value": "68.68%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_val_accuracy_overall",
+              "value": "68.74%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_accuracy_overall",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_accuracy_overall",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_accuracy_overall",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_accuracy_overall",
+              "value": "99.82%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_accuracy_overall",
+              "value": "75.42%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_accuracy_overall",
+              "value": "99.39%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_accuracy_overall",
+              "value": "97.63%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_accuracy_overall",
+              "value": "91.58%"
+            }
+          ],
+          "parameter_count": [
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_param_count",
+              "value": "16925121"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_param_count",
+              "value": "16689792"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_param_count",
+              "value": "16689792"
+            }
+          ],
+          "plus_distractor": [
+            {
+              "entity": "Concept_NoiseTolerance",
+              "value": "8"
+            }
+          ],
+          "precision": [
+            {
+              "entity": "Exp_0_12_Selection",
+              "value": "50%"
+            }
+          ],
+          "random_accuracy": [
+            {
+              "entity": "Exp_0_13A_NoisyMemory",
+              "value": "91.6%"
+            },
+            {
+              "entity": "Concept_NoiseTolerance",
+              "value": "91.6%"
+            }
+          ],
+          "recall": [
+            {
+              "entity": "Exp_0_12_Selection",
+              "value": "96.6%"
+            }
+          ],
+          "recall@1": [
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_val_recall_at_1",
+              "value": "5.29%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_recall_at_1",
+              "value": "5.29%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_val_recall_at_1",
+              "value": "5.29%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_recall_at_1",
+              "value": "5.29%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_recall_at_1",
+              "value": "5.29%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_recall_at_1",
+              "value": "3.97%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_recall_at_1",
+              "value": "3.97%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_recall_at_1",
+              "value": "3.97%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_recall_at_1",
+              "value": "3.97%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_recall_at_1",
+              "value": "3.97%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_recall_at_1",
+              "value": "3.97%"
+            }
+          ],
+          "recall@32": [
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_recall_at_32",
+              "value": "100.0%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_recall_at_32",
+              "value": "100.0%"
+            }
+          ],
+          "recall@8": [
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_val_recall_at_8",
+              "value": "30.71%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_val_recall_at_8",
+              "value": "30.71%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_val_recall_at_8",
+              "value": "30.71%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_val_recall_at_8",
+              "value": "30.71%"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_val_recall_at_8",
+              "value": "30.71%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_val_recall_at_8",
+              "value": "23.32%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_val_recall_at_8",
+              "value": "23.32%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_val_recall_at_8",
+              "value": "23.32%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_val_recall_at_8",
+              "value": "23.32%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_val_recall_at_8",
+              "value": "23.32%"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_val_recall_at_8",
+              "value": "23.32%"
+            }
+          ],
+          "wall_time": [
+            {
+              "entity": "Metric_Exp_0_12_Selection_equal_budget_total_wall_s",
+              "value": "4341.29s"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_fixed_top_by_hop_total_wall_s",
+              "value": "4734.56s"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_learned_selector_total_wall_s",
+              "value": "5537.81s"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top32_total_wall_s",
+              "value": "2934.25s"
+            },
+            {
+              "entity": "Metric_Exp_0_12_Selection_oracle_filter_top64_total_wall_s",
+              "value": "4919.1s"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+0_total_wall_s",
+              "value": "2504.95s"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+1_total_wall_s",
+              "value": "2082.44s"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+16_total_wall_s",
+              "value": "2106.59s"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+2_total_wall_s",
+              "value": "2019.91s"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+4_total_wall_s",
+              "value": "2031.95s"
+            },
+            {
+              "entity": "Metric_Exp_0_13A_NoisyMemory_noise_+8_total_wall_s",
+              "value": "2063.62s"
+            }
+          ]
+        },
+        "paths": [
+          {
+            "edges": [
+              {
+                "confidence": 1.0,
+                "evidence": "Experiment Exp_0_13A_NoisyMemory builds on Exp_0_12_Selection",
+                "from": "Exp_0_13A_NoisyMemory",
+                "reversed": false,
+                "to": "Exp_0_12_Selection",
+                "type": "depends_on"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_13A_NoisyMemory",
+                "key_finding": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+                "question": "How much memory noise can SAM tolerate?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_13A_report.md"
+                ],
+                "title": "Experiment 0.13A — Controlled Noisy Memory Tolerance",
+                "type": "Experiment"
+              },
+              {
+                "id": "Exp_0_12_Selection",
+                "key_finding": "Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck.",
+                "question": "Can we select the right slots from chain retrieval?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_12_report.md"
+                ],
+                "title": "Experiment 0.12 — Candidate Selection & Memory-Use Training",
+                "type": "Experiment"
+              }
+            ],
+            "score": 0.077
+          },
+          {
+            "edges": [
+              {
+                "confidence": 1.0,
+                "evidence": "Experiment Exp_0_13B_RealisticDistractors builds on Exp_0_13A_NoisyMemory",
+                "from": "Exp_0_13A_NoisyMemory",
+                "reversed": true,
+                "to": "Exp_0_13B_RealisticDistractors",
+                "type": "depends_on"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_13A_NoisyMemory",
+                "key_finding": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+                "question": "How much memory noise can SAM tolerate?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_13A_report.md"
+                ],
+                "title": "Experiment 0.13A — Controlled Noisy Memory Tolerance",
+                "type": "Experiment"
+              },
+              {
+                "id": "Exp_0_13B_RealisticDistractors",
+                "key_finding": "Testing in progress. Code implemented.",
+                "question": "Are realistic retrieval distractors harder than random?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_13B_report.md"
+                ],
+                "title": "Experiment 0.13B — Realistic Retrieval Distractor Replay",
+                "type": "Experiment"
+              }
+            ],
+            "score": 0.077
+          },
+          {
+            "edges": [
+              {
+                "confidence": 0.95,
+                "evidence": "Experiment Exp_0_13A_NoisyMemory validates Concept_ArchitectureWorks",
+                "from": "Exp_0_13A_NoisyMemory",
+                "reversed": false,
+                "to": "Concept_ArchitectureWorks",
+                "type": "validates"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_13A_NoisyMemory",
+                "key_finding": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+                "question": "How much memory noise can SAM tolerate?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_13A_report.md"
+                ],
+                "title": "Experiment 0.13A — Controlled Noisy Memory Tolerance",
+                "type": "Experiment"
+              },
+              {
+                "description": "Oracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid",
+                "id": "Concept_ArchitectureWorks",
+                "sources": [
+                  "ANALYSIS_AND_ROADMAP.md"
+                ],
+                "type": "Concept"
+              }
+            ],
+            "score": 0.069
+          },
+          {
+            "edges": [
+              {
+                "confidence": 0.95,
+                "evidence": "Experiment Exp_0_13A_NoisyMemory validates Concept_NoiseTolerance",
+                "from": "Exp_0_13A_NoisyMemory",
+                "reversed": false,
+                "to": "Concept_NoiseTolerance",
+                "type": "validates"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_13A_NoisyMemory",
+                "key_finding": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+                "question": "How much memory noise can SAM tolerate?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_13A_report.md"
+                ],
+                "title": "Experiment 0.13A — Controlled Noisy Memory Tolerance",
+                "type": "Experiment"
+              },
+              {
+                "description": "SAM tolerates controlled random noise (+8 distractors -> 91.6%), gate is NOT the bottleneck",
+                "id": "Concept_NoiseTolerance",
+                "sources": [
+                  "ANALYSIS_AND_ROADMAP.md"
+                ],
+                "type": "Concept"
+              }
+            ],
+            "score": 0.069
+          },
+          {
+            "edges": [
+              {
+                "confidence": 0.95,
+                "evidence": "Experiment Exp_0_13A_NoisyMemory validates Concept_PivotToNEXUS",
+                "from": "Exp_0_13A_NoisyMemory",
+                "reversed": false,
+                "to": "Concept_PivotToNEXUS",
+                "type": "validates"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_13A_NoisyMemory",
+                "key_finding": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+                "question": "How much memory noise can SAM tolerate?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_13A_report.md"
+                ],
+                "title": "Experiment 0.13A — Controlled Noisy Memory Tolerance",
+                "type": "Experiment"
+              },
+              {
+                "description": "Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture",
+                "id": "Concept_PivotToNEXUS",
+                "sources": [
+                  "ANALYSIS_AND_ROADMAP.md"
+                ],
+                "type": "Concept"
+              }
+            ],
+            "score": 0.069
+          },
+          {
+            "edges": [
+              {
+                "confidence": 1.0,
+                "evidence": "Metrics from exp_0_13/noise_oracle_plus_0",
+                "from": "Exp_0_13A_NoisyMemory",
+                "reversed": true,
+                "to": "Exp_0_13A_NoisyMemory_noise_+0",
+                "type": "derived_from"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_13A_NoisyMemory",
+                "key_finding": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+                "question": "How much memory noise can SAM tolerate?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_13A_report.md"
+                ],
+                "title": "Experiment 0.13A — Controlled Noisy Memory Tolerance",
+                "type": "Experiment"
+              },
+              {
+                "id": "Exp_0_13A_NoisyMemory_noise_+0",
+                "sources": [
+                  "experiments\\exp_0_13\\noise_oracle_plus_0\\retrieved_memory_external_text_query\\metrics.json"
+                ],
+                "title": "Experiment 0.13A — Controlled Noisy Memory Tolerance — noise_+0",
+                "type": "Experiment"
+              }
+            ],
+            "score": 0.055
+          },
+          {
+            "edges": [
+              {
+                "confidence": 1.0,
+                "evidence": "Metrics from exp_0_13/noise_oracle_plus_1",
+                "from": "Exp_0_13A_NoisyMemory",
+                "reversed": true,
+                "to": "Exp_0_13A_NoisyMemory_noise_+1",
+                "type": "derived_from"
+              }
+            ],
+            "length": 1,
+            "nodes": [
+              {
+                "id": "Exp_0_13A_NoisyMemory",
+                "key_finding": "SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+                "question": "How much memory noise can SAM tolerate?",
+                "sources": [
+                  "sam-lm/experiments/exp_0_13A_report.md"
+                ],
+                "title": "Experiment 0.13A — Controlled Noisy Memory Tolerance",
+                "type": "Experiment"
+              },
+              {
+                "id": "Exp_0_13A_NoisyMemory_noise_+1",
+                "sources": [
+                  "experiments\\exp_0_13\\noise_oracle_plus_1\\retrieved_memory_external_text_query\\metrics.json"
+                ],
+                "title": "Experiment 0.13A — Controlled Noisy Memory Tolerance — noise_+1",
+                "type": "Experiment"
+              }
+            ],
+            "score": 0.055
+          }
+        ],
+        "question": "How many random distractors can SAM tolerate while maintaining over 90% accuracy?",
+        "snippets": [],
+        "sources": [
+          "ANALYSIS_AND_ROADMAP.md",
+          "Experiment Exp_0_13A_NoisyMemory builds on Exp_0_12_Selection",
+          "Experiment Exp_0_13A_NoisyMemory validates Concept_ArchitectureWorks",
+          "Experiment Exp_0_13A_NoisyMemory validates Concept_NoiseTolerance",
+          "Experiment Exp_0_13A_NoisyMemory validates Concept_PivotToNEXUS",
+          "Experiment Exp_0_13B_RealisticDistractors builds on Exp_0_13A_NoisyMemory",
+          "Metrics from exp_0_13/noise_oracle_plus_0",
+          "Metrics from exp_0_13/noise_oracle_plus_1",
+          "experiments\\exp_0_13\\noise_oracle_plus_0\\retrieved_memory_external_text_query\\metrics.json",
+          "experiments\\exp_0_13\\noise_oracle_plus_1\\retrieved_memory_external_text_query\\metrics.json",
+          "sam-lm/experiments/exp_0_12_report.md",
+          "sam-lm/experiments/exp_0_13A_report.md",
+          "sam-lm/experiments/exp_0_13B_report.md",
+          "sam-lm\\docs\\experiment-0-13a-noisy-memory.md"
+        ]
+      },
+      "failure_category": "",
+      "hallucination_rate": 0.0,
+      "latency_ms": 48.168,
+      "naturalness": 57.5,
+      "naturalness_detail": {
+        "aggregation": 25.0,
+        "connectors": 0.0,
+        "detail": {
+          "edge_types_provided": [
+            "depends_on",
+            "derived_from",
+            "validates"
+          ],
+          "mean_sentence_length": 3.0,
+          "num_facts": 8,
+          "num_sentences": 1,
+          "sentence_lengths": [
+            3
+          ]
+        },
+        "referring": 12.5,
+        "repetition": 20.0,
+        "sentence_length": 0.0,
+        "total": 57.5
+      },
+      "question": "How many random distractors can SAM tolerate while maintaining over 90% accuracy?",
+      "question_id": "q005",
+      "relevance": {
+        "checks": {
+          "asked_metric": true,
+          "directiveness": true,
+          "focus_entity": true,
+          "max_unrelated": true
+        },
+        "reasons": [
+          "[PASS] Focus entity present",
+          "[PASS] Asked metric present",
+          "[PASS] No more than N unrelated facts",
+          "[PASS] Answer is direct (no preamble dodge)"
+        ],
+        "score": 4,
+        "verdict": "yes"
+      }
+    }
+  ],
+  "protocol": "registered_stage2_v1_limit_5",
+  "question_set_sha256": "2b09d4d64f6f435bdddb227bd8c9aa844c91c665d1a7895e4048bf3653ee64df",
+  "questions_total": 5,
+  "registered_baseline": {
+    "accuracy_mean": 0.1694,
+    "hallucination_mean": 0.4114,
+    "naturalness_mean": 35.0,
+    "provenance": {
+      "implementation": "benchmarks/stage2_gate_eval.py",
+      "note": "Registered legacy SynthesizingModel baseline on the same 30-question Stage 2 protocol.",
+      "sample_size": 30
+    },
+    "schema_version": "nexus-stage2-baseline-v1"
+  },
+  "registered_baseline_sha256": "ffe7c49cef419f3a96a69d662bc6511e736053b510c84a613129ca036a3abfb8",
+  "schema_version": "nexus-stage2-v1",
+  "serialized_file_sha256": "522a00caec320eed9d262ec131a83c8f1e124cbf3932d43f851f8661f0b31dd4",
+  "source_sha": "df3819553a2dfc2ce9e090f683d688ba0de8abc5",
+  "source_tree_sha": "8f83f58fddf892474f7810013a109eafa541db4a",
+  "stage": "stage2_realization_l1",
+  "status": "PASS"
+}

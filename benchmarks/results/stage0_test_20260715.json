@@ -1,0 +1,120 @@
+{
+  "config_hash": "4c2202373759fbf8",
+  "created_utc": "2026-07-15T19:55:16.463865+00:00",
+  "graph": {
+    "edge_count": 565,
+    "node_count": 1906
+  },
+  "nexus": {
+    "answered": 5,
+    "mean_accuracy": 0.4667
+  },
+  "paired_comparison": {
+    "comparison_type": "PAIRED (both arms scorable)",
+    "nexus": {
+      "label": "NEXUS",
+      "mean_accuracy": 0.4667,
+      "n": 5
+    },
+    "paired_n": 5,
+    "rag": {
+      "label": "RAG",
+      "mean_accuracy": 0.0,
+      "n": 5
+    },
+    "secondary_unpaired": {
+      "both_none": 0,
+      "label": "SECONDARY -- unpaired stats (excluded from primary comparison)",
+      "nexus_only_scored": {
+        "mean_accuracy": null,
+        "n": 0
+      },
+      "rag_only_scored": {
+        "mean_accuracy": null,
+        "n": 0
+      },
+      "total_questions": 5
+    },
+    "sign_test_detail": {
+      "arm_a_wins": 4,
+      "arm_b_wins": 0,
+      "n_discordant": 4,
+      "p_value": 0.125,
+      "test": "two-sided sign test (exact binomial)",
+      "ties": 1
+    },
+    "sign_test_p": 0.125,
+    "win_loss_tie": {
+      "NEXUS_wins": 4,
+      "RAG_wins": 0,
+      "ties": 1
+    }
+  },
+  "per_question": [
+    {
+      "ground_truth": "99.87% overall accuracy, with 99.5% on 1-hop, 100% on 2-hop, and 100% on 3-hop.",
+      "nexus_accuracy": 0.3333,
+      "nexus_answer": "The SAM oracle memory experiment achieved 100% accuracy",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What was the overall accuracy of the SAM oracle memory experiment?",
+      "question_id": "q001",
+      "rag_accuracy": 0.0,
+      "rag_answer": ""
+    },
+    {
+      "ground_truth": "68.74% overall accuracy, identical to the dense baseline at equal parameters.",
+      "nexus_accuracy": 0.0,
+      "nexus_answer": "Experiment 0.13A — Controlled Noisy Memory Tolerance: cts ~3.5 slots (~1.75 distractors on average) - **QA accuracy with selector:** **68.74%** — back to core_only The suspicion was that even 1–2 distractors in the memory might cause SAM's gate to suppress the memory completely, crashing QA from 100% down to the core-only baseline. If this suspicion was correct, the retrieval + selector path would need near-perfect precision, which is very difficult.",
+      "nexus_failure": "no_graph_paths",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What accuracy did the SAM core-only baseline achieve?",
+      "question_id": "q002",
+      "rag_accuracy": 0.0,
+      "rag_answer": ""
+    },
+    {
+      "ground_truth": "all_required@32 = 100% — it finds ALL required slots for EVERY example at K=32.",
+      "nexus_accuracy": 1.0,
+      "nexus_answer": "the ChainRetrieval experiment Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+      "nexus_failure": "verifier_failed",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What was the breakthrough result of the chain-set BCE retriever?",
+      "question_id": "q003",
+      "rag_accuracy": 0.0,
+      "rag_answer": ""
+    },
+    {
+      "ground_truth": "50% precision, with 96.6% recall — meaning it finds nearly all required slots but picks about twice as many distractors.",
+      "nexus_accuracy": 0.5,
+      "nexus_answer": "The learned slot selector in experiment 0.12 achieved precision 50%",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What was the precision of the learned slot selector in experiment 0.12?",
+      "question_id": "q004",
+      "rag_accuracy": 0.0,
+      "rag_answer": ""
+    },
+    {
+      "ground_truth": "Up to 8 random distractors, achieving 91.58% overall accuracy.",
+      "nexus_accuracy": 0.5,
+      "nexus_answer": "random accuracy 91.6%.",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "How many random distractors can SAM tolerate while maintaining over 90% accuracy?",
+      "question_id": "q005",
+      "rag_accuracy": 0.0,
+      "rag_answer": ""
+    }
+  ],
+  "pipeline": "nexus_v1_lexical_only",
+  "question_source": "stack/encoder/data/train.jsonl",
+  "question_source_sha256": "6b52b5b0fc2ae8accbc85df0b568b72355a5122994704a96329c257228fc9e40",
+  "questions_total": 5,
+  "rag": {
+    "answered": 5,
+    "mean_accuracy": 0.0
+  },
+  "source_sha": "332aa0ab9a460f6e385af191f0dbdaf12afce7c0",
+  "stage": "stage0_baseline"
+}

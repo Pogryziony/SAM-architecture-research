@@ -48,12 +48,13 @@ def load_questions(path: str, limit: int | None = None) -> list[dict[str, Any]]:
 
 def run_rag_baseline(questions: list[dict], model_name: str = "qwen2.5:latest") -> list[dict]:
     """Run RAG baseline using the existing rag_baseline module."""
-    from benchmarks.rag_baseline import initialize_rag_pipeline, run_rag_pipeline, initialize_nexus_model
+    from benchmarks.rag_baseline import initialize_rag_pipeline, run_rag_pipeline
 
     print("  Initializing RAG pipeline...")
     try:
-        rag_state = initialize_rag_pipeline()
-        model, model_name = initialize_nexus_model()
+        from nexus.reasoning.model_interface import get_available_model
+        model = get_available_model()
+        rag_state = initialize_rag_pipeline(model)
     except Exception as exc:
         print(f"  WARNING: RAG initialization failed: {exc}")
         return [{"rag_answer": "", "rag_error": f"init_failed:{exc}", "rag_latency_ms": 0} for _ in questions]
@@ -266,12 +267,12 @@ def main():
 
     errors = validate_artifact(artifact)
     if errors:
-        print("\n❌ PUBLICATION GUARD FAILED:")
+        print("\n*** PUBLICATION GUARD FAILED:")
         for e in errors:
             print(f"  - {e}")
         sys.exit(1)
     else:
-        print("\n✅ Publication guard passed.")
+        print("\n*** Publication guard passed.")
 
 
 if __name__ == "__main__":

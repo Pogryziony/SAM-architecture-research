@@ -25,6 +25,7 @@ from nexus.reasoning.verifier import Verifier
 from nexus.utils.config import DEFAULT_CONFIG
 
 from nexus.pipeline.config import ProductionNEXUSConfig, validate_config
+from nexus.pipeline.entity_resolver import EntityResolver
 
 
 @dataclass
@@ -87,6 +88,7 @@ class NEXUSRunner:
         graph: InMemoryGraphStore,
         config: ProductionNEXUSConfig | None = None,
         model: ModelInterface | None = None,
+        entity_resolver: EntityResolver | None = None,
     ):
         self.graph = graph
         self.config = config or ProductionNEXUSConfig.lexical_only()
@@ -94,6 +96,7 @@ class NEXUSRunner:
         self._verifier: Verifier | None = None
         self._er3_model: Any = None
         self._er3_tokenizer: Any = None
+        self._entity_resolver = entity_resolver
 
     @property
     def verifier(self) -> Verifier:
@@ -294,9 +297,15 @@ class NEXUSRunner:
                 if parsed:
                     qr.parsed_intent = parsed.intent
             elif self.config.pipeline_id.entity_ranker_v3_enabled:
-                er3_entities = self._resolve_entities_er3(question)
+                # Use injected resolver if available, otherwise fall back to internal ER3
+                if self._entity_resolver is not None:
+                    er3_entities = self._entity_resolver.resolve(question, self.graph)
+                    er3_method = "entity_ranker_v3_injected"
+                else:
+                    er3_entities = self._resolve_entities_er3(question)
+                    er3_method = "entity_ranker_v3_internal"
                 qr.predicted_entities = er3_entities
-                qr.entity_resolution_method = "entity_ranker_v3"
+                qr.entity_resolution_method = er3_method
                 qr.selected_entry_nodes = er3_entities[:self.config.max_entry_nodes]
                 qr.lexical_fallback_used = False
 
@@ -329,6 +338,7 @@ class NEXUSRunner:
                 result = result_raw
 
             qr.graph_paths_count = result.get("path_count", 0)
+            qr.candidate_pool_size = len(qr.predicted_entities)
             qr.path_scores = list(result.get("path_scores", []))
             qr.cascade_level = result.get("cascade_level", 0)
             qr.answer = result.get("answer", "")
