@@ -371,13 +371,20 @@ def train_v2(
 
 
 def main() -> int:
+    from stack.encoder.training_presets import apply_preset, list_presets, get_preset
+
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--manifest", required=True, type=Path)
+    parser.add_argument("--manifest", type=Path, help="Path to dataset manifest (required unless --list-presets)")
     parser.add_argument("--config", default="training/nexus_realizer_v1.json", type=Path)
     parser.add_argument("--mode", choices=("pilot", "train"), default="pilot")
+    parser.add_argument("--preset", default=None, help="Training intensity preset (smoke/quick/pilot/standard/full)")
+    parser.add_argument("--list-presets", action="store_true", help="List available presets and exit")
     parser.add_argument("--readiness", type=Path)
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--epochs", type=int, default=None, help="Override config epochs")
+    parser.add_argument("--patience", type=int, default=None, help="Override preset/patience")
+    parser.add_argument("--batch-size", type=int, default=None, help="Override batch size")
+    parser.add_argument("--lr", type=float, default=None, help="Override learning rate")
     parser.add_argument("--gen-val-samples", type=int, default=20, help="Validation records for per-epoch generation")
     parser.add_argument("--decoder-strategy", default="greedy", choices=("greedy", "beam", "sample"))
     parser.add_argument("--rep-penalty", type=float, default=1.2, help="Repetition penalty (>1.0)")
@@ -386,6 +393,28 @@ def main() -> int:
     parser.add_argument("--temperature", type=float, default=1.0)
     parser.add_argument("--top-k", type=int, default=0)
     args = parser.parse_args()
+
+    if args.list_presets:
+        for name in list_presets():
+            p = get_preset(name)
+            note = p.pop("note", "")
+            print(f"  {name:12s} epochs={p['epochs']:>3d}  patience={p.get('patience', '?'):>3d}")
+            if note:
+                print(f"               {note}")
+        return 0
+
+    # Apply preset overrides
+    if args.preset:
+        cli = {"epochs": args.epochs, "patience": args.patience, "batch_size": args.batch_size}
+        cli = {k: v for k, v in cli.items() if v is not None}
+        preset_params = apply_preset(args.preset, model_type="realizer", cli_overrides=cli)
+        if args.epochs is None:
+            args.epochs = preset_params["epochs"]
+        if args.patience is None and "patience" in preset_params:
+            args.patience = preset_params["patience"]
+        if args.batch_size is None and "batch_size" in preset_params:
+            args.batch_size = preset_params["batch_size"]
+        print(f"Preset '{args.preset}': epochs={args.epochs}, patience={args.patience}, batch_size={args.batch_size}")
 
     dc = DecoderConfig(
         strategy=args.decoder_strategy,

@@ -1,0 +1,56 @@
+{
+  "schema_version": "nexus-training-presets-v1",
+  "description": "Predefined training intensity profiles for NEXUS models (Realizer and ER3). Use --preset <name> to apply a profile. CLI flags (--epochs, --lr, etc.) override preset values.",
+  "created_utc": "2026-07-15",
+  "presets": {
+    "smoke": {
+      "epochs": 1,
+      "patience": 1,
+      "batch_size": 4,
+      "note": "Pipeline smoke test — 1 epoka, sprawdzenie czy wszystko dziala"
+    },
+    "quick": {
+      "epochs": 5,
+      "patience": 3,
+      "batch_size": 8,
+      "note": "Szybka iteracja — development i debugowanie"
+    },
+    "pilot": {
+      "epochs": 12,
+      "patience": 5,
+      "batch_size": 16,
+      "note": "Pilot z generation-aware evaluation, per-epoch metryki"
+    },
+    "standard": {
+      "epochs": 25,
+      "patience": 8,
+      "batch_size": 16,
+      "note": "Standardowy trening — pelny cykl z early stopping"
+    },
+    "full": {
+      "epochs": 50,
+      "patience": 10,
+      "batch_size": 16,
+      "note": "Pelny trening produkcyjny — maksymalna liczba epok"
+    }
+  },
+  "model_defaults": {
+    "realizer": {
+      "learning_rate": 0.0005,
+      "batch_size": 16,
+      "max_input_tokens": 512,
+      "decoder_strategy": "greedy",
+      "rep_penalty": 1.2,
+      "no_repeat_ngram": 3
+    },
+    "er3": {
+      "learning_rate": 0.001,
+      "embed_dim": 128,
+      "hidden_dim": 256,
+      "proj_dim": 64,
+      "dropout": 0.3,
+      "weight_decay": 1e-05,
+      "hard_negative_k": 10
+    }
+  }
+}
