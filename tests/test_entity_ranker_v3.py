@@ -34,9 +34,6 @@ def _build_interaction_scorer() -> Any:
     """Build a minimal bilinear interaction model for testing.
 
     score(q, e) = dot(W_q @ q_enc, W_e @ e_enc)
-
-    Weights are explicitly initialised to guarantee question conditioning
-    regardless of the platform's default random init behaviour.
     """
     import torch
     import torch.nn as nn
@@ -44,17 +41,14 @@ def _build_interaction_scorer() -> Any:
     class BilinearEntityScorer(nn.Module):
         def __init__(self, feat_dim: int = 8, proj_dim: int = 4):
             super().__init__()
-            self.q_proj = nn.Linear(feat_dim, proj_dim, bias=False)
-            self.e_proj = nn.Linear(feat_dim, proj_dim, bias=False)
-            # Explicit weights that are guaranteed non-zero and
-            # distinguish different question vectors.
-            with torch.no_grad():
-                self.q_proj.weight.copy_(torch.eye(proj_dim, feat_dim))
-                self.e_proj.weight.copy_(torch.eye(proj_dim, feat_dim))
+            self.q_proj = nn.Linear(feat_dim, proj_dim)
+            self.e_proj = nn.Linear(feat_dim, proj_dim)
 
         def forward(self, q_encoding, e_encodings):
+            # q_encoding: [B, feat_dim], e_encodings: [B, K, feat_dim]
             q = self.q_proj(q_encoding)  # [B, proj_dim]
             e = self.e_proj(e_encodings)  # [B, K, proj_dim]
+            # Dot product per candidate
             scores = (q.unsqueeze(1) * e).sum(dim=-1)  # [B, K]
             return scores
 
