@@ -290,7 +290,7 @@ def test_documentation_references_existing_artifacts():
             rm_er3_status = line.strip()
             break
 
-    expected = "REPORTED PASS / REPRODUCIBILITY INCOMPLETE"
+    expected = "VALIDATION PASS / EXTERNAL CHECKPOINT REQUIRED"
     assert expected in sr_er3_status
     assert expected in rm_er3_status
     assert "AUDITABLE PASS" not in sr_er3_status

@@ -15,7 +15,7 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from nexus.graph.store import InMemoryGraphStore
 from nexus.query.parser import parse_question, ParsedQuery
@@ -25,7 +25,11 @@ from nexus.reasoning.verifier import Verifier
 from nexus.utils.config import DEFAULT_CONFIG
 
 from nexus.pipeline.config import ProductionNEXUSConfig, validate_config
-from nexus.pipeline.entity_resolver import EntityResolver
+from nexus.pipeline.entity_resolver import (
+    EntityResolver,
+    ResolutionResult,
+    coerce_resolution_result,
+)
 
 
 @dataclass
@@ -38,6 +42,12 @@ class QuestionResult:
     predicted_entities: list[str] = field(default_factory=list)
     entity_resolution_method: str = ""
     candidate_pool_size: int = 0
+    resolution_candidates: list[dict[str, Any]] = field(default_factory=list)
+    resolver_name: str = ""
+    resolver_version: str = ""
+    resolver_threshold: float | None = None
+    resolver_rejection_reason: str = ""
+    resolver_latency_ms: float = 0.0
     selected_entry_nodes: list[str] = field(default_factory=list)
     graph_paths_count: int = 0
     path_scores: list[float] = field(default_factory=list)
@@ -89,14 +99,16 @@ class NEXUSRunner:
         config: ProductionNEXUSConfig | None = None,
         model: ModelInterface | None = None,
         entity_resolver: EntityResolver | None = None,
+        normalizer: Callable[[str], str] | None = None,
+        dialogue_state: Any = None,
     ):
         self.graph = graph
         self.config = config or ProductionNEXUSConfig.lexical_only()
         self.model = model
         self._verifier: Verifier | None = None
-        self._er3_model: Any = None
-        self._er3_tokenizer: Any = None
         self._entity_resolver = entity_resolver
+        self._normalizer = normalizer
+        self._dialogue_state = dialogue_state
 
     @property
     def verifier(self) -> Verifier:
@@ -116,6 +128,13 @@ class NEXUSRunner:
         Each question dict must have 'id' and 'question'.
         """
         errors = validate_config(self.config)
+        if (
+            self.config.pipeline_id.entity_ranker_v3_enabled
+            and self._entity_resolver is None
+        ):
+            errors.append(
+                "entity_ranker_v3 is enabled but no EntityResolver was injected"
+            )
         if errors:
             return PipelineResult(
                 config_hash=self.config.config_hash,
@@ -213,57 +232,6 @@ class NEXUSRunner:
             evaluation_mode="oracle",
         )
 
-    def _load_er3(self):
-        """Lazy-load Entity Ranker V3 if enabled."""
-        if self._er3_model is not None:
-            return
-        if not self.config.pipeline_id.entity_ranker_v3_enabled:
-            return
-        try:
-            from stack.encoder.entity_ranker_v3 import load_ranker_v3
-            model, tokenizer, _ = load_ranker_v3(
-                self.config.pipeline_id.entity_ranker_v3_dir
-            )
-            model.eval()
-            self._er3_model = model
-            self._er3_tokenizer = tokenizer
-        except Exception as exc:
-            raise RuntimeError(
-                f"Entity Ranker V3 enabled but failed to load from "
-                f"{self.config.pipeline_id.entity_ranker_v3_dir}: {exc}"
-            )
-
-    def _resolve_entities_er3(self, question: str) -> list[str]:
-        """Use Entity Ranker V3 for exhaustive canonical-vocabulary ranking."""
-        import torch
-        from stack.encoder.canonical_mapping import _is_canonical_id, build_canonical_mapping, apply_canonical_mapping
-        from stack.encoder.entity_text import build_entity_text
-
-        self._load_er3()
-        if self._er3_model is None:
-            return []
-
-        # Build exhaustive canonical candidate pool
-        all_canonical = sorted(
-            nid for nid in self.graph._nodes
-            if _is_canonical_id(str(nid)) and self.graph.get_node(nid) is not None
-        )
-        entity_texts = [build_entity_text(cid, self.graph) for cid in all_canonical]
-
-        # Score with ER3
-        offsets, indices = self._er3_tokenizer.tokenize_batch([question])
-        with torch.no_grad():
-            scores = self._er3_model(
-                torch.tensor(indices), torch.tensor(offsets[:-1]),
-                entity_texts, self._er3_tokenizer,
-            )
-        ranked_indices = torch.argsort(scores[0], descending=True).tolist()
-        ranked_ids = [all_canonical[i] for i in ranked_indices]
-
-        # Apply canonical mapping and cap at K=10
-        mapping = build_canonical_mapping(self.graph)
-        return apply_canonical_mapping(ranked_ids, mapping, top_k=10)
-
     def _run_single(
         self,
         qid: str,
@@ -278,11 +246,15 @@ class NEXUSRunner:
         )
 
         try:
-            # ── Entity resolution: ER3 or lexical parser ──
+            resolution: ResolutionResult | None = None
+            # ── Entity resolution: injected resolver, oracle, or lexical ──
             if entry_nodes_override is not None:
                 oracle_entities = list(entry_nodes_override)[:self.config.max_entry_nodes]
                 qr.predicted_entities = oracle_entities
                 qr.entity_resolution_method = "oracle"
+                qr.resolver_name = "oracle"
+                qr.resolver_version = "1"
+                qr.candidate_pool_size = len(oracle_entities)
                 qr.selected_entry_nodes = oracle_entities
                 qr.lexical_fallback_used = False
                 result = answer_question(
@@ -291,30 +263,40 @@ class NEXUSRunner:
                     model=model,
                     verifier=self.verifier,
                     config=self.config,
+                    normalizer=self._normalizer,
+                    dialogue_state=self._dialogue_state,
                     entry_nodes_override=oracle_entities,
                 )
                 parsed = result.get("parsed_query")
                 if parsed:
                     qr.parsed_intent = parsed.intent
-            elif self.config.pipeline_id.entity_ranker_v3_enabled:
-                # Use injected resolver if available, otherwise fall back to internal ER3
-                if self._entity_resolver is not None:
-                    er3_entities = self._entity_resolver.resolve(question, self.graph)
-                    er3_method = "entity_ranker_v3_injected"
-                else:
-                    er3_entities = self._resolve_entities_er3(question)
-                    er3_method = "entity_ranker_v3_internal"
-                qr.predicted_entities = er3_entities
-                qr.entity_resolution_method = er3_method
-                qr.selected_entry_nodes = er3_entities[:self.config.max_entry_nodes]
-                qr.lexical_fallback_used = False
+            elif self._entity_resolver is not None:
+                resolution = coerce_resolution_result(
+                    self._entity_resolver.resolve(question, self.graph),
+                    resolver_name=self._entity_resolver.__class__.__name__,
+                )
+                selected = resolution.selected_entity_ids[:self.config.max_entry_nodes]
+                qr.predicted_entities = list(resolution.selected_entity_ids)
+                qr.entity_resolution_method = resolution.resolver_name
+                qr.resolver_name = resolution.resolver_name
+                qr.resolver_version = resolution.resolver_version
+                qr.resolver_threshold = resolution.threshold
+                qr.resolver_rejection_reason = resolution.rejection_reason
+                qr.resolver_latency_ms = resolution.latency_ms
+                qr.resolution_candidates = [
+                    {"entity_id": item.entity_id, "score": item.score}
+                    for item in resolution.candidates
+                ]
+                qr.candidate_pool_size = resolution.candidate_pool_size
+                qr.selected_entry_nodes = selected
+                qr.lexical_fallback_used = resolution.fallback_used
 
-                # Pass ER3 entities to answer_question via entry_nodes_override.
-                # This ensures traversal uses ER3 entities, not lexical ones.
                 result = answer_question(
                     question, self.graph, model=model,
                     verifier=self.verifier, config=self.config,
-                    entry_nodes_override=er3_entities,
+                    normalizer=self._normalizer,
+                    dialogue_state=self._dialogue_state,
+                    entry_nodes_override=selected,
                 )
                 parsed = result.get("parsed_query")
                 if parsed:
@@ -323,6 +305,8 @@ class NEXUSRunner:
                 result_raw = answer_question(
                     question, self.graph, model=model,
                     verifier=self.verifier, config=self.config,
+                    normalizer=self._normalizer,
+                    dialogue_state=self._dialogue_state,
                 )
                 parsed = result_raw.get("parsed_query")
                 if parsed:
@@ -333,15 +317,11 @@ class NEXUSRunner:
                     qr.lexical_fallback_used = True
 
             # ── Continue with answer_question if lexical ──
-            if (entry_nodes_override is None
-                    and not self.config.pipeline_id.entity_ranker_v3_enabled):
+            if entry_nodes_override is None and self._entity_resolver is None:
                 result = result_raw
 
             qr.graph_paths_count = result.get("path_count", 0)
-            # candidate_pool_size = raw candidates before selection
-            if self.config.pipeline_id.entity_ranker_v3_enabled and self._entity_resolver is not None:
-                qr.candidate_pool_size = len(getattr(self._entity_resolver, '_canonical_ids', []))
-            elif parsed:
+            if resolution is None and qr.candidate_pool_size == 0 and parsed:
                 qr.candidate_pool_size = len(parsed.entity_ids)
             qr.path_scores = list(result.get("path_scores", []))
             qr.cascade_level = result.get("cascade_level", 0)
@@ -383,8 +363,8 @@ class NEXUSRunner:
 
             # Check lexical fallback
             if (entry_nodes_override is None
-                    and not self.config.enable_associative_encoder
-                    and not self.config.pipeline_id.entity_ranker_v3_enabled):
+                    and self._entity_resolver is None
+                    and not self.config.enable_associative_encoder):
                 qr.lexical_fallback_used = True
 
             # Failure categorization
@@ -426,6 +406,12 @@ class NEXUSRunner:
                     "predicted_entities": qr.predicted_entities,
                     "entity_resolution_method": qr.entity_resolution_method,
                     "candidate_pool_size": qr.candidate_pool_size,
+                    "resolution_candidates": qr.resolution_candidates,
+                    "resolver_name": qr.resolver_name,
+                    "resolver_version": qr.resolver_version,
+                    "resolver_threshold": qr.resolver_threshold,
+                    "resolver_rejection_reason": qr.resolver_rejection_reason,
+                    "resolver_latency_ms": qr.resolver_latency_ms,
                     "selected_entry_nodes": qr.selected_entry_nodes,
                     "graph_paths_count": qr.graph_paths_count,
                     "path_scores": qr.path_scores,

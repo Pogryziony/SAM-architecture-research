@@ -72,7 +72,7 @@ class TestApplyPreset:
     def test_apply_overrides_current(self):
         params = apply_preset("smoke", {"epochs": 999, "lr": 0.01})
         assert params["epochs"] == 1  # smoke overrides
-        assert params["lr"] == 0.01  # preserved from current
+        assert params["learning_rate"] == 0.01  # normalized and preserved
 
     def test_cli_overrides_preset(self):
         params = apply_preset("smoke", {"epochs": 99}, cli_overrides={"epochs": 3})

@@ -227,6 +227,7 @@ def answer_question(
     config: NEXUSConfig = DEFAULT_CONFIG,
     embedding_index=None,
     dialogue_state=None,
+    normalizer=None,
     entry_nodes_override: list[str] | None = None,
 ) -> dict[str, Any]:
     """
@@ -251,6 +252,8 @@ def answer_question(
        config: NEXUSConfig with tunable parameters
        embedding_index: Optional NodeEmbeddingIndex for semantic entity resolution.
        dialogue_state: Optional DialogueState for anaphora/ellipsis resolution.
+       normalizer: Optional injected text normalizer used when normalization is
+          enabled. NEXUS does not import the stack implementation directly.
        entry_nodes_override: When provided, use these entity IDs for traversal
           instead of the parser's results. Parser is still called for intent
           detection. The override controls which entities actually reach
@@ -299,7 +302,8 @@ def answer_question(
     t0 = time.perf_counter()
     parsed = parse_question(question, graph, cutoff=0.6, config=config,
                             embedding_index=embedding_index,
-                            dialogue_state=dialogue_state)
+                            dialogue_state=dialogue_state,
+                            normalizer=normalizer)
     timing["parse_time"] = round(time.perf_counter() - t0, 6)
 
     result["parsed_query"] = parsed

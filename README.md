@@ -11,13 +11,14 @@
 NEXUS is a **graph-first reasoning architecture**. It stores knowledge as an explicit graph
 of entities, relations, and sources — not as dense weights or document chunks.
 
-Instead of: `documents → embeddings → top-K chunks → LLM`
+Instead of: `documents → embeddings → top-K chunks → general-purpose LLM`
 
-NEXUS goes: `entities → relations → graph paths → evidence → small reasoning model`
+NEXUS goes: `entities → relations → graph paths → evidence → constrained realizer`
 
 **The core bet:** reasoning should start from graph traversal, not text generation.
-The LLM is a language interface and lightweight reasoner; the domain intelligence
-comes from the graph.
+The graph remains the source of domain knowledge. Learned components are small,
+CPU-oriented selectors or realizers; they do not replace graph traversal with a
+general-purpose LLM reasoning path.
 
 | Property | RAG | NEXUS |
 |----------|-----|-------|
@@ -36,11 +37,11 @@ comes from the graph.
 | Reasoning pipeline | ✅ Designed — entity extraction → traversal → evidence → verify |
 | Graph store | ✅ Implemented — `InMemoryGraphStore` with 1,866 nodes |
 | Associative encoder (Stage 1D) | ✅ PASS — frozen-split entity_recall 65.82% (181/275) with validation-selected parser handoff cap 200; all immutable Stage 1 gates passed. |
-| Entity Ranker V3 | ✅ **REPORTED PASS / REPRODUCIBILITY INCOMPLETE** — validation canonical recall@10=77.47% and historical frozen canonical recall@10=79.64%. Aggregate artifacts and non-weight model files are committed. Weights are intentionally external and are not currently published; future evaluation requires a local `weights.pt` matching the recorded SHA-256. Per-question frozen predictions and the original canonical-mapping snapshot were not captured. The consumed frozen split is permanently locked. |
-| Realization L1 (Stage 2) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
-| Dialogue state (Stage 3) | ⚠️ Unvalidated — built on failed Stage 1b foundation |
-| Realization L2 (Stage 4) | ✅ Pre-training gates passed: 7,127 unique verified pairs, leakage-safe 80/20 split, Stage 2 relevance 78.33%; training not started — see [status](docs/nexus-realizer-pretraining-status.md) |
-| End-to-end QA | ❌ Not validated — stack halted at Stage 1b |
+| Entity Ranker V3 | ⚠️ **VALIDATION PASS / EXTERNAL CHECKPOINT REQUIRED** — latest retrain reports canonical recall@10=72.53% and +39.0pp over the trivial baseline. Config and vocabulary are tracked; weights remain external and must match the manifest SHA-256. Historical frozen claims remain non-repeatable because that split is consumed. |
+| Realization L1 (Stage 2) | ⚠️ **RERUN REQUIRED** — the earlier registered 30-case baseline reported 78.33% relevance, but the committed July 15 artifacts are only 5-case smoke runs. The runner now distinguishes registered and smoke protocols and writes a real file-hash sidecar. |
+| Dialogue state (Stage 3) | ❌ **FAIL** — latest 110-turn run: reference resolution 15.62% and resolver p50 12.166ms. Stage 3 now uses the injected resolver path; it must be rerun with the verified external ER3 checkpoint. |
+| Realization L2 (Stage 4) | ⚠️ **PILOT BLOCKED** — 7,127 unique train-only pairs exist and the first 50-epoch CPU run completed, but post-training answer metrics regressed. Decoder repetition was diagnosed and mitigated; a new 1→3→5 epoch pilot is required after all gates pass. |
+| End-to-end QA | ❌ Not validated — Stage 0, registered Stage 2 and Stage 3 evidence must be regenerated under the corrected contracts. |
 
 ### Quick start (NEXUS)
 
@@ -71,7 +72,8 @@ for p in paths:
 - [Graph Memory Model](docs/graph-memory.md) — data model, node/edge types, construction pipeline
 - [Graph Reasoning](docs/graph-reasoning.md) — traversal, path scoring, evidence building, verification
 - [Auditability & Reasoning Roadmap](docs/nexus-auditability-roadmap.md) — proof traces, provenance, oracle evaluation, and staged acceptance gates
-- [Realizer v1 Pre-training Status](docs/nexus-realizer-pretraining-status.md) — dataset, oracle, Stage 2, runtime gates, and launch procedure
+- [Realizer v1 Training Status](docs/nexus-realizer-pretraining-status.md) — first-run outcome, current blockers, gates, and safe pilot procedure
+- [Pilot Integrity and Next Run](docs/nexus-pilot-integrity.md) — corrected preset wiring, resolver contracts, blockers, and safe pilot order
 - [RAG vs NEXUS](docs/rag-vs-graph-nexus.md) — detailed comparison, when to use which
 
 ### Repository structure
@@ -122,4 +124,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-13 (Realizer v1 pre-training pipeline implemented; training remains fail-closed until every preregistered gate passes.)*
+*Last updated: 2026-07-16 (training and decoder diagnosis recorded; corrected pilot remains fail-closed until Stage 0/2/3 are regenerated and pass.)*

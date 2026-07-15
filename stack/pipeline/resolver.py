@@ -9,10 +9,17 @@ NEXUS pipeline. It implements exhaustive canonical-vocabulary ranking.
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
+from typing import Callable
 
 from nexus.graph.store import InMemoryGraphStore
-from nexus.pipeline.entity_resolver import EntityResolver
+from nexus.pipeline.entity_resolver import (
+    EntityResolver,
+    ResolutionCandidate,
+    ResolutionResult,
+    coerce_resolution_result,
+)
 
 
 class ER3Resolver:
@@ -71,7 +78,9 @@ class ER3Resolver:
             raise FileNotFoundError(f"ER3 manifest not found at {manifest_path}")
 
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        expected_sha256 = manifest["files"]["weights.pt"]["sha256"]
+        weights_manifest = manifest["files"]["weights.pt"]
+        expected_sha256 = weights_manifest["sha256"]
+        expected_size = int(weights_manifest.get("size", 0))
 
         # Resolve weights path
         if weights_path is None:
@@ -87,6 +96,12 @@ class ER3Resolver:
             )
 
         if verify_sha256:
+            actual_size = weights_file.stat().st_size
+            if expected_size and actual_size != expected_size:
+                raise ValueError(
+                    f"ER3 weights size mismatch: expected {expected_size}, "
+                    f"actual {actual_size}, path: {weights_file}"
+                )
             actual = hashlib.sha256(weights_file.read_bytes()).hexdigest()
             if actual != expected_sha256:
                 raise ValueError(
@@ -96,15 +111,18 @@ class ER3Resolver:
                     f"  path:     {weights_file}"
                 )
 
-        model, tokenizer, config = load_ranker_v3(str(model_dir))
+        model, tokenizer, config = load_ranker_v3(
+            str(model_dir), weights_path=str(weights_file)
+        )
         model.eval()
         return cls(model, tokenizer, graph)
 
-    def resolve(self, question: str, graph: InMemoryGraphStore) -> list[str]:
+    def resolve(self, question: str, graph: InMemoryGraphStore) -> ResolutionResult:
         """Resolve entities using ER3 exhaustive canonical-vocabulary ranking."""
         import torch
         from stack.encoder.canonical_mapping import apply_canonical_mapping
 
+        started = time.perf_counter()
         offsets, indices = self._tokenizer.tokenize_batch([question])
         with torch.no_grad():
             scores = self._model(
@@ -113,9 +131,109 @@ class ER3Resolver:
                 self._canonical_texts,
                 self._tokenizer,
             )
-        ranked_indices = torch.argsort(scores[0], descending=True).tolist()
-        ranked_ids = [self._canonical_ids[i] for i in ranked_indices]
-        return apply_canonical_mapping(ranked_ids, self._mapping, top_k=10)
+        scored = sorted(
+            (
+                (self._canonical_ids[index], float(scores[0][index].detach()))
+                for index in range(len(self._canonical_ids))
+            ),
+            key=lambda item: (-item[1], item[0]),
+        )
+        ranked_ids = [entity_id for entity_id, _ in scored]
+        selected = apply_canonical_mapping(ranked_ids, self._mapping, top_k=10)
+        return ResolutionResult(
+            selected_entity_ids=selected,
+            candidates=[
+                ResolutionCandidate(entity_id=entity_id, score=score)
+                for entity_id, score in scored
+            ],
+            candidate_pool_size=len(scored),
+            resolver_name="entity_ranker_v3",
+            resolver_version="3",
+            latency_ms=round((time.perf_counter() - started) * 1000, 3),
+            rejection_reason="" if selected else "no_candidate_selected",
+        )
+
+
+class LexicalResolver:
+    """Composition-layer adapter for the rule-based NEXUS parser."""
+
+    def __init__(
+        self,
+        *,
+        dialogue_state=None,
+        normalizer: Callable[[str], str] | None = None,
+        config=None,
+    ):
+        self.dialogue_state = dialogue_state
+        self.normalizer = normalizer
+        self.config = config
+
+    def resolve(self, question: str, graph: InMemoryGraphStore) -> ResolutionResult:
+        from nexus.query.parser import parse_question
+
+        started = time.perf_counter()
+        kwargs = {
+            "dialogue_state": self.dialogue_state,
+            "normalizer": self.normalizer,
+        }
+        if self.config is not None:
+            kwargs["config"] = self.config
+        parsed = parse_question(question, graph, **kwargs)
+        candidates = [
+            ResolutionCandidate(entity_id=entity_id)
+            for entity_id in parsed.entity_ids
+        ]
+        return ResolutionResult(
+            selected_entity_ids=list(parsed.entity_ids),
+            candidates=candidates,
+            candidate_pool_size=len(candidates),
+            resolver_name="lexical_parser",
+            resolver_version="1",
+            fallback_used=True,
+            latency_ms=round((time.perf_counter() - started) * 1000, 3),
+            rejection_reason="" if candidates else "no_candidate_selected",
+        )
+
+
+class DialogueAwareResolver:
+    """Combine dialogue references with any injected base resolver."""
+
+    def __init__(self, base: EntityResolver, dialogue_state, *, top_k: int = 10):
+        self.base = base
+        self.dialogue_state = dialogue_state
+        self.top_k = top_k
+
+    def resolve(self, question: str, graph: InMemoryGraphStore) -> ResolutionResult:
+        started = time.perf_counter()
+        base_result = coerce_resolution_result(
+            self.base.resolve(question, graph),
+            resolver_name=self.base.__class__.__name__,
+        )
+        contextual = self.dialogue_state.resolve_references(question, graph)
+        selected: list[str] = []
+        for entity_id in [*contextual, *base_result.selected_entity_ids]:
+            if entity_id not in selected:
+                selected.append(entity_id)
+            if len(selected) >= self.top_k:
+                break
+
+        candidates = list(base_result.candidates)
+        known = {item.entity_id for item in candidates}
+        for entity_id in reversed(contextual):
+            if entity_id not in known:
+                candidates.insert(0, ResolutionCandidate(entity_id=entity_id, score=1.0))
+
+        return ResolutionResult(
+            selected_entity_ids=selected,
+            candidates=candidates,
+            candidate_pool_size=max(base_result.candidate_pool_size, len(candidates)),
+            resolver_name=f"dialogue+{base_result.resolver_name}",
+            resolver_version="1",
+            threshold=base_result.threshold,
+            fallback_used=base_result.fallback_used,
+            rejection_reason="" if selected else "no_candidate_selected",
+            latency_ms=round((time.perf_counter() - started) * 1000, 3),
+        )
 
 
 class LexicalFallbackResolver:
@@ -124,5 +242,10 @@ class LexicalFallbackResolver:
     Used when the caller wants explicit fallback tracking.
     """
 
-    def resolve(self, question: str, graph: InMemoryGraphStore) -> list[str]:
-        return []
+    def resolve(self, question: str, graph: InMemoryGraphStore) -> ResolutionResult:
+        return ResolutionResult(
+            resolver_name="lexical_fallback",
+            resolver_version="1",
+            fallback_used=True,
+            rejection_reason="delegated_to_internal_parser",
+        )

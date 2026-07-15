@@ -24,6 +24,21 @@ _project_root = Path(__file__).parent.parent.resolve()
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
+# Keep metadata-only CLI operations usable on machines without PyTorch.
+if __name__ == "__main__" and "--list-presets" in sys.argv:
+    from stack.encoder.training_presets import get_preset, list_presets
+
+    for _name in list_presets():
+        _preset = get_preset(_name)
+        _note = _preset.pop("note", "")
+        print(
+            f"  {_name:12s} epochs={_preset['epochs']:>3d}  "
+            f"patience={_preset.get('patience', '?'):>3d}"
+        )
+        if _note:
+            print(f"               {_note}")
+    raise SystemExit(0)
+
 import torch
 
 from benchmarks.train_nexus_realizer import (
@@ -33,6 +48,8 @@ from benchmarks.train_nexus_realizer import (
     _batch,
     _assert_external_output,
     _loss,
+    apply_training_overrides,
+    effective_config_sha256,
     validate_readiness_for_training,
 )
 from nexus.realizer.model import build_model, parameter_count, validate_model_config
@@ -122,6 +139,7 @@ def train_v2(
     readiness_path: Path | None = None,
     output_dir: Path | None = None,
     epoch_override: int | None = None,
+    training_overrides: dict[str, Any] | None = None,
     decoder_config: DecoderConfig | None = None,
     gen_val_samples: int = 20,
 ) -> dict[str, Any]:
@@ -135,7 +153,10 @@ def train_v2(
     """
     manifest, config, splits = load_training_inputs(manifest_path, config_path)
     if epoch_override is not None and epoch_override > 0:
-        config["training"]["epochs"] = epoch_override
+        training_overrides = {**(training_overrides or {}), "epochs": epoch_override}
+    apply_training_overrides(config, training_overrides)
+    effective_training = dict(config["training"])
+    effective_hash = effective_config_sha256(config)
 
     if mode == "train":
         if readiness_path is None:
@@ -198,7 +219,7 @@ def train_v2(
         steps = 12
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=steps)
 
-    patience_limit = 3 if mode == "pilot" else int(config["training"]["early_stopping_patience"])
+    patience_limit = int(config["training"]["early_stopping_patience"])
     best_val_loss = float("inf")
     best_gen_quality = -1.0
     best_state = None
@@ -332,6 +353,8 @@ def train_v2(
         "status": "V2_TRAINING_COMPLETE" if mode == "train" else "V2_PILOT_COMPLETE",
         "dataset_sha256": manifest["dataset_sha256"],
         "config_sha256": hashlib.sha256(config_path.read_bytes()).hexdigest(),
+        "effective_config_sha256": effective_hash,
+        "effective_training_config": effective_training,
         "parameter_count": params,
         "initial_loss": round(first_loss, 6),
         "final_loss": round(epoch_history[-1]["train_loss"], 6),
@@ -386,9 +409,9 @@ def main() -> int:
     parser.add_argument("--batch-size", type=int, default=None, help="Override batch size")
     parser.add_argument("--lr", type=float, default=None, help="Override learning rate")
     parser.add_argument("--gen-val-samples", type=int, default=20, help="Validation records for per-epoch generation")
-    parser.add_argument("--decoder-strategy", default="greedy", choices=("greedy", "beam", "sample"))
-    parser.add_argument("--rep-penalty", type=float, default=1.2, help="Repetition penalty (>1.0)")
-    parser.add_argument("--no-repeat-ngram", type=int, default=3, help="No-repeat n-gram size (0=off)")
+    parser.add_argument("--decoder-strategy", default=None, choices=("greedy", "beam", "sample"))
+    parser.add_argument("--rep-penalty", type=float, default=None, help="Repetition penalty (>1.0)")
+    parser.add_argument("--no-repeat-ngram", type=int, default=None, help="No-repeat n-gram size (0=off)")
     parser.add_argument("--beam-width", type=int, default=3)
     parser.add_argument("--temperature", type=float, default=1.0)
     parser.add_argument("--top-k", type=int, default=0)
@@ -405,33 +428,50 @@ def main() -> int:
 
     # Apply preset overrides
     if args.preset:
-        cli = {"epochs": args.epochs, "patience": args.patience, "batch_size": args.batch_size}
+        cli = {
+            "epochs": args.epochs,
+            "patience": args.patience,
+            "batch_size": args.batch_size,
+            "learning_rate": args.lr,
+        }
         cli = {k: v for k, v in cli.items() if v is not None}
         preset_params = apply_preset(args.preset, model_type="realizer", cli_overrides=cli)
-        if args.epochs is None:
-            args.epochs = preset_params["epochs"]
-        if args.patience is None and "patience" in preset_params:
-            args.patience = preset_params["patience"]
-        if args.batch_size is None and "batch_size" in preset_params:
-            args.batch_size = preset_params["batch_size"]
-        print(f"Preset '{args.preset}': epochs={args.epochs}, patience={args.patience}, batch_size={args.batch_size}")
+        training_overrides = preset_params
+        print(f"Preset '{args.preset}': {training_overrides}")
+    else:
+        training_overrides = {
+            "epochs": args.epochs,
+            "patience": args.patience,
+            "batch_size": args.batch_size,
+            "learning_rate": args.lr,
+        }
 
     dc = DecoderConfig(
-        strategy=args.decoder_strategy,
-        repetition_penalty=args.rep_penalty,
-        no_repeat_ngram_size=args.no_repeat_ngram,
+        strategy=args.decoder_strategy or training_overrides.get("decoder_strategy", "greedy"),
+        repetition_penalty=(
+            args.rep_penalty
+            if args.rep_penalty is not None
+            else float(training_overrides.get("rep_penalty", 1.2))
+        ),
+        no_repeat_ngram_size=(
+            args.no_repeat_ngram
+            if args.no_repeat_ngram is not None
+            else int(training_overrides.get("no_repeat_ngram", 3))
+        ),
         beam_width=args.beam_width,
         temperature=args.temperature,
         top_k=args.top_k,
     )
 
     try:
+        if args.manifest is None:
+            raise ValueError("--manifest is required unless --list-presets is used")
         result = train_v2(
             args.manifest, args.config,
             mode=args.mode,
             readiness_path=args.readiness,
             output_dir=args.output_dir,
-            epoch_override=args.epochs,
+            training_overrides=training_overrides,
             decoder_config=dc,
             gen_val_samples=args.gen_val_samples,
         )

@@ -24,8 +24,28 @@ from stack.encoder.training_presets import (
     apply_preset,
     get_preset,
     list_presets,
-    DEFAULT_PRESETS_PATH,
 )
+
+
+def _training_config_kwargs(params: dict, seed: int) -> dict:
+    """Map resolved preset values to the real ER3 trainer contract."""
+
+    keys = {
+        "epochs",
+        "patience",
+        "batch_size",
+        "learning_rate",
+        "feature_learning_rate",
+        "weight_decay",
+        "hard_negative_k",
+        "embed_dim",
+        "hidden_dim",
+        "proj_dim",
+        "dropout",
+    }
+    resolved = {key: params[key] for key in keys if key in params}
+    resolved["seed"] = seed
+    return resolved
 
 
 def main() -> int:
@@ -66,7 +86,7 @@ def main() -> int:
     cli_overrides = {
         "epochs": args.epochs,
         "patience": args.patience,
-        "lr": args.lr,
+        "learning_rate": args.lr,
         "batch_size": args.batch_size,
     }
 
@@ -88,19 +108,18 @@ def main() -> int:
     print(f"CLI overrides: {cli_overrides or 'none'}")
 
     # Delegate to the actual training module
-    from stack.encoder.train_ranker_v3 import run_experiment_v3, SEED, K_MAX
+    from stack.encoder.train_ranker_v3 import ER3TrainingConfig, run_experiment_v3
 
-    # Monkey-patch SEED if specified
-    if args.seed != 20260710:
-        import stack.encoder.train_ranker_v3 as tmod
-        tmod.SEED = args.seed
-
-    result = run_experiment_v3()
+    training_config = ER3TrainingConfig(
+        **_training_config_kwargs(params, args.seed)
+    )
+    result = run_experiment_v3(training_config=training_config)
     print(json.dumps({
         "preset": args.preset,
         "winner": result["winner"],
         "run_id": result["run_id"],
         "source_sha": result["source_sha"],
+        "effective_training_config": result["effective_training_config"],
         "proceed_to_frozen": result["proceed_to_frozen"],
     }, indent=2))
     print("\nMetrics:")

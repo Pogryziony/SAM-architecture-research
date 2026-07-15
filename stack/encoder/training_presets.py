@@ -13,6 +13,17 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_PRESETS_PATH = Path(__file__).parents[2] / "training" / "presets.json"
+_METADATA_KEYS = {"note", "description"}
+_ALIASES = {"lr": "learning_rate"}
+
+
+def _normalize_params(values: dict[str, Any] | None) -> dict[str, Any]:
+    normalized: dict[str, Any] = {}
+    for key, value in (values or {}).items():
+        if key in _METADATA_KEYS:
+            continue
+        normalized[_ALIASES.get(key, key)] = value
+    return normalized
 
 
 def load_presets(path: str | Path | None = None) -> dict[str, Any]:
@@ -52,21 +63,28 @@ def apply_preset(
     Priority: cli_overrides > preset > model_defaults > current_params.
     None values in cli_overrides are ignored (not provided).
     """
-    merged = dict(current_params or {})
+    merged = _normalize_params(current_params)
+    normalized_cli = _normalize_params(cli_overrides)
 
     if model_type:
         for k, v in get_model_defaults(model_type, path).items():
-            if cli_overrides is None or k not in cli_overrides or cli_overrides[k] is None:
+            if k not in normalized_cli or normalized_cli[k] is None:
                 merged.setdefault(k, v)
 
-    preset = get_preset(preset_name, path)
+    preset = _normalize_params(get_preset(preset_name, path))
     for k, v in preset.items():
-        if cli_overrides is None or k not in cli_overrides or cli_overrides[k] is None:
+        if k not in normalized_cli or normalized_cli[k] is None:
             merged[k] = v
 
-    if cli_overrides:
-        for k, v in cli_overrides.items():
+    if normalized_cli:
+        for k, v in normalized_cli.items():
             if v is not None:
                 merged[k] = v
+
+    for key in ("epochs", "patience", "batch_size"):
+        if key in merged and (not isinstance(merged[key], int) or merged[key] < 1):
+            raise ValueError(f"{key} must be a positive integer")
+    if "learning_rate" in merged and float(merged["learning_rate"]) <= 0:
+        raise ValueError("learning_rate must be positive")
 
     return merged

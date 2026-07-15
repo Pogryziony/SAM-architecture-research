@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Callable, Optional
 
 from nexus.graph.store import InMemoryGraphStore
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
@@ -113,6 +113,7 @@ def spot_entities(
     graph: InMemoryGraphStore,
     cutoff: float = 0.6,
     config: NEXUSConfig = DEFAULT_CONFIG,
+    normalizer: Callable[[str], str] | None = None,
 ) -> tuple[list[tuple[int, int, str, str]], set[str]]:
     """
     Scan the question text for substrings matching known graph node names.
@@ -129,8 +130,11 @@ def spot_entities(
     # ── Stage 1: Apply normalization sublayer if enabled ──
     original_question = question
     if config.enable_normalization:
-        from stack.normalization.lemmatizer import normalize as norm_fn
-        normalized = norm_fn(question)
+        if normalizer is None:
+            raise RuntimeError(
+                "normalization is enabled but no normalizer was injected"
+            )
+        normalized = normalizer(question)
         if normalized.strip():
             question = normalized
 
@@ -227,6 +231,7 @@ def parse_question(
     encoder_entity_threshold: float = 0.5,
     encoder_result_override: dict | None = None,
     encoder_candidates_override: list[str] | None = None,
+    normalizer: Callable[[str], str] | None = None,
 ) -> ParsedQuery:
     """
     Parse a natural language question into structured query intent.
@@ -258,7 +263,13 @@ def parse_question(
         for acronym, expansion in _ACRONYMS.items():
             if acronym in lowered_q:
                 expanded_temp = f"{expanded_temp} ({expansion})"
-        lex_spots, _ = spot_entities(expanded_temp, graph, cutoff=cutoff)
+        lex_spots, _ = spot_entities(
+            expanded_temp,
+            graph,
+            cutoff=cutoff,
+            config=config,
+            normalizer=normalizer,
+        )
         encoder_candidates = list(encoder_candidates_override or [nid for _, _, _, nid in lex_spots])
         # Add embedding candidates for semantic matches (Decision/Concept nodes)
         if embedding_index is not None:
@@ -308,7 +319,13 @@ def parse_question(
             expanded_question = f"{expanded_question} ({expansion})"
 
     # Spot entities from substring matching
-    entity_spots, wb_matched = spot_entities(expanded_question, graph, cutoff=cutoff)
+    entity_spots, wb_matched = spot_entities(
+        expanded_question,
+        graph,
+        cutoff=cutoff,
+        config=config,
+        normalizer=normalizer,
+    )
 
     entity_ids = [node_id for _, _, _, node_id in entity_spots]
     entity_spans = [(start, end, text) for start, end, text, _ in entity_spots]
@@ -371,15 +388,13 @@ def parse_question(
     # Active entities get a boost in _rank_entities (dialogue_boost).
     dialogue_active_ids: set[str] = set()
     if dialogue_state is not None:
-        # Check for pronoun/definite references
-        if dialogue_state.has_references(question):
-            from stack.dialogue.state import _detect_pronouns
-            refs = _detect_pronouns(question)
-            for ref in refs:
-                resolved = dialogue_state.resolve_reference(ref, graph)
-                if resolved and resolved not in existing_set:
-                    entity_ids.insert(0, resolved)
-                    existing_set.add(resolved)
+        # Reference detection belongs to the injected dialogue component.  The
+        # NEXUS package deliberately knows only its small behavioural contract.
+        resolved_refs = dialogue_state.resolve_references(question, graph)
+        for resolved in resolved_refs:
+            if resolved and resolved not in existing_set:
+                entity_ids.insert(0, resolved)
+                existing_set.add(resolved)
         
         # Get active entity IDs for ranking boost
         dialogue_active_ids = dialogue_state.get_active_entity_ids()

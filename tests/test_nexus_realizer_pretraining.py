@@ -314,6 +314,7 @@ def test_training_loader_detects_dataset_tampering(tmp_path: Path):
 
 
 def test_stage2_uses_scalar_judge_scores_and_registered_deltas(tmp_path: Path):
+    output_path = tmp_path / "stage2.json"
     artifact = run_stage2(
         [{
             "id": "q1",
@@ -324,7 +325,7 @@ def test_stage2_uses_scalar_judge_scores_and_registered_deltas(tmp_path: Path):
         _training_graph(),
         ProductionNEXUSConfig.lexical_only(),
         "a" * 40,
-        str(tmp_path / "stage2.json"),
+        str(output_path),
         {"schema_version": "nexus-stage2-baseline-v1", "naturalness_mean": 35.0, "accuracy_mean": 0.1, "hallucination_mean": 0.5},
         protocol="smoke_test_stage2",
     )
@@ -336,6 +337,14 @@ def test_stage2_uses_scalar_judge_scores_and_registered_deltas(tmp_path: Path):
     assert artifact["per_question"][0]["evidence"]
     assert artifact["canonical_content_sha256"]
     assert artifact["serialized_file_sha256"]
+    assert artifact["protocol_kind"] == "smoke_or_adhoc"
+    assert artifact["registered_gate_status"] == "NOT_APPLICABLE"
+    assert artifact["status"].startswith("SMOKE_")
+    import hashlib
+    actual = hashlib.sha256(output_path.read_bytes()).hexdigest()
+    assert actual == artifact["serialized_file_sha256"]
+    sidecar = output_path.with_suffix(".json.sha256")
+    assert sidecar.read_text(encoding="ascii").split()[0] == actual
 
 
 def test_registered_stage2_relevance_gate_passes_on_canonical_graph(tmp_path: Path):
