@@ -45,10 +45,58 @@ class ER3Resolver:
         self._mapping = build_canonical_mapping(graph)
 
     @classmethod
-    def from_directory(cls, model_dir: str, graph: InMemoryGraphStore) -> "ER3Resolver":
-        """Load ER3 from a model directory containing weights.pt, vocab.json, config.json."""
+    def from_directory(cls, model_dir: str, graph: InMemoryGraphStore,
+                       *, weights_path: str | None = None,
+                       verify_sha256: bool = True) -> "ER3Resolver":
+        """Load ER3 from a model directory or explicit weights path.
+
+        Args:
+            model_dir: Directory containing manifest.json and vocab.json.
+            graph: The populated graph.
+            weights_path: Optional explicit path to weights.pt. If not given,
+                looks for $ER3_WEIGHTS_PATH env var, then falls back to
+                model_dir/weights.pt.
+            verify_sha256: If True, verify weights match manifest before loading.
+
+        Raises:
+            FileNotFoundError: If weights cannot be located.
+            ValueError: If SHA-256 verification fails.
+        """
+        import hashlib, json, os
+        from pathlib import Path
         from stack.encoder.entity_ranker_v3 import load_ranker_v3
-        model, tokenizer, config = load_ranker_v3(model_dir)
+
+        manifest_path = Path(model_dir) / "manifest.json"
+        if not manifest_path.exists():
+            raise FileNotFoundError(f"ER3 manifest not found at {manifest_path}")
+
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        expected_sha256 = manifest["files"]["weights.pt"]["sha256"]
+
+        # Resolve weights path
+        if weights_path is None:
+            weights_path = os.environ.get("ER3_WEIGHTS_PATH", "")
+        if not weights_path:
+            weights_path = str(Path(model_dir) / "weights.pt")
+
+        weights_file = Path(weights_path)
+        if not weights_file.exists():
+            raise FileNotFoundError(
+                f"ER3 weights not found at {weights_file}. "
+                "Set ER3_WEIGHTS_PATH environment variable or pass --weights-path."
+            )
+
+        if verify_sha256:
+            actual = hashlib.sha256(weights_file.read_bytes()).hexdigest()
+            if actual != expected_sha256:
+                raise ValueError(
+                    f"ER3 weights SHA-256 mismatch:\n"
+                    f"  expected: {expected_sha256}\n"
+                    f"  actual:   {actual}\n"
+                    f"  path:     {weights_file}"
+                )
+
+        model, tokenizer, config = load_ranker_v3(str(model_dir))
         model.eval()
         return cls(model, tokenizer, graph)
 

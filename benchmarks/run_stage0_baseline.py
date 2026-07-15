@@ -124,19 +124,34 @@ def run_stage0(
     rag_scores: list[float | None] = []
     per_question: list[dict] = []
 
+    nexus_answered = 0
+    rag_answered = 0
+
     for i, q in enumerate(questions):
         ground_truth = q.get("answer", q.get("entities", ""))
         if isinstance(ground_truth, list):
             ground_truth = ", ".join(str(e) for e in ground_truth)
 
         nexus_ans = nexus_result.per_question[i].answer if i < len(nexus_result.per_question) else ""
-        rag_ans = rag_results[i].get("rag_answer", "") if i < len(rag_results) else ""
+        rag_result = rag_results[i] if i < len(rag_results) else {}
+        rag_ans = rag_result.get("rag_answer", "")
+        rag_err = rag_result.get("rag_error", "")
+
+        # Only count as answered if non-empty AND no error
+        nexus_ok = bool(nexus_ans and len(nexus_ans.strip()) >= 10)
+        rag_ok = bool(rag_ans and len(rag_ans.strip()) >= 10 and not rag_err)
 
         ns = compute_fact_score(nexus_ans or "", str(ground_truth))
         rs = compute_fact_score(rag_ans or "", str(ground_truth))
 
-        nexus_scores.append(ns.get("fuzzy_accuracy", 0.0))
-        rag_scores.append(rs.get("fuzzy_accuracy", 0.0))
+        # Use None for failed/unanswered arms — paired comparison ignores None
+        nexus_scores.append(ns.get("fuzzy_accuracy", 0.0) if nexus_ok else None)
+        rag_scores.append(rs.get("fuzzy_accuracy", 0.0) if rag_ok else None)
+
+        if nexus_ok:
+            nexus_answered += 1
+        if rag_ok:
+            rag_answered += 1
 
         per_question.append({
             "question_id": q.get("id", str(i)),
@@ -144,8 +159,9 @@ def run_stage0(
             "ground_truth": str(ground_truth)[:200],
             "nexus_answer": nexus_ans[:500],
             "rag_answer": rag_ans[:500],
-            "nexus_accuracy": ns.get("fuzzy_accuracy", 0.0),
-            "rag_accuracy": rs.get("fuzzy_accuracy", 0.0),
+            "nexus_accuracy": ns.get("fuzzy_accuracy", 0.0) if nexus_ok else None,
+            "rag_accuracy": rs.get("fuzzy_accuracy", 0.0) if rag_ok else None,
+            "rag_error": rag_err if rag_err else None,
             "nexus_parsed_intent": nexus_result.per_question[i].parsed_intent if i < len(nexus_result.per_question) else "",
             "nexus_failure": nexus_result.per_question[i].failure_category if i < len(nexus_result.per_question) else "",
         })
@@ -172,12 +188,12 @@ def run_stage0(
         "questions_total": len(questions),
         "graph": graph_meta,
         "nexus": {
-            "answered": len([s for s in nexus_scores if s is not None]),
-            "mean_accuracy": round(sum(s for s in nexus_scores if s is not None) / max(1, len([s for s in nexus_scores if s is not None])), 4),
+            "answered": nexus_answered,
+            "mean_accuracy": round(sum(s for s in nexus_scores if s is not None) / max(1, nexus_answered), 4),
         },
         "rag": {
-            "answered": len([s for s in rag_scores if s is not None]),
-            "mean_accuracy": round(sum(s for s in rag_scores if s is not None) / max(1, len([s for s in rag_scores if s is not None])), 4),
+            "answered": rag_answered,
+            "mean_accuracy": round(sum(s for s in rag_scores if s is not None) / max(1, rag_answered), 4),
         },
         "paired_comparison": comparison,
         "per_question": per_question,
