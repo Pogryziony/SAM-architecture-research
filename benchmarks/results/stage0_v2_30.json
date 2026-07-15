@@ -1,0 +1,426 @@
+{
+  "config_hash": "4c2202373759fbf8",
+  "created_utc": "2026-07-15T20:58:32.611362+00:00",
+  "graph": {
+    "edge_count": 565,
+    "node_count": 1906
+  },
+  "nexus": {
+    "answered": 30,
+    "mean_accuracy": 0.2894
+  },
+  "paired_comparison": {
+    "comparison_type": "PAIRED (both arms scorable)",
+    "nexus": {
+      "label": "NEXUS",
+      "mean_accuracy": 0.0,
+      "n": 0
+    },
+    "paired_n": 0,
+    "rag": {
+      "label": "RAG",
+      "mean_accuracy": 0.0,
+      "n": 0
+    },
+    "secondary_unpaired": {
+      "both_none": 5,
+      "label": "SECONDARY -- unpaired stats (excluded from primary comparison)",
+      "nexus_only_scored": {
+        "mean_accuracy": 0.3473,
+        "n": 25
+      },
+      "rag_only_scored": {
+        "mean_accuracy": null,
+        "n": 0
+      },
+      "total_questions": 30
+    },
+    "sign_test_detail": {
+      "arm_a_wins": 0,
+      "arm_b_wins": 0,
+      "n_discordant": 0,
+      "note": "No discordant pairs — test cannot be performed.",
+      "p_value": 1.0,
+      "test": "two-sided sign test (exact binomial)",
+      "ties": 0
+    },
+    "sign_test_p": 1.0,
+    "win_loss_tie": {
+      "NEXUS_wins": 0,
+      "RAG_wins": 0,
+      "ties": 0
+    }
+  },
+  "per_question": [
+    {
+      "ground_truth": "99.87% overall accuracy, with 99.5% on 1-hop, 100% on 2-hop, and 100% on 3-hop.",
+      "nexus_accuracy": 0.3333,
+      "nexus_answer": "The SAM oracle memory experiment achieved 100% accuracy",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What was the overall accuracy of the SAM oracle memory experiment?",
+      "question_id": "q001",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "68.74% overall accuracy, identical to the dense baseline at equal parameters.",
+      "nexus_accuracy": 0.0,
+      "nexus_answer": "Experiment 0.13A — Controlled Noisy Memory Tolerance: cts ~3.5 slots (~1.75 distractors on average) - **QA accuracy with selector:** **68.74%** — back to core_only The suspicion was that even 1–2 distractors in the memory might cause SAM's gate to suppress the memory completely, crashing QA from 100% down to the core-only baseline. If this suspicion was correct, the retrieval + selector path would need near-perfect precision, which is very difficult.",
+      "nexus_failure": "no_graph_paths",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What accuracy did the SAM core-only baseline achieve?",
+      "question_id": "q002",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "all_required@32 = 100% — it finds ALL required slots for EVERY example at K=32.",
+      "nexus_accuracy": 1.0,
+      "nexus_answer": "the ChainRetrieval experiment Chain-set BCE: all_required@32 = 100%. But SAM still = core_only.",
+      "nexus_failure": "verifier_failed",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What was the breakthrough result of the chain-set BCE retriever?",
+      "question_id": "q003",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "50% precision, with 96.6% recall — meaning it finds nearly all required slots but picks about twice as many distractors.",
+      "nexus_accuracy": 0.5,
+      "nexus_answer": "The learned slot selector in experiment 0.12 achieved precision 50%",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What was the precision of the learned slot selector in experiment 0.12?",
+      "question_id": "q004",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "Up to 8 random distractors, achieving 91.58% overall accuracy.",
+      "nexus_accuracy": 0.5,
+      "nexus_answer": "random accuracy 91.6%.",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "How many random distractors can SAM tolerate while maintaining over 90% accuracy?",
+      "question_id": "q005",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "Between 8 and 16 distractors — 3-hop accuracy drops from 79.3% at +8 to 39.0% at +16.",
+      "nexus_accuracy": 0.0,
+      "nexus_answer": "Current Status: Evidence | Confidence | |--------|----------|------------| | **Oracle memory works** — SAM core can use memory for reasoning | 0.6: oracle_memory 99.87% | High | | **Controlled noise tolerance** — SAM handles up to +8 random distractors with >91% accuracy | 0.13A: +8 dist = 91.6% overall | High | | **One distractor does not collapse SAM** — 99.82% with +1 | 0.13A: vs 100% clean | High | | **3-hop de.",
+      "nexus_failure": "no_graph_paths",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "At what noise level does 3-hop reasoning collapse in SAM?",
+      "question_id": "q006",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "100% accuracy on all hop categories, matching oracle_memory and proving the chain candidates are sufficient.",
+      "nexus_accuracy": 1.0,
+      "nexus_answer": "SAM with the oracle-filter from chain candidates in experiment 0.12 achieved 100% accuracy",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What accuracy did SAM achieve with the oracle-filter from chain candidates in experiment 0.12?",
+      "question_id": "q007",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "Only 27% — 73% of examples had required slots completely absent from the top-64 results.",
+      "nexus_accuracy": 0.5,
+      "nexus_answer": "the RequiredSet experiment all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.",
+      "nexus_failure": "verifier_failed",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What was the all_required@64 result for the dual encoder retriever in experiment 0.10?",
+      "question_id": "q008",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "99.0% val Rec@8, up from 6.9% on the original sparse dataset.",
+      "nexus_accuracy": 0.0,
+      "nexus_answer": "recall@8 30.71%",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What Rec@8 did the dual encoder achieve on the dense dataset in experiment 0.5?",
+      "question_id": "q009",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "Three critical bugs were found and fixed — retrieval was identified as the bottleneck with only 6.9% Rec@8.",
+      "nexus_accuracy": 0.0,
+      "nexus_answer": "the PKM Candidates experiment Candidate gen: SOLVED (100%). Ranking generalizes poorly (29% val).",
+      "nexus_failure": "verifier_failed",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What was the key finding of the pipeline diagnosis experiment?",
+      "question_id": "q010",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "Approximately 15.7 million parameters total, with 15.6M in the core and 117K in memory.",
+      "nexus_accuracy": 0.0,
+      "nexus_answer": "the DenseDataset experiment Dense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.",
+      "nexus_failure": "verifier_failed",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "How many parameters does the SAM core model have?",
+      "question_id": "q011",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "22.00% — showing that multi-hop reasoning is very hard for the small core without external memory.",
+      "nexus_accuracy": 1.0,
+      "nexus_answer": "\"SAM collapses with any noise\": SAM tolerates mild noise very well** — up to +8 distractors, overall accuracy stays above core_only by a large margin (91.6% vs 68.7%) 3. **3-hop is first to degrade** — still 79.3% at +8 (vs 22% core-only), but drops sharp.",
+      "nexus_failure": "no_graph_paths",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What is the 3-hop accuracy of SAM without memory (core_only)?",
+      "question_id": "q012",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "19,000 training examples, 3,800 validation, 3,800 test, with 1,650 slots and 853 vocabulary tokens.",
+      "nexus_accuracy": 0.0,
+      "nexus_answer": "the DenseDataset experiment Dense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What dataset size was used for the dense synthetic experiments?",
+      "question_id": "q013",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "68.74% — identical to core_only, confirming the placebo control works and the gate suppresses useless memory.",
+      "nexus_accuracy": 0.0,
+      "nexus_answer": "\"The latent memory path is fragile\": SAM is quite robust to random noise. - **\"Gate suppression explains selector failure\"** — unlikely. The gate learns to pass memory even with distractors present. - **\"The latent memory path is fragile\"** — wrong. It handles up to +8 distractors with only single-digit accuracy loss. ### What this does NOT prove - **Does NOT prove realistic retrieval.",
+      "nexus_failure": "no_graph_paths",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What accuracy did random memory injection achieve in SAM?",
+      "question_id": "q014",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "Dual encoder: 0.9% — essentially zero. Chain-set BCE: 100%. The improvement was from 0.9% to 100%.",
+      "nexus_accuracy": 0.5,
+      "nexus_answer": "Chain-set BCE retriever achieves 100% all_required@32 — retrieval is solved.",
+      "nexus_failure": "verifier_failed",
+      "nexus_parsed_intent": "comparison",
+      "question": "What was the 2-hop all_required@32 for the dual encoder vs chain-set BCE retriever?",
+      "question_id": "q015",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "The gate is NOT the bottleneck — SAM tolerates 1-2 distractors with 99.4-99.8% accuracy. The problem is selector noise QUALITY, not quantity.",
+      "nexus_accuracy": 0.0,
+      "nexus_answer": "Experiment 0.13A proved about the SAM gate that the NoisyMemory experiment SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What did experiment 0.13A prove about the SAM gate?",
+      "question_id": "q016",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "1,650 live slots, addressed via product-key memory with 64 subkeys and key_dim=64.",
+      "nexus_accuracy": 0.0,
+      "nexus_answer": "the NoisyMemory experiment SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "How many live memory slots did the SAM experiments use?",
+      "question_id": "q017",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "(1) best_val_loss was Infinity because validation never ran, (2) InfoNCE loss used dead slots as negatives, (3) Evaluation used wrong checkpoints for SAM modes.",
+      "nexus_accuracy": null,
+      "nexus_answer": "the Diagnosis experiment Found and fixed 3 critical bugs. Retrieval is the bottleneck.",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "diagnostic",
+      "question": "What were the three critical bugs found in the pipeline diagnosis?",
+      "question_id": "q018",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "Oracle text memory achieved 100% accuracy. Oracle latent memory achieved 99.87%. Both prove the core CAN use memory.",
+      "nexus_accuracy": 0.0,
+      "nexus_answer": "\"the Latent Memory Path Is Fragile\" \"The latent memory path is fragile\": SAM is quite robust to random noise. - **\"Gate suppression explains selector failure\"** — unlikely. The gate learns to pass memory even with distractors present. - **\"The latent memory path is fragile\"** — wrong. It handles up to +8 distractors with only single-digit accuracy loss. ### What this does NOT prove - **Does NOT prove realistic retrieval, and \"The latent memory path is fragile\": SAM is quite robust to random nois",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "comparison",
+      "question": "What was the accuracy of oracle text memory compared to oracle latent memory?",
+      "question_id": "q019",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "99.82% overall with 99.50% on 3-hop — effectively no degradation from clean oracle memory.",
+      "nexus_accuracy": 1.0,
+      "nexus_answer": "Sam Does Not Collapse With One Distractor SAM does NOT collapse with one distractor: With exactly 1 distractor in controlled noisy memory, SAM overall accuracy is 99.82%; 1-hop is 99.90%, 2-hop is 99.86%, and 3-hop is 99.50%.",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What accuracy does SAM achieve with exactly 1 distractor in controlled noisy memory?",
+      "question_id": "q020",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "The dual encoder maps question text to slot similarity. For chains, question -> Slot A (similar to question) works, but question -> Slot B (similar to Slot A's content, not the question) fails. Interm",
+      "nexus_accuracy": null,
+      "nexus_answer": "Final Recommendation: FAIL** | No retrieval mode can improve 2-hop/3-hop without complete required sets | | E | Non-oracle validation | **FAIL** | No non-oracle mode can beat core_only with current retriever | ## 8. Root Cause **The dual encoder retriever, trained with contrastive (question, fact) loss, cannot retrieve complete required-slot chains for multi-hop reasoning.** Specifically: - The retriever optimizes `P(slot. Final Recommendation: r slots absent from retrieval | | D | Multi-hop imp",
+      "nexus_failure": "no_graph_paths",
+      "nexus_parsed_intent": "causal_explanation",
+      "question": "Why did the dual encoder retriever fail to retrieve complete multi-hop chains?",
+      "question_id": "q021",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "The original dataset had only 1.5 examples per slot with 30% unseen slots in validation. The dense dataset provided 21.8 examples per slot with all 1,650 slots shared across splits, giving the retriev",
+      "nexus_accuracy": 0.25,
+      "nexus_answer": "Dense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED.",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "diagnostic",
+      "question": "How did the dense dataset fix enable successful retrieval?",
+      "question_id": "q022",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "Exp 0.6 discovered retrieved_memory = core_only. Exp 0.10 diagnosed that multi-hop required slots were absent from dual encoder results (all_required@64 = 27%). Exp 0.11 solved it with chain-set BCE r",
+      "nexus_accuracy": 0.6,
+      "nexus_answer": "Slot Selector (sam/model/slot_selector.py): Product-key memory | Working, used in all experiments | Since 0.6 | | Dual encoder retriever | Working (99% Rec@8 on dense data) | 0.5-0.6 | | Chain-set retriever | Working (all_required@32 = 100%) | 0.11 | | Oracle memory path | Validated (99.87%) | 0.6 | | Controlled noise path | Implemented | 0.13A | | Learned selector | Partial (96.6% recall, 50% precision) | 0. Slot Selector (sam/model/slot_selector.py): Product-key memory | Working, used in all e",
+      "nexus_failure": "no_graph_paths",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What chain of experiments led from the discovery of the retriever problem to solving it?",
+      "question_id": "q023",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "Because the chain-set retriever returns 32+ candidates with all required slots present, but SAM receives all 32 slots averaged together. Without a selector, the signal from 1-3 required slots is dilut",
+      "nexus_accuracy": 0.0,
+      "nexus_answer": "Chain-set BCE: all_required@32 = 100%. But SAM still = core_only. Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck. SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+      "nexus_failure": "verifier_failed",
+      "nexus_parsed_intent": "causal_explanation",
+      "question": "Why does chain-set retrieval achieve 100% all_required@32 but SAM still equals core_only?",
+      "question_id": "q024",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "The selector achieves 96.6% recall but only 50% precision, picking semantically misleading distractors. This is a structural problem: a flat MLP cannot solve graph-structured selection. This failure d",
+      "nexus_accuracy": 1.0,
+      "nexus_answer": "Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture. Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck. SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What is the relationship between the selector bottleneck and the pivot to NEXUS?",
+      "question_id": "q025",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "Exp 0.6 proved oracle memory works (99.87%) but retrieved memory fails (68.74%). Exp 0.7-0.9 tried various retrieval interfaces without success. Exp 0.10 discovered multi-hop slots were missing from r",
+      "nexus_accuracy": 0.0,
+      "nexus_answer": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified. Dense dataset with 21.8 ex/slot -> 99.0% Rec@8. Gate 1 PASSED. External text query bypasses hidden-state projection. Tested topK sweep.",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "Walk through the evolution from experiment 0.6 to the architecture pivot.",
+      "question_id": "q026",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "core_only (no memory), oracle_memory (correct slots injected directly), retrieved_memory (learned PKM lookup), random_memory (random slots as placebo), retrieved_memory_external_text_query (standalone",
+      "nexus_accuracy": 0.5,
+      "nexus_answer": "SAM oracle memory works: 7.4 Why Random, Retrieved, and Core are Identical All three modes produce exactly 68.74% accuracy because: - **core_only**: No memory at all - **random_memory**: Random memory values injected — the gate learns to ignore them - **retrieved_memory**: Wrongly-pr.",
+      "nexus_failure": "no_graph_paths",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What are the six memory modes in SAM?",
+      "question_id": "q027",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "RAG prepends retrieved text to the model input. SAM injects memory into the model's internal computation via learned gating at specific layers. SAM uses latent vectors combined mathematically, not tex",
+      "nexus_accuracy": null,
+      "nexus_answer": "query vector. Step 1: Embed question.",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "comparison",
+      "question": "How does SAM differ from RAG?",
+      "question_id": "q028",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "PKM enables O(sqrt(N)) lookup by splitting a query into two sub-keys, scoring each against a codebook, and using the Cartesian product to find slots. This makes billion-slot memories tractable. It's d",
+      "nexus_accuracy": null,
+      "nexus_answer": "16K PKM: 25.8% Rec@8. Oracle text: 100% — core CAN use memory. Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified.",
+      "nexus_failure": "",
+      "nexus_parsed_intent": "causal_explanation",
+      "question": "What is product-key memory and why does SAM use it?",
+      "question_id": "q029",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    },
+    {
+      "ground_truth": "The gate is a learned sigmoid scalar (0-1) that controls how much retrieved memory influences the output: output = core_computation + gate * memory_vector. It learns when to use or suppress memory dur",
+      "nexus_accuracy": null,
+      "nexus_answer": "SAM oracle memory works: Random memory values injected — the gate learns to ignore them - **retrieved_memory**: Wrongly-projected memory values injected — the gate learns to ignore them In all cases, the gated integration converges to gate≈0, making the models behaviorally identical. --- ## 8. Interpretation ### What IS validated: 1. **SAM oracle memory works**: 99.87% with correct latent slots (vs 68.74% core_only) — +31pp.",
+      "nexus_failure": "no_graph_paths",
+      "nexus_parsed_intent": "factual_lookup",
+      "question": "What is the role of the gate in SAM's memory integration?",
+      "question_id": "q030",
+      "rag_accuracy": null,
+      "rag_answer": "",
+      "rag_error": "run_rag_pipeline() takes 2 positional arguments but 3 were given"
+    }
+  ],
+  "pipeline": "nexus_v1_lexical_only",
+  "question_source": "stack/encoder/data/train.jsonl",
+  "question_source_sha256": "6b52b5b0fc2ae8accbc85df0b568b72355a5122994704a96329c257228fc9e40",
+  "questions_total": 30,
+  "rag": {
+    "answered": 0,
+    "mean_accuracy": 0.0
+  },
+  "source_sha": "fa13d6c1296bceff35bb44742536741d346f8708",
+  "stage": "stage0_baseline"
+}

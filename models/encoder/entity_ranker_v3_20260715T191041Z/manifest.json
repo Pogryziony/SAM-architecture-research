@@ -1,48 +1,48 @@
 {
-  "manifest_schema_version": "1.0",
-  "run_id": "entity_ranker_v3_20260715T191041Z",
-  "training_source_sha": "d149229a51190ad5e1a9d0acdadf8a2914321c38",
   "architecture": "question_conditioned_dot_product_v3",
-  "seed": 20260710,
-  "training_command": "python -m stack.encoder.train_ranker_v3",
-  "python_hash_seed": "0",
-  "validation_metrics": {
-    "canonical_recall_1": 0.3187,
-    "canonical_recall_5": 0.5989,
-    "canonical_recall_10": 0.7253,
-    "canonical_precision_10": 0.088,
-    "trivial_baseline_recall_10": 0.3352,
-    "baseline_gap_pp": 39.0
-  },
-  "validation_artifact": {
-    "path": "benchmarks/results/entity_ranker_v3_selection_20260715T191041Z.json",
-    "note": "generated during Phase 4 ER3 retraining"
-  },
   "files": {
-    "weights.pt": {
-      "path": "models/encoder/entity_ranker_v3_20260715T191041Z/weights.pt",
-      "sha256": "8273ed97bc9972e7702d92425b46f6be84bcc4b546d8e934452024947f0eb3b5d",
-      "size": 3567984,
-      "stored_in_git": false
-    },
     "config.json": {
       "path": "models/encoder/entity_ranker_v3_20260715T191041Z/config.json",
       "sha256": "752605560ef1bed55fa656d0c475705a4f66977e78cc5e987ff44fdaa0d6a1fa",
       "size": 352,
-      "stored_in_git": false
+      "stored_in_git": true
     },
     "vocab.json": {
       "path": "models/encoder/entity_ranker_v3_20260715T191041Z/vocab.json",
       "sha256": "69b7999c1fa93236554b9ffd3c2e1547397c6d9694373e3383fce739ed3b50b8",
       "size": 69364,
+      "stored_in_git": true
+    },
+    "weights.pt": {
+      "path": "models/encoder/entity_ranker_v3_20260715T191041Z/weights.pt",
+      "sha256": "8273ed97bc9972e7702d92425b46f6be84bcc4b546d8e934452024947f0eb3b5d",
+      "size": 3567984,
       "stored_in_git": false
     }
   },
   "historical_artifact": {
-    "run_id": "entity_ranker_v3_20260711T081545Z",
     "frozen_recall_10": 0.7964,
-    "validation_recall_10": 0.7747,
+    "note": "Original ER3 weights were committed at b6d832d, now removed per .gitignore models/**/*.pt policy",
+    "run_id": "entity_ranker_v3_20260711T081545Z",
     "status": "AUDITABLE PASS (historical, consumed frozen split)",
-    "note": "Original ER3 weights were committed at b6d832d, now removed per .gitignore models/**/*.pt policy"
+    "validation_recall_10": 0.7747
+  },
+  "manifest_schema_version": "1.0",
+  "python_hash_seed": "0",
+  "run_id": "entity_ranker_v3_20260715T191041Z",
+  "seed": 20260710,
+  "training_command": "python -m stack.encoder.train_ranker_v3",
+  "training_source_sha": "d149229a51190ad5e1a9d0acdadf8a2914321c38",
+  "validation_artifact": {
+    "note": "generated during Phase 4 ER3 retraining",
+    "path": "benchmarks/results/entity_ranker_v3_selection_20260715T191041Z.json"
+  },
+  "validation_metrics": {
+    "baseline_gap_pp": 39.0,
+    "canonical_precision_10": 0.088,
+    "canonical_recall_1": 0.3187,
+    "canonical_recall_10": 0.7253,
+    "canonical_recall_5": 0.5989,
+    "trivial_baseline_recall_10": 0.3352
   }
 }
