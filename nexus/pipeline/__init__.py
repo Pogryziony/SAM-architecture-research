@@ -10,6 +10,7 @@ from nexus.pipeline.runner import (
     QuestionResult,
     PipelineResult,
 )
+from nexus.pipeline.entity_resolver import EntityResolver
 
 __all__ = [
     "ProductionNEXUSConfig",
@@ -19,4 +20,5 @@ __all__ = [
     "NEXUSRunner",
     "QuestionResult",
     "PipelineResult",
+    "EntityResolver",
 ]
