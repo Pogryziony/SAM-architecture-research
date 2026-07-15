@@ -338,7 +338,11 @@ class NEXUSRunner:
                 result = result_raw
 
             qr.graph_paths_count = result.get("path_count", 0)
-            qr.candidate_pool_size = len(qr.predicted_entities)
+            # candidate_pool_size = raw candidates before selection
+            if self.config.pipeline_id.entity_ranker_v3_enabled and self._entity_resolver is not None:
+                qr.candidate_pool_size = len(getattr(self._entity_resolver, '_canonical_ids', []))
+            elif parsed:
+                qr.candidate_pool_size = len(parsed.entity_ids)
             qr.path_scores = list(result.get("path_scores", []))
             qr.cascade_level = result.get("cascade_level", 0)
             qr.answer = result.get("answer", "")
