@@ -22,7 +22,7 @@ for deployment and does not claim that post-training answer quality passes.
 | Stage 2 | relevance 78.33%, seeds 0/1/42 identical | PASS |
 | Stage 3 | 110 turns, reference resolution 87.5% | PASS |
 | Stage 3 single-turn regression | 0.00pp | PASS |
-| Stage 3 dialogue-state p50 | 0.035ms | PASS, below 5ms |
+| Stage 3 dialogue-state p50 | 0.048ms | PASS, below 5ms |
 | ER3 checkpoint | 3,487,600 bytes, manifest SHA-256 verified | PASS |
 | Realizer parameters | 2,770,752 | PASS, below 50M |
 | CPU preflight | forward/backward, no weights written | PASS |

@@ -16,7 +16,7 @@
 | 1b/1D | Associative Encoder v2 + validated parser handoff | Current validated frozen entity_recall 65.82% (181/275) with validation-selected threshold 0.20 and cap 200. All six immutable gates pass. | ✅ HONEST PASS |
 | ER3 | Entity Ranker V3 | **CHECKPOINT VERIFIED**. Exact checkpoint is committed with config and vocabulary. Manifest size and SHA-256 checks pass before deserialization. | ✅ READY |
 | 2 | Realization L1 | Registered 30-case run passes for seeds 0/1/42 with one canonical hash; relevance 78.33%. | ✅ PASS |
-| 3 | Dialogue State | Full 110-turn run passes: reference resolution 87.5%, single-turn regression 0 and dialogue-state p50 0.035ms. | ✅ PASS |
+| 3 | Dialogue State | Full 110-turn run passes: reference resolution 87.5%, single-turn regression 0 and dialogue-state p50 0.048ms. | ✅ PASS |
 | 4 | Realization L2 | 7,127 unique pairs, valid oracle/readiness, CPU preflight and no-write overfit smoke pass; default pilot is 5 epochs with early stopping. | ✅ GO FOR TRAINING |
 | 5 | Freeze | This document | 🔄 |
 
@@ -84,9 +84,9 @@ SHA-256 sidecar.
 | reference resolution | 87.50% | ≥70% |
 | single-turn accuracy | 95.65% | diagnostic |
 | single-turn regression | 0.00pp | ≤2pp |
-| dialogue-state latency p50 | 0.035 ms | ≤5 ms |
-| ER3 resolver latency p50 | 0.912 ms | diagnostic |
-| complete pipeline latency p50 | 17.428 ms | diagnostic |
+| dialogue-state latency p50 | 0.048 ms | ≤5 ms |
+| ER3 resolver latency p50 | 5.393 ms | diagnostic |
+| complete pipeline latency p50 | 22.091 ms | diagnostic |
 
 The canonical run contains 110 turns and uses the verified ER3 checkpoint via
 the injected resolver. The 5ms gate applies only to the incremental dialogue
