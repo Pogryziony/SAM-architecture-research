@@ -1,0 +1,34 @@
+{
+  "config_sha256": "a35ca13a37526dea1a7d2c0140f3c1bdac89c8abf13876f2845d44e55c9b12ab",
+  "dataset_sha256": "8028e471bb304ffb95ab338f0a3a93cbe4ded04596f73e9479a6135e663a59e0",
+  "decoder_config": {
+    "no_repeat_ngram_size": 3,
+    "repetition_penalty": 1.2,
+    "strategy": "greedy"
+  },
+  "effective_config_sha256": "25cf29af4242b36c30d9cd0ddcb6fccee0e18b79cb262b81da10eb904c1f415b",
+  "effective_training_config": {
+    "batch_size": 2,
+    "early_stopping_patience": 1,
+    "epochs": 1,
+    "generation_max_tokens": 128,
+    "initial_loss_max": 10.0,
+    "learning_rate": 0.0003,
+    "max_parameters": 50000000,
+    "max_peak_rss_mb": 2500,
+    "weight_decay": 0.01
+  },
+  "model_config": {
+    "architecture": "stable_transformer_v2",
+    "d_model": 128,
+    "decoder_layers": 2,
+    "dim_feedforward": 384,
+    "dropout": 0.1,
+    "encoder_layers": 2,
+    "max_input_tokens": 704,
+    "max_output_tokens": 704,
+    "nhead": 4,
+    "vocab_size": 259
+  },
+  "seed": 20260711
+}

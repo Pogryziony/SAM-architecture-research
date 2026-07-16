@@ -1,0 +1,584 @@
+{
+  "schema_version": "nexus-realizer-checkpoint-eval-v2",
+  "checkpoint": "epoch_1",
+  "weights_sha256": "2c4b55aa691f11e4cab84082ee0b8c6bb82a0f11b97d8db126d35ffa2281cf66",
+  "source_commit": "53870a54edaac59b2e83e47f2f4cb9bb7d09a77f",
+  "source_tree_sha": "935f4b1a00f1fba397a753c0dc5ba396a92a6b02",
+  "dataset_sha256": "8028e471bb304ffb95ab338f0a3a93cbe4ded04596f73e9479a6135e663a59e0",
+  "config_sha256": "a35ca13a37526dea1a7d2c0140f3c1bdac89c8abf13876f2845d44e55c9b12ab",
+  "label_use": "scoring_only",
+  "samples": 1434,
+  "raw_neural": {
+    "exact_match_rate": 0.0,
+    "token_f1_mean": 0.257061,
+    "similarity_mean": 0.505547,
+    "grounded_rate": 0.0,
+    "hallucination_rate": 1.0,
+    "uniqueness_ratio": 0.921897,
+    "unique_outputs": 1322,
+    "duplicates": 112,
+    "max_single_output_pct": 0.011158,
+    "eos_rate": 1.0,
+    "empty_output_rate": 0.0,
+    "rep_3gram_mean": 0.000168,
+    "rep_2gram_mean": 0.163242,
+    "avg_length": 68.2,
+    "latency_p50_ms": 232.6358,
+    "most_common_outputs": [
+      [
+        "For 10, is 1.",
+        16
+      ],
+      [
+        "For 16, 1.",
+        6
+      ],
+      [
+        "For 10.",
+        6
+      ],
+      [
+        "For 10, 12.",
+        5
+      ],
+      [
+        "For 10, Retal is 1.",
+        5
+      ],
+      [
+        "In sam-lm/configs/satreval_chain_edense.yaml, traiset se\".",
+        5
+      ],
+      [
+        "In sam-lm/configs/satreval_chain_eded_tense.yaml, traiset se\".",
+        4
+      ],
+      [
+        "For 10, istonfis 1.",
+        4
+      ],
+      [
+        "In sam-lm/configs/retrieval_cod_16_fintin_top32_dense.yaml, train.",
+        4
+      ],
+      [
+        "In sam-lm/configs/satreval_chain_eded_top8_dense.yaml, model.mory_dis s to 64.",
+        4
+      ]
+    ]
+  },
+  "grounded_hybrid": {
+    "exact_match_rate": 1.0,
+    "token_f1_mean": 1.0,
+    "similarity_mean": 1.0,
+    "hallucination_rate": 0.0,
+    "fallback_rate": 1.0,
+    "evidence_copy_rate": 1.0,
+    "neural_used_rate": 0.0,
+    "unique_outputs": 1434,
+    "uniqueness_ratio": 1.0,
+    "latency_p50_ms": 232.6358
+  },
+  "per_example": [
+    {
+      "id": "realizer_00023106b132931e0d82",
+      "question": "What value is assigned to train.epochs in sam-lm/configs/sam_retrieved_oracle_slots_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_retrieved_oracle_slots_dense.yaml, train.epochs is set to 3.",
+      "neural_prediction": "In sam-lm/configs/satreval_chain_se_s_de.yaml, model.dery_er is s to 6.",
+      "grounded_answer": "In sam-lm/configs/sam_retrieved_oracle_slots_dense.yaml, train.epochs is set to 3.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_00549d7332ad4bc24e86",
+      "question": "What value is assigned to model.d_ff in sam-lm/configs/sam_retrieved_threshold_rel_005_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_retrieved_threshold_rel_005_dense.yaml, model.d_ff is set to 1536.",
+      "neural_prediction": "In sam-lm/configs/satreval_haid_h_hop_dense.yaml, model.dery_her is s to 00032500.",
+      "grounded_answer": "In sam-lm/configs/sam_retrieved_threshold_rel_005_dense.yaml, model.d_ff is set to 1536.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_006372b25fe9168321be",
+      "question": "What value is assigned to train.num_negatives in sam-lm/configs/retrieval_compact_overfit_100.yaml?",
+      "reference": "In sam-lm/configs/retrieval_compact_overfit_100.yaml, train.num_negatives is set to 32.",
+      "neural_prediction": "In sam-lm/configs/satrevali_compact_16k_den.yaml, train.lutis set 000.",
+      "grounded_answer": "In sam-lm/configs/retrieval_compact_overfit_100.yaml, train.num_negatives is set to 32.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_00700d95dd4203b7d7e6",
+      "question": "What value is assigned to model.memory.key_dim in sam-lm/configs/sam_noise_oracle_plus_16_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_noise_oracle_plus_16_dense.yaml, model.memory.key_dim is set to 64.",
+      "neural_prediction": "In sam-lm/configs/say_realistic_plus_1_dense.yaml, model.mory_dis s t 64.",
+      "grounded_answer": "In sam-lm/configs/sam_noise_oracle_plus_16_dense.yaml, model.memory.key_dim is set to 64.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_008cecc5820b938269b3",
+      "question": "In sam-lm/experiments/experiment_0_12_report.md, under Gate Table, what is Result for Gate F?",
+      "reference": "For Gate F, Result is FAIL (31pp gap).",
+      "neural_prediction": "For SAM — Retal@Kexpant, is 10%.",
+      "grounded_answer": "For Gate F, Result is FAIL (31pp gap).",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_00a5da6df048ef593a42",
+      "question": "What value is assigned to model.memory.top_a in sam-lm/configs/sam_realistic_oracle_plus_2_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_realistic_oracle_plus_2_dense.yaml, model.memory.top_a is set to 8.",
+      "neural_prediction": "In sam-lm/configs/salisay_racle_plus_dense.yaml, model.mory_ery is s t 8.",
+      "grounded_answer": "In sam-lm/configs/sam_realistic_oracle_plus_2_dense.yaml, model.memory.top_a is set to 8.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_010274fc44c88dcd39a8",
+      "question": "What value is assigned to train.lr in sam-lm/configs/sam_chain_learned_selector_top_by_hop_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_chain_learned_selector_top_by_hop_dense.yaml, train.lr is set to 0.0003.",
+      "neural_prediction": "In sam-lm/configs/satre_chain_oralt_p_dense.yaml, trais set 000.",
+      "grounded_answer": "In sam-lm/configs/sam_chain_learned_selector_top_by_hop_dense.yaml, train.lr is set to 0.0003.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_014a9fbb337ec75eb3af",
+      "question": "What value is assigned to topK in sam-lm/configs/sam_realistic_oracle_plus_16_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_realistic_oracle_plus_16_dense.yaml, topK is set to 64.",
+      "neural_prediction": "In sam-lm/configs/satreval_coic_16_fipaclus_1_dense.yaml, model.mory_s is set 12.",
+      "grounded_answer": "In sam-lm/configs/sam_realistic_oracle_plus_16_dense.yaml, topK is set to 64.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_016504c3a6012161aed2",
+      "question": "What behavior or responsibility is documented for stack.encoder.augment.load_augmented_train?",
+      "reference": "stack.encoder.augment.load_augmented_train: Load training data and apply augmentation.",
+      "neural_prediction": "Adate ncorupal_dinsentiong atindan.",
+      "grounded_answer": "stack.encoder.augment.load_augmented_train: Load training data and apply augmentation.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0171554204d93ee21e92",
+      "question": "What value is assigned to training_history[3].val_entity_f1 in models/encoder/config.json?",
+      "reference": "In models/encoder/config.json, training_history[3].val_entity_f1 is set to 0.12380952380952383.",
+      "neural_prediction": "In sam-lm/configs/retrieval_16_codense_tonsiontiop32_de.yaml, train.",
+      "grounded_answer": "In models/encoder/config.json, training_history[3].val_entity_f1 is set to 0.12380952380952383.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_01c26e84601ce9c192fe",
+      "question": "What value is assigned to eval.max_new_tokens in sam-lm/configs/sam_retrieved_ext_weighted_top3_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_retrieved_ext_weighted_top3_dense.yaml, eval.max_new_tokens is set to 6.",
+      "neural_prediction": "In sam-lm/configs/satreval_edext_weighain_tense.yaml, model.mory_every is s to 6.",
+      "grounded_answer": "In sam-lm/configs/sam_retrieved_ext_weighted_top3_dense.yaml, eval.max_new_tokens is set to 6.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_021b24d006b6bcb12b1b",
+      "question": "In docs/graph-reasoning.md, under Edge Type Weights (Default), what is Weight for depends_on?",
+      "reference": "For depends_on, Weight is 0.85.",
+      "neural_prediction": "For Dendintiop_den, is ionghopede in ided_daty.",
+      "grounded_answer": "For depends_on, Weight is 0.85.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_02861e2d0366d2e72a35",
+      "question": "What does sam-lm/experiments/experiment_0_8_report.md, under Files Created, state about configs/sam_retrieved_external_t",
+      "reference": "configs/sam_retrieved_external_text_dense_top32.yaml — TopK=32 config",
+      "neural_prediction": "In sam-lm/configs/retrieval_ed_exter_top32_dense.yaml, trevexpery_er is t 10_evisexanto 1564.",
+      "grounded_answer": "configs/sam_retrieved_external_text_dense_top32.yaml — TopK=32 config",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_033b2a22e78e2d4c132b",
+      "question": "What value is assigned to model.n_layers in sam-lm/configs/sam_noise_oracle_plus_16_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_noise_oracle_plus_16_dense.yaml, model.n_layers is set to 6.",
+      "neural_prediction": "In sam-lm/configs/salisay_plus_1_16_dense.yaml, moral.del.n_lel is s to 0.",
+      "grounded_answer": "In sam-lm/configs/sam_noise_oracle_plus_16_dense.yaml, model.n_layers is set to 6.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0367d316e2ebdd33e1a2",
+      "question": "What does sam-lm/experiments/experiment_0_12_report.md, under Training budget, state about Warmup 200 steps?",
+      "reference": "Warmup: 200 steps",
+      "neural_prediction": "For 0, Cante is 000.",
+      "grounded_answer": "Warmup: 200 steps",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_03e3360e1a56a534f033",
+      "question": "What value is assigned to training_history[4].val_intent_accuracy in models/encoder/config.json?",
+      "reference": "In models/encoder/config.json, training_history[4].val_intent_accuracy is set to 0.6066666666666667.",
+      "neural_prediction": "In sam-lm/configs/retrieval_cod_centionct_164_ctonse.yaml, train.00032.",
+      "grounded_answer": "In models/encoder/config.json, training_history[4].val_intent_accuracy is set to 0.6066666666666667.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_03ed18754fa70b996f45",
+      "question": "What value is assigned to model.memory.top_a in sam-lm/configs/sam_retrieved_threshold_rel_005_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_retrieved_threshold_rel_005_dense.yaml, model.memory.top_a is set to 8.",
+      "neural_prediction": "In sam-lm/configs/satreval_haid_h_hop_dense.yaml, model.demory_hery is s to 0325000.",
+      "grounded_answer": "In sam-lm/configs/sam_retrieved_threshold_rel_005_dense.yaml, model.memory.top_a is set to 8.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_03ef8c4a92f78b754b5d",
+      "question": "In sam-lm/experiments/experiment_0_12_report.md, under Memory-Use Diagnostics, what is gate distribution for learned_sel",
+      "reference": "For learned_selector, gate distribution is TBD.",
+      "neural_prediction": "For SAM confile_reder, is itatexperer int 10.",
+      "grounded_answer": "For learned_selector, gate distribution is TBD.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_043af947f46d5ccf4e61",
+      "question": "What value is assigned to model.max_seq_len in sam-lm/configs/sam_retrieved_ext_weighted_top3_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_retrieved_ext_weighted_top3_dense.yaml, model.max_seq_len is set to 128.",
+      "neural_prediction": "In sam-lm/configs/satreval_ed_chaxt_ter_t_dense.yaml, model.mory_ery is set 128.",
+      "grounded_answer": "In sam-lm/configs/sam_retrieved_ext_weighted_top3_dense.yaml, model.max_seq_len is set to 128.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_044fbfa9b3bb4f2ef3ab",
+      "question": "What value is assigned to seed in models/encoder/stage1c/config.json?",
+      "reference": "In models/encoder/stage1c/config.json, seed is set to 20260710.",
+      "neural_prediction": "For 10, dentis confodelont isen.",
+      "grounded_answer": "In models/encoder/stage1c/config.json, seed is set to 20260710.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0451654746a2b235c37a",
+      "question": "What value is assigned to train.lambda_contrastive in sam-lm/configs/sam_retrieved_compact_overfit_100.yaml?",
+      "reference": "In sam-lm/configs/sam_retrieved_compact_overfit_100.yaml, train.lambda_contrastive is set to 0.5.",
+      "neural_prediction": "In sam-lm/configs/satreval_covederat_1000.yaml, train.loch_s set 00320010.",
+      "grounded_answer": "In sam-lm/configs/sam_retrieved_compact_overfit_100.yaml, train.lambda_contrastive is set to 0.5.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_04817104b6285366945d",
+      "question": "What value is assigned to batch_size in models/encoder/config.json?",
+      "reference": "In models/encoder/config.json, batch_size is set to 32.",
+      "neural_prediction": "In sam-lm/configs/dentie_chonse.yaml, tin.",
+      "grounded_answer": "In models/encoder/config.json, batch_size is set to 32.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_04f1b301484dc42f4317",
+      "question": "What value is assigned to training_history[0].epoch_time_s in models/encoder/config.json?",
+      "reference": "In models/encoder/config.json, training_history[0].epoch_time_s is set to 0.2135007381439209.",
+      "neural_prediction": "In sam-lm/configs/retrieval_cod_16_fiop32_dense.yaml, tron.000.",
+      "grounded_answer": "In models/encoder/config.json, training_history[0].epoch_time_s is set to 0.2135007381439209.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_051d8b6019335dc762b0",
+      "question": "What value is assigned to model.memory.value_dim in sam-lm/configs/sam_oracle_text_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_oracle_text_dense.yaml, model.memory.value_dim is set to 128.",
+      "neural_prediction": "In sam-lm/configs/sale_rise_plus_1_dense.yaml, model.mory.tod_dis set t 8.",
+      "grounded_answer": "In sam-lm/configs/sam_oracle_text_dense.yaml, model.memory.value_dim is set to 128.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0537382da2f7fc41efc9",
+      "question": "What does sam-lm/experiments/experiment_0_3_report.md, under Next Recommended Action, state about Increase key dimension",
+      "reference": "Increase key dimensionality — key_dim=128 → 256 or 512 (more slot discrimination capacity)",
+      "neural_prediction": "For SAM confile mery, is itedememory in iematise ime (128 iorexpemist ict s 16.",
+      "grounded_answer": "Increase key dimensionality — key_dim=128 → 256 or 512 (more slot discrimination capacity)",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_05695cd88c1ecd415b3f",
+      "question": "What value is assigned to candidate_groups in models/encoder/stage1c/config.json?",
+      "reference": "In models/encoder/stage1c/config.json, candidate_groups is set to \"identical_for_both_rankers\".",
+      "neural_prediction": "In sam-lm/configs/retrieval_cod_cedense.yat_choponde indans det dinsons",
+      "grounded_answer": "In models/encoder/stage1c/config.json, candidate_groups is set to \"identical_for_both_rankers\".",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_057f10799d11105ceb05",
+      "question": "What value is assigned to train.batch_size in sam-lm/configs/sam_retrieved_compact_overfit_100.yaml?",
+      "reference": "In sam-lm/configs/sam_retrieved_compact_overfit_100.yaml, train.batch_size is set to 16.",
+      "neural_prediction": "In sam-lm/configs/satreval_chain_16kerait_top100.yaml, tratch_set ised_s to 000320010.",
+      "grounded_answer": "In sam-lm/configs/sam_retrieved_compact_overfit_100.yaml, train.batch_size is set to 16.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0590f9a4be1907ec1166",
+      "question": "What value is assigned to model.type in sam-lm/configs/sam_tiny.yaml?",
+      "reference": "In sam-lm/configs/sam_tiny.yaml, model.type is set to \"sam\".",
+      "neural_prediction": "In sam-lm/configs/satreval_copact_dense.yaml, model.mory.ty.k is s t \".",
+      "grounded_answer": "In sam-lm/configs/sam_tiny.yaml, model.type is set to \"sam\".",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_06350b024792951bd909",
+      "question": "In docs/graph-reasoning.md, under Intent Classification, what is What it means for diagnostic?",
+      "reference": "For diagnostic, What it means is \"Why is X failing?\".",
+      "neural_prediction": "For Stindatic, is iong inte itistio ifis.",
+      "grounded_answer": "For diagnostic, What it means is \"Why is X failing?\".",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_06a04a709f7cee977427",
+      "question": "In sam-lm/experiments/experiment_0_12_report.md, under Learned Selector (chain_set_learned_selector, 8 epochs), what is ",
+      "reference": "For selector_loss, trend is improving.",
+      "neural_prediction": "For SAM chanetil_rexp_riser_densextor_top_d_164, is (en.",
+      "grounded_answer": "For selector_loss, trend is improving.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_06ab3830b7eef1a92600",
+      "question": "What value is assigned to train.lr in sam-lm/configs/sam_noise_oracle_plus_0_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_noise_oracle_plus_0_dense.yaml, train.lr is set to 0.0003.",
+      "neural_prediction": "In sam-lm/configs/satre_oin_plus_1_dense.yaml, train.l.log_s set 000.",
+      "grounded_answer": "In sam-lm/configs/sam_noise_oracle_plus_0_dense.yaml, train.lr is set to 0.0003.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_06d6344f2233b74ba0d1",
+      "question": "In sam-lm/experiments/experiment_0_12_report.md, under Learned Selector (chain_set_learned_selector, 8 epochs), what is ",
+      "reference": "For F1, trend is moderate.",
+      "neural_prediction": "For 1, Thes intrectral_rexperis (ed_ry.",
+      "grounded_answer": "For F1, trend is moderate.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_075c6823e2ae4c0e6e38",
+      "question": "What value is assigned to model.memory_every in sam-lm/configs/sam_tiny.yaml?",
+      "reference": "In sam-lm/configs/sam_tiny.yaml, model.memory_every is set to 3.",
+      "neural_prediction": "In sam-lm/configs/say_retrieved_ext_op32_dense.yaml, model.mory.key.t is s to 6.",
+      "grounded_answer": "In sam-lm/configs/sam_tiny.yaml, model.memory_every is set to 3.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_07cbcdfdeffc9f2c2501",
+      "question": "In sam-lm/docs/experiment-0-13a-noisy-memory.md, under The noise tolerance table, what is Overall for 2?",
+      "reference": "For 2, Overall is 99.39%.",
+      "neural_prediction": "For 1, Sletrais 20.",
+      "grounded_answer": "For 2, Overall is 99.39%.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_081f7fd63c4d7e1383a7",
+      "question": "What behavior or responsibility is documented for nexus.reasoning.model_interface.OllamaModel?",
+      "reference": "nexus.reasoning.model_interface.OllamaModel: Local inference via Ollama's HTTP API (http://localhost:11434).",
+      "neural_prediction": "For SAM cleantiode_lly, is 1.",
+      "grounded_answer": "nexus.reasoning.model_interface.OllamaModel: Local inference via Ollama's HTTP API (http://localhost:11434).",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0849f653255dbdd63d03",
+      "question": "What does sam-lm/experiments/diagnosis_report.md, under Summary Verdict, state about Oracle memory shows real but modest",
+      "reference": "Oracle memory shows a real but modest improvement (+1.8pp val, +1.9pp test over core-only)",
+      "neural_prediction": "For SAM chape intry, s morevelul is (et iory sthopre sethe retop s.",
+      "grounded_answer": "Oracle memory shows a real but modest improvement (+1.8pp val, +1.9pp test over core-only)",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_089f32a5c3b479e2784a",
+      "question": "What value is assigned to model.n_heads in sam-lm/configs/sam_retrieved_fixed_top4_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_retrieved_fixed_top4_dense.yaml, model.n_heads is set to 6.",
+      "neural_prediction": "In sam-lm/configs/satreval_chain_dense_d_top32_dde.yaml, model.demory_dis s to 64.",
+      "grounded_answer": "In sam-lm/configs/sam_retrieved_fixed_top4_dense.yaml, model.n_heads is set to 6.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_097f7d6e81b1f3db1bf3",
+      "question": "What does sam-lm/docs/index.md, under Confirmed, state about product-key memory addressing mechanism works technically?",
+      "reference": "The product-key memory addressing mechanism works technically.",
+      "neural_prediction": "For SAM chande mory, is ckeluthe inge core bupedenthorindin s me se fororathachend sthint man minchoded m mule antor.",
+      "grounded_answer": "The product-key memory addressing mechanism works technically.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_098ab73bdcadcc342686",
+      "question": "What does sam-lm/experiments/experiment_0_12_report.md, under Final Recommendation, state about Replacing latent memory ",
+      "reference": "Replacing latent memory with text memory (latent path works with clean memory)",
+      "neural_prediction": "For SAM memelthant imexpact (te mory s mulemonthe bemathore th man mimop m mpatem texthimale wororane se ang m",
+      "grounded_answer": "Replacing latent memory with text memory (latent path works with clean memory)",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0998d91955d37b8a40f2",
+      "question": "In sam-lm/experiments/experiment_0_12_report.md, under Chain Oracle-Filter Diagnostic (Gate A), what is selected slots f",
+      "reference": "For 64, selected slots is required only.",
+      "neural_prediction": "For SAM chane iselly, itere s sexped (10.",
+      "grounded_answer": "For 64, selected slots is required only.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_09b02cb94f54b3fc892c",
+      "question": "What value is assigned to model.type in sam-lm/configs/sam_chain_learned_selector_top_by_hop_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_chain_learned_selector_top_by_hop_dense.yaml, model.type is set to \"sam\".",
+      "neural_prediction": "In sam-lm/configs/satre_plis_dense_d_hains_byaml, model.mory_en_hel is seto \".",
+      "grounded_answer": "In sam-lm/configs/sam_chain_learned_selector_top_by_hop_dense.yaml, model.type is set to \"sam\".",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0a0d5ec5f8a104ad883b",
+      "question": "What value is assigned to model.memory.value_dim in sam-lm/configs/sam_retrieved_oracle_slots_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_retrieved_oracle_slots_dense.yaml, model.memory.value_dim is set to 128.",
+      "neural_prediction": "In sam-lm/configs/salisay_retieved_coraluam__dense.yaml, model.mory.tod_ery is set 8.",
+      "grounded_answer": "In sam-lm/configs/sam_retrieved_oracle_slots_dense.yaml, model.memory.value_dim is set to 128.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0a611506f24669d18fad",
+      "question": "What value is assigned to model.n_heads in sam-lm/configs/sam_retrieved_ext_weighted_top3_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_retrieved_ext_weighted_top3_dense.yaml, model.n_heads is set to 6.",
+      "neural_prediction": "In sam-lm/configs/satreval_haid_ext_h_ter_hop_dense.yaml, model.mory_hevet is seto 6.",
+      "grounded_answer": "In sam-lm/configs/sam_retrieved_ext_weighted_top3_dense.yaml, model.n_heads is set to 6.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0a687aad62a9e54af294",
+      "question": "What value is assigned to train.weight_decay in sam-lm/configs/sam_oracle_text_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_oracle_text_dense.yaml, train.weight_decay is set to 0.01.",
+      "neural_prediction": "In sam-lm/configs/satreval_chain_dense.yaml, traiset se\".",
+      "grounded_answer": "In sam-lm/configs/sam_oracle_text_dense.yaml, train.weight_decay is set to 0.01.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0ae83294a43439cff980",
+      "question": "In sam-lm/experiments/experiment_0_3_report.md, under Root Cause Analysis, what is recorded for Final ranking is finer?",
+      "reference": "Final ranking is finer: distinguish the exact slot from 1024 candidates",
+      "neural_prediction": "For SAM candelitin, is ing itexperentis.",
+      "grounded_answer": "Final ranking is finer: distinguish the exact slot from 1024 candidates",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0aeee43a7f9d606a567a",
+      "question": "What value is assigned to memory_noise_mode in sam-lm/configs/sam_realistic_oracle_plus_2_dense.yaml?",
+      "reference": "In sam-lm/configs/sam_realistic_oracle_plus_2_dense.yaml, memory_noise_mode is set to \"oracle_plus_realistic_distractors",
+      "neural_prediction": "In sam-lm/configs/salisay_racle_plus_dense.yaml, traiset sequeto \".",
+      "grounded_answer": "In sam-lm/configs/sam_realistic_oracle_plus_2_dense.yaml, memory_noise_mode is set to \"oracle_plus_realistic_distractors",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0b1c65f9200b39fd7a62",
+      "question": "What value is assigned to training_history[5].val_category_accuracy in models/encoder/config.json?",
+      "reference": "In models/encoder/config.json, training_history[5].val_category_accuracy is set to 0.6266666666666667.",
+      "neural_prediction": "In sam-lm/configs/retrieval_cod_cer_16keracoveroncton.yaml, train.",
+      "grounded_answer": "In models/encoder/config.json, training_history[5].val_category_accuracy is set to 0.6266666666666667.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0b379399bfe25f10b89d",
+      "question": "In sam-lm/docs/index.md, under Documentation pages, what is Description for Repository Map?",
+      "reference": "For Repository Map, Description is Codebase navigation.",
+      "neural_prediction": "For Dentiopac, is iong inonomed it ime icon ily.",
+      "grounded_answer": "For Repository Map, Description is Codebase navigation.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0bc409ece2db5f7c7340",
+      "question": "What value is assigned to train.device in sam-lm/configs/retrieval_chain_set_infonce_dense.yaml?",
+      "reference": "In sam-lm/configs/retrieval_chain_set_infonce_dense.yaml, train.device is set to \"auto\".",
+      "neural_prediction": "In sam-lm/configs/satrevali_chain_dense.yaml, traiset seveto \".",
+      "grounded_answer": "In sam-lm/configs/retrieval_chain_set_infonce_dense.yaml, train.device is set to \"auto\".",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    },
+    {
+      "id": "realizer_0bed2e429abd06d96f05",
+      "question": "What value is assigned to model.query_encoder.d_ff in sam-lm/configs/retrieval_compact_overfit_100.yaml?",
+      "reference": "In sam-lm/configs/retrieval_compact_overfit_100.yaml, model.query_encoder.d_ff is set to 512.",
+      "neural_prediction": "In sam-lm/configs/retrieval_compact_16k_der_dutovense.yaml, model.00.d_ery is to 00032.",
+      "grounded_answer": "In sam-lm/configs/retrieval_compact_overfit_100.yaml, model.query_encoder.d_ff is set to 512.",
+      "fallback_used": true,
+      "rejection_reason": "neural_answer_not_grounded",
+      "neural_grounding": null
+    }
+  ]
+}

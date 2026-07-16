@@ -1,0 +1,210 @@
+{
+  "schema_version": "nexus-realizer-pilot-v2",
+  "created_utc": "2026-07-16T13:32:23.342246+00:00",
+  "status": "REALIZER_NEURAL_CHECKPOINT_REJECTED",
+  "status_detail": "Epoch 1 neural model achieves 0% grounding rate. All neural outputs fail evidence support check. Training stopped per Section 6 (grounded_rate < 0.50).",
+  "source_commit": "53870a54edaac59b2e83e47f2f4cb9bb7d09a77f",
+  "source_tree_sha": "935f4b1a00f1fba397a753c0dc5ba396a92a6b02",
+  "run_id": "v2_20260716T131357Z",
+  "epochs_completed": 1,
+  "epochs_max": 3,
+  "stop_reason": "grounded_rate_below_threshold",
+  "config_sha256": "a35ca13a37526dea1a7d2c0140f3c1bdac89c8abf13876f2845d44e55c9b12ab",
+  "dataset_sha256": "8028e471bb304ffb95ab338f0a3a93cbe4ded04596f73e9479a6135e663a59e0",
+  "model_architecture": "stable_transformer_v2",
+  "source_format": "grounded_compact_v2",
+  "training_summary": {
+    "epoch": 1,
+    "train_loss": 1.824445,
+    "validation_loss": 1.457496,
+    "initial_loss": 5.991638,
+    "parameter_count": 951555,
+    "elapsed_seconds": 129,
+    "peak_rss_mb": 816.6
+  },
+  "comparison": {
+    "untrained_v2": {
+      "exact_match": 0.0,
+      "token_f1": 0.0,
+      "similarity": 0.07,
+      "grounded_rate": 0.0,
+      "uniqueness": 0.64,
+      "eos": 0.0,
+      "empty": 0.46,
+      "rep_3gram": 0.25
+    },
+    "epoch_1_raw_neural": {
+      "exact_match_rate": 0.0,
+      "token_f1_mean": 0.257061,
+      "similarity_mean": 0.505547,
+      "grounded_rate": 0.0,
+      "hallucination_rate": 1.0,
+      "uniqueness_ratio": 0.921897,
+      "unique_outputs": 1322,
+      "duplicates": 112,
+      "max_single_output_pct": 0.011158,
+      "eos_rate": 1.0,
+      "empty_output_rate": 0.0,
+      "rep_3gram_mean": 0.000168,
+      "rep_2gram_mean": 0.163242,
+      "avg_length": 68.2,
+      "latency_p50_ms": 232.6358,
+      "most_common_outputs": [
+        [
+          "For 10, is 1.",
+          16
+        ],
+        [
+          "For 16, 1.",
+          6
+        ],
+        [
+          "For 10.",
+          6
+        ],
+        [
+          "For 10, 12.",
+          5
+        ],
+        [
+          "For 10, Retal is 1.",
+          5
+        ],
+        [
+          "In sam-lm/configs/satreval_chain_edense.yaml, traiset se\".",
+          5
+        ],
+        [
+          "In sam-lm/configs/satreval_chain_eded_tense.yaml, traiset se\".",
+          4
+        ],
+        [
+          "For 10, istonfis 1.",
+          4
+        ],
+        [
+          "In sam-lm/configs/retrieval_cod_16_fintin_top32_dense.yaml, train.",
+          4
+        ],
+        [
+          "In sam-lm/configs/satreval_chain_eded_top8_dense.yaml, model.mory_dis s to 64.",
+          4
+        ]
+      ]
+    },
+    "epoch_1_grounded_hybrid": {
+      "exact_match_rate": 1.0,
+      "token_f1_mean": 1.0,
+      "similarity_mean": 1.0,
+      "hallucination_rate": 0.0,
+      "fallback_rate": 1.0,
+      "evidence_copy_rate": 1.0,
+      "neural_used_rate": 0.0,
+      "unique_outputs": 1434,
+      "uniqueness_ratio": 1.0,
+      "latency_p50_ms": 232.6358
+    },
+    "grounded_only_baseline": {
+      "exact_match": 1.0,
+      "token_f1": 1.0,
+      "hallucination": 0.0,
+      "fallback_rate": 1.0,
+      "uniqueness": 1.0
+    }
+  },
+  "gates": {
+    "exact_match": {
+      "status": "FAIL",
+      "value": 0.0,
+      "threshold": ">= 0.70"
+    },
+    "token_f1": {
+      "status": "FAIL",
+      "value": 0.257,
+      "threshold": ">= 0.85"
+    },
+    "similarity": {
+      "status": "FAIL",
+      "value": 0.506,
+      "threshold": ">= 0.85"
+    },
+    "grounded_rate": {
+      "status": "FAIL",
+      "value": 0.0,
+      "threshold": ">= 0.90"
+    },
+    "hallucination": {
+      "status": "FAIL",
+      "value": 1.0,
+      "threshold": "<= 0.05"
+    },
+    "uniqueness": {
+      "status": "PASS",
+      "value": 0.922,
+      "threshold": ">= 0.80"
+    },
+    "eos": {
+      "status": "PASS",
+      "value": 1.0,
+      "threshold": ">= 0.95"
+    },
+    "empty_output": {
+      "status": "PASS",
+      "value": 0.0,
+      "threshold": "= 0"
+    },
+    "mode_collapse": {
+      "status": "PASS",
+      "value": "None (1322 unique/1434)"
+    }
+  },
+  "continuation_conditions": {
+    "neural_uniqueness": {
+      "status": "PASS",
+      "value": 0.922,
+      "threshold": ">= 0.50"
+    },
+    "max_single_output": {
+      "status": "PASS",
+      "value": 0.011,
+      "threshold": "<= 0.10"
+    },
+    "neural_token_f1": {
+      "status": "PASS",
+      "value": 0.257,
+      "threshold": ">= 0.10"
+    },
+    "grounded_rate_stop": {
+      "status": "STOP",
+      "value": 0.0,
+      "threshold": ">= 0.50"
+    },
+    "hallucination_stop": {
+      "status": "STOP",
+      "value": 1.0,
+      "threshold": "<= 0.25"
+    },
+    "empty_output": {
+      "status": "PASS",
+      "value": 0.0,
+      "threshold": "<= 0.05"
+    }
+  },
+  "failure_analysis": {
+    "primary_issue": "neural_grounding_zero",
+    "description": "Despite measurable behavioral improvements (token-F1 0%->25.7%, similarity 7%->50.6%, EOS 0%->100%, empty 46%->0%), the neural model produces zero grounded answers. All 1434 neural outputs fail the grounding check (threshold 0.72). The Grounded Realizer falls back to evidence_copy for 100% of answers.",
+    "root_causes": [
+      "Model capacity (951K params) may be insufficient",
+      "Byte-level tokenizer limits semantic understanding",
+      "Single-epoch training insufficient for evidence-to-answer mapping",
+      "grounding_score requires exact numeric + token overlap"
+    ]
+  },
+  "recommended_next_steps": [
+    "Increase model capacity: d_model=256, more layers",
+    "Switch to BPE/subword tokenizer",
+    "Allow 5-10 epochs (after architectural changes)",
+    "Relax grounding threshold progressively",
+    "Consider distillation: train neural to mimic evidence_copy"
+  ]
+}

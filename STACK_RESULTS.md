@@ -17,7 +17,7 @@
 | ER3 | Entity Ranker V3 | **CHECKPOINT VERIFIED**. Exact checkpoint is committed with config and vocabulary. Manifest size and SHA-256 checks pass before deserialization. | ✅ READY |
 | 2 | Realization L1 | Registered 30-case run passes for seeds 0/1/42 with one canonical hash; relevance 78.33%. | ✅ PASS |
 | 3 | Dialogue State | Full 110-turn run passes: reference resolution 87.5%, single-turn regression 0 and dialogue-state p50 0.048ms. | ✅ PASS |
-| 4 | Realization L2 | Historical checkpoints failed. Grounded v2 now reaches 100% exact match, 0% hallucination and 1,434/1,434 unique answers on validation; stable neural v2 passes preflight and overfit smoke but has no promoted checkpoint yet. | 🟡 GROUNDED PASS / NEURAL PENDING |
+| 4 | Realization L2 | V2 pilot: epoch 1 behavioral gains (EOS 100%, no collapse) but 0% grounding on 1,434 records → REALIZER_NEURAL_CHECKPOINT_REJECTED. Grounded fallback: 100% exact match. Full report: `benchmarks/results/realizer/v2_20260716T131357Z/pilot_report_v2.json`. | 🔴 FAIL |
 | 5 | Freeze | This document | 🔄 |
 
 ---
