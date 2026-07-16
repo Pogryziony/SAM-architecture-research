@@ -36,11 +36,12 @@ def build_readiness(
     manifest_path: Path,
     config_path: Path,
     weights_path: Path,
+    *, source_identity: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     preparation = json.loads(preparation_path.read_text(encoding="utf-8"))
     evaluation = json.loads(evaluation_path.read_text(encoding="utf-8"))
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    identity = _git_identity()
+    identity = source_identity or _git_identity()
     checks: list[dict[str, Any]] = []
 
     def check(name: str, passed: bool, value: Any, requirement: str) -> None:
@@ -121,12 +122,21 @@ def main() -> int:
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--weights", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--source-commit")
+    parser.add_argument("--source-tree")
     args = parser.parse_args()
+    if bool(args.source_commit) is not bool(args.source_tree):
+        raise ValueError("--source-commit and --source-tree must be provided together")
     sidecar = args.output.with_suffix(args.output.suffix + ".sha256")
     if args.output.exists() or sidecar.exists():
         raise FileExistsError(f"refusing to overwrite: {args.output}")
+    source_identity = (
+        {"commit": args.source_commit, "tree": args.source_tree}
+        if args.source_commit else None
+    )
     result = build_readiness(
         args.preparation, args.evaluation, args.manifest, args.config, args.weights,
+        source_identity=source_identity,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(

@@ -37,6 +37,7 @@ def _git_identity() -> dict[str, str]:
 
 def evaluate_checkpoint(
     manifest_path: Path, config_path: Path, weights_path: Path,
+    *, source_identity: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     try:
         import torch
@@ -125,7 +126,7 @@ def evaluate_checkpoint(
     blocking = [check["name"] for check in checks if not check["passed"]]
     canonical_payload = {
         "schema_version": "nexus-realizer-abstractive-evaluation-v1",
-        "source": _git_identity(),
+        "source": source_identity or _git_identity(),
         "dataset_sha256": manifest["dataset_sha256"],
         "manifest_sha256": sha256_file(manifest_path),
         "config_sha256": sha256_file(config_path),
@@ -159,10 +160,21 @@ def main() -> int:
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--weights", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--source-commit")
+    parser.add_argument("--source-tree")
     args = parser.parse_args()
+    if bool(args.source_commit) is not bool(args.source_tree):
+        raise ValueError("--source-commit and --source-tree must be provided together")
     if args.output.exists() or args.output.with_suffix(args.output.suffix + ".sha256").exists():
         raise FileExistsError(f"refusing to overwrite: {args.output}")
-    result = evaluate_checkpoint(args.manifest, args.config, args.weights)
+    source_identity = (
+        {"commit": args.source_commit, "tree": args.source_tree}
+        if args.source_commit else None
+    )
+    result = evaluate_checkpoint(
+        args.manifest, args.config, args.weights,
+        source_identity=source_identity,
+    )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(
         json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8",
