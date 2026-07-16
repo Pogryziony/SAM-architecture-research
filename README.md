@@ -41,8 +41,8 @@ general-purpose LLM reasoning path.
 | Canonical baseline (Stage 0) | ✅ **VALID** — dependency-free lexical RAG and lexical NEXUS both answer the registered 30 cases; 25 cases form the paired comparison. |
 | Realization L1 (Stage 2) | ✅ **PASS** — registered 30-case protocol passes for `PYTHONHASHSEED=0,1,42`: relevance 78.33%, accuracy delta +15.34pp, naturalness +22.40 and hallucination delta -5.12pp. All seeds have the same canonical content hash. |
 | Dialogue state (Stage 3) | ✅ **PASS** — full 110-turn protocol: reference resolution 87.5%, zero single-turn regression and dialogue-state p50 0.048ms. Resolver and complete-pipeline latency remain separate diagnostics. |
-| Realization L2 (Stage 4) | 🟡 **V2 RECOVERY VALIDATED** — historical v1 checkpoints remain rejected. Grounded realization scores 100% exact match and 0% hallucination on all 1,434 validation records; stable v2 preflight and overfit-smoke pass. A fresh short neural pilot is still required. |
-| End-to-end QA | 🟡 **GROUNDED PATH PASS / NEURAL PENDING** — supported graph evidence is returned fail-closed; a neural answer is accepted only after grounding checks. No failed v1 checkpoint is deployed. |
+| Realization L2 (Stage 4) | 🔴 **NEURAL CHECKPOINT REJECTED** — v2 pilot epoch 1 shows behavioral gains (EOS 100%, no collapse) but 0% grounding. Grounded fallback: 100% exact match. Full report: `benchmarks/results/realizer/v2_20260716T131357Z/pilot_report_v2.json`. |
+| End-to-end QA | 🔴 **GROUNDED PATH OK / NEURAL NOT READY** — Grounded Realizer returns evidence fail-closed (100% exact match, 0% hallucination). Neural checkpoint still does not meet promotion criteria (0% grounding rate). |
 
 ### Quick start (NEXUS)
 

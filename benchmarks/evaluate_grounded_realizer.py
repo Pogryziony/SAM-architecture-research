@@ -6,10 +6,15 @@ import argparse
 import hashlib
 import json
 import subprocess
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+_project_root = Path(__file__).parent.parent.resolve()
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
 
 from benchmarks.realizer_contracts import sha256_file, validate_dataset_manifest
 from nexus.realizer.grounded import answer_similarity, realize_grounded, token_f1

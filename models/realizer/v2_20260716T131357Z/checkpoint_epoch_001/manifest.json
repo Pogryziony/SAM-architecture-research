@@ -1,0 +1,70 @@
+{
+  "config_sha256": "a35ca13a37526dea1a7d2c0140f3c1bdac89c8abf13876f2845d44e55c9b12ab",
+  "dataset_sha256": "8028e471bb304ffb95ab338f0a3a93cbe4ded04596f73e9479a6135e663a59e0",
+  "decoder_config": {
+    "max_length": 128,
+    "no_repeat_ngram_size": 3,
+    "repetition_penalty": 1.2,
+    "strategy": "greedy"
+  },
+  "effective_config_sha256": "25cf29af4242b36c30d9cd0ddcb6fccee0e18b79cb262b81da10eb904c1f415b",
+  "effective_training_config": {
+    "batch_size": 2,
+    "early_stopping_patience": 1,
+    "epochs": 1,
+    "generation_max_tokens": 128,
+    "initial_loss_max": 10.0,
+    "learning_rate": 0.0003,
+    "max_parameters": 50000000,
+    "max_peak_rss_mb": 2500,
+    "weight_decay": 0.01
+  },
+  "elapsed_seconds": 131.472,
+  "epoch": 1,
+  "epoch_seconds": 128.869,
+  "files": {
+    "model.pt": {
+      "sha256": "2c4b55aa691f11e4cab84082ee0b8c6bb82a0f11b97d8db126d35ffa2281cf66",
+      "size": 3827769,
+      "stored_in_git": true
+    }
+  },
+  "gen_metrics": {
+    "answer_exact_match_rate": 1.0,
+    "answer_similarity_mean": 1.0,
+    "answer_token_f1_mean": 1.0,
+    "answer_unique_outputs": 20,
+    "avg_length": 71.3,
+    "coherent": 20,
+    "coherent_rate": 1.0,
+    "empty": 0,
+    "eos_rate": 1.0,
+    "fallback_rate": 1.0,
+    "neural_exact_match_rate": 0.0,
+    "neural_grounded_rate": 0.0,
+    "neural_similarity_mean": 0.5887,
+    "neural_token_f1_mean": 0.2514,
+    "neural_unique_outputs": 20,
+    "neural_uniqueness_ratio": 1.0,
+    "partial": 0,
+    "rep_3gram_mean": 0.0,
+    "repetitive": 0,
+    "samples": 20
+  },
+  "learning_rate": 0.0,
+  "optimizer_sha256": "46174985933b971b8a5d61a7afb27dbbcdfd9b875163d0a1316688d3c93ed7e1",
+  "parameter_count": 951555,
+  "peak_rss_mb": 816.5625,
+  "sample_predictions_count": 10,
+  "sample_predictions_sha256": "2d450c1288e9d5902e09c9c9132bbd4aa64482b4cac985e595e5e69f80b8258a",
+  "scheduler_sha256": "674bdd8246481586938ff28ae069b54a000f7008fb0a9d2d0ec7bc68f3017ade",
+  "schema_version": "nexus-realizer-checkpoint-v1",
+  "stop_reason": "epoch_complete",
+  "train_loss": 1.824445,
+  "validation_loss": 1.457496,
+  "weights": {
+    "path": "models\\realizer\\v2_20260716T131357Z\\checkpoint_epoch_001\\model.pt",
+    "sha256": "2c4b55aa691f11e4cab84082ee0b8c6bb82a0f11b97d8db126d35ffa2281cf66",
+    "size_bytes": 3827769
+  }
+}

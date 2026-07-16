@@ -1,7 +1,6 @@
 # NEXUS Realizer v2 — quality recovery
 
-**Status (2026-07-16): grounded runtime passes; neural checkpoint remains
-unselected until a new short pilot passes text-level gates.**
+**Status (2026-07-16): grounded runtime passes; neural checkpoint REJECTED — v2 pilot epoch 1 yields 0% grounded rate despite behavioral improvements. Full report in pilot_report_v2.json.**
 
 ## What failed
 
@@ -83,6 +82,12 @@ avoids another 50-epoch run.
 Labels are used only after realization to score the validation output. They are
 not available to the ranking or answer path.
 
+| 1 | epoch 1 | 1.824 | 1.457 | 0.0% | 25.7% | 50.6% | 0.0% | 100% | 92.2% | 0% | REJECTED |
+| v2 | ground-truth baseline | — | — | 100%* | 100%* | 100%* | 100%* | 100% | 100% | 0% | diagnostic-only† |
+
+\* Grounded-only fallback (evidence_copy). Scores the deterministic evidence extraction path.
+† Grounded metrics must NOT influence neural checkpoint selection.
+
 ## Promotion rule
 
 The grounded runtime may pass independently. A neural checkpoint may be
@@ -90,3 +95,22 @@ promoted only after a fresh 1–3 epoch pilot passes raw-neural text metrics on 
 untouched validation split. The fallback metrics are reported separately and
 must never hide a collapsed checkpoint. Historical v1 checkpoints remain
 rejected.
+
+## v2 pilot outcome (2026-07-16): REALIZER_NEURAL_CHECKPOINT_REJECTED
+
+The first controlled v2 pilot (`v2_20260716T131357Z`) trained epoch 1 on
+`stable_transformer_v2` with grounded_compact_v2 serialization.
+
+**Key result**: The neural model improved behavioral control (EOS 0%→100%,
+empty 46%→0%, uniqueness 64%→92%) but produced ZERO grounded answers on 1,434
+validation records. All neural outputs fail the grounding check (threshold
+0.72). The Grounded Realizer falls back to evidence_copy for 100% of answers,
+achieving perfect exact match through the deterministic fallback — not through
+neural quality.
+
+**Decision**: Training stopped at epoch 1. The checkpoint does not meet any of
+the promotion criteria (exact_match 0% vs >=70%, token_f1 25.7% vs >=85%,
+grounded_rate 0% vs >=90%). Fault is `REALIZER_NEURAL_CHECKPOINT_REJECTED`.
+
+Full report: `benchmarks/results/realizer/v2_20260716T131357Z/pilot_report_v2.json`
+Diagnostic artifacts (no weights): `benchmarks/results/realizer/v2_20260716T131357Z/`
