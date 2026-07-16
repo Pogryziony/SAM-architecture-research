@@ -76,6 +76,7 @@ for p in paths:
 - [Realizer v1 Training Status](docs/nexus-realizer-pretraining-status.md) — verified Phase 0–4 gates, evidence and safe pilot procedure
 - [Realizer v2 Quality Recovery](docs/realizer-v2-quality-recovery.md) — checkpoint root cause, grounded runtime, stable model and promotion rules
 - [Pointer/Copy Realizer v3](docs/pointer-copy-realizer-v3.md) — target audit, deterministic architecture, runtime integration, gates and limitations
+- [Bounded multi-evidence pilot](docs/realizer-abstractive-pilot.md) — unique composition data, slot-preserving neural target, readiness and stop gates
 - [Pilot Integrity and Next Run](docs/nexus-pilot-integrity.md) — preset wiring, artifact identity, resolver contracts and launch rules
 - [RAG vs NEXUS](docs/rag-vs-graph-nexus.md) — detailed comparison, when to use which
 

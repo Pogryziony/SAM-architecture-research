@@ -36,10 +36,16 @@ from nexus.realizer.tokenizer import ByteTokenizer
 def load_training_inputs(manifest_path: Path, config_path: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, list[dict[str, Any]]]]:
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     config = json.loads(config_path.read_text(encoding="utf-8"))
-    errors = validate_dataset_manifest(manifest, manifest_path.parent)
+    abstractive = manifest.get("schema_version") == "nexus-realizer-abstractive-v1"
+    if abstractive:
+        from benchmarks.abstractive_realizer_contracts import validate_abstractive_manifest
+        errors = validate_abstractive_manifest(manifest, manifest_path.parent)
+    else:
+        errors = validate_dataset_manifest(manifest, manifest_path.parent)
     errors.extend(validate_model_config(config.get("model", {})))
     if config.get("schema_version") not in {
         "nexus-realizer-training-v1", "nexus-realizer-training-v2",
+        "nexus-realizer-abstractive-training-v1",
     }:
         errors.append("unsupported training config schema")
     if manifest.get("schema_version") != config.get("data", {}).get("manifest_schema"):
@@ -51,14 +57,22 @@ def load_training_inputs(manifest_path: Path, config_path: Path) -> tuple[dict[s
         path = manifest_path.parent / manifest["splits"][split]["path"]
         splits[split] = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
         for index, record in enumerate(splits[split]):
-            record_errors = validate_distillation_record(record)
+            if abstractive:
+                from benchmarks.abstractive_realizer_contracts import validate_abstractive_record
+                record_errors = validate_abstractive_record(record)
+            else:
+                record_errors = validate_distillation_record(record)
             if record_errors:
                 raise ValueError(
                     f"invalid {split} record {index}: " + "; ".join(record_errors)
                 )
             if record.get("dataset_split") != split:
                 raise ValueError(f"record split mismatch in {split} at index {index}")
-    assert_no_split_leakage(splits)
+    if abstractive:
+        from benchmarks.abstractive_realizer_contracts import assert_no_source_family_leakage
+        assert_no_source_family_leakage(splits)
+    else:
+        assert_no_split_leakage(splits)
     return manifest, config, splits
 
 
@@ -167,12 +181,28 @@ def serialize_grounded_source(record: dict[str, Any], max_bytes: int) -> str:
     return prefix + _utf8_prefix(str(record.get("question", "")).strip(), question_budget)
 
 
+def serialize_comparison_slots(record: dict[str, Any], max_bytes: int) -> str:
+    """Serialize both evidence bindings without exposing the target template."""
+    slots = record.get("slots", {})
+    text = (
+        "[TASK] compare two evidence values\n"
+        f"[EVIDENCE_1] source={slots.get('SOURCE_1', '')} | "
+        f"subject={slots.get('SUBJECT_1', '')} | value={slots.get('VALUE_1', '')}\n"
+        f"[EVIDENCE_2] source={slots.get('SOURCE_2', '')} | "
+        f"subject={slots.get('SUBJECT_2', '')} | value={slots.get('VALUE_2', '')}\n"
+        f"[QUESTION] {str(record.get('question', '')).strip()}"
+    )
+    return _utf8_prefix(text, max_bytes)
+
+
 def serialize_source_for_config(record: dict[str, Any], config: dict[str, Any]) -> str:
     model_config = config["model"]
     max_bytes = int(model_config["max_input_tokens"]) - 2
     source_format = config.get("data", {}).get("source_format", "evidence_json_v1")
     if source_format == "grounded_compact_v2":
         return serialize_grounded_source(record, max_bytes)
+    if source_format == "comparison_slots_v1":
+        return serialize_comparison_slots(record, max_bytes)
     if source_format != "evidence_json_v1":
         raise ValueError(f"unsupported source format: {source_format}")
     return serialize_source(record, max_bytes)
@@ -187,6 +217,17 @@ def serialization_coverage_for_config(
         return serialization_coverage(
             record, int(config["model"]["max_input_tokens"]) - 2
         )
+    if source_format == "comparison_slots_v1":
+        serialized = serialize_source_for_config(record, config)
+        slots = record.get("slots", {})
+        required = [
+            str(slots.get(name, ""))
+            for name in (
+                "SOURCE_1", "VALUE_1", "SUBJECT_1",
+                "SOURCE_2", "VALUE_2", "SUBJECT_2",
+            )
+        ]
+        return 1.0 if all(value and value in serialized for value in required) else 0.0
     if source_format != "grounded_compact_v2":
         raise ValueError(f"unsupported source format: {source_format}")
     from nexus.realizer.grounded import evidence_candidates
@@ -196,6 +237,20 @@ def serialization_coverage_for_config(
         return 1.0
     serialized = serialize_source_for_config(record, config)
     return 1.0 if candidates[0].text in serialized else 0.0
+
+
+def training_target_for_config(
+    record: dict[str, Any], config: dict[str, Any]
+) -> str:
+    target_format = config.get("data", {}).get("target_format", "answer_text_v1")
+    if target_format == "slot_template_v1":
+        target = record.get("training_target")
+        if not isinstance(target, str) or not target.strip():
+            raise ValueError("slot_template_v1 record has no training_target")
+        return target
+    if target_format != "answer_text_v1":
+        raise ValueError(f"unsupported target format: {target_format}")
+    return str(record["answer"])
 
 
 def serialization_coverage(record: dict[str, Any], max_bytes: int) -> float:
@@ -219,7 +274,10 @@ def _encode(records: Sequence[dict[str, Any]], config: dict[str, Any]) -> list[t
                 serialize_source_for_config(record, config),
                 model_config["max_input_tokens"],
             ),
-            tokenizer.encode(record["answer"], model_config["max_output_tokens"]),
+            tokenizer.encode(
+                training_target_for_config(record, config),
+                model_config["max_output_tokens"],
+            ),
         )
         for record in records
     ]

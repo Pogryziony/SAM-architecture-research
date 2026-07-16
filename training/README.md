@@ -83,3 +83,17 @@ registered Stage 2 results keep their original semantics.
   only after creating a separate, unique train-only abstractive dataset.
 
 See `docs/realizer-v2-quality-recovery.md` for the design and promotion gates.
+
+## Next neural experiment: multi-evidence slot pilot
+
+The next dataset is built separately with
+`benchmarks/build_abstractive_realizer_dataset.py`. It combines two distinct
+train-only claims without reusing claims, excludes every consumed v1 validation
+source family and rejects targets equal to one evidence candidate. Its config is
+`training/nexus_realizer_abstractive_v1.json`.
+
+Run `benchmarks/prepare_abstractive_realizer_run.py` before training. It validates
+the dataset, verifies 100% binding serialization, instantiates the CPU model,
+runs forward/backward and a 30-step overfit smoke, and writes no weights. Full
+training remains limited to epoch 1 first and at most epoch 3. See
+`docs/realizer-abstractive-pilot.md` for the exact gates and command.
