@@ -41,8 +41,8 @@ general-purpose LLM reasoning path.
 | Canonical baseline (Stage 0) | ✅ **VALID** — dependency-free lexical RAG and lexical NEXUS both answer the registered 30 cases; 25 cases form the paired comparison. |
 | Realization L1 (Stage 2) | ✅ **PASS** — registered 30-case protocol passes for `PYTHONHASHSEED=0,1,42`: relevance 78.33%, accuracy delta +15.34pp, naturalness +22.40 and hallucination delta -5.12pp. All seeds have the same canonical content hash. |
 | Dialogue state (Stage 3) | ✅ **PASS** — full 110-turn protocol: reference resolution 87.5%, zero single-turn regression and dialogue-state p50 0.048ms. Resolver and complete-pipeline latency remain separate diagnostics. |
-| Realization L2 (Stage 4) | 🔴 **NEURAL CHECKPOINT REJECTED** — v2 pilot epoch 1 shows behavioral gains (EOS 100%, no collapse) but 0% grounding. Grounded fallback: 100% exact match. Full report: `benchmarks/results/realizer/v2_20260716T131357Z/pilot_report_v2.json`. |
-| End-to-end QA | 🔴 **GROUNDED PATH OK / NEURAL NOT READY** — Grounded Realizer returns evidence fail-closed (100% exact match, 0% hallucination). Neural checkpoint still does not meet promotion criteria (0% grounding rate). |
+| Realization L2 (Stage 4) | ✅ **POINTER/COPY V3 ACCEPTED FOR EXTRACTIVE FACTUAL QA** — the target audit found 7,127/7,127 answers already present as complete evidence candidates. The deterministic, label-free selector copies the selected evidence exactly and fails closed on ambiguity. The neural v2 checkpoint remains rejected. |
+| End-to-end QA | 🟡 **FACTUAL EXTRACTIVE PATH READY** — `ProductionNEXUSConfig.pointer_copy()` connects Pointer/Copy to the real runtime. Comparison, synthesis and genuinely abstractive answers still use the existing path and require separate data and evaluation. |
 
 ### Quick start (NEXUS)
 
@@ -75,6 +75,7 @@ for p in paths:
 - [Auditability & Reasoning Roadmap](docs/nexus-auditability-roadmap.md) — proof traces, provenance, oracle evaluation, and staged acceptance gates
 - [Realizer v1 Training Status](docs/nexus-realizer-pretraining-status.md) — verified Phase 0–4 gates, evidence and safe pilot procedure
 - [Realizer v2 Quality Recovery](docs/realizer-v2-quality-recovery.md) — checkpoint root cause, grounded runtime, stable model and promotion rules
+- [Pointer/Copy Realizer v3](docs/pointer-copy-realizer-v3.md) — target audit, deterministic architecture, runtime integration, gates and limitations
 - [Pilot Integrity and Next Run](docs/nexus-pilot-integrity.md) — preset wiring, artifact identity, resolver contracts and launch rules
 - [RAG vs NEXUS](docs/rag-vs-graph-nexus.md) — detailed comparison, when to use which
 
@@ -86,7 +87,7 @@ nexus/                  ← NEXUS implementation (ACTIVE)
   ingestion/            → Entity/relation extraction pipelines
   query/                → Question parsing, entity disambiguation
   reasoning/            → Evidence building, prompt templates, verifier
-  realizer/             → Byte tokenizer and CPU Transformer factory
+  realizer/             → Grounding, deterministic Pointer/Copy and experimental neural models
 
 experiments/            ← NEXUS experiments (ACTIVE)
   entity-extraction/
@@ -126,4 +127,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-16 (grounded Realizer v2 validated; the next neural action is a bounded 1–3 epoch pilot with text-level gates.)*
+*Last updated: 2026-07-16 (Pointer/Copy v3 accepted for extractive factual QA; neural v2 remains rejected.)*

@@ -1,7 +1,9 @@
 # EXPERIMENT: NEXUS Realizer v1 — CPU-First Evidence-to-Answer Model
 
 **Pre-registered**: 2026-07-11
-**Status**: V1 checkpoints rejected; grounded v2 recovery validated; new neural checkpoint pending a bounded pilot.
+**Status**: V1 and neural v2 checkpoints rejected; Pointer/Copy v3 accepted for
+extractive factual QA. New neural training is blocked pending a genuinely
+abstractive train-only dataset.
 **Repository**: SAM-architecture-research
 
 ---

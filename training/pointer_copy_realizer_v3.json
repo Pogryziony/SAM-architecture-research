@@ -1,0 +1,7 @@
+{
+  "candidate_ordering": "score_then_confidence_then_candidate_id",
+  "minimum_margin": 0.25,
+  "minimum_score": 1.0,
+  "score_version": "question_evidence_v1",
+  "schema_version": "nexus-pointer-copy-realizer-v3"
+}

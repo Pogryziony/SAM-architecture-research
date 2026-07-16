@@ -12,6 +12,7 @@ torch = pytest.importorskip("torch")
 
 from benchmarks.train_nexus_realizer_v2 import (
     _generate_sample_predictions,
+    _scheduler_total_epochs,
     _save_checkpoint,
     train_v2,
 )
@@ -97,6 +98,16 @@ def test_save_checkpoint_saves_weights_and_manifest(tmp_path: Path):
         (ckpt_dir / "model.pt").read_bytes()
     ).hexdigest()
     assert ckpt["epoch"] == 1
+    assert ckpt["files"]["model.pt"]["stored_in_git"] is False
+    assert ckpt["optimizer"]["stored_in_git"] is False
+    assert ckpt["scheduler"]["stored_in_git"] is False
+    assert "\\" not in ckpt["weights"]["path"]
+
+
+def test_one_epoch_run_keeps_three_epoch_scheduler_plan():
+    config = {"training": {"scheduler_total_epochs": 3}}
+    assert _scheduler_total_epochs(config, 1) == 3
+    assert _scheduler_total_epochs(config, 5) == 5
 
 
 def test_save_checkpoint_refuses_overwrite(tmp_path: Path):

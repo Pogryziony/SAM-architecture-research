@@ -1,6 +1,7 @@
 # NEXUS Realizer v2 — quality recovery
 
-**Status (2026-07-16): grounded runtime passes; neural checkpoint REJECTED — v2 pilot epoch 1 yields 0% grounded rate despite behavioral improvements. Full report in pilot_report_v2.json.**
+**Status (2026-07-16): neural checkpoint REJECTED. The superseding extractive
+runtime is Pointer/Copy v3; see `docs/pointer-copy-realizer-v3.md`.**
 
 ## What failed
 
@@ -114,3 +115,18 @@ grounded_rate 0% vs >=90%). Fault is `REALIZER_NEURAL_CHECKPOINT_REJECTED`.
 
 Full report: `benchmarks/results/realizer/v2_20260716T131357Z/pilot_report_v2.json`
 Diagnostic artifacts (no weights): `benchmarks/results/realizer/v2_20260716T131357Z/`
+
+## Superseding decision: Pointer/Copy v3
+
+A complete target audit found 7,127/7,127 labels already present as full
+evidence candidates. The v2 model was being asked to regenerate exact paths,
+keys and numeric values that the runtime already possessed. The accepted v3
+path therefore selects from structured evidence without reading labels and
+copies the selected candidate verbatim. It fails closed on missing or ambiguous
+evidence. The rejected neural metrics remain historical evidence; deterministic
+fallback performance does not promote the checkpoint.
+
+Future neural work is limited to a new, unique train-only dataset containing
+genuinely abstractive or multi-evidence targets. Increasing capacity, changing
+tokenization or lowering grounding thresholds is not authorized on the current
+extractive dataset.

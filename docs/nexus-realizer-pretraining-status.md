@@ -1,10 +1,12 @@
 # NEXUS Realizer v1 — training status
 
-**Decision: historical v1 checkpoints remain rejected. Grounded v2 passes;
-stable neural v2 is ready only for a bounded 1–3 epoch pilot.**
+**Decision: historical v1 and neural v2 checkpoints remain rejected.
+Pointer/Copy v3 is accepted for extractive factual QA; another neural pilot is
+blocked until genuinely abstractive, unique train-only data exists.**
 
 The original failure report below is retained as historical evidence. The
-verified recovery and corrected diagnosis are documented in
+accepted extractive architecture is documented in
+`docs/pointer-copy-realizer-v3.md`; the neural diagnosis remains in
 `docs/realizer-v2-quality-recovery.md`.
 
 ## Pilot outcome (2026-07-16)
@@ -31,13 +33,15 @@ remain future experiments, not verified root causes.
 Full report: `benchmarks/results/realizer/run_20260716T100428Z/pilot_report.json`
 Training artifacts: `models/realizer/run_20260716T100428Z/`
 
-## Completed recovery and next step
+## Completed recovery and superseding decision
 
 Implemented: stable initialization, evidence-first serialization, strict
 grounding fallback, text-level checkpoint metrics, initial-loss gate and
 mode-collapse stop. Grounded validation is 100% exact with 0% hallucination.
-The remaining step is one short neural pilot, stopped after epoch 1 unless raw
-neural F1, grounding and uniqueness justify continuing to at most epoch 3.
+The short neural pilot was run and rejected at epoch 1 because raw-neural
+grounding remained 0%. The complete target audit then established that all
+current labels are full evidence candidates. Pointer/Copy v3 supersedes another
+neural run on this dataset.
 
 ## Confirmed results
 
@@ -58,7 +62,7 @@ neural F1, grounding and uniqueness justify continuing to at most epoch 3.
 | Realizer parameters | 2,770,752 | PASS, below 50M |
 | CPU preflight | forward/backward, no weights written | PASS |
 | 50-step overfit smoke | loss 190.477 → 142.881, no weights written | PASS |
-| Default training policy | 5 epochs, patience 3 | PASS |
+| Current neural pilot policy | 3 epochs maximum by default, safety stops active | PASS |
 
 The first historical 50-epoch CPU run remains rejected. Its loss converged,
 but answer relevance, accuracy, naturalness and hallucination regressed. The
@@ -98,9 +102,15 @@ Training may start only when `benchmarks/check_phase4_readiness.py` reports
 6. immutable sidecars for every evidence artifact;
 7. a default training limit of at most 5 epochs with patience at most 3.
 
-## Recommended next run
+## Recommended next action
 
-Use the generation-aware trainer and promote checkpoints progressively:
+Do not extend the rejected v2 run on the current dataset. All registered targets
+are complete evidence candidates, so the accepted action is to evaluate and use
+Pointer/Copy v3 for factual lookups. A future neural run requires a separate
+abstractive dataset and must retain the bounded schedule below.
+
+The following sequence applies only to a future, separately approved
+abstractive dataset; it is not authorization to retrain on the current data:
 
 ```bash
 # 1 epoch: plumbing and generation smoke

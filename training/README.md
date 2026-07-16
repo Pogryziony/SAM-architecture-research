@@ -25,7 +25,7 @@ split, and reproducibility hashes.
    `--mode overfit-smoke`.
 7. Run `benchmarks/check_phase4_readiness.py`. Start training only when it says
    `GO_FOR_REALIZER_TRAINING`.
-8. Execute 1, then 3, then at most 5 epochs. `models/realizer/` is the only
+8. Only for a genuinely generative dataset, execute 1, then 3, then at most 5 epochs. `models/realizer/` is the only
    configured in-repository checkpoint root; an external output directory is
    also valid. Every checkpoint SHA-256 is recorded in its run manifest.
 
@@ -49,7 +49,26 @@ Key findings:
 - Memory budget (500 MB) exceeded: peak RSS ~6.9 GB
 - The later diagnosis superseded the initial tokenizer/capacity hypothesis: pathological v1 initialization and an extractive objective were the verified primary causes
 
-## V2 recovery status
+## Current decision: Pointer/Copy v3 for the existing dataset
+
+The complete target audit found that all 5,693 train and 1,434 validation
+answers are already present as full evidence candidates. Do **not** train a
+sequence-to-sequence model on this dataset merely to reproduce those strings.
+Evaluate the deterministic implementation instead:
+
+```bash
+python benchmarks/evaluate_pointer_copy_v3.py \
+  --config training/pointer_copy_realizer_v3.json \
+  --manifest data/distillation/realizer_v1/manifest.json \
+  --output /tmp/pointer_copy_v3.json
+```
+
+The configuration freezes the score version and fail-closed thresholds. The
+accepted backend is enabled explicitly with
+`ProductionNEXUSConfig.pointer_copy()`; the default remains unchanged so old
+registered Stage 2 results keep their original semantics.
+
+## Historical v2 recovery status
 
 - `nexus/realizer/grounded.py` returns complete supported evidence and rejects
   unreadable, numerically invented or materially unsupported neural answers.
@@ -59,7 +78,8 @@ Key findings:
   generation and writes a hash sidecar.
 - Full validation result: 1,434/1,434 exact, 0% hallucination and 1,434 unique
   outputs. This validates the grounded runtime, not a neural checkpoint.
-- The next run is a single 1–3 epoch neural pilot. Never extend it merely
-  because loss falls; promote only raw-neural text quality.
+- The epoch-1 v2 checkpoint was rejected at 0% grounded rate. Do not continue
+  neural training on the same extractive targets. Reopen a bounded 1→3→5 pilot
+  only after creating a separate, unique train-only abstractive dataset.
 
 See `docs/realizer-v2-quality-recovery.md` for the design and promotion gates.

@@ -91,6 +91,12 @@ def _peak_rss_mb() -> float | None:
         return None
 
 
+def _scheduler_total_epochs(config: dict[str, Any], run_epochs: int) -> int:
+    """Keep short checkpoint runs on the preregistered LR schedule."""
+    configured = int(config["training"].get("scheduler_total_epochs", run_epochs))
+    return max(configured, run_epochs, 1)
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Generation-aware metrics on a validation subset
 # ═══════════════════════════════════════════════════════════════════════════
@@ -253,12 +259,22 @@ def _save_checkpoint(
         "learning_rate": round(learning_rate, 8),
         "gen_metrics": gen_metrics,
         "weights": {
-            "path": str(weights_path),
+            "path": weights_path.as_posix(),
             "sha256": weights_sha,
             "size_bytes": weights_size,
         },
         "optimizer_sha256": opt_sha,
         "scheduler_sha256": sched_sha,
+        "optimizer": {
+            "path": opt_path.as_posix(),
+            "sha256": opt_sha,
+            "stored_in_git": False,
+        },
+        "scheduler": {
+            "path": sched_path.as_posix(),
+            "sha256": sched_sha,
+            "stored_in_git": False,
+        },
         "effective_config_sha256": effective_config_hash,
         "effective_training_config": effective_config,
         "dataset_sha256": dataset_sha256,
@@ -295,7 +311,9 @@ def _save_checkpoint(
         "model.pt": {
             "sha256": weights_sha,
             "size": weights_size,
-            "stored_in_git": True,
+            "stored_in_git": False,
+            "repository_eligible": True,
+            "promotion_status": "unreviewed",
         }
     }
 
@@ -454,7 +472,9 @@ def train_v2(
     # Cap at 12 for v2 unless explicitly overridden
     if mode == "pilot" and steps > 12:
         steps = 12
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=steps)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer, T_max=_scheduler_total_epochs(config, steps),
+    )
 
     patience_limit = int(config["training"]["early_stopping_patience"])
     best_val_loss = float("inf")
@@ -675,7 +695,12 @@ def train_v2(
         if not weights.exists():
             torch.save(best_state, weights)
         weights_sha = hashlib.sha256(weights.read_bytes()).hexdigest()
-        result["best_weights"] = {"path": str(weights), "sha256": weights_sha, "epoch": best_epoch}
+        result["best_weights"] = {
+            "path": weights.as_posix(),
+            "sha256": weights_sha,
+            "epoch": best_epoch,
+            "stored_in_git": False,
+        }
         # Save run manifest
         run_manifest_path = output_dir / "run_manifest.json"
         run_manifest_path.write_text(
