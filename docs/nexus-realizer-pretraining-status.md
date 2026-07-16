@@ -1,6 +1,11 @@
 # NEXUS Realizer v1 — training status
 
-**Decision: REALIZER_PILOT_FAIL. Mode collapse in first controlled pilot; no acceptable checkpoint.**
+**Decision: historical v1 checkpoints remain rejected. Grounded v2 passes;
+stable neural v2 is ready only for a bounded 1–3 epoch pilot.**
+
+The original failure report below is retained as historical evidence. The
+verified recovery and corrected diagnosis are documented in
+`docs/realizer-v2-quality-recovery.md`.
 
 ## Pilot outcome (2026-07-16)
 
@@ -17,23 +22,22 @@ All registered answer-quality gates FAIL:
 - Naturalness: 0 points (threshold: >= 5pt improvement)
 - Hallucination: 100% (threshold: <= baseline)
 
-**Root cause**: The byte-level tokenizer (259 symbols) and small model capacity
-(2.77M parameters) lead to mode collapse where the model outputs the same
-nonsense sequence regardless of input. The loss decreases are misleading — 
-teacher-forcing loss minimization does not translate to generation quality when
-the model lacks sufficient capacity to learn the evidence-to-answer mapping.
+**Initial hypothesis (superseded)**: byte tokenization and model capacity were
+suspected. Direct diagnostics later identified pathological tied-head
+initialization (initial loss about 191.8 versus expected 5.56) and a fully
+extractive target contract as the primary causes. Tokenization and capacity
+remain future experiments, not verified root causes.
 
 Full report: `benchmarks/results/realizer/run_20260716T100428Z/pilot_report.json`
 Training artifacts: `models/realizer/run_20260716T100428Z/`
 
-## Next steps
+## Completed recovery and next step
 
-Before another training attempt, address:
-1. Replace byte-level tokenizer with BPE/subword tokenizer
-2. Increase model capacity (d_model >= 256, more layers)
-3. Add diversity-promoting training techniques
-4. Implement text-level (not byte-level) quality metrics
-5. Add nucleus sampling for diverse generation
+Implemented: stable initialization, evidence-first serialization, strict
+grounding fallback, text-level checkpoint metrics, initial-loss gate and
+mode-collapse stop. Grounded validation is 100% exact with 0% hallucination.
+The remaining step is one short neural pilot, stopped after epoch 1 unless raw
+neural F1, grounding and uniqueness justify continuing to at most epoch 3.
 
 ## Confirmed results
 

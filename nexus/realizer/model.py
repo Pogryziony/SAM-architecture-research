@@ -1,4 +1,10 @@
-"""Lazy PyTorch construction for the preregistered Realizer v1."""
+"""Lazy PyTorch construction for NEXUS Realizer model families.
+
+``legacy_transformer_v1`` is kept solely so historical checkpoints remain
+loadable.  ``stable_transformer_v2`` fixes the pathological logit scale that
+made the original untrained model start around cross-entropy 191 instead of
+the expected ``log(vocab_size)`` (about 5.56).
+"""
 
 from __future__ import annotations
 
@@ -14,6 +20,9 @@ def validate_model_config(config: dict[str, Any]) -> list[str]:
             errors.append(f"{key} must be a positive integer")
     if not errors and config["d_model"] % config["nhead"] != 0:
         errors.append("d_model must be divisible by nhead")
+    architecture = config.get("architecture", "legacy_transformer_v1")
+    if architecture not in {"legacy_transformer_v1", "stable_transformer_v2"}:
+        errors.append(f"unsupported architecture: {architecture}")
     dropout = config.get("dropout")
     if not isinstance(dropout, (int, float)) or isinstance(dropout, bool) or not 0.0 <= dropout < 1.0:
         errors.append("dropout must be within [0, 1)")
@@ -35,6 +44,9 @@ def build_model(config: dict[str, Any]):
             super().__init__()
             vocab_size = config["vocab_size"]
             d_model = config["d_model"]
+            self.architecture = config.get(
+                "architecture", "legacy_transformer_v1"
+            )
             max_positions = max(config["max_input_tokens"], config["max_output_tokens"])
             self.scale = math.sqrt(d_model)
             self.token_embedding = nn.Embedding(vocab_size, d_model, padding_idx=0)
@@ -49,8 +61,20 @@ def build_model(config: dict[str, Any]):
                 batch_first=True,
                 norm_first=True,
             )
-            self.output = nn.Linear(d_model, vocab_size, bias=False)
-            self.output.weight = self.token_embedding.weight
+            if self.architecture == "stable_transformer_v2":
+                self.final_norm = nn.LayerNorm(d_model)
+                self.output = nn.Linear(d_model, vocab_size, bias=True)
+                init_std = d_model ** -0.5
+                nn.init.normal_(self.token_embedding.weight, mean=0.0, std=init_std)
+                nn.init.normal_(self.position_embedding.weight, mean=0.0, std=init_std)
+                nn.init.normal_(self.output.weight, mean=0.0, std=init_std)
+                nn.init.zeros_(self.output.bias)
+                with torch.no_grad():
+                    self.token_embedding.weight[0].zero_()
+            else:
+                self.final_norm = nn.Identity()
+                self.output = nn.Linear(d_model, vocab_size, bias=False)
+                self.output.weight = self.token_embedding.weight
 
         def _embed(self, tokens):
             positions = torch.arange(tokens.shape[1], device=tokens.device).unsqueeze(0)
@@ -74,7 +98,7 @@ def build_model(config: dict[str, Any]):
                 tgt_key_padding_mask=target.eq(0),
                 memory_key_padding_mask=source.eq(0),
             )
-            return self.output(hidden)
+            return self.output(self.final_norm(hidden))
 
     return NEXUSRealizer()
 

@@ -1,0 +1,39 @@
+{
+  "artifact_policy": {
+    "allow_weights_in_repository": true,
+    "record_sha256": true,
+    "repository_output_root": "models/realizer"
+  },
+  "data": {
+    "manifest_schema": "nexus-realizer-v1",
+    "minimum_pairs": 5000,
+    "source_format": "grounded_compact_v2",
+    "validation_fraction": 0.2
+  },
+  "model": {
+    "architecture": "stable_transformer_v2",
+    "d_model": 128,
+    "decoder_layers": 2,
+    "dim_feedforward": 384,
+    "dropout": 0.1,
+    "encoder_layers": 2,
+    "max_input_tokens": 704,
+    "max_output_tokens": 704,
+    "nhead": 4,
+    "vocab_size": 259
+  },
+  "preregistration": "EXPERIMENT_NEXUS_REALIZER_V1.md",
+  "schema_version": "nexus-realizer-training-v2",
+  "seed": 20260711,
+  "training": {
+    "batch_size": 2,
+    "early_stopping_patience": 1,
+    "epochs": 3,
+    "generation_max_tokens": 128,
+    "initial_loss_max": 10.0,
+    "learning_rate": 0.0003,
+    "max_parameters": 50000000,
+    "max_peak_rss_mb": 2500,
+    "weight_decay": 0.01
+  }
+}

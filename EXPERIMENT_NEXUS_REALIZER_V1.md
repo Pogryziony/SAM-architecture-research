@@ -1,7 +1,7 @@
 # EXPERIMENT: NEXUS Realizer v1 — CPU-First Evidence-to-Answer Model
 
 **Pre-registered**: 2026-07-11
-**Status**: REALIZER_PILOT_FAIL — mode collapse in first controlled pilot; architectural changes needed.
+**Status**: V1 checkpoints rejected; grounded v2 recovery validated; new neural checkpoint pending a bounded pilot.
 **Repository**: SAM-architecture-research
 
 ---
@@ -229,6 +229,25 @@ diagnostics. This does NOT authorize a longer training run — the identified
 architectural issues must be addressed first.
 
 Full report: `benchmarks/results/realizer/run_20260716T100428Z/pilot_report.json`
+
+## Corrected diagnosis and v2 amendment
+
+The section above is the immutable historical v1 result. Subsequent direct
+diagnostics showed that the strongest verified causes were not model size
+alone: the tied embedding/output design began at loss about `191.8` instead of
+the uniform expectation `ln(259) = 5.56`, and all accepted targets are already
+present in the structured evidence.
+
+The amended implementation adds `stable_transformer_v2` and a fail-closed
+grounded Realizer. On all 1,434 validation records, grounded realization reaches
+100% exact match, 100% token F1, 0% hallucination and 1,434 unique outputs,
+without using labels during answer generation. Stable v2 starts near loss 6.0
+and reduces it to about 1.61 in the 50-step no-write overfit smoke.
+
+These results validate the runtime fallback and training mechanics, not a new
+neural checkpoint. Only raw neural output metrics may promote a checkpoint; the
+grounded fallback is reported separately. See
+`docs/realizer-v2-quality-recovery.md`.
 
 ## Budget Compliance
 
