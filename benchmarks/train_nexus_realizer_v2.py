@@ -54,6 +54,7 @@ from benchmarks.train_nexus_realizer import (
     validate_readiness_for_training,
     serialize_source_for_config,
     serialization_coverage_for_config,
+    training_target_for_config,
 )
 from nexus.realizer.model import build_model, parameter_count, validate_model_config
 from nexus.realizer.tokenizer import ByteTokenizer
@@ -64,6 +65,9 @@ from nexus.realizer.grounded import (
     evidence_candidates,
     realize_grounded,
     token_f1,
+)
+from benchmarks.abstractive_realizer_contracts import (
+    SLOT_NAMES, materialize_slot_template,
 )
 
 # Try to import psutil for memory tracking (optional)
@@ -128,6 +132,9 @@ def _generate_and_score(
     fallback_count = 0
     neural_outputs: set[str] = set()
     final_outputs: set[str] = set()
+    slot_placeholder_exact = 0
+    relation_correct = 0
+    slot_mode = config.get("data", {}).get("target_format") == "slot_template_v1"
 
     model.eval()
     with torch.no_grad():
@@ -137,21 +144,40 @@ def _generate_and_score(
                 config["model"]["max_input_tokens"],
             )
             text, diag = decode_to_text(model, source_ids, tokenizer, decoder_cfg)
-            realization = realize_grounded(record, text)
-            final_text = realization.answer
+            template_reference = training_target_for_config(record, config)
+            if slot_mode:
+                placeholders_ok = all(
+                    text.count(f"[{name}]") == 1 for name in SLOT_NAMES
+                )
+                expected_relation = str(record.get("composition", {}).get("relation", ""))
+                opposite = "different" if expected_relation == "the same" else "the same"
+                relation_ok = bool(
+                    expected_relation and expected_relation in text and opposite not in text
+                )
+                slot_placeholder_exact += placeholders_ok
+                relation_correct += relation_ok
+                final_text = materialize_slot_template(text, record.get("slots", {}))
+                realization_fallback = False
+                supported = placeholders_ok and relation_ok
+            else:
+                realization = realize_grounded(record, text)
+                final_text = realization.answer
+                realization_fallback = realization.fallback_used
+                supported = grounding_score(
+                    text, evidence_candidates(record)
+                ) >= 0.72
             reference = str(record.get("answer", "")).strip()
             total += 1
             neural_outputs.add(text)
             final_outputs.add(final_text)
-            neural_exact += " ".join(text.casefold().split()) == " ".join(reference.casefold().split())
+            neural_exact += " ".join(text.casefold().split()) == " ".join(template_reference.casefold().split())
             final_exact += " ".join(final_text.casefold().split()) == " ".join(reference.casefold().split())
-            neural_similarity += answer_similarity(text, reference)
+            neural_similarity += answer_similarity(text, template_reference)
             final_similarity += answer_similarity(final_text, reference)
-            neural_token_f1 += token_f1(text, reference)
+            neural_token_f1 += token_f1(text, template_reference)
             final_token_f1 += token_f1(final_text, reference)
-            candidates = evidence_candidates(record)
-            neural_grounded += grounding_score(text, candidates) >= 0.72
-            fallback_count += realization.fallback_used
+            neural_grounded += supported
+            fallback_count += realization_fallback
 
             # Categorize
             words = text.split()
@@ -192,6 +218,8 @@ def _generate_and_score(
         "answer_token_f1_mean": round(final_token_f1 / n, 4),
         "answer_unique_outputs": len(final_outputs),
         "fallback_rate": round(fallback_count / n, 4),
+        "slot_placeholder_exact_rate": round(slot_placeholder_exact / n, 4),
+        "relation_accuracy": round(relation_correct / n, 4),
         "samples": total,
     }
 
@@ -349,7 +377,21 @@ def _generate_sample_predictions(
                 config["model"]["max_input_tokens"],
             )
             text, diag = decode_to_text(model, source_ids, tokenizer, decoder_cfg)
-            realization = realize_grounded(record, text)
+            slot_mode = config.get("data", {}).get("target_format") == "slot_template_v1"
+            if slot_mode:
+                final_answer = materialize_slot_template(text, record.get("slots", {}))
+                realization_payload = {
+                    "strategy": "neural_slot_template",
+                    "answer": final_answer,
+                    "fallback_used": False,
+                    "slot_placeholders_complete": all(
+                        text.count(f"[{name}]") == 1 for name in SLOT_NAMES
+                    ),
+                }
+            else:
+                realization = realize_grounded(record, text)
+                final_answer = realization.answer
+                realization_payload = realization.to_dict()
             rep_rates = compute_repetition_rates(
                 tokenizer.encode(text, decoder_cfg.max_length)
             )
@@ -358,8 +400,8 @@ def _generate_sample_predictions(
                 "id": record.get("id", f"sample_{i}"),
                 "question": record["question"],
                 "generated_text": text,
-                "answer": realization.answer,
-                "realization": realization.to_dict(),
+                "answer": final_answer,
+                "realization": realization_payload,
                 "ground_truth": record.get("answer", ""),
                 "evidence_keys": list(record.get("evidence_pack", {}).keys()) if isinstance(record.get("evidence_pack"), dict) else [],
                 "eos_reached": diag.get("eos_reached", False),
@@ -488,6 +530,7 @@ def train_v2(
     rng = random.Random(seed)
     started = time.perf_counter()
     total_batches = 0
+    safety_stop_reason = ""
     # Filter checkpoint epochs to those within training range
     active_checkpoint_epochs = [e for e in checkpoint_epochs if 1 <= e <= steps]
 
@@ -588,6 +631,29 @@ def train_v2(
         }
         epoch_history.append(epoch_info)
 
+        slot_gate_failures: list[str] = []
+        if (
+            config.get("data", {}).get("target_format") == "slot_template_v1"
+            and epoch + 1 == 1
+        ):
+            gates = config.get("gates", {}).get("epoch_1_continue", {})
+            if gen_metrics["answer_exact_match_rate"] < float(
+                gates.get("materialized_exact_match_min", 0.0)
+            ):
+                slot_gate_failures.append("materialized_exact_match")
+            if gen_metrics["slot_placeholder_exact_rate"] < float(
+                gates.get("slot_placeholder_exact_min", 0.0)
+            ):
+                slot_gate_failures.append("slot_placeholder_exact")
+            if gen_metrics["relation_accuracy"] < float(
+                gates.get("relation_accuracy_min", 0.0)
+            ):
+                slot_gate_failures.append("relation_accuracy")
+            epoch_info["epoch_1_continue_gate"] = {
+                "passed": not slot_gate_failures,
+                "failures": slot_gate_failures,
+            }
+
         # Save checkpoint at designated epochs
         current_epoch = epoch + 1
         if output_dir is not None and current_epoch in active_checkpoint_epochs:
@@ -595,7 +661,8 @@ def train_v2(
                 model, val_subset, config, decoder_config, sample_predictions_count,
             )
             stop_reason = (
-                "early_stopping" if patience >= patience_limit
+                "epoch_1_quality_gate_failed" if slot_gate_failures
+                else "early_stopping" if patience >= patience_limit
                 else "gen_regression" if gen_patience >= 3
                 else "epoch_complete"
             )
@@ -634,12 +701,19 @@ def train_v2(
                 f"STOP: sampled RSS {current_rss:.1f} MB exceeds "
                 f"configured budget {max_rss:.1f} MB"
             )
+            safety_stop_reason = "memory_budget_exceeded"
             break
         if not (math.isfinite(validation_loss) and math.isfinite(train_loss)):
             print("STOP: non-finite loss detected")
+            safety_stop_reason = "non_finite_loss"
+            break
+        if slot_gate_failures:
+            safety_stop_reason = "epoch_1_quality_gate_failed"
+            print("STOP: epoch 1 slot-quality gate failed: " + ", ".join(slot_gate_failures))
             break
         if gen_metrics["repetitive"] > gen_val_samples * 0.5:
             print(f"STOP: excessive repetition ({gen_metrics['repetitive']}/{gen_val_samples})")
+            safety_stop_reason = "excessive_repetition"
             break
         if (
             epoch + 1 >= 2
@@ -647,12 +721,15 @@ def train_v2(
             and gen_metrics["neural_token_f1_mean"] < 0.10
         ):
             print("STOP: neural mode collapse detected by text-level metrics")
+            safety_stop_reason = "mode_collapse"
             break
         if gen_patience >= 3:
             print(f"STOP: generation quality regressed for {gen_patience} epochs")
+            safety_stop_reason = "generation_regression"
             break
         if patience >= patience_limit:
             print(f"Early stopping at epoch {epoch + 1}")
+            safety_stop_reason = "early_stopping"
             break
 
     if best_state is None:
@@ -660,7 +737,13 @@ def train_v2(
     model.load_state_dict(best_state)
 
     result: dict[str, Any] = {
-        "status": "V2_TRAINING_COMPLETE" if mode == "train" else "V2_PILOT_COMPLETE",
+        "status": (
+            "ABSTRACTIVE_REALIZER_PILOT_STOPPED"
+            if safety_stop_reason and config.get("data", {}).get("target_format") == "slot_template_v1"
+            else "V2_TRAINING_COMPLETE" if mode == "train"
+            else "V2_PILOT_COMPLETE"
+        ),
+        "safety_stop_reason": safety_stop_reason,
         "dataset_sha256": manifest["dataset_sha256"],
         "config_sha256": hashlib.sha256(config_path.read_bytes()).hexdigest(),
         "effective_config_sha256": effective_hash,

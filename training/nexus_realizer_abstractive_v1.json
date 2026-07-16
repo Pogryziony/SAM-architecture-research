@@ -1,0 +1,55 @@
+{
+  "artifact_policy": {
+    "allow_weights_in_repository": true,
+    "record_sha256": true,
+    "repository_output_root": "models/realizer"
+  },
+  "data": {
+    "manifest_schema": "nexus-realizer-abstractive-v1",
+    "minimum_pairs": 1000,
+    "source_format": "comparison_slots_v1",
+    "target_format": "slot_template_v1",
+    "validation_fraction": 0.2
+  },
+  "gates": {
+    "epoch_1_continue": {
+      "materialized_exact_match_min": 0.4,
+      "relation_accuracy_min": 0.7,
+      "slot_placeholder_exact_min": 0.8
+    },
+    "promotion": {
+      "hallucination_max": 0.01,
+      "materialized_exact_match_min": 0.95,
+      "relation_accuracy_min": 0.95,
+      "slot_placeholder_exact_min": 0.98
+    }
+  },
+  "model": {
+    "architecture": "stable_transformer_v2",
+    "d_model": 128,
+    "decoder_layers": 2,
+    "dim_feedforward": 384,
+    "dropout": 0.1,
+    "encoder_layers": 2,
+    "max_input_tokens": 1536,
+    "max_output_tokens": 256,
+    "nhead": 4,
+    "vocab_size": 259
+  },
+  "preregistration": "docs/realizer-abstractive-pilot.md",
+  "schema_version": "nexus-realizer-abstractive-training-v1",
+  "seed": 20260716,
+  "training": {
+    "batch_size": 2,
+    "early_stopping_patience": 1,
+    "epochs": 3,
+    "generation_max_tokens": 192,
+    "initial_loss_max": 10.0,
+    "learning_rate": 0.0003,
+    "max_parameters": 50000000,
+    "max_peak_rss_mb": 2500,
+    "overfit_smoke_steps": 30,
+    "scheduler_total_epochs": 3,
+    "weight_decay": 0.01
+  }
+}

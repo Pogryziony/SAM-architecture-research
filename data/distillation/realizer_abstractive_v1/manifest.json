@@ -1,0 +1,60 @@
+{
+  "acquisition_manifest_sha256": "cc64ffa33d82d0705247e7ffc9303fa5fc03db9346d8c3e7115c03a4f4e51110",
+  "atomic_claim_reuse_count": 0,
+  "atomic_claims_used": 3284,
+  "builder_config": {
+    "atomic_claim_reuse": false,
+    "consumed_validation_policy": "exclude_all_source_families",
+    "min_pairs": 1000,
+    "pairing": "disjoint_source_family_greedy_max_shared_key_v1",
+    "schema_version": "nexus-realizer-abstractive-v1",
+    "seed": 20260716,
+    "source_split": "train",
+    "target_template": "[SOURCE_1] reports [VALUE_1] for [SUBJECT_1], while [SOURCE_2] reports [VALUE_2] for [SUBJECT_2]; the values are {relation}.",
+    "validation_fraction": 0.2
+  },
+  "builder_config_sha256": "c3c6ffc074a45291b477426f30747333c6979921e84ae031d299fa2b66c24801",
+  "config_hash": "c3c6ffc074a45291",
+  "consumed_manifest_sha256": "4ac76e1d2cbaec483560e7d0978097902a374c3d6943899cb32924e05552481f",
+  "counts_by_relation": {
+    "different": 461,
+    "the same": 1181
+  },
+  "counts_by_task": {
+    "config_value_comparison": 1383,
+    "table_value_comparison": 259
+  },
+  "created_utc": "2026-07-16T14:52:39.514825+00:00",
+  "dataset_sha256": "7aaa4ee9566da98d67bf07f8a773b47e7dfb479a85b64d488e97446d2ef9b5c1",
+  "eligible_atomic_claims": 5021,
+  "min_pairs_target": 1000,
+  "old_answer_overlap": 0,
+  "old_question_overlap": 0,
+  "pairs_accepted": 1642,
+  "pairs_rejected": 0,
+  "quarantined_source_families": 44,
+  "rejection_reasons": {},
+  "schema_version": "nexus-realizer-abstractive-v1",
+  "single_candidate_target_count": 0,
+  "source_identity_mode": "connector_published_equivalent_source",
+  "source_sha": "cd3824bf6a4f7f158eec58dc552706accdc2a3a8",
+  "source_tree_sha": "45e31734f384688c2a7e49bf8b4cfd575f2c9c5e",
+  "splits": {
+    "train": {
+      "components": 43,
+      "count": 1286,
+      "path": "train.jsonl",
+      "sha256": "06c557dfd9036be16d0049ac3ec07b44388339180ff196666f99a1be0ea13633",
+      "source_families": 86
+    },
+    "validation": {
+      "components": 11,
+      "count": 356,
+      "path": "validation.jsonl",
+      "sha256": "69b2d06405aa0f62d3bea551cfc3e348ebadba52c28e361ae7d950874474e18e",
+      "source_families": 22
+    }
+  },
+  "target_met": true,
+  "validation_fraction_actual": 0.216809
+}

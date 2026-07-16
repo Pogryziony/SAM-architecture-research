@@ -2,8 +2,8 @@
 
 **Pre-registered**: 2026-07-11
 **Status**: V1 and neural v2 checkpoints rejected; Pointer/Copy v3 accepted for
-extractive factual QA. New neural training is blocked pending a genuinely
-abstractive train-only dataset.
+extractive factual QA. A separate slot-preserving comparison dataset passes
+preparation and is authorized for exactly one bounded pilot epoch.
 **Repository**: SAM-architecture-research
 
 ---
@@ -128,6 +128,28 @@ Per example:
 
 Current verified results and the launch procedure are documented in
 `docs/nexus-realizer-pretraining-status.md`.
+
+## Separate comparison pilot readiness
+
+The next neural experiment does not reuse the extractive v1 task. The
+`nexus-realizer-abstractive-v1` dataset composes two independent train-only
+claims into one comparison answer. Its 1,642 records use 3,284 atomic claims
+without reuse, quarantine all 44 consumed validation source families and have
+zero normalized question/answer overlap with v1. Source families are split as
+disjoint components, yielding 1,286 train and 356 validation records.
+
+The output contract is slot-preserving: the neural model generates a fixed
+comparison structure and the `the same`/`different` relation while exact source
+paths, subjects and values are materialized from immutable evidence after
+generation. This directly tests instruction following and composition without
+asking a byte decoder to regenerate identifiers.
+
+`benchmarks/results/realizer/abstractive_v1_readiness.json` reports
+`READY_FOR_BOUNDED_PILOT`, 15/15 passing checks and canonical SHA-256
+`e854a80695aede2fa703898923f47aa8f54353393ff8088143ccabdb0dce3361`.
+Preparation wrote no weights. The next permitted action is one epoch; epoch 2
+is blocked unless the raw neural slot, relation and materialized-answer gates
+all pass.
 
 ## First-run outcome and protocol amendment
 
