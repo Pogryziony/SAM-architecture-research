@@ -28,6 +28,7 @@ from nexus.reasoning.model_interface import (
 from nexus.reasoning.verifier import Verifier, VerificationResult
 from nexus.reasoning.audit import build_reasoning_audit
 from nexus.reasoning.post_edit import edit_answer
+from nexus.realizer.pointer_copy import realize_pointer_copy
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
 # ── Insufficiency detection patterns ────────────────────────────────
@@ -127,6 +128,21 @@ def _tier3_generate_answer(
             return post_edit_direct["answer"]
         else:
             return model.generate(prompt_direct)
+
+
+def _pointer_copy_result(
+    question: str,
+    evidence_pack: dict[str, Any],
+    config: NEXUSConfig,
+    intent: str,
+):
+    """Return Pointer/Copy v3 output for configured factual queries."""
+    if config.realizer_backend != "pointer_copy" or intent != "factual_lookup":
+        return None
+    return realize_pointer_copy({
+        "question": question,
+        "evidence_pack": evidence_pack,
+    })
 
 
 def _build_synth_prompt(
@@ -282,6 +298,7 @@ def answer_question(
         "cascade_level": 0,
         "resolution_confidence": 0.0,
         "reasoning_audit": {},
+        "realization": None,
     }
 
     # Per-step timing breakdown
@@ -366,12 +383,21 @@ def answer_question(
     if not paths and parsed.entity_ids:
         direct_pack = build_zero_hop_pack(graph, parsed.entity_ids, question=question)
         if direct_pack:
-            answer_direct = _tier3_generate_answer(
-                question, direct_pack, model, verifier, config,
+            pointer = _pointer_copy_result(
+                question, direct_pack, config, parsed.intent,
+            )
+            answer_direct = (
+                pointer.answer if pointer is not None
+                else _tier3_generate_answer(
+                    question, direct_pack, model, verifier, config,
+                )
             )
             result["answer"] = answer_direct
             result["raw_answer"] = answer_direct
             result["evidence_pack"] = direct_pack
+            result["realization"] = (
+                pointer.to_dict() if pointer is not None else None
+            )
             result["cascade_level"] = 3
             result["verification"] = verifier.verify(answer_direct, direct_pack)
             result["timing"] = timing
@@ -422,6 +448,23 @@ def answer_question(
     evidence_json = json.dumps(evidence_pack, indent=2, ensure_ascii=False)
     timing["evidence_time"] = round(time.perf_counter() - t0, 6)
     result["evidence_pack"] = evidence_pack
+
+    # Pointer/Copy v3 is the complete factual realization path.  It copies
+    # evidence before any prompt or generative model call, preventing altered
+    # identifiers and numeric values.
+    t0 = time.perf_counter()
+    pointer = _pointer_copy_result(
+        question, evidence_pack, config, parsed.intent,
+    )
+    if pointer is not None:
+        timing["realize_time"] = round(time.perf_counter() - t0, 6)
+        result["answer"] = pointer.answer
+        result["raw_answer"] = pointer.answer
+        result["realization"] = pointer.to_dict()
+        result["cascade_level"] = 1 if pointer.strategy == "pointer_copy" else 0
+        result["verification"] = verifier.verify(pointer.answer, evidence_pack)
+        result["timing"] = timing
+        return _attach_reasoning_audit(result, graph, paths, config, max_paths)
 
     # ── Step 4: Build prompt ──
     t0 = time.perf_counter()

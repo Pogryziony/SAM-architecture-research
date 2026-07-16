@@ -1083,8 +1083,13 @@ def build_zero_hop_pack(
             if normalized in seen_candidate_text:
                 continue
             seen_candidate_text.add(normalized)
+            # Keep the stable entity ID for provenance, but do not repeat it.
+            # The old ``eid: display: text`` format produced strings such as
+            # ``SourceA: SourceA: SourceA achieved ...``.
+            lowered = text.casefold()
+            rendered = text if lowered.startswith(eid.casefold()) else f"{eid}: {text}"
             fact = {
-                "text": f"{eid}: {display}: {text}",
+                "text": rendered,
                 "source": src,
                 "confidence": confidence,
             }

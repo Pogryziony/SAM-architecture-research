@@ -1,0 +1,100 @@
+{
+  "canonical_exclusions": [
+    "created_utc",
+    "evaluation_checkout",
+    "validation.metrics.latency_p50_ms"
+  ],
+  "canonical_sha256": "046b53747fb2e722f4ed6cbd56b392df1920360a87a347d5e5de2c5caef1deab",
+  "config_sha256": "c2d7cc778d895a4901b3ccf578542814db59384a65429bb1bccf60b7c9335ba9",
+  "created_utc": "2026-07-16T14:25:29.835613+00:00",
+  "dataset_manifest_sha256": "4ac76e1d2cbaec483560e7d0978097902a374c3d6943899cb32924e05552481f",
+  "dataset_sha256": "8028e471bb304ffb95ab338f0a3a93cbe4ded04596f73e9479a6135e663a59e0",
+  "effective_config": {
+    "candidate_ordering": "score_then_confidence_then_candidate_id",
+    "minimum_margin": 0.25,
+    "minimum_score": 1.0,
+    "schema_version": "nexus-pointer-copy-realizer-v3",
+    "score_version": "question_evidence_v1"
+  },
+  "evaluation_checkout": {
+    "commit": "07f850a415cb21258324078aefeb41a04954e320",
+    "external_source_identity": true,
+    "tree_sha": "49e0d750c47ff2ec1e00e89d899b6e1f50273b74"
+  },
+  "label_use": "classification_and_scoring_only",
+  "realization_input": "question_and_evidence_only",
+  "schema_version": "nexus-pointer-copy-eval-v3",
+  "source_commit": "cbc218d3ef19999619372fd750c321e6983703b1",
+  "source_tree_sha": "42385a7975f1d35c3f1f613b43e76cce0168553b",
+  "split_sha256": {
+    "train": "5c2d4067c68fbf4af6041e323a9d2851d69ab961237b8fd9135b33f56969fddb",
+    "validation": "d0e86ca38c791b04f77c93fa39358f907920beb798910c3b00e588628b817953"
+  },
+  "train_dataset_classification": {
+    "extractive_full_candidate": 5693
+  },
+  "validation": {
+    "adversarial": {
+      "checks": {
+        "conflicting_evidence_fails_closed": true,
+        "correct_candidate_not_first": true,
+        "missing_evidence_fails_closed": true,
+        "wrong_identifier_rejected": true,
+        "wrong_key_rejected": true,
+        "wrong_number_rejected": true
+      },
+      "passed": true,
+      "passed_count": 6,
+      "total_count": 6
+    },
+    "baselines": {
+      "current_evidence_ranking": {
+        "top1_accuracy": 1.0
+      },
+      "lexical_pointer_copy": {
+        "exact_match_rate": 1.0
+      },
+      "oracle_candidate_availability": {
+        "candidate_availability": 1.0,
+        "label_use": "offline_scoring_only"
+      }
+    },
+    "dataset_classification": {
+      "extractive_full_candidate": 1434
+    },
+    "failures": [],
+    "metrics": {
+      "candidate_availability": 1.0,
+      "exact_match_rate": 1.0,
+      "hallucination_rate": 0.0,
+      "insufficient_evidence_rate": 0.0,
+      "latency_p50_ms": 0.036866,
+      "position_shuffle_drop": 0.0,
+      "position_shuffle_exact_match_rate": 1.0,
+      "samples": 1434,
+      "selection_margin": {
+        "min": 1.822222,
+        "p10": 3.342385,
+        "p50": 3.977,
+        "p90": 4.060333
+      },
+      "token_f1_mean": 1.0,
+      "top1_accuracy": 1.0,
+      "top3_recall": 1.0,
+      "unique_outputs": 1434,
+      "uniqueness_ratio": 1.0,
+      "unsupported_identifier_rate": 0.0,
+      "unsupported_number_rate": 0.0,
+      "wrong_candidate_rate": 0.0
+    },
+    "position_ordering": {
+      "algorithm": "sha256(seed:record_id) deterministic in-place permutation",
+      "records_duplicated": 0,
+      "seed": 20260716
+    },
+    "status": "POINTER_COPY_REALIZER_V3_ACCEPTED",
+    "target_ranked_positions": {
+      "0": 1434
+    }
+  }
+}

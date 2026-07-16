@@ -34,6 +34,7 @@
     "learning_rate": 0.0003,
     "max_parameters": 50000000,
     "max_peak_rss_mb": 2500,
+    "scheduler_total_epochs": 3,
     "weight_decay": 0.01
   }
 }

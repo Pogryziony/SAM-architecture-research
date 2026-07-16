@@ -42,6 +42,26 @@ class GroundedRealization:
     candidate_count: int
     evidence_source: str
     rejection_reason: str
+    selected_candidate_id: str = ""
+    selected_candidate_kind: str = ""
+    selection_score: float = 0.0
+    selection_margin: float = 0.0
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class GroundingDiagnostics:
+    score: float
+    continuous_support_score: float
+    best_token_f1: float
+    best_similarity: float
+    unsupported_numbers: tuple[str, ...]
+    unsupported_tokens: tuple[str, ...]
+    unsupported_identifiers: tuple[str, ...]
+    readable: bool
+    rejection_reason: str
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -167,31 +187,8 @@ def token_f1(answer: str, reference: str) -> float:
 
 
 def grounding_score(answer: str, candidates: Iterable[EvidenceCandidate]) -> float:
-    """Measure support against evidence while fail-closing numeric claims."""
-    answer = str(answer).strip()
-    if not answer:
-        return 0.0
-    values = list(candidates)
-    if not values:
-        return 0.0
-    evidence_text = " ".join(item.text for item in values)
-    answer_numbers = set(_NUMBER.findall(answer))
-    evidence_numbers = set(_NUMBER.findall(evidence_text))
-    if not answer_numbers <= evidence_numbers:
-        return 0.0
-    # The current Realizer dataset is extractive.  Do not accept a fluent
-    # continuation that appends unsupported entities or claims to an otherwise
-    # correct answer.  A small allowance keeps punctuation/casing differences
-    # harmless while failing closed on materially new content.
-    answer_tokens = _tokens(answer)
-    evidence_tokens = _tokens(evidence_text)
-    if answer_tokens and len(answer_tokens - evidence_tokens) / len(answer_tokens) > 0.10:
-        return 0.0
-    return max(
-        0.65 * token_f1(answer, item.text)
-        + 0.35 * answer_similarity(answer, item.text)
-        for item in values
-    )
+    """Measure final fail-closed support against evidence."""
+    return grounding_diagnostics(answer, candidates).score
 
 
 def _readable(text: str) -> bool:
@@ -200,6 +197,68 @@ def _readable(text: str) -> bool:
         return False
     printable = sum(char.isalnum() or char.isspace() or char in ".,:;!?%_-/()[]\"'" for char in text)
     return printable / len(text) >= 0.9
+
+
+def grounding_diagnostics(
+    answer: str, candidates: Iterable[EvidenceCandidate]
+) -> GroundingDiagnostics:
+    """Explain grounding failure without collapsing every failure to zero."""
+    answer = str(answer).strip()
+    values = list(candidates)
+    readable = _readable(answer)
+    if not answer or not values:
+        reason = "empty_answer" if not answer else "no_evidence_candidate"
+        return GroundingDiagnostics(
+            score=0.0, continuous_support_score=0.0,
+            best_token_f1=0.0, best_similarity=0.0,
+            unsupported_numbers=(), unsupported_tokens=(),
+            unsupported_identifiers=(), readable=readable,
+            rejection_reason=reason,
+        )
+
+    best_f1 = max(token_f1(answer, item.text) for item in values)
+    best_similarity = max(answer_similarity(answer, item.text) for item in values)
+    continuous = max(
+        0.65 * token_f1(answer, item.text)
+        + 0.35 * answer_similarity(answer, item.text)
+        for item in values
+    )
+    evidence_text = " ".join(item.text for item in values)
+    answer_numbers = set(_NUMBER.findall(answer))
+    evidence_numbers = set(_NUMBER.findall(evidence_text))
+    unsupported_numbers = tuple(sorted(answer_numbers - evidence_numbers))
+    answer_tokens = _tokens(answer)
+    evidence_tokens = _tokens(evidence_text)
+    unsupported_tokens = tuple(sorted(answer_tokens - evidence_tokens))
+    unsupported_identifiers = tuple(
+        token for token in unsupported_tokens
+        if any(marker in token for marker in ("/", ".", "_"))
+    )
+    unsupported_ratio = (
+        len(unsupported_tokens) / len(answer_tokens) if answer_tokens else 0.0
+    )
+    if not readable:
+        reason = "neural_answer_unreadable"
+    elif unsupported_numbers:
+        reason = "unsupported_number"
+    elif unsupported_identifiers:
+        reason = "unsupported_identifier"
+    elif unsupported_ratio > 0.10:
+        reason = "unsupported_token_ratio"
+    else:
+        reason = ""
+    score = 0.0 if reason else continuous
+    return GroundingDiagnostics(
+        score=score,
+        continuous_support_score=continuous,
+        best_token_f1=best_f1,
+        best_similarity=best_similarity,
+        unsupported_numbers=unsupported_numbers,
+        unsupported_tokens=unsupported_tokens,
+        unsupported_identifiers=unsupported_identifiers,
+        readable=readable,
+        rejection_reason=reason,
+    )
 
 
 def realize_grounded(
@@ -221,9 +280,10 @@ def realize_grounded(
     neural_score = None
     rejection = "neural_answer_missing"
     if neural_answer is not None:
-        neural_score = grounding_score(neural_answer, candidates)
-        if not _readable(neural_answer):
-            rejection = "neural_answer_unreadable"
+        diagnostics = grounding_diagnostics(neural_answer, candidates)
+        neural_score = diagnostics.score
+        if diagnostics.rejection_reason:
+            rejection = diagnostics.rejection_reason
         elif neural_score < neural_support_threshold:
             rejection = "neural_answer_not_grounded"
         else:
@@ -235,18 +295,31 @@ def realize_grounded(
                 rejection_reason="",
             )
 
-    selected = candidates[0]
+    # Import lazily to keep candidate extraction independent of the selector.
+    from .pointer_copy import realize_pointer_copy
+
+    pointer = realize_pointer_copy(record)
     return GroundedRealization(
-        answer=selected.text, strategy="evidence_copy",
-        fallback_used=True, grounding_score=1.0,
+        answer=pointer.answer,
+        strategy=(
+            "evidence_copy"
+            if pointer.strategy == "pointer_copy"
+            else "insufficient_evidence"
+        ),
+        fallback_used=True, grounding_score=pointer.grounding_score,
         neural_grounding_score=neural_score,
-        candidate_count=len(candidates), evidence_source=selected.source,
-        rejection_reason=rejection,
+        candidate_count=len(candidates), evidence_source=pointer.evidence_source,
+        rejection_reason=(pointer.rejection_reason or rejection),
+        selected_candidate_id=pointer.selected_candidate_id,
+        selected_candidate_kind=pointer.selected_candidate_kind,
+        selection_score=pointer.selection_score,
+        selection_margin=pointer.selection_margin,
     )
 
 
 __all__ = [
-    "EvidenceCandidate", "GroundedRealization", "answer_similarity",
-    "clean_evidence_text", "evidence_candidates", "grounding_score",
+    "EvidenceCandidate", "GroundedRealization", "GroundingDiagnostics",
+    "answer_similarity", "clean_evidence_text", "evidence_candidates",
+    "grounding_diagnostics", "grounding_score",
     "realize_grounded", "token_f1",
 ]

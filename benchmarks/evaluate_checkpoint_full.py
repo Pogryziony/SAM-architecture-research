@@ -22,7 +22,7 @@ from nexus.realizer.tokenizer import ByteTokenizer
 from nexus.realizer.decoder import DecoderConfig, decode_to_text, compute_repetition_rates
 from nexus.realizer.grounded import (
     realize_grounded, answer_similarity, token_f1,
-    grounding_score, evidence_candidates,
+    grounding_diagnostics, evidence_candidates,
 )
 
 
@@ -50,6 +50,9 @@ def evaluate_full(weights_path: Path, run_id: str, epoch: int):
     neural_grounded = 0; neural_texts = Counter(); neural_unique = set()
     rep_3gram_sum = 0.0; rep_2gram_sum = 0.0; eos_count = 0
     empty_count = 0; total_len = 0
+    grounding_scores = []; continuous_scores = []; grounding_failures = Counter()
+    unsupported_number_count = 0; unsupported_identifier_count = 0
+    unsupported_token_count = 0; unreadable_count = 0
 
     # Grounded/hybrid
     grounded_exact = 0; grounded_similarity = 0.0; grounded_token_f1 = 0.0
@@ -78,7 +81,16 @@ def evaluate_full(weights_path: Path, run_id: str, epoch: int):
             neural_similarity += answer_similarity(neural_text, reference)
             neural_token_f1_sum += token_f1(neural_text, reference)
             candidates = evidence_candidates(record)
-            neural_grounded += grounding_score(neural_text, candidates) >= 0.72
+            grounding = grounding_diagnostics(neural_text, candidates)
+            neural_grounded += grounding.score >= 0.72
+            grounding_scores.append(grounding.score)
+            continuous_scores.append(grounding.continuous_support_score)
+            if grounding.rejection_reason:
+                grounding_failures[grounding.rejection_reason] += 1
+            unsupported_number_count += bool(grounding.unsupported_numbers)
+            unsupported_identifier_count += bool(grounding.unsupported_identifiers)
+            unsupported_token_count += bool(grounding.unsupported_tokens)
+            unreadable_count += not grounding.readable
             neural_texts[neural_text] += 1
             neural_unique.add(neural_text)
             rep_rates = compute_repetition_rates(
@@ -113,10 +125,8 @@ def evaluate_full(weights_path: Path, run_id: str, epoch: int):
                     "grounded_answer": grounded_text[:120],
                     "fallback_used": realization.fallback_used,
                     "rejection_reason": realization.rejection_reason,
-                    "neural_grounding": (
-                        round(realization.neural_grounding_score, 4)
-                        if realization.neural_grounding_score else None
-                    ),
+                    "neural_grounding": round(grounding.score, 4),
+                    "grounding_diagnostics": grounding.to_dict(),
                 })
 
     elapsed = time.perf_counter() - started
@@ -126,6 +136,19 @@ def evaluate_full(weights_path: Path, run_id: str, epoch: int):
     top_outputs = neural_texts.most_common(10)
     sorted_latency = sorted(latencies)
     p50 = sorted_latency[len(sorted_latency) // 2]
+    def distribution(values):
+        ordered = sorted(values)
+        if not ordered:
+            return {key: 0.0 for key in ("min", "mean", "p10", "p25", "p50", "p75", "p90")}
+        def q(fraction):
+            return ordered[min(int((len(ordered) - 1) * fraction), len(ordered) - 1)]
+        return {
+            "min": round(ordered[0], 6),
+            "mean": round(sum(ordered) / len(ordered), 6),
+            "p10": round(q(0.10), 6), "p25": round(q(0.25), 6),
+            "p50": round(q(0.50), 6), "p75": round(q(0.75), 6),
+            "p90": round(q(0.90), 6),
+        }
 
     result = {
         "schema_version": "nexus-realizer-checkpoint-eval-v2",
@@ -146,7 +169,14 @@ def evaluate_full(weights_path: Path, run_id: str, epoch: int):
             "token_f1_mean": round(neural_token_f1_sum / n, 6),
             "similarity_mean": round(neural_similarity / n, 6),
             "grounded_rate": round(neural_grounded / n, 6),
-            "hallucination_rate": round(1.0 - neural_grounded / n, 6),
+            "grounding_failure_rate": round(1.0 - neural_grounded / n, 6),
+            "grounding_score_distribution": distribution(grounding_scores),
+            "continuous_support_distribution": distribution(continuous_scores),
+            "grounding_failure_reasons": dict(sorted(grounding_failures.items())),
+            "unsupported_number_rate": round(unsupported_number_count / n, 6),
+            "unsupported_identifier_rate": round(unsupported_identifier_count / n, 6),
+            "unsupported_token_rate": round(unsupported_token_count / n, 6),
+            "unreadable_rate": round(unreadable_count / n, 6),
             "uniqueness_ratio": round(len(neural_unique) / n, 6),
             "unique_outputs": len(neural_unique),
             "duplicates": duplicates,
@@ -180,12 +210,14 @@ def evaluate_full(weights_path: Path, run_id: str, epoch: int):
     out_dir = Path("benchmarks/results/realizer") / run_id
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / "eval_epoch_{:03d}.json".format(epoch)
+    sidecar = out_path.with_suffix(out_path.suffix + ".sha256")
+    if out_path.exists() or sidecar.exists():
+        raise FileExistsError("refusing to overwrite: " + str(out_path))
     out_path.write_text(
         json.dumps(result, indent=2, default=str, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
     digest = hashlib.sha256(out_path.read_bytes()).hexdigest()
-    sidecar = out_path.with_suffix(out_path.suffix + ".sha256")
     sidecar.write_text(digest + "  " + out_path.name + "\n", encoding="ascii")
 
     # Print summary

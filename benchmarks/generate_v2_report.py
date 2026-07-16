@@ -90,11 +90,11 @@ report = {
         ],
     },
     "recommended_next_steps": [
-        "Increase model capacity: d_model=256, more layers",
-        "Switch to BPE/subword tokenizer",
-        "Allow 5-10 epochs (after architectural changes)",
-        "Relax grounding threshold progressively",
-        "Consider distillation: train neural to mimic evidence_copy",
+        "Audit whether targets are complete evidence candidates before changing the model",
+        "Use deterministic Pointer/Copy for full-candidate extractive targets",
+        "Do not relax grounding thresholds to make an unsupported checkpoint pass",
+        "Collect genuinely unique train-only abstractive targets before neural retraining",
+        "Limit any future neural pilot to 1, then 3, then at most 5 epochs with raw-output gates",
     ],
 }
 

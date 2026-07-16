@@ -17,7 +17,7 @@
 | ER3 | Entity Ranker V3 | **CHECKPOINT VERIFIED**. Exact checkpoint is committed with config and vocabulary. Manifest size and SHA-256 checks pass before deserialization. | ✅ READY |
 | 2 | Realization L1 | Registered 30-case run passes for seeds 0/1/42 with one canonical hash; relevance 78.33%. | ✅ PASS |
 | 3 | Dialogue State | Full 110-turn run passes: reference resolution 87.5%, single-turn regression 0 and dialogue-state p50 0.048ms. | ✅ PASS |
-| 4 | Realization L2 | V2 pilot: epoch 1 behavioral gains (EOS 100%, no collapse) but 0% grounding on 1,434 records → REALIZER_NEURAL_CHECKPOINT_REJECTED. Grounded fallback: 100% exact match. Full report: `benchmarks/results/realizer/v2_20260716T131357Z/pilot_report_v2.json`. | 🔴 FAIL |
+| 4 | Realization L2 | Pointer/Copy v3 is accepted for extractive factual QA after auditing all 7,127 targets: 100% exact match, 0% hallucination, 0 pp position-shuffle drop. The neural v2 checkpoint remains rejected. | ✅ EXTRACTIVE PASS |
 | 5 | Freeze | This document | 🔄 |
 
 ---
@@ -95,23 +95,31 @@ separately so an implementation cannot pass by hiding neural work.
 
 ---
 
-## Stage 4 — Realization L2 (Ready for a short pilot)
+## Stage 4 — Realization L2 (Pointer/Copy v3 accepted)
 
-The reproducible dataset contains 7,127 verifier-passed, unique, train-only
-pairs. The oracle, model readiness, preflight and 50-step no-write overfit smoke
-all pass. The previous 50-epoch run remains rejected because its answers
-regressed; it is evidence that long loss optimization is not an acceptance
-criterion. The corrected next sequence is 1→3→5 epochs with generation-aware
-quality checks and early stopping.
+The target audit classifies every one of the 7,127 unique records as
+`extractive_full_candidate`: the exact answer is already present in the
+structured evidence. A trained byte-level generator was therefore solving the
+wrong problem and could corrupt paths, keys and numbers while achieving low
+teacher-forced loss. Pointer/Copy v3 scores candidates using only the question
+and evidence, copies the selected text verbatim, ignores candidate position and
+fails closed when evidence is missing or ambiguous. It is integrated as an
+explicit runtime backend for factual lookups. The neural v2 checkpoint remains
+rejected; no fallback metric promotes it.
+
+Registered evidence: `benchmarks/results/realizer/pointer_copy_v3_20260716.json`
+with canonical SHA-256
+`046b53747fb2e722f4ed6cbd56b392df1920360a87a347d5e5de2c5caef1deab`.
 
 ---
 
-## Remaining work after Realizer v2 recovery
+## Remaining work after Pointer/Copy v3
 
-1. **Run one bounded neural pilot**: evaluate epoch 1 and continue to at most epoch 3 only while raw-neural text quality improves.
-2. **Select by raw neural answer quality**: exact match, token F1, grounding and uniqueness select checkpoints. Grounded fallback scores are separate and cannot hide collapse.
-3. **Keep evidence immutable**: checkpoints, predictions and metrics need hashes and must point to the exact dataset, config and source commit.
-4. **Do not reuse consumed frozen data**: historical ER3 frozen results remain reporting-only.
+1. **Keep Pointer/Copy scoped** to factual answers that are complete evidence candidates; do not claim abstractive capability.
+2. **Collect new, genuinely unique train-only data** for multi-evidence synthesis, comparison and explanation before revisiting neural training.
+3. **Select any future neural checkpoint by raw output quality**; deterministic fallback metrics cannot hide a bad checkpoint.
+4. **Keep evidence immutable**: evaluations need hashes and the exact dataset, config, source commit and source tree.
+5. **Do not reuse consumed frozen data**: historical ER3 frozen results remain reporting-only.
 
 ---
 

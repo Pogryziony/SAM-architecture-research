@@ -46,6 +46,10 @@ class NEXUSConfig:
         post_edit_enabled: When True, corrects hallucinated numbers in answers.
             Defaults to False because post-edit masks the model's true accuracy.
             Enable only for explicit experiments studying post-edit behavior.
+
+    Realizer:
+        realizer_backend: ``synth`` preserves the historical template path;
+            ``pointer_copy`` selects and copies evidence for factual queries.
     """
 
     # Model — pinned for reproducibility; change only in controlled experiments
@@ -94,6 +98,10 @@ class NEXUSConfig:
 
     # Post-edit — disabled by default; masks model's true accuracy
     post_edit_enabled: bool = False
+
+    # Realizer v3 is opt-in so historical registered Stage 2 artifacts retain
+    # their original semantics.  Production callers can select pointer_copy.
+    realizer_backend: str = "synth"
 
     # Tier-3 cascade backend — which answer generator to use for 0-hop evidence.
     #   "synth" (default): SynthesizingModel — template-based, never refuses.

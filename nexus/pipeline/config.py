@@ -92,6 +92,7 @@ class ProductionNEXUSConfig(NEXUSConfig):
                     "enable_cooccurrence_edges": self.enable_cooccurrence_edges,
                     "enable_normalization": self.enable_normalization,
                     "post_edit_enabled": self.post_edit_enabled,
+                    "realizer_backend": self.realizer_backend,
                     "tier3_backend": self.tier3_backend,
                     "dialogue_decay": self.dialogue_decay,
                     "dialogue_boost": self.dialogue_boost,
@@ -124,6 +125,7 @@ class ProductionNEXUSConfig(NEXUSConfig):
                 "enable_cooccurrence_edges": self.enable_cooccurrence_edges,
                 "enable_normalization": self.enable_normalization,
                 "post_edit_enabled": self.post_edit_enabled,
+                "realizer_backend": self.realizer_backend,
                 "tier3_backend": self.tier3_backend,
                 "dialogue_decay": self.dialogue_decay,
                 "dialogue_boost": self.dialogue_boost,
@@ -148,6 +150,18 @@ class ProductionNEXUSConfig(NEXUSConfig):
             "enable_associative_encoder": False,
             "enable_embedding_er": False,
             "enable_normalization": False,
+        }
+        kwargs.update(overrides)
+        return cls(pipeline_id=PipelineIdentity(lexical_fallback=True), **kwargs)
+
+    @classmethod
+    def pointer_copy(cls, **overrides: Any) -> "ProductionNEXUSConfig":
+        """Factory for factual QA with deterministic Pointer/Copy v3."""
+        kwargs: dict[str, Any] = {
+            "enable_associative_encoder": False,
+            "enable_embedding_er": False,
+            "enable_normalization": False,
+            "realizer_backend": "pointer_copy",
         }
         kwargs.update(overrides)
         return cls(pipeline_id=PipelineIdentity(lexical_fallback=True), **kwargs)
