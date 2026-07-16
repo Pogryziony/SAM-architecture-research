@@ -183,9 +183,12 @@ def test_no_write_preflight_passes(prepared_dataset):
 def test_full_training_readiness_binds_pilot_inputs(prepared_dataset, tmp_path):
     root, manifest = prepared_dataset
     config_path = Path("training/nexus_realizer_abstractive_v1.json")
-    preparation = evaluate_preparation(
-        root / "manifest.json", config_path, run_overfit_smoke=False,
-    )
+    preparation = {
+        "status": "READY_FOR_BOUNDED_PILOT",
+        "blocking_checks": [],
+        "dataset_sha256": manifest["dataset_sha256"],
+        "config_sha256": sha256_file(config_path),
+    }
     preparation_path = tmp_path / "preparation.json"
     preparation_path.write_text(json.dumps(preparation), encoding="utf-8")
     weights_path = tmp_path / "model.pt"

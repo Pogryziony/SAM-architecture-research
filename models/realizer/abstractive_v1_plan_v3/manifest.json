@@ -17,6 +17,13 @@
     "size_bytes": 3861813,
     "stored_in_git": true
   },
+  "files": {
+    "model.pt": {
+      "sha256": "bfa5855a57fba8db34e896d77848942733c5570049c927d4310646bea444e152",
+      "size": 3861813,
+      "stored_in_git": true
+    }
+  },
   "full_validation": {
     "count": 356,
     "materialized_exact_match": 1.0,
