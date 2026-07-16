@@ -58,7 +58,10 @@ from benchmarks.train_nexus_realizer import (
 )
 from nexus.realizer.model import build_model, parameter_count, validate_model_config
 from nexus.realizer.tokenizer import ByteTokenizer
-from nexus.realizer.decoder import DecoderConfig, decode_to_text, compute_repetition_rates
+from nexus.realizer.decoder import (
+    DecoderConfig, compute_repetition_rates, decode_to_text,
+    score_candidate_texts,
+)
 from nexus.realizer.grounded import (
     answer_similarity,
     grounding_score,
@@ -67,7 +70,7 @@ from nexus.realizer.grounded import (
     token_f1,
 )
 from benchmarks.abstractive_realizer_contracts import (
-    SLOT_NAMES, materialize_slot_template,
+    RELATIONS, SLOT_NAMES, materialize_slot_template, slot_template_for_relation,
 )
 
 # Try to import psutil for memory tracking (optional)
@@ -99,6 +102,63 @@ def _scheduler_total_epochs(config: dict[str, Any], run_epochs: int) -> int:
     """Keep short checkpoint runs on the preregistered LR schedule."""
     configured = int(config["training"].get("scheduler_total_epochs", run_epochs))
     return max(configured, run_epochs, 1)
+
+
+def _uses_slot_materialization(config: dict[str, Any]) -> bool:
+    return config.get("data", {}).get("target_format") in {
+        "slot_template_v1", "relation_label_v2",
+    }
+
+
+def _select_generation_subset(
+    records: list[dict[str, Any]], max_samples: int, seed: int,
+) -> list[dict[str, Any]]:
+    """Select a deterministic relation-balanced validation subset."""
+    if max_samples >= len(records):
+        return list(records)
+    groups = {relation: [] for relation in RELATIONS}
+    for record in records:
+        relation = record.get("composition", {}).get("relation")
+        if relation in groups:
+            groups[relation].append(record)
+    rng = random.Random(seed)
+    for rows in groups.values():
+        rng.shuffle(rows)
+    per_group = max_samples // len(groups)
+    selected = [
+        record for relation in RELATIONS for record in groups[relation][:per_group]
+    ]
+    if len(selected) < max_samples:
+        used = {str(record.get("id")) for record in selected}
+        remaining = [record for record in records if str(record.get("id")) not in used]
+        rng.shuffle(remaining)
+        selected.extend(remaining[: max_samples - len(selected)])
+    rng.shuffle(selected)
+    return selected
+
+
+def _decode_record(
+    model: Any,
+    record: dict[str, Any],
+    config: dict[str, Any],
+    tokenizer: ByteTokenizer,
+    decoder_cfg: DecoderConfig,
+) -> tuple[str, dict[str, Any]]:
+    source_ids = tokenizer.encode(
+        serialize_source_for_config(record, config),
+        config["model"]["max_input_tokens"],
+    )
+    if config.get("data", {}).get("target_format") == "relation_label_v2":
+        label, diagnostics = score_candidate_texts(
+            model, source_ids, ["SAME", "DIFFERENT"], tokenizer,
+            max_length=int(config["model"]["max_output_tokens"]),
+        )
+        relation = "the same" if label == "SAME" else "different"
+        diagnostics["selected_label"] = label
+        diagnostics["selected_relation"] = relation
+        diagnostics["strategy"] = "constrained_relation_v2"
+        return slot_template_for_relation(relation), diagnostics
+    return decode_to_text(model, source_ids, tokenizer, decoder_cfg)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -134,17 +194,17 @@ def _generate_and_score(
     final_outputs: set[str] = set()
     slot_placeholder_exact = 0
     relation_correct = 0
-    slot_mode = config.get("data", {}).get("target_format") == "slot_template_v1"
+    relation_counts = {relation: {"correct": 0, "total": 0} for relation in RELATIONS}
+    slot_mode = _uses_slot_materialization(config)
 
     model.eval()
     with torch.no_grad():
         for i, record in enumerate(val_records[:max_samples]):
-            source_ids = tokenizer.encode(
-                serialize_source_for_config(record, config),
-                config["model"]["max_input_tokens"],
+            text, diag = _decode_record(model, record, config, tokenizer, decoder_cfg)
+            template_reference = (
+                str(record.get("training_target", ""))
+                if slot_mode else training_target_for_config(record, config)
             )
-            text, diag = decode_to_text(model, source_ids, tokenizer, decoder_cfg)
-            template_reference = training_target_for_config(record, config)
             if slot_mode:
                 placeholders_ok = all(
                     text.count(f"[{name}]") == 1 for name in SLOT_NAMES
@@ -156,6 +216,9 @@ def _generate_and_score(
                 )
                 slot_placeholder_exact += placeholders_ok
                 relation_correct += relation_ok
+                if expected_relation in relation_counts:
+                    relation_counts[expected_relation]["total"] += 1
+                    relation_counts[expected_relation]["correct"] += relation_ok
                 final_text = materialize_slot_template(text, record.get("slots", {}))
                 realization_fallback = False
                 supported = placeholders_ok and relation_ok
@@ -198,6 +261,10 @@ def _generate_and_score(
             ).get("rep_3gram", 0)
 
     n = max(total, 1)
+    relation_accuracy_by_class = {
+        relation: round(values["correct"] / max(values["total"], 1), 4)
+        for relation, values in relation_counts.items()
+    }
     return {
         "coherent_rate": round(readable / n, 4),
         "coherent": readable,
@@ -220,6 +287,8 @@ def _generate_and_score(
         "fallback_rate": round(fallback_count / n, 4),
         "slot_placeholder_exact_rate": round(slot_placeholder_exact / n, 4),
         "relation_accuracy": round(relation_correct / n, 4),
+        "relation_accuracy_by_class": relation_accuracy_by_class,
+        "relation_min_class_accuracy": min(relation_accuracy_by_class.values()),
         "samples": total,
     }
 
@@ -372,12 +441,8 @@ def _generate_sample_predictions(
     model.eval()
     with torch.no_grad():
         for i, record in enumerate(records[:max_samples]):
-            source_ids = tokenizer.encode(
-                serialize_source_for_config(record, config),
-                config["model"]["max_input_tokens"],
-            )
-            text, diag = decode_to_text(model, source_ids, tokenizer, decoder_cfg)
-            slot_mode = config.get("data", {}).get("target_format") == "slot_template_v1"
+            text, diag = _decode_record(model, record, config, tokenizer, decoder_cfg)
+            slot_mode = _uses_slot_materialization(config)
             if slot_mode:
                 final_answer = materialize_slot_template(text, record.get("slots", {}))
                 realization_payload = {
@@ -387,6 +452,7 @@ def _generate_sample_predictions(
                     "slot_placeholders_complete": all(
                         text.count(f"[{name}]") == 1 for name in SLOT_NAMES
                     ),
+                    "decoder_diagnostics": diag,
                 }
             else:
                 realization = realize_grounded(record, text)
@@ -463,6 +529,10 @@ def train_v2(
                 int(config["model"]["max_output_tokens"]),
             ),
         )
+    if config.get("data", {}).get("target_format") == "relation_label_v2":
+        decoder_config.strategy = "constrained_relation_v2"
+        decoder_config.repetition_penalty = 1.0
+        decoder_config.no_repeat_ngram_size = 0
 
     try:
         import torch
@@ -500,10 +570,8 @@ def train_v2(
         )
 
     # Validation records for generation-aware checks (same subset every epoch)
-    rng_val = random.Random(seed + 1)
     val_records = list(splits["validation"])
-    rng_val.shuffle(val_records)
-    val_subset = val_records[:gen_val_samples]
+    val_subset = _select_generation_subset(val_records, gen_val_samples, seed + 1)
 
     optimizer = torch.optim.AdamW(
         model.parameters(),
@@ -536,7 +604,12 @@ def train_v2(
 
     print(f"V2 {'pilot' if mode == 'pilot' else 'train'}: {len(train_examples)} train, "
           f"{len(val_records)} val, {params} params, {steps} epochs, bs={bs}")
-    print(f"Decoder: {decoder_config.strategy}"
+    effective_decoder = (
+        "constrained_relation_v2"
+        if config.get("data", {}).get("target_format") == "relation_label_v2"
+        else decoder_config.strategy
+    )
+    print(f"Decoder: {effective_decoder}"
           + (f"_rp{decoder_config.repetition_penalty}" if decoder_config.repetition_penalty > 1 else "")
           + (f"_ng{decoder_config.no_repeat_ngram_size}" if decoder_config.no_repeat_ngram_size else ""))
     print(f"Initial loss: {first_loss:.4f}")
@@ -633,7 +706,7 @@ def train_v2(
 
         slot_gate_failures: list[str] = []
         if (
-            config.get("data", {}).get("target_format") == "slot_template_v1"
+            _uses_slot_materialization(config)
             and epoch + 1 == 1
         ):
             gates = config.get("gates", {}).get("epoch_1_continue", {})
@@ -649,6 +722,10 @@ def train_v2(
                 gates.get("relation_accuracy_min", 0.0)
             ):
                 slot_gate_failures.append("relation_accuracy")
+            if gen_metrics["relation_min_class_accuracy"] < float(
+                gates.get("relation_accuracy_each_min", 0.0)
+            ):
+                slot_gate_failures.append("relation_accuracy_each")
             epoch_info["epoch_1_continue_gate"] = {
                 "passed": not slot_gate_failures,
                 "failures": slot_gate_failures,
@@ -739,7 +816,7 @@ def train_v2(
     result: dict[str, Any] = {
         "status": (
             "ABSTRACTIVE_REALIZER_PILOT_STOPPED"
-            if safety_stop_reason and config.get("data", {}).get("target_format") == "slot_template_v1"
+            if safety_stop_reason and _uses_slot_materialization(config)
             else "V2_TRAINING_COMPLETE" if mode == "train"
             else "V2_PILOT_COMPLETE"
         ),

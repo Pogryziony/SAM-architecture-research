@@ -20,6 +20,18 @@ SLOT_NAMES = (
     "SOURCE_1", "VALUE_1", "SUBJECT_1",
     "SOURCE_2", "VALUE_2", "SUBJECT_2",
 )
+RELATIONS = ("the same", "different")
+SLOT_TEMPLATE = (
+    "[SOURCE_1] reports [VALUE_1] for [SUBJECT_1], while [SOURCE_2] reports "
+    "[VALUE_2] for [SUBJECT_2]; the values are {relation}."
+)
+
+
+def slot_template_for_relation(relation: str) -> str:
+    """Return the only allowed answer template for a supported relation."""
+    if relation not in RELATIONS:
+        raise ValueError(f"unsupported comparison relation: {relation}")
+    return SLOT_TEMPLATE.format(relation=relation)
 
 
 def normalize_answer(text: str) -> str:
@@ -101,7 +113,7 @@ def validate_abstractive_record(record: dict[str, Any]) -> list[str]:
             errors.append("materialized_answer_mismatch")
 
     relation = composition.get("relation") if isinstance(composition, dict) else None
-    if relation not in {"the same", "different"}:
+    if relation not in RELATIONS:
         errors.append("invalid_relation")
     elif slots:
         values_equal = normalize_answer(slots["VALUE_1"]) == normalize_answer(slots["VALUE_2"])
@@ -232,8 +244,10 @@ def load_abstractive_splits(
 
 
 __all__ = [
-    "SCHEMA_VERSION", "SLOT_NAMES", "TRAINING_CONFIG_SCHEMA",
+    "RELATIONS", "SCHEMA_VERSION", "SLOT_NAMES", "SLOT_TEMPLATE",
+    "TRAINING_CONFIG_SCHEMA",
     "assert_no_source_family_leakage", "comparison_record_id",
     "load_abstractive_splits", "materialize_slot_template", "normalize_answer",
+    "slot_template_for_relation",
     "validate_abstractive_manifest", "validate_abstractive_record",
 ]

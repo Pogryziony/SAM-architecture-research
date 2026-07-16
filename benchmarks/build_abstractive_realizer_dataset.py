@@ -17,7 +17,7 @@ if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
 from benchmarks.abstractive_realizer_contracts import (
-    SCHEMA_VERSION, assert_no_source_family_leakage, comparison_record_id,
+    SCHEMA_VERSION, SLOT_TEMPLATE, assert_no_source_family_leakage, comparison_record_id,
     materialize_slot_template, normalize_answer, validate_abstractive_manifest,
     validate_abstractive_record,
 )
@@ -28,10 +28,7 @@ from benchmarks.realizer_contracts import (
 )
 
 
-TARGET_TEMPLATE = (
-    "[SOURCE_1] reports [VALUE_1] for [SUBJECT_1], while [SOURCE_2] reports "
-    "[VALUE_2] for [SUBJECT_2]; the values are {relation}."
-)
+TARGET_TEMPLATE = SLOT_TEMPLATE
 
 
 def _value(record: dict[str, Any]) -> str:

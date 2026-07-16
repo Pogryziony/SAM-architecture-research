@@ -20,6 +20,7 @@ if str(_project_root) not in sys.path:
 
 from benchmarks.abstractive_realizer_contracts import (
     SCHEMA_VERSION, TRAINING_CONFIG_SCHEMA, load_abstractive_splits,
+    normalize_answer,
 )
 from benchmarks.realizer_contracts import sha256_file
 from benchmarks.train_nexus_realizer import (
@@ -49,11 +50,14 @@ def evaluate_preparation(
         config_errors.append("unsupported abstractive training config schema")
     if config.get("data", {}).get("manifest_schema") != SCHEMA_VERSION:
         config_errors.append("dataset/config schema mismatch")
-    if config.get("data", {}).get("source_format") != "comparison_slots_v1":
-        config_errors.append("source_format must be comparison_slots_v1")
-    if config.get("data", {}).get("target_format") != "slot_template_v1":
-        config_errors.append("target_format must be slot_template_v1")
-    check("training_config", not config_errors, config_errors, "valid slot-preserving pilot config")
+    if config.get("data", {}).get("source_format") != "comparison_plan_v3":
+        config_errors.append("source_format must be comparison_plan_v3")
+    if config.get("data", {}).get("target_format") != "relation_label_v2":
+        config_errors.append("target_format must be relation_label_v2")
+    check(
+        "training_config", not config_errors, config_errors,
+        "valid constrained relation-selection pilot config",
+    )
 
     pairs = int(manifest.get("pairs_accepted", 0))
     minimum = int(config.get("data", {}).get("minimum_pairs", 1000))
@@ -106,6 +110,19 @@ def evaluate_preparation(
         "task_coverage", len(manifest.get("counts_by_task", {})) >= 2,
         manifest.get("counts_by_task"), "at least two source task families",
     )
+    verified_plans = sum(
+        record.get("target_verification", {}).get("relation_verified") is True
+        and (
+            (normalize_answer(record.get("slots", {}).get("VALUE_1", ""))
+             == normalize_answer(record.get("slots", {}).get("VALUE_2", "")))
+            is (record.get("composition", {}).get("relation") == "the same")
+        )
+        for rows in splits.values() for record in rows
+    )
+    check(
+        "symbolic_relation_plan", verified_plans == pairs, verified_plans,
+        "every neural input plan is independently verified from both values",
+    )
 
     coverage = [
         serialization_coverage_for_config(record, config)
@@ -118,7 +135,7 @@ def evaluate_preparation(
     check(
         "serialization_coverage",
         coverage_summary["min"] == 1.0 and coverage_summary["mean"] == 1.0,
-        coverage_summary, "all six source/value/subject bindings retained",
+        coverage_summary, "verified relation plan and both values retained",
     )
 
     try:
