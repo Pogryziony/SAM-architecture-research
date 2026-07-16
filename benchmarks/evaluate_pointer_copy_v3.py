@@ -279,7 +279,17 @@ def main() -> int:
     )
     parser.add_argument(
         "--source-tree",
-        help="Recorded source tree; must exactly match the checked-out HEAD tree.",
+        help=(
+            "Recorded source tree; must match HEAD unless "
+            "--external-source-identity is explicit."
+        ),
+    )
+    parser.add_argument(
+        "--external-source-identity", action="store_true",
+        help=(
+            "Allow a connector-published commit/tree identity when the local "
+            "checkout has equivalent source files but different history."
+        ),
     )
     args = parser.parse_args()
 
@@ -307,7 +317,12 @@ def main() -> int:
     ).strip()
     if bool(args.source_commit) != bool(args.source_tree):
         raise ValueError("--source-commit and --source-tree must be provided together")
-    if args.source_tree and args.source_tree != local_tree:
+    if args.external_source_identity and not args.source_tree:
+        raise ValueError("--external-source-identity requires source overrides")
+    if (
+        args.source_tree and args.source_tree != local_tree
+        and not args.external_source_identity
+    ):
         raise ValueError(
             f"recorded source tree {args.source_tree} does not match HEAD tree {local_tree}"
         )
@@ -316,6 +331,11 @@ def main() -> int:
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "source_commit": args.source_commit or local_commit,
         "source_tree_sha": args.source_tree or local_tree,
+        "evaluation_checkout": {
+            "commit": local_commit,
+            "tree_sha": local_tree,
+            "external_source_identity": bool(args.external_source_identity),
+        },
         "dataset_manifest_sha256": sha256_file(args.manifest),
         "config_sha256": sha256_file(args.config),
         "effective_config": config_payload,
