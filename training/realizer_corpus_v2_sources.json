@@ -1,0 +1,131 @@
+{
+  "schema_version": "nexus-realizer-source-registry-v2",
+  "frozen_at": "2026-07-16T00:00:00Z",
+  "policy": {
+    "allow_generated_records": false,
+    "allow_translation": false,
+    "allow_paraphrase_expansion": false,
+    "maximum_records_per_source_record": 1,
+    "split_unit": "source_document",
+    "train_uses_native_train_only": true
+  },
+  "sources": {
+    "hotpot_qa": {
+      "adapter": "hotpot_jsonl",
+      "language": "en",
+      "revision": "1908d6afbbead072334abe2965f91bd2709910ab",
+      "license": "CC BY-SA 4.0",
+      "url": "https://huggingface.co/datasets/hotpotqa/hotpot_qa",
+      "files": [
+        {
+          "path": "hotpot/train0.jsonl",
+          "source_split": "train",
+          "sha256": "df3f3d97901dbe47531abc7fa652465d303b9b12ba2ac8996463c991f183a0bf",
+          "derived_from_sha256": "76d3bb3048a7cc73c1958107c0c5872a00d7e7d00c105b81e92f6769e7822e68",
+          "origin_path": "hotpot/train-00000-of-00002.parquet",
+          "download_url": "https://huggingface.co/datasets/hotpotqa/hotpot_qa/resolve/1908d6afbbead072334abe2965f91bd2709910ab/distractor/train-00000-of-00002.parquet"
+        },
+        {
+          "path": "hotpot/train1.jsonl",
+          "source_split": "train",
+          "sha256": "1080a3fea1fc431acc97ad86f0ad8e43ab1e421f0a826269c4c1643083b05e92",
+          "derived_from_sha256": "713661628434fbb19fff7392e2e321e4ed107e3c7c7784d0690946e5f722763f",
+          "origin_path": "hotpot/train-00001-of-00002.parquet",
+          "download_url": "https://huggingface.co/datasets/hotpotqa/hotpot_qa/resolve/1908d6afbbead072334abe2965f91bd2709910ab/distractor/train-00001-of-00002.parquet"
+        },
+        {
+          "path": "hotpot/validation.jsonl",
+          "source_split": "validation",
+          "sha256": "18ef2bf0e6cd91493acb1a9115b4211b63d616b41b12852ae9ad77bbbc5e194c",
+          "derived_from_sha256": "c20b638ca82b21d04fe12e14ff417ad05153d4d215a65de54497fca4e972f7c6",
+          "origin_path": "hotpot/validation-00000-of-00001.parquet",
+          "download_url": "https://huggingface.co/datasets/hotpotqa/hotpot_qa/resolve/1908d6afbbead072334abe2965f91bd2709910ab/distractor/validation-00000-of-00001.parquet"
+        }
+      ]
+    },
+    "musique": {
+      "adapter": "musique_jsonl",
+      "language": "en",
+      "revision": "c8f4f8c9465fb69d31a8eae894c3fd509c4ca321",
+      "license": "CC BY 4.0",
+      "url": "https://github.com/stonybrooknlp/musique",
+      "files": [
+        {
+          "path": "musique/musique_ans_v1.0_train.jsonl",
+          "source_split": "train",
+          "sha256": "83a75b1e11e4e9bb8f8308e72ac40ca617ae4431b3a0d955b61cab259248490a",
+          "download_url": "https://huggingface.co/datasets/dgslibisey/MuSiQue/resolve/c8f4f8c9465fb69d31a8eae894c3fd509c4ca321/musique_ans_v1.0_train.jsonl"
+        },
+        {
+          "path": "musique/musique_ans_v1.0_dev.jsonl",
+          "source_split": "validation",
+          "sha256": "15fa63794d18a94ce12411aca6e2327e65b6e83b0b1490efab3f1962e48abf3b",
+          "download_url": "https://huggingface.co/datasets/dgslibisey/MuSiQue/resolve/c8f4f8c9465fb69d31a8eae894c3fd509c4ca321/musique_ans_v1.0_dev.jsonl"
+        }
+      ]
+    },
+    "poquad": {
+      "adapter": "poquad_json",
+      "language": "pl",
+      "revision": "a60f228d836fbbf990d11b4590c60b3e7f2aec2d",
+      "license": "CC BY-SA 4.0",
+      "url": "https://huggingface.co/datasets/clarin-pl/poquad",
+      "files": [
+        {
+          "path": "poquad/poquad-train.json",
+          "source_split": "train",
+          "sha256": "b1ac3acabb49fedb7bb7db0de0690ddb22585d6419321589cc1bb0a8068a4ff9",
+          "download_url": "https://huggingface.co/datasets/clarin-pl/poquad/resolve/a60f228d836fbbf990d11b4590c60b3e7f2aec2d/poquad-train.json"
+        },
+        {
+          "path": "poquad/poquad-dev.json",
+          "source_split": "validation",
+          "sha256": "4cc6579a8cecd6ccd25dd7c9c23dd979faac0074cce299fff4a84d0e6eae1e4e",
+          "download_url": "https://huggingface.co/datasets/clarin-pl/poquad/resolve/a60f228d836fbbf990d11b4590c60b3e7f2aec2d/poquad-dev.json"
+        }
+      ]
+    },
+    "polqa": {
+      "adapter": "polqa_csv",
+      "language": "pl",
+      "revision": "d78d036ef08ab3b9f4d85a2893f4d3a0c95a6f37",
+      "license": "CC BY-SA 4.0",
+      "url": "https://huggingface.co/datasets/ipipan/polqa",
+      "files": [
+        {
+          "path": "polqa/data/train.csv",
+          "source_split": "train",
+          "sha256": "628edcc3c023ccff4b68910f77da12152d3de9fb96704a3730c418feaace07ce",
+          "download_url": "https://huggingface.co/datasets/ipipan/polqa/resolve/d78d036ef08ab3b9f4d85a2893f4d3a0c95a6f37/data/train.csv"
+        },
+        {
+          "path": "polqa/data/valid.csv",
+          "source_split": "validation",
+          "sha256": "c6009d3615842f619e0c6813c4581543d7c4028d1e784b3f09ab2d167b8015bc",
+          "download_url": "https://huggingface.co/datasets/ipipan/polqa/resolve/d78d036ef08ab3b9f4d85a2893f4d3a0c95a6f37/data/valid.csv"
+        },
+        {
+          "path": "polqa/data/test.csv",
+          "source_split": "test",
+          "sha256": "d0c990692ecf73234d898ea21142113beb8410ba67c53376082e6604d5c0464c",
+          "download_url": "https://huggingface.co/datasets/ipipan/polqa/resolve/d78d036ef08ab3b9f4d85a2893f4d3a0c95a6f37/data/test.csv"
+        }
+      ]
+    },
+    "multihop_rag": {
+      "adapter": "multihop_rag_json",
+      "language": "en",
+      "revision": "3dd4d4e79fc9843008b8f832da99086a82f1a805",
+      "license": "ODC-BY 1.0",
+      "url": "https://github.com/yixuantt/MultiHop-RAG",
+      "files": [
+        {
+          "path": "multihop-rag/dataset/MultiHopRAG.json",
+          "source_split": "test",
+          "sha256": "03cfb4926461f868684903aadc8024447bdda5bb3f6804741424cce338515bff",
+          "download_url": "https://media.githubusercontent.com/media/yixuantt/MultiHop-RAG/3dd4d4e79fc9843008b8f832da99086a82f1a805/dataset/MultiHopRAG.json"
+        }
+      ]
+    }
+  }
+}

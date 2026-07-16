@@ -1,0 +1,76 @@
+{
+  "schema_version": "nexus-realizer-corpus-v2-build-report",
+  "status": "REALIZER_CORPUS_V2_READY",
+  "training_launched": false,
+  "dataset_sha256": "b19deb25c586ca5f82fd318e68243bd46f1a68c9eef442329e5e2f80e20ea621",
+  "registry_sha256": "e1d54c38d9d5ac45788c5170ac92d2c9dcceab8b5c0ca3f6c659a2f94217f257",
+  "splits": {
+    "train": {
+      "count": 147154,
+      "sha256": "ec0470c59334d21f482a6f9ee0d2d9aa02a9f6fe238fb17ee531e20918f10095"
+    },
+    "validation": {
+      "count": 3660,
+      "sha256": "132aec54b429464429543811a0565b0dba96dae488c007e7647e2473a1181451"
+    },
+    "test": {
+      "count": 12126,
+      "sha256": "9bb1b55bd64303dbd21e4221cb6e98fcb070cdfdb75e29b258b88547224a58c6"
+    }
+  },
+  "train_statistics": {
+    "records_by_language": {
+      "en": 86665,
+      "pl": 60489
+    },
+    "records_by_operator": {
+      "abstain": 10413,
+      "compare": 10928,
+      "compose_path": 75737,
+      "extract": 50076
+    },
+    "records_by_source": {
+      "hotpot_qa": 71101,
+      "musique": 15564,
+      "polqa": 3971,
+      "poquad": 56518
+    }
+  },
+  "uniqueness": {
+    "maximum_outputs_per_native_record": 1,
+    "synthetic_records": 0,
+    "translated_records": 0,
+    "paraphrase_expansions": 0,
+    "duplicate_questions": 0,
+    "train_eval_document_overlap": 0,
+    "train_eval_evidence_overlap": 0
+  },
+  "previous_repository_records_excluded": [
+    {
+      "manifest": "data/distillation/realizer_v1/manifest.json",
+      "manifest_sha256": "4ac76e1d2cbaec483560e7d0978097902a374c3d6943899cb32924e05552481f",
+      "records_scanned": 7127
+    },
+    {
+      "manifest": "data/distillation/realizer_abstractive_v1/manifest.json",
+      "manifest_sha256": "5aa8954b0ec1e2060f1563a9d2eb890254f69f2410225f59006cf20055d94b1c",
+      "records_scanned": 1642
+    }
+  ],
+  "rejected_candidates": {
+    "test_duplicate_text": 1,
+    "train_duplicate_text": 77,
+    "train_eval_document_leakage": 24241,
+    "train_eval_evidence_leakage": 122,
+    "validation_duplicate_text": 3,
+    "validation_test_leakage": 5272
+  },
+  "architectural_assessment": {
+    "status": "ALIGNED_WITH_CONDITIONS",
+    "knowledge_owner": "graph_or_source_evidence",
+    "reasoning_owner": "nexus_upstream",
+    "realizer_role": "language_interface",
+    "condition": "A corpus-v2 serializer must preserve the verified plan and gold evidence; the neural model must not infer or override graph reasoning."
+  },
+  "next_gate": "CORPUS_V2_SERIALIZER_AND_BASELINES_REQUIRED"
+}

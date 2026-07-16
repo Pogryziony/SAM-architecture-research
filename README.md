@@ -43,6 +43,7 @@ general-purpose LLM reasoning path.
 | Dialogue state (Stage 3) | ✅ **PASS** — full 110-turn protocol: reference resolution 87.5%, zero single-turn regression and dialogue-state p50 0.048ms. Resolver and complete-pipeline latency remain separate diagnostics. |
 | Realization L2 (Stage 4) | ✅ **POINTER/COPY V3 ACCEPTED FOR EXTRACTIVE FACTUAL QA** — the target audit found 7,127/7,127 answers already present as complete evidence candidates. Validation: 100% exact match, 0% hallucination and no position-shuffle drop. The neural v2 checkpoint remains rejected. Evidence: `benchmarks/results/realizer/pointer_copy_v3_20260716.json`. |
 | Constrained comparison-plan Realizer | ✅ **PILOT CHECKPOINT ACCEPTED AND RUNTIME-INTEGRATED** — the bounded 1→3 epoch CPU pilot passes 356/356 full-validation cases. `ProductionNEXUSConfig.comparison_plan()` now connects the hash-verified checkpoint to `answer_question()` with symbolic relation verification and fail-closed evidence handling. Full training was not launched. |
+| Realizer corpus v2 | ✅ **DATASET READY; TRAINER NOT YET AUTHORIZED** — 147,154 unique train, 3,660 validation and 12,126 frozen test records across PL/EN, extractive, abstention, comparison and multi-hop tasks. No generated, translated or paraphrase-expanded records; document/evidence leakage is zero. |
 | End-to-end QA | 🟡 **FACTUAL AND CONTROLLED COMPARISON PATHS READY** — `ProductionNEXUSConfig.grounded()` routes extractive factual QA to Pointer/Copy and the registered two-evidence comparison contract to the comparison-plan checkpoint. Open-ended synthesis and broader abstractive answers still require separate data and evaluation. |
 
 ### Quick start (NEXUS)
@@ -79,6 +80,7 @@ for p in paths:
 - [Pointer/Copy Realizer v3](docs/pointer-copy-realizer-v3.md) — target audit, deterministic architecture, runtime integration, gates and limitations
 - [Bounded multi-evidence pilot](docs/realizer-abstractive-pilot.md) — unique composition data, slot-preserving neural target, readiness and stop gates
 - [Comparison Realizer runtime report](docs/realizer-abstractive-runtime-integration.md) — production wiring, artifact checks, end-to-end tests, fail-closed behavior and remaining limits
+- [Large PL/EN Realizer corpus v2](docs/realizer-corpus-v2.md) — pinned public sources, uniqueness and leakage contracts, representative splits, architecture alignment and pre-pilot conditions
 - [Pilot Integrity and Next Run](docs/nexus-pilot-integrity.md) — preset wiring, artifact identity, resolver contracts and launch rules
 - [RAG vs NEXUS](docs/rag-vs-graph-nexus.md) — detailed comparison, when to use which
 
@@ -130,4 +132,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-16 (Pointer/Copy v3 and the constrained comparison-plan Realizer are connected to the runtime; broader abstractive realization remains experimental; full training was not launched.)*
+*Last updated: 2026-07-16 (the grounded runtimes remain active; the large PL/EN corpus v2 is ready, but its serializer and bounded pilot gates must pass before any new training.)*
