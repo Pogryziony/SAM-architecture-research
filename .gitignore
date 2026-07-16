@@ -3,7 +3,8 @@ benchmarks/results.json
 benchmarks/router_results.json
 benchmarks/throughput_results.json
 models/**/*.pt
-data/distillation/realizer_v1/
+!models/encoder/entity_ranker_v3_20260711T081545Z/weights.pt
 training/output*/
 **/model.pt
+!models/realizer/**/model.pt
 **/*.safetensors

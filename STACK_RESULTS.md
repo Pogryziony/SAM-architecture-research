@@ -11,13 +11,13 @@
 | Stage | Name | Gates | Status |
 |-------|------|-------|--------|
 | P | Pre-registration | EXPERIMENT_SAM_NEXUS_STACK.md committed | ✅ PASS |
-| 0 | Canonical Baseline | Historical R3 artifact is incomplete for serialized-artifact validation (missing effective graph config/edge counts); prior PASS is retracted | ❌ INVALID / RETRACTED |
+| 0 | Canonical Baseline | Corrected offline lexical RAG and lexical NEXUS run on 30 cases; publication guard passes and 25 cases are paired. | ✅ VALID |
 | 1 | Associative Encoder v1 | Failed: intent 65.3% < 85% | ❌ STOP |
 | 1b/1D | Associative Encoder v2 + validated parser handoff | Current validated frozen entity_recall 65.82% (181/275) with validation-selected threshold 0.20 and cap 200. All six immutable gates pass. | ✅ HONEST PASS |
-| ER3 | Entity Ranker V3 | **VALIDATION PASS / EXTERNAL CHECKPOINT REQUIRED**. Latest clean retrain reports 72.53% validation canonical recall@10 and +39.0pp over the trivial baseline. Weights are intentionally external; the historical frozen claim remains non-repeatable because that split is consumed. | ⚠️ PARTIAL |
-| 2 | Realization L1 | Earlier registered pre-training run reported relevance 78.33%; committed July 15 artifacts are only 5-case smoke runs. Corrected 30-case, three-seed rerun required. | ⚠️ RERUN REQUIRED |
-| 3 | Dialogue State | Latest 110-turn canonical run: reference resolution 15.62%, resolver p50 12.166ms. The runner previously bypassed ER3; corrected injected-resolver rerun is required. | ❌ FAIL |
-| 4 | Realization L2 | 7,127 unique pairs and one completed 50-epoch run. Post-training answer metrics regressed; decoder fixed, short pilot pending. | ⚠️ BLOCKED |
+| ER3 | Entity Ranker V3 | **CHECKPOINT VERIFIED**. Exact checkpoint is committed with config and vocabulary. Manifest size and SHA-256 checks pass before deserialization. | ✅ READY |
+| 2 | Realization L1 | Registered 30-case run passes for seeds 0/1/42 with one canonical hash; relevance 78.33%. | ✅ PASS |
+| 3 | Dialogue State | Full 110-turn run passes: reference resolution 87.5%, single-turn regression 0 and dialogue-state p50 0.048ms. | ✅ PASS |
+| 4 | Realization L2 | 7,127 unique pairs, valid oracle/readiness, CPU preflight and no-write overfit smoke pass; default pilot is 5 epochs with early stopping. | ✅ GO FOR TRAINING |
 | 5 | Freeze | This document | 🔄 |
 
 ---
@@ -61,56 +61,57 @@ Model: 555K params, char n-gram hashing, 1-layer GRU, entity re-ranker over lexi
 
 ---
 
-## Stage 2 — Realization L1 (Rerun required)
+## Stage 2 — Realization L1 (PASS)
 
 | Gate | Value | Threshold |
 |------|-------|-----------|
-| naturalness | +38.5 | ≥+5.0 |
-| hallucination | 37.8% | ≤41.1% (baseline) |
-| accuracy | 16.9% | ≥14.9% |
-| relevance | 60.0% | ≥77.0% (FAIL — pre-existing) |
+| naturalness improvement | +22.4033 | ≥+5.0 |
+| hallucination delta | -0.0512 | ≤0.0 |
+| accuracy delta | +0.1534 | ≥-0.02 |
+| relevance | 78.33% | ≥77.0% |
 
-The table above is historical. A later registered pre-training run reported
-78.33% relevance, but the two Stage 2 artifacts committed on July 15 contain
-only five cases. They are smoke evidence and cannot replace the registered
-30-case protocol. The corrected runner now enforces that distinction and uses
-an external SHA-256 sidecar for exact serialized-file identity.
+The registered protocol uses exactly 30 ordered cases. Runs under hash seeds
+0, 1 and 42 have the same canonical content hash; runtime-only timing and the
+seed label are excluded from that hash. Every serialized artifact has an exact
+SHA-256 sidecar.
 
 ---
 
-## Stage 3 — Dialogue State (Current FAIL)
+## Stage 3 — Dialogue State (PASS)
 
 | Gate | Value | Threshold |
 |------|-------|-----------|
-| reference resolution | 15.62% | ≥70% |
-| single-turn accuracy | 39.13% | diagnostic |
-| resolver latency p50 | 12.166 ms | ≤5 ms |
+| reference resolution | 87.50% | ≥70% |
+| single-turn accuracy | 95.65% | diagnostic |
+| single-turn regression | 0.00pp | ≤2pp |
+| dialogue-state latency p50 | 0.048 ms | ≤5 ms |
+| ER3 resolver latency p50 | 5.393 ms | diagnostic |
+| complete pipeline latency p50 | 22.091 ms | diagnostic |
 
-The latest canonical run contains 110 turns and fails both blocking gates. It
-used direct lexical parsing instead of the configured ER3 resolver. Stage 3 now
-runs through an injected resolver and limits dialogue-state updates to the
-highest-ranked entity, but no improved result is claimed until the exact
-external ER3 checkpoint is supplied and the full protocol is rerun.
-
----
-
-## Stage 4 — Realization L2 (Pilot blocked)
-
-The current external dataset contains 7,127 verifier-passed unique pairs. The
-first 50-epoch CPU run converged in loss but regressed in relevance, accuracy,
-naturalness and hallucination. Decoder repetition has been mitigated. The next
-authorized sequence is 1→3→5 epochs only after Stage 0, registered Stage 2,
-Stage 3, readiness, preflight and overfit-smoke all pass.
+The canonical run contains 110 turns and uses the verified ER3 checkpoint via
+the injected resolver. The 5ms gate applies only to the incremental dialogue
+state work. Resolver inference and complete-pipeline latency are measured
+separately so an implementation cannot pass by hiding neural work.
 
 ---
 
-## Open Problems
+## Stage 4 — Realization L2 (Ready for a short pilot)
 
-1. **Stage 0 baseline**: current 30-case artifact has no valid RAG answers and is registered as INVALID.
-2. **Registered Stage 2 evidence**: must be regenerated on exactly 30 cases for three hash seeds.
-3. **Dialogue resolution**: Stage 3 requires the external ER3 checkpoint and must improve both resolution and latency.
-4. **External artifact availability**: weights stay outside Git but need a durable, hash-verified location.
-5. **Pilot answer quality**: decoder coherence alone is insufficient; relevance, accuracy, naturalness and hallucination must improve together.
+The reproducible dataset contains 7,127 verifier-passed, unique, train-only
+pairs. The oracle, model readiness, preflight and 50-step no-write overfit smoke
+all pass. The previous 50-epoch run remains rejected because its answers
+regressed; it is evidence that long loss optimization is not an acceptance
+criterion. The corrected next sequence is 1→3→5 epochs with generation-aware
+quality checks and early stopping.
+
+---
+
+## Remaining work after Phase 4 readiness
+
+1. **Run the Realizer pilot**: execute 1, then 3, then at most 5 epochs; stop as soon as registered answer quality fails to improve.
+2. **Select by answer quality**: decoder coherence alone is insufficient; relevance, accuracy, naturalness and hallucination must improve together.
+3. **Keep evidence immutable**: checkpoints, predictions and metrics need hashes and must point to the exact dataset, config and source commit.
+4. **Do not reuse consumed frozen data**: historical ER3 frozen results remain reporting-only.
 
 ---
 

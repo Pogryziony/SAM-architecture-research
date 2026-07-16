@@ -418,8 +418,17 @@ def write_acquisition(output: Path, records: list[dict[str, Any]], manifest: dic
 def load_verified_acquisition(
     manifest_path: Path,
     root: Path = _PROJECT_ROOT,
+    *,
+    verify_current_sources: bool = True,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    """Load an acquisition only when its records and source corpus still match."""
+    """Load and authenticate an immutable acquisition snapshot.
+
+    ``verify_current_sources`` additionally requires today's worktree files to
+    match the archived source hashes. It may be disabled when reproducing a
+    dataset from the already hash-identified compressed snapshot after normal
+    documentation/code evolution. Record provenance, source-set identity,
+    uniqueness and the compressed archive hash are always verified.
+    """
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("schema_version") != ACQUISITION_SCHEMA_VERSION:
         raise ValueError("unsupported acquisition manifest schema")
@@ -456,7 +465,9 @@ def load_verified_acquisition(
         parts = set(Path(rel).parts)
         if Path(rel).name.casefold() in _EVALUATION_NAMES or parts & _DISALLOWED_PARTS:
             raise ValueError(f"evaluation/generated source is forbidden: {rel}")
-        if not candidate.is_file() or sha256_file(candidate) != expected_hash:
+        if verify_current_sources and (
+            not candidate.is_file() or sha256_file(candidate) != expected_hash
+        ):
             raise ValueError(f"source hash mismatch: {rel}")
 
     target_ids: set[str] = set()

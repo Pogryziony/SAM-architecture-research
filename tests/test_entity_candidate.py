@@ -11,6 +11,7 @@ from __future__ import annotations
 import pytest
 
 pytest.importorskip("torch")
+pytest.importorskip("sentence_transformers")
 
 from nexus.graph import Node, Edge
 from nexus.graph.store import InMemoryGraphStore

@@ -328,10 +328,13 @@ def main() -> int:
         records, graph, source_sha=source_sha, dataset_identity=dataset_identity
     )
     output = Path(args.output)
-    if output.exists():
+    sidecar = output.with_suffix(output.suffix + ".sha256")
+    if output.exists() or sidecar.exists():
         raise FileExistsError(f"refusing to overwrite: {output}")
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(artifact, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
+    digest = hashlib.sha256(output.read_bytes()).hexdigest()
+    sidecar.write_text(f"{digest}  {output.name}\n", encoding="ascii")
     print(canonical_json({"status": "VALID", "questions": len(records), "output": str(output)}))
     return 0
 

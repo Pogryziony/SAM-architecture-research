@@ -1,0 +1,179 @@
+{
+  "artifact_sidecars": {
+    "benchmarks/results/phase4/oracle.json": true,
+    "benchmarks/results/phase4/overfit_smoke.json": true,
+    "benchmarks/results/phase4/preflight.json": true,
+    "benchmarks/results/phase4/readiness.json": true,
+    "benchmarks/results/phase4/stage0.json": true,
+    "benchmarks/results/phase4/stage2_seed0/stage2_20260716T010217Z.json": true,
+    "benchmarks/results/phase4/stage2_seed1/stage2_20260716T010217Z.json": true,
+    "benchmarks/results/phase4/stage2_seed42/stage2_20260716T010217Z.json": true,
+    "benchmarks/results/phase4/stage3/stage3_20260716T010219Z.json": true
+  },
+  "blocking_checks": [],
+  "canonical_sha256": "18f24b2a0a753a924133219c57774a476413ce30e9ae425d0515c931a0cb8285",
+  "checks": [
+    {
+      "name": "dataset",
+      "passed": true,
+      "requirement": ">=5000 unique verifier-passed pairs with valid manifest",
+      "value": {
+        "errors": [],
+        "pairs": 7127
+      }
+    },
+    {
+      "name": "oracle",
+      "passed": true,
+      "requirement": "oracle publication guard passes",
+      "value": {
+        "errors": [],
+        "questions": 181
+      }
+    },
+    {
+      "name": "stage0",
+      "passed": true,
+      "requirement": "valid 30-case paired NEXUS/RAG baseline",
+      "value": {
+        "nexus_answered": 30,
+        "paired_n": 25,
+        "rag_answered": 30,
+        "status": "VALID"
+      }
+    },
+    {
+      "name": "stage2",
+      "passed": true,
+      "requirement": "registered PASS for seeds 0/1/42 with one canonical hash",
+      "value": {
+        "canonical_hashes": [
+          "a726a95e989cb05a7b4e5388a484a22c164c28e721565a39e7b813d945300a3e"
+        ],
+        "seeds": [
+          "0",
+          "1",
+          "42"
+        ]
+      }
+    },
+    {
+      "name": "stage3",
+      "passed": true,
+      "requirement": "110 turns; reference>=0.70, regression<=0.02, dialogue p50<=5ms",
+      "value": {
+        "dialogue_state_latency_p50_ms": 0.048,
+        "pipeline_latency_p50_ms": 22.091,
+        "reference_resolution": 0.875,
+        "resolver_latency_p50_ms": 5.393,
+        "single_turn_accuracy": 0.9565,
+        "single_turn_baseline_accuracy": 0.9565,
+        "single_turn_regression": 0.0
+      }
+    },
+    {
+      "name": "er3_bundle",
+      "passed": true,
+      "requirement": "config, vocabulary and weights match manifest",
+      "value": {
+        "errors": [],
+        "hashes": {
+          "config.json": "c14051c80af3c72ee8a2d6c7915da69bd6de978c25f9a5cf9cd5866dd2ce6d95",
+          "vocab.json": "e69d55991720318689487832d1b38e16b60164b90e3b792d9adef7aa2ace8364",
+          "weights.pt": "8be5156f94b3d05fd24927592b48d1a1df38dccf4dbbecdfb3df815777f514c7"
+        },
+        "run_id": "entity_ranker_v3_20260711T081545Z"
+      }
+    },
+    {
+      "name": "model_readiness",
+      "passed": true,
+      "requirement": "READY_FOR_TRAINING for the exact config and dataset",
+      "value": {
+        "errors": [],
+        "status": "READY_FOR_TRAINING"
+      }
+    },
+    {
+      "name": "preflight",
+      "passed": true,
+      "requirement": "exact-input CPU forward/backward pass; no weights",
+      "value": {
+        "batch_size": 16,
+        "config_sha256": "44faf90572f0c92096982bb085b987e715ac491d0688b096670dbdd9ae45658e",
+        "dataset_sha256": "8028e471bb304ffb95ab338f0a3a93cbe4ded04596f73e9479a6135e663a59e0",
+        "effective_config_sha256": "d6a8e2c9f8ecba362f4bd277fb293b10cd4bc99b6409d0d8c6d566f0ca8ce149",
+        "effective_training_config": {
+          "batch_size": 16,
+          "early_stopping_patience": 3,
+          "epochs": 5,
+          "learning_rate": 0.0001,
+          "max_parameters": 50000000,
+          "weight_decay": 0.01
+        },
+        "loss": 191.787155,
+        "parameter_count": 2770752,
+        "priority_evidence_coverage": {
+          "mean": 1.0,
+          "min": 1.0
+        },
+        "source_shape": [
+          16,
+          622
+        ],
+        "status": "PREFLIGHT_PASS",
+        "target_shape": [
+          16,
+          138
+        ],
+        "weights_written": false
+      }
+    },
+    {
+      "name": "overfit_smoke",
+      "passed": true,
+      "requirement": "loss decreases by at least 5%; no weights written",
+      "value": {
+        "final_loss": 142.881241,
+        "initial_loss": 190.47699
+      }
+    },
+    {
+      "name": "short_training_policy",
+      "passed": true,
+      "requirement": "default training <=5 epochs with patience <=3",
+      "value": {
+        "batch_size": 16,
+        "early_stopping_patience": 3,
+        "epochs": 5,
+        "learning_rate": 0.0001,
+        "max_parameters": 50000000,
+        "weight_decay": 0.01
+      }
+    },
+    {
+      "name": "source_identity",
+      "passed": true,
+      "requirement": "all Phase 0-3 evidence comes from one code commit",
+      "value": [
+        "7b1920947a155404c58bf98701fdd4f8d54c696e"
+      ]
+    }
+  ],
+  "created_utc": "2026-07-16T01:09:40.195056+00:00",
+  "inputs": {
+    "benchmarks/results/phase4/oracle.json": "eae3977536b6fe1fed46c55fa494f157665142079ff626693d55db952e601f85",
+    "benchmarks/results/phase4/overfit_smoke.json": "53c4fce47f707b9121390de06316b5665d708b79a61c696ccd3fe582ec639eda",
+    "benchmarks/results/phase4/preflight.json": "577a1165365db91046eb14d539219154ebd0574ae88f6e5d835becae1c08a989",
+    "benchmarks/results/phase4/readiness.json": "a0022531e6ead71362b5f2a77c8979b7eff66806b9ccfe4bea0015505aa4bb6a",
+    "benchmarks/results/phase4/stage0.json": "741563c64f1044968244172d44215c927798b38cbc8e548c669f448fd6de1568",
+    "benchmarks/results/phase4/stage2_seed0/stage2_20260716T010217Z.json": "7852d8653be6145873a501d1740e8dff2e31491b8ce24b98c217d653e872bc29",
+    "benchmarks/results/phase4/stage2_seed1/stage2_20260716T010217Z.json": "a4819cb3b597789f9a409f6d84da7102b6a08f7054865abf0892d99f0e4dc838",
+    "benchmarks/results/phase4/stage2_seed42/stage2_20260716T010217Z.json": "e1c5211e5c0b0e7b0d9ba78c9e7cda825b689f39c01449a2dd442bfe3ab49998",
+    "benchmarks/results/phase4/stage3/stage3_20260716T010219Z.json": "efcc0c8904056444d3b340c1eca01164397bd080b26349b99eeb8369f6ce99c9",
+    "data/distillation/realizer_v1/manifest.json": "4ac76e1d2cbaec483560e7d0978097902a374c3d6943899cb32924e05552481f",
+    "training/nexus_realizer_v1.json": "44faf90572f0c92096982bb085b987e715ac491d0688b096670dbdd9ae45658e"
+  },
+  "schema_version": "nexus-phase4-readiness-v1",
+  "status": "GO_FOR_REALIZER_TRAINING"
+}

@@ -495,12 +495,14 @@ def _resolve_target_entity_from_evidence(
             if nid:
                 all_node_ids.add(nid)
 
-    for nid in all_node_ids:
+    for nid in sorted(all_node_ids):
         nid_lower = nid.lower()
         # Direct match: node ID appears as substring in question
         if nid_lower in q_lower:
             score = len(nid_lower)
-            if score > best_score:
+            if score > best_score or (
+                score == best_score and (best_match is None or nid < best_match)
+            ):
                 best_score = score
                 best_match = nid
                 continue
@@ -509,7 +511,10 @@ def _resolve_target_entity_from_evidence(
         nid_words = set(re.findall(r"[a-zA-Z0-9]+", nid_lower))
         meaningful = {w for w in nid_words if len(w) > 2}
         overlap = len(meaningful & q_words)
-        if overlap > 0 and overlap > best_score:
+        if overlap > 0 and (
+            overlap > best_score
+            or (overlap == best_score and (best_match is None or nid < best_match))
+        ):
             best_score = overlap
             best_match = nid
 

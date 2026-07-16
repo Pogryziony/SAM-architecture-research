@@ -15,17 +15,20 @@ split, and reproducibility hashes.
    question, and answer duplicates.
 3. Build at least 5,000 verifier-passed pairs with
    `benchmarks/build_distillation_dataset.py --acquisition-manifest ...`.
-   The builder verifies every source hash and creates source-family-disjoint
-   train/validation files.
-4. Produce a Stage 2 artifact containing the four preregistered baseline deltas:
-   relevance, naturalness, hallucination, and accuracy.
+   Use `--archived-acquisition` only to reproduce the committed, hash-verified
+   acquisition snapshot after source documents have legitimately changed.
+   The builder creates source-family-disjoint train/validation files.
+4. Run Stage 0, registered Stage 2 for seeds 0/1/42, and the complete Stage 3.
 5. Run `benchmarks/check_realizer_readiness.py` and resolve every blocking gate.
 6. Install `pip install -e '.[train]'`, then run
    `benchmarks/train_nexus_realizer.py --mode preflight` and
    `--mode overfit-smoke`.
-7. Start `--mode train` only with the valid readiness artifact. The output
-   directory must be outside this repository; its weight SHA-256 is recorded
-   in an external manifest.
+7. Run `benchmarks/check_phase4_readiness.py`. Start training only when it says
+   `GO_FOR_REALIZER_TRAINING`.
+8. Execute 1, then 3, then at most 5 epochs. `models/realizer/` is the only
+   configured in-repository checkpoint root; an external output directory is
+   also valid. Every checkpoint SHA-256 is recorded in its run manifest.
 
-The committed configuration is `training/nexus_realizer_v1.json`. No command
-overwrites an existing dataset, evaluation artifact, or training directory.
+The committed configuration is `training/nexus_realizer_v1.json`; its default
+is 5 epochs with early-stopping patience 3. No command overwrites an existing
+dataset, evaluation artifact, report or training directory.

@@ -10,26 +10,26 @@
       "note": "Pipeline smoke test — 1 epoka, sprawdzenie czy wszystko dziala"
     },
     "quick": {
-      "epochs": 5,
-      "patience": 3,
+      "epochs": 3,
+      "patience": 2,
       "batch_size": 8,
       "note": "Szybka iteracja — development i debugowanie"
     },
     "pilot": {
-      "epochs": 12,
-      "patience": 5,
+      "epochs": 5,
+      "patience": 3,
       "batch_size": 16,
       "note": "Pilot z generation-aware evaluation, per-epoch metryki"
     },
     "standard": {
-      "epochs": 25,
-      "patience": 8,
+      "epochs": 8,
+      "patience": 4,
       "batch_size": 16,
       "note": "Standardowy trening — pelny cykl z early stopping"
     },
     "full": {
-      "epochs": 50,
-      "patience": 10,
+      "epochs": 12,
+      "patience": 5,
       "batch_size": 16,
       "note": "Rozszerzony przebieg eksperymentalny — wymaga osobnej zgody po udanym pilocie"
     }

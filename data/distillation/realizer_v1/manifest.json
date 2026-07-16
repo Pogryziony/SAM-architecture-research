@@ -1,0 +1,43 @@
+{
+  "builder_config": {
+    "entity_resolution": "oracle",
+    "min_pairs": 5000,
+    "schema_version": "nexus-realizer-v1",
+    "seed": 20260711,
+    "source_split": "train",
+    "validation_fraction": 0.2
+  },
+  "builder_config_sha256": "e05c3e1974b4561df28dde344fd1cf69a5bf0a4d55a52c5a72a8fdedf11f4e61",
+  "config_hash": "4c2202373759fbf8",
+  "created_utc": "2026-07-16T01:02:06.145556+00:00",
+  "dataset_sha256": "8028e471bb304ffb95ab338f0a3a93cbe4ded04596f73e9479a6135e663a59e0",
+  "min_pairs_target": 5000,
+  "pairs_accepted": 7127,
+  "pairs_rejected": 1155,
+  "questions_processed": 8282,
+  "rejection_reasons": {
+    "audit_abstains": 1155,
+    "refusal_detected": 1,
+    "target_verifier_failed": 1154
+  },
+  "schema_version": "nexus-realizer-v1",
+  "source_path": "data/realizer_train/source_claims_v1/manifest.json",
+  "source_sha": "7b1920947a155404c58bf98701fdd4f8d54c696e",
+  "source_sha256": "cc64ffa33d82d0705247e7ffc9303fa5fc03db9346d8c3e7115c03a4f4e51110",
+  "splits": {
+    "train": {
+      "count": 5693,
+      "entity_families": 153,
+      "path": "train.jsonl",
+      "sha256": "5c2d4067c68fbf4af6041e323a9d2851d69ab961237b8fd9135b33f56969fddb"
+    },
+    "validation": {
+      "count": 1434,
+      "entity_families": 44,
+      "path": "validation.jsonl",
+      "sha256": "d0e86ca38c791b04f77c93fa39358f907920beb798910c3b00e588628b817953"
+    }
+  },
+  "target_met": true,
+  "validation_fraction_actual": 0.201207
+}

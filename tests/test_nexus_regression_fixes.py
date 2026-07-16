@@ -211,20 +211,33 @@ class TestStage3Fixes:
 
 
 # ═══════════════════════════════════════════════════════════════════════
-# Fix: no tracked weights
+# Checkpoint policy
 # ═══════════════════════════════════════════════════════════════════════
 
 class TestWeightsPolicy:
-    """FIX: Model weights are never committed."""
+    """Tracked weights must be explicit, scoped and hash-verifiable."""
 
-    def test_no_pt_files_tracked(self):
+    def test_tracked_pt_files_are_manifest_declared(self):
+        import hashlib
+        import json
         import subprocess
+
         result = subprocess.run(
             ["git", "ls-files", "*.pt"], capture_output=True, text=True
         )
-        assert not result.stdout.strip(), (
-            f".pt files tracked in git: {result.stdout.strip()}"
-        )
+        tracked = [Path(line) for line in result.stdout.splitlines() if line]
+        for path in tracked:
+            assert path.parts[:2] == ("models", "encoder") or path.parts[:2] == (
+                "models", "realizer"
+            )
+            manifest_path = path.parent / "manifest.json"
+            assert manifest_path.is_file(), f"missing checkpoint manifest: {path}"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            metadata = manifest.get("files", {}).get(path.name, {})
+            assert metadata.get("stored_in_git") is True
+            assert metadata.get("sha256") == hashlib.sha256(path.read_bytes()).hexdigest()
+            expected_size = metadata.get("size", metadata.get("size_bytes"))
+            assert int(expected_size) == path.stat().st_size
 
     def test_no_safetensors_tracked(self):
         import subprocess

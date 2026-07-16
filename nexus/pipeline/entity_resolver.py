@@ -38,6 +38,7 @@ class ResolutionResult:
     fallback_used: bool = False
     rejection_reason: str = ""
     latency_ms: float = 0.0
+    context_latency_ms: float = 0.0
 
     def __post_init__(self) -> None:
         self.selected_entity_ids = [str(item) for item in self.selected_entity_ids]
@@ -55,6 +56,7 @@ class ResolutionResult:
             "fallback_used": self.fallback_used,
             "rejection_reason": self.rejection_reason,
             "latency_ms": self.latency_ms,
+            "context_latency_ms": self.context_latency_ms,
         }
 
 

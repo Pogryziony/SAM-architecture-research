@@ -46,7 +46,7 @@ from benchmarks.train_nexus_realizer import (
     serialization_coverage,
     _encode,
     _batch,
-    _assert_external_output,
+    _assert_configured_output,
     _loss,
     apply_training_overrides,
     effective_config_sha256,
@@ -166,7 +166,7 @@ def train_v2(
         if errors:
             raise ValueError("training blocked: " + "; ".join(errors))
     if output_dir is not None:
-        _assert_external_output(output_dir)
+        _assert_configured_output(output_dir, config)
 
     if decoder_config is None:
         decoder_config = DecoderConfig(

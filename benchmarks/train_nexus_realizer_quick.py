@@ -37,7 +37,7 @@ from benchmarks.train_nexus_realizer import (
     serialization_coverage,
     _encode,
     _batch,
-    _assert_external_output,
+    _assert_configured_output,
     _loss,
 )
 from nexus.realizer.model import build_model, parameter_count, validate_model_config
@@ -65,7 +65,7 @@ def quick_train(
         config["training"]["batch_size"] = batch_size
 
     if output_dir is not None:
-        _assert_external_output(output_dir)
+        _assert_configured_output(output_dir, config)
 
     try:
         import torch

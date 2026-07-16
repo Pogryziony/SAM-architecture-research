@@ -1,93 +1,94 @@
 # NEXUS Realizer v1 — training status
 
-**Decision: BLOCKED pending regenerated Stage 0, registered Stage 2 and Stage 3 evidence.**
+**Decision: GO FOR REALIZER TRAINING. Phase 0–4 pre-training gates pass.**
 
-The repository has enough unique train-only data and a working CPU Realizer,
-but it is no longer correct to describe the model as “not trained”. The first
-50-epoch run completed externally. Its loss converged, yet post-training answer
-quality regressed because the original greedy byte decoder entered repetition
-loops. Repetition penalty `1.2` plus no-repeat trigram blocking removed those
-loops in decoder diagnostics, but the corrected model path has not yet passed
-the complete registered evaluation suite.
+The repository now contains everything required to reproduce the decision:
+the verified Entity Ranker V3 (ER3) checkpoint, the unique train-only dataset,
+immutable benchmark artifacts and a final all-or-nothing readiness checker.
+This decision authorizes a short training pilot. It does not approve a model
+for deployment and does not claim that post-training answer quality passes.
 
 ## Confirmed results
 
 | Area | Result | Status |
 |---|---:|---|
-| Unique acquired train-only targets | 8,282 | PASS |
-| Verifier/audit-passed pairs | 7,127 | PASS |
+| Acquired train-only inventory | 8,282 records | PASS |
+| Verifier/audit-passed unique pairs | 7,127 | PASS |
 | Train/validation records | 5,693 / 1,434 | PASS |
 | Validation share | 20.12% | PASS |
 | Known split leakage | 0 | PASS |
+| Oracle | 181 cases, publication guard valid | PASS |
+| Stage 0 | 30 cases, both arms answer, paired N=25 | VALID |
+| Stage 2 | relevance 78.33%, seeds 0/1/42 identical | PASS |
+| Stage 3 | 110 turns, reference resolution 87.5% | PASS |
+| Stage 3 single-turn regression | 0.00pp | PASS |
+| Stage 3 dialogue-state p50 | 0.048ms | PASS, below 5ms |
+| ER3 checkpoint | 3,487,600 bytes, manifest SHA-256 verified | PASS |
 | Realizer parameters | 2,770,752 | PASS, below 50M |
-| First CPU training | 50 epochs, best validation loss 1.778 | COMPLETE, historical |
-| Original post-training relevance, 30 cases | 58.33% | REGRESSION |
-| Original post-training hallucination, 30 cases | 90.32% | REGRESSION |
-| Decoder diagnostic | repetition penalty + trigram block removed loops | IMPLEMENTED |
-| Current committed Stage 0 | RAG 0/30, paired N=0 | INVALID |
-| Current committed Stage 2 | two 5-case smoke runs | NOT A REGISTERED GATE |
-| Latest Stage 3 | 15.62% resolution, 12.166ms p50 | FAIL |
+| CPU preflight | forward/backward, no weights written | PASS |
+| 50-step overfit smoke | loss 190.477 → 142.881, no weights written | PASS |
+| Default training policy | 5 epochs, patience 3 | PASS |
 
-Model weights and generated datasets remain outside Git. Their manifests and
-SHA-256 values identify the required external artifacts.
+The first historical 50-epoch CPU run remains rejected. Its loss converged,
+but answer relevance, accuracy, naturalness and hallucination regressed. The
+failure was traced to the original greedy byte decoder entering repetition
+loops. Repetition penalty `1.2` and no-repeat trigram blocking fixed coherence,
+but only registered post-training metrics can select a checkpoint.
 
-## Integrity fixes in the current implementation
+## What was fixed
 
-- Presets now flow into the actual Realizer and ER3 trainers instead of being
-  printed without changing the training loop.
-- Effective training parameters and their canonical hash are written to run
-  manifests.
-- `--list-presets` works without PyTorch for Realizer v2.
-- ER3 loads the exact external file that passed size and SHA-256 verification.
-- NEXUS receives entity resolution through an injected structured result; it
-  no longer imports `stack.*` or inspects resolver private fields.
-- Stage 2 uses exactly `registered_stage2_v1` for 30 cases. Other sizes are
-  smoke runs and cannot report a registered PASS.
-- Stage 2 serialized artifacts use a `.sha256` sidecar, avoiding a
-  self-referential hash.
-- Stage 3 runs through the injected resolver and records candidates, scores,
-  selected entry nodes, state updates and separate resolver/pipeline latency.
+- Presets now control the actual Realizer and ER3 training loops.
+- Effective training values and their canonical hash are recorded in manifests.
+- ER3 loads the exact file whose size and SHA-256 passed verification.
+- The checkpoint can be reproduced directly from the repository; an explicit
+  external checkpoint remains supported.
+- NEXUS receives structured entity-resolution results by injection.
+- ER3 static entity projections are precomputed instead of rebuilt per query.
+- Stage 0 has a deterministic, dependency-free lexical RAG backend.
+- Stage 2 distinguishes the exact registered 30-case protocol from smoke runs
+  and is deterministic across `PYTHONHASHSEED=0,1,42`.
+- Stage 3 measures dialogue-state, resolver and full-pipeline latency separately.
+- Dataset reproduction can use the immutable archived acquisition snapshot;
+  every archived record and its provenance are still hash-checked.
+- Evaluation, readiness, preflight and smoke artifacts use exact `.sha256`
+  sidecars and refuse accidental overwrite.
+- `check_phase4_readiness.py` fails closed unless every Phase 0–4 input agrees.
 
-## Required order before the next pilot
+## Final launch contract
 
-1. Materialize the external ER3 checkpoint identified by its manifest.
-2. Reproduce the 7,127-pair dataset from exact Git blobs and confirm all hashes.
-3. Run a valid 30-case Stage 0 with both NEXUS and RAG producing answers.
-4. Run registered Stage 2 on exactly 30 cases for `PYTHONHASHSEED=0,1,42`.
-5. Run the complete 110-turn Stage 3 with the injected ER3 resolver.
-6. Regenerate readiness, preflight and overfit-smoke evidence.
-7. Only if every blocking check passes, run Realizer pilots for 1, 3 and at
-   most 5 epochs.
+Training may start only when `benchmarks/check_phase4_readiness.py` reports
+`GO_FOR_REALIZER_TRAINING`. It checks:
 
-## Safe command outline
+1. at least 5,000 unique verifier-passed train-only pairs;
+2. a valid oracle and Stage 0 baseline;
+3. registered Stage 2 PASS for all three required hash seeds with one canonical hash;
+4. a complete passing Stage 3 run using the verified ER3 bundle;
+5. exact dataset/config identity in readiness, preflight and overfit smoke;
+6. immutable sidecars for every evidence artifact;
+7. a default training limit of at most 5 epochs with patience at most 3.
+
+## Recommended next run
+
+Use the generation-aware trainer and promote checkpoints progressively:
 
 ```bash
-# Metadata-only; does not need torch.
-python benchmarks/train_nexus_realizer_v2.py --list-presets
-
-# Registered Stage 2 uses exactly 30 cases.
-PYTHONHASHSEED=0 python benchmarks/run_stage2_stage3.py \
-  --stage 2 --limit 30 --output-dir /tmp/nexus-stage2-seed0
-
-# ER3 evaluation requires the external checkpoint.
-ER3_WEIGHTS_PATH=/external/er3/weights.pt \
-python benchmarks/run_stage2_stage3.py \
-  --stage 3 --er3 \
-  --er3-dir models/encoder/entity_ranker_v3_20260715T191041Z \
-  --output-dir /tmp/nexus-stage3
-
-# After readiness passes: deliberately short generation-aware pilots.
+# 1 epoch: plumbing and generation smoke
 python benchmarks/train_nexus_realizer_v2.py \
-  --mode pilot --preset smoke --manifest /external/realizer/manifest.json
+  --mode pilot --preset smoke \
+  --manifest data/distillation/realizer_v1/manifest.json
 
+# Continue only if generation and registered quality do not regress.
 python benchmarks/train_nexus_realizer_v2.py \
-  --mode pilot --preset quick --epochs 3 \
-  --manifest /external/realizer/manifest.json
+  --mode pilot --preset quick \
+  --manifest data/distillation/realizer_v1/manifest.json
 
+# Final pilot ceiling: 5 epochs, patience 3.
 python benchmarks/train_nexus_realizer_v2.py \
-  --mode pilot --preset quick --epochs 5 \
-  --manifest /external/realizer/manifest.json
+  --mode pilot --preset pilot \
+  --manifest data/distillation/realizer_v1/manifest.json
 ```
 
-Do not run the 12-, 25- or 50-epoch presets until the 1→3→5 sequence improves
-registered relevance, accuracy, naturalness and hallucination simultaneously.
+Stop after any failed generation-aware or registered answer-quality gate. The
+8- and 12-epoch presets require a separate decision backed by improvement in
+relevance, naturalness, accuracy and hallucination. A 50-epoch preset has been
+removed because training loss alone did not predict usable answers.

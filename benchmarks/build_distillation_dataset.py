@@ -317,6 +317,14 @@ def main() -> int:
         type=Path,
         help="verified train-only acquisition manifest; takes precedence over --input",
     )
+    parser.add_argument(
+        "--archived-acquisition",
+        action="store_true",
+        help=(
+            "reproduce from the immutable hash-verified acquisition archive "
+            "without requiring current source files to have identical bytes"
+        ),
+    )
     parser.add_argument("--output-dir", default="data/distillation/realizer_v1")
     parser.add_argument("--limit", type=int)
     parser.add_argument("--min-pairs", type=int, default=5000)
@@ -331,7 +339,11 @@ def main() -> int:
             augment_graph_with_claims,
             load_verified_acquisition,
         )
-        questions, _ = load_verified_acquisition(args.acquisition_manifest, _project_root)
+        questions, _ = load_verified_acquisition(
+            args.acquisition_manifest,
+            _project_root,
+            verify_current_sources=not args.archived_acquisition,
+        )
         questions = questions[:args.limit] if args.limit else questions
         input_path = args.acquisition_manifest
     else:

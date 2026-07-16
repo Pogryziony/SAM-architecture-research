@@ -1,0 +1,30 @@
+{
+  "batch_size": 16,
+  "config_sha256": "44faf90572f0c92096982bb085b987e715ac491d0688b096670dbdd9ae45658e",
+  "dataset_sha256": "8028e471bb304ffb95ab338f0a3a93cbe4ded04596f73e9479a6135e663a59e0",
+  "effective_config_sha256": "d6a8e2c9f8ecba362f4bd277fb293b10cd4bc99b6409d0d8c6d566f0ca8ce149",
+  "effective_training_config": {
+    "batch_size": 16,
+    "early_stopping_patience": 3,
+    "epochs": 5,
+    "learning_rate": 0.0001,
+    "max_parameters": 50000000,
+    "weight_decay": 0.01
+  },
+  "loss": 191.787155,
+  "parameter_count": 2770752,
+  "priority_evidence_coverage": {
+    "mean": 1.0,
+    "min": 1.0
+  },
+  "source_shape": [
+    16,
+    622
+  ],
+  "status": "PREFLIGHT_PASS",
+  "target_shape": [
+    16,
+    138
+  ],
+  "weights_written": false
+}

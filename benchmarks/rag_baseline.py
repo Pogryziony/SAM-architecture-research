@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import hashlib
 import json
 import os
 import pickle
@@ -234,6 +235,52 @@ class RAGEmbedder:
             for c in chunks
         )
         return hashlib.md5("|".join(key_parts).encode()).hexdigest()
+
+
+class LexicalRAGEmbedder:
+    """Dependency-free deterministic hashed lexical retriever.
+
+    This backend exists for registered CPU/offline baselines. It uses the same
+    chunking, top-K retrieval, prompt, model and verifier as semantic RAG, but
+    replaces the downloadable sentence-transformer with normalized hashed
+    unigram/bigram vectors.
+    """
+
+    _STOPWORDS = {
+        "a", "an", "and", "are", "as", "at", "be", "by", "for", "from",
+        "how", "in", "is", "it", "of", "on", "or", "that", "the", "this",
+        "to", "was", "were", "what", "when", "which", "with",
+    }
+
+    def __init__(self, dimensions: int = 2048):
+        if dimensions < 128:
+            raise ValueError("lexical embedding dimensions must be >= 128")
+        self.dimensions = dimensions
+
+    def _features(self, text: str) -> list[str]:
+        terms = [
+            token for token in re.findall(r"[\w%+.-]+", text.casefold())
+            if len(token) > 1 and token not in self._STOPWORDS
+        ]
+        return terms + [
+            f"{left}::{right}" for left, right in zip(terms, terms[1:])
+        ]
+
+    def _embed(self, text: str) -> list[float]:
+        vector = [0.0] * self.dimensions
+        for feature in self._features(text):
+            digest = hashlib.sha256(feature.encode("utf-8")).digest()
+            index = int.from_bytes(digest[:4], "big") % self.dimensions
+            sign = 1.0 if digest[4] & 1 else -1.0
+            vector[index] += sign
+        norm = sum(value * value for value in vector) ** 0.5
+        return vector if norm == 0 else [value / norm for value in vector]
+
+    def embed_chunks(self, chunks: list[dict[str, Any]]) -> list[list[float]]:
+        return [self._embed(str(chunk["text"])) for chunk in chunks]
+
+    def embed_query(self, query: str) -> list[float]:
+        return self._embed(query)
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -1063,6 +1110,7 @@ def print_comparison_table(summary: dict[str, Any]):
 def initialize_rag_pipeline(
     model: ModelInterface,
     force_reembed: bool = False,
+    backend: str = "semantic",
 ) -> RAGPipeline:
     """
     Initialize the RAG pipeline: read docs, chunk, embed, cache.
@@ -1074,9 +1122,15 @@ def initialize_rag_pipeline(
     Returns:
         RAGPipeline ready to answer questions
     """
-    embedder = RAGEmbedder(cache_path=EMBEDDING_CACHE)
+    if backend not in {"semantic", "lexical"}:
+        raise ValueError(f"unsupported RAG backend: {backend}")
+    embedder = (
+        RAGEmbedder(cache_path=EMBEDDING_CACHE)
+        if backend == "semantic"
+        else LexicalRAGEmbedder()
+    )
 
-    if force_reembed and EMBEDDING_CACHE.exists():
+    if backend == "semantic" and force_reembed and EMBEDDING_CACHE.exists():
         EMBEDDING_CACHE.unlink()
         print("[rag] Cache deleted, will re-embed")
 
@@ -1094,6 +1148,7 @@ def initialize_rag_pipeline(
           f"(avg {round(sum(c['token_count'] for c in chunks) / len(chunks), 0)} tokens/chunk)")
 
     # Embed
+    print(f"[rag] Retrieval backend: {backend}")
     embeddings = embedder.embed_chunks(chunks)
 
     # Build pipeline
