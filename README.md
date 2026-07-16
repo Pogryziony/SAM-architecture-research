@@ -42,8 +42,8 @@ general-purpose LLM reasoning path.
 | Realization L1 (Stage 2) | ✅ **PASS** — registered 30-case protocol passes for `PYTHONHASHSEED=0,1,42`: relevance 78.33%, accuracy delta +15.34pp, naturalness +22.40 and hallucination delta -5.12pp. All seeds have the same canonical content hash. |
 | Dialogue state (Stage 3) | ✅ **PASS** — full 110-turn protocol: reference resolution 87.5%, zero single-turn regression and dialogue-state p50 0.048ms. Resolver and complete-pipeline latency remain separate diagnostics. |
 | Realization L2 (Stage 4) | ✅ **POINTER/COPY V3 ACCEPTED FOR EXTRACTIVE FACTUAL QA** — the target audit found 7,127/7,127 answers already present as complete evidence candidates. Validation: 100% exact match, 0% hallucination and no position-shuffle drop. The neural v2 checkpoint remains rejected. Evidence: `benchmarks/results/realizer/pointer_copy_v3_20260716.json`. |
-| Constrained comparison-plan Realizer | ✅ **PILOT CHECKPOINT ACCEPTED** — the bounded 1→3 epoch CPU pilot passes 356/356 full-validation cases with 100% exact materialization and per-class plan adherence, 0% hallucination and fail-closed plan verification. Full training is ready but was not launched. |
-| End-to-end QA | 🟡 **FACTUAL EXTRACTIVE PATH READY** — `ProductionNEXUSConfig.pointer_copy()` connects Pointer/Copy to the real runtime. Comparison, synthesis and genuinely abstractive answers still use the existing path and require separate data and evaluation. |
+| Constrained comparison-plan Realizer | ✅ **PILOT CHECKPOINT ACCEPTED AND RUNTIME-INTEGRATED** — the bounded 1→3 epoch CPU pilot passes 356/356 full-validation cases. `ProductionNEXUSConfig.comparison_plan()` now connects the hash-verified checkpoint to `answer_question()` with symbolic relation verification and fail-closed evidence handling. Full training was not launched. |
+| End-to-end QA | 🟡 **FACTUAL AND CONTROLLED COMPARISON PATHS READY** — `ProductionNEXUSConfig.grounded()` routes extractive factual QA to Pointer/Copy and the registered two-evidence comparison contract to the comparison-plan checkpoint. Open-ended synthesis and broader abstractive answers still require separate data and evaluation. |
 
 ### Quick start (NEXUS)
 
@@ -78,6 +78,7 @@ for p in paths:
 - [Realizer v2 Quality Recovery](docs/realizer-v2-quality-recovery.md) — checkpoint root cause, grounded runtime, stable model and promotion rules
 - [Pointer/Copy Realizer v3](docs/pointer-copy-realizer-v3.md) — target audit, deterministic architecture, runtime integration, gates and limitations
 - [Bounded multi-evidence pilot](docs/realizer-abstractive-pilot.md) — unique composition data, slot-preserving neural target, readiness and stop gates
+- [Comparison Realizer runtime report](docs/realizer-abstractive-runtime-integration.md) — production wiring, artifact checks, end-to-end tests, fail-closed behavior and remaining limits
 - [Pilot Integrity and Next Run](docs/nexus-pilot-integrity.md) — preset wiring, artifact identity, resolver contracts and launch rules
 - [RAG vs NEXUS](docs/rag-vs-graph-nexus.md) — detailed comparison, when to use which
 
@@ -129,4 +130,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-16 (Pointer/Copy v3 remains the extractive path; the constrained comparison-plan pilot checkpoint is accepted; full training was not launched.)*
+*Last updated: 2026-07-16 (Pointer/Copy v3 and the constrained comparison-plan Realizer are connected to the runtime; broader abstractive realization remains experimental; full training was not launched.)*
