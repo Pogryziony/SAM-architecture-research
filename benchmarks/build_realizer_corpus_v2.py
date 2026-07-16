@@ -122,11 +122,17 @@ def _iter_poquad(
                 source_id = f"{document_id}:{paragraph_index}:{question_index}"
                 answerable = not bool(qa.get("is_impossible"))
                 answers = qa.get("answers", [])
-                targets = [
-                    str(item.get("generative_answer") or item.get("text") or "").strip()
+                generative_targets = [
+                    str(item.get("generative_answer") or "").strip()
                     for item in answers
+                    if str(item.get("generative_answer") or "").strip()
                 ]
-                targets = [item for item in targets if item]
+                extractive_targets = [
+                    str(item.get("text") or "").strip()
+                    for item in answers
+                    if str(item.get("text") or "").strip()
+                ]
+                targets = generative_targets or extractive_targets
                 if answerable and not targets:
                     continue
                 evidence = [_evidence(
@@ -137,7 +143,11 @@ def _iter_poquad(
                     dataset=dataset, source=source, artifact_sha256=file_meta["sha256"],
                     source_split=source_split, source_id=source_id,
                     question=qa["question"], answer=targets[0] if targets else "",
-                    aliases=targets[1:], answerable=answerable, operator="extract", hops=1,
+                    aliases=[
+                        item for item in extractive_targets + generative_targets[1:]
+                        if item.casefold() != (targets[0].casefold() if targets else "")
+                    ],
+                    answerable=answerable, operator="extract", hops=1,
                     evidence=evidence, groups=[f"{dataset}:document:{document_id}"],
                     metadata={"domain": "wikipedia", "task": "closed_domain_qa"},
                 )

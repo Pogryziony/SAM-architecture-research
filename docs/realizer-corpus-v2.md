@@ -167,4 +167,13 @@ training:
    metrics;
 7. keep the 12,126-record test split sealed until a checkpoint has been selected.
 
-The dataset is ready. The historical trainer is not yet authorized for it.
+The first four preparation conditions are now implemented by
+[`AnswerPlan v1`](realizer-answer-plan-v1.md): resolved facts and provenance are
+compiled one-to-one, a train-only lossless tokenizer has been fitted, lengths
+have been audited, deterministic baselines are frozen and the test split remains
+sealed. The abstention gap has since been resolved by moving 344 complete,
+deterministically selected document groups from train into a tokenizer-blind
+holdout: 2,408 records, including 500 abstentions, with no duplication. Full
+training remains blocked for a different reason: bounded neural pilots still
+fail EOS, exact-match and token-F1 generation gates. The representative pilot
+must not run until the 2,048-record stage passes.

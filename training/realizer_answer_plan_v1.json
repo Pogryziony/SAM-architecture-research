@@ -1,0 +1,50 @@
+{
+  "schema_version": "nexus-answer-plan-training-config-v1",
+  "status": "FULL_TRAINING_BLOCKED",
+  "data": {
+    "manifest_schema": "nexus-answer-plan-dataset-manifest-v1",
+    "record_schema": "nexus-answer-plan-training-record-v1",
+    "input_field": "answer_plan",
+    "target_field": "target",
+    "tokenizer_schema": "nexus-frequency-subword-v1",
+    "tokenizer_training_scope": "train_only",
+    "test_policy": "sealed_until_checkpoint_selection"
+  },
+  "model": {
+    "architecture": "pointer_generator_v1_experimental",
+    "hidden_size": 96,
+    "dropout": 0.1,
+    "max_input_tokens": 512,
+    "max_target_tokens": 128,
+    "fact_authority": "answer_plan_only"
+  },
+  "optimization": {
+    "maximum_full_epochs": 3,
+    "early_stopping_patience_epochs": 1,
+    "teacher_forcing": true,
+    "checkpoint_selection_split": "validation"
+  },
+  "decoding": {
+    "strategy": "beam_or_greedy_under_evaluation",
+    "repetition_penalty": 1.2,
+    "no_repeat_ngram_size": 3,
+    "constrain_immutable_values": true,
+    "fail_closed_to_plan_copy": true
+  },
+  "pilot_stages": [
+    {"name": "overfit_smoke", "records": 64, "maximum_epochs": 60, "promote_weights": false},
+    {"name": "small_pilot", "records": 2048, "maximum_epochs": 1, "promote_weights": false},
+    {"name": "representative_pilot", "records": 17000, "maximum_epochs": 1, "promote_weights": false, "authorized": false},
+    {"name": "full_train", "records": "all_train", "maximum_epochs": 3, "authorized": false}
+  ],
+  "promotion_gates": {
+    "immutable_preservation_min": 0.99,
+    "unsupported_number_rate_max": 0.01,
+    "eos_rate_min": 0.99,
+    "empty_output_rate_max": 0.0,
+    "repetition_regression_allowed": false,
+    "required_slices": ["language:en", "language:pl", "operator:extract", "operator:compose_path", "operator:compare", "operator:abstain"],
+    "abstention_realization": "deterministic_registered_template",
+    "full_training_requires_passing_all_bounded_pilots": true
+  }
+}

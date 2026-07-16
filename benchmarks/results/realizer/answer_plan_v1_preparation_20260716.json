@@ -1,0 +1,59 @@
+{
+  "schema_version": "nexus-answer-plan-preparation-summary-v2",
+  "status": "FULL_TRAINING_BLOCKED",
+  "data_status": "READY_FOR_BOUNDED_PILOT",
+  "full_training_authorized": false,
+  "source_dataset_sha256": "868649ea94c4af4bf0f116dda24219cc575b296aa205cdfbb0e4f024ed57b755",
+  "prepared_dataset_manifest_sha256": "a4c5045b4b416cd6c7299d629faab16ed3c5dff7603e1d9ef3ccb9d50a517a2e",
+  "data_readiness_sha256": "2ca4b28ba9bbf1a0e8dc190854888a3906feda727bcdb681ab396683059b950f",
+  "full_readiness_sha256": "10663240140424febb463622f005c0e366c9b769ff63e9abe49e3874004d8e75",
+  "tokenizer_sha256": "32bd240c30054a147521a72246da20bb535e53e83f8a9467cf9d5a453162fb9d",
+  "records": {
+    "train": 144746,
+    "native_validation": 3660,
+    "document_disjoint_abstention_validation": 2408,
+    "test_sealed": 12126,
+    "train_surface_transformations": 27255
+  },
+  "holdout": {
+    "selected_document_groups": 344,
+    "records_moved_from_train": 2408,
+    "abstention_records": 500,
+    "record_duplication": 0,
+    "tokenizer_exposure": false
+  },
+  "validation_baselines": {
+    "plan_copy": {"exact_match": 0.8558009228740936, "token_f1": 0.8908474838241732, "immutable_preservation": 1.0, "unsupported_number_rate": 0.0},
+    "registered_template": {"exact_match": 0.0, "token_f1": 0.7274236828846231, "immutable_preservation": 1.0, "unsupported_number_rate": 0.0}
+  },
+  "failed_pilots": {
+    "evidence_scope": "diagnostic_prior_contract; rerun required for current readiness hash",
+    "small_2048_one_epoch": {
+      "report_sha256": "84222445fd788604f3399247d665ad8e8aaf26a969fa188d245984f490be5919",
+      "checkpoint_sha256": "15b0bdad97d8faa03688cfa3b93a1b1fae87d911510184c25635b16f70e81b47",
+      "exact_match": 0.0,
+      "token_f1": 0.29317283593599386,
+      "eos_rate": 0.5208333333333334,
+      "status": "REJECTED"
+    },
+    "pointer_generator_overfit": {
+      "report_sha256": "4c197d15da404850d25398c483b1c74493d1f241d4128e92c174c468f0469b4e",
+      "checkpoint_sha256": "54b9fd02365427508507fe9971c564fd1372dfd6c5f16db4c5de3456632212b4",
+      "validation_exact_match": 0.0,
+      "validation_token_f1": 0.015625,
+      "validation_eos_rate": 0.71875,
+      "status": "REJECTED"
+    }
+  },
+  "blocking_checks": [
+    "overfit_generation_gate",
+    "small_generation_gate",
+    "representative_generation_gate"
+  ],
+  "safety": {
+    "representative_pilot_launched": false,
+    "full_training_launched": false,
+    "test_accessed": false,
+    "rejected_weights_committed": false
+  }
+}

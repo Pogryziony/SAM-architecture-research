@@ -167,3 +167,23 @@ def test_previous_realizer_records_are_registered_as_exclusions():
         "data/distillation/realizer_v1/manifest.json",
         "data/distillation/realizer_abstractive_v1/manifest.json",
     }
+
+
+def test_poquad_keeps_extractive_fact_as_alias_for_generative_target(tmp_path: Path):
+    from benchmarks.build_realizer_corpus_v2 import _iter_poquad
+
+    payload = {"data": [{
+        "id": "doc", "title": "Tytuł", "url": "https://example.test/doc",
+        "paragraphs": [{"context": "Wydarzenie miało miejsce w 1953 roku.", "qas": [{
+            "question": "W którym roku?", "is_impossible": False,
+            "answers": [{"text": "1953", "generative_answer": "w 1953 roku"}],
+        }]}],
+    }]}
+    path = tmp_path / "poquad.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    source = dict(SOURCE, language="pl")
+    row = next(_iter_poquad(
+        path, source, {"source_split": "train", "sha256": "b" * 64}, "poquad"
+    ))
+    assert row["answer"] == "w 1953 roku"
+    assert row["answer_aliases"] == ["1953"]
