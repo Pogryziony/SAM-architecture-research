@@ -377,6 +377,55 @@ def decode_to_text(
     return text.strip(), diagnostics
 
 
+def score_candidate_texts(
+    model: Any,
+    source_ids: list[int],
+    candidate_texts: list[str],
+    tokenizer: ByteTokenizer | None = None,
+    max_length: int = 256,
+) -> tuple[str, dict[str, Any]]:
+    """Select one complete allowed output by mean teacher-forced NLL.
+
+    This is constrained decoding, not label lookup: every candidate is scored
+    only from the model, source and its own prefix.  It is intended for output
+    contracts with a small finite language, where free byte generation can
+    corrupt an otherwise valid identifier or control token.
+    """
+    if not candidate_texts:
+        raise ValueError("candidate_texts must not be empty")
+    if len(set(candidate_texts)) != len(candidate_texts):
+        raise ValueError("candidate_texts must be unique")
+    tokenizer = tokenizer or ByteTokenizer()
+    device = next(model.parameters()).device
+    source = torch.tensor([source_ids], dtype=torch.long, device=device)
+    scored: list[tuple[float, str, int]] = []
+    model.eval()
+    with torch.no_grad():
+        for text in candidate_texts:
+            ids = tokenizer.encode(text, max_length)
+            target = torch.tensor([ids], dtype=torch.long, device=device)
+            logits = model(source, target[:, :-1])
+            losses = torch.nn.functional.cross_entropy(
+                logits.reshape(-1, logits.shape[-1]),
+                target[:, 1:].reshape(-1),
+                reduction="none",
+            )
+            score = float(losses.mean())
+            scored.append((score, text, len(ids) - 2))
+    scored.sort(key=lambda item: (item[0], item[1]))
+    best = scored[0]
+    runner_up = scored[1][0] if len(scored) > 1 else best[0]
+    return best[1], {
+        "strategy": "constrained_candidates",
+        "candidate_mean_nll": {
+            text: round(score, 8) for score, text, _ in scored
+        },
+        "score_margin": round(runner_up - best[0], 8),
+        "token_count": best[2],
+        "eos_reached": True,
+    }
+
+
 def compute_repetition_rates(token_ids: list[int]) -> dict[str, float]:
     """Compute n-gram repetition rates for generated token sequence."""
     result: dict[str, float] = {}
@@ -394,5 +443,6 @@ __all__ = [
     "DecoderConfig",
     "decode",
     "decode_to_text",
+    "score_candidate_texts",
     "compute_repetition_rates",
 ]

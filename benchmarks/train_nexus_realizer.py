@@ -195,6 +195,56 @@ def serialize_comparison_slots(record: dict[str, Any], max_bytes: int) -> str:
     return _utf8_prefix(text, max_bytes)
 
 
+def serialize_comparison_relation(record: dict[str, Any], max_bytes: int) -> str:
+    """Serialize only the values required by the neural equality decision.
+
+    Exact sources and subjects remain outside the model and are materialized
+    from immutable slots after constrained relation selection.  Omitting them
+    here removes irrelevant byte-level path noise without exposing the label.
+    """
+    slots = record.get("slots", {})
+    text = (
+        "[TASK] Decide whether the two UTF-8 values are exactly the same.\n"
+        f"[VALUE_1] {slots.get('VALUE_1', '')}\n"
+        f"[VALUE_2] {slots.get('VALUE_2', '')}"
+    )
+    return _utf8_prefix(text, max_bytes)
+
+
+def serialize_comparison_plan(record: dict[str, Any], max_bytes: int) -> str:
+    """Serialize a verified symbolic answer plan for neural verbalization.
+
+    The comparison operator belongs to NEXUS reasoning, not to the Realizer.
+    The model receives the verified relation and must adhere to it while the
+    runtime preserves exact evidence bindings outside neural weights.
+    """
+    from benchmarks.abstractive_realizer_contracts import normalize_answer
+
+    verification = record.get("target_verification", {})
+    relation = record.get("composition", {}).get("relation")
+    if verification.get("relation_verified") is not True:
+        raise ValueError("comparison plan relation is not verifier-approved")
+    if relation == "the same":
+        label = "SAME"
+    elif relation == "different":
+        label = "DIFFERENT"
+    else:
+        raise ValueError("comparison plan has unsupported relation")
+    slots = record.get("slots", {})
+    values_equal = normalize_answer(slots.get("VALUE_1", "")) == normalize_answer(
+        slots.get("VALUE_2", "")
+    )
+    if values_equal is not (relation == "the same"):
+        raise ValueError("comparison plan contradicts immutable evidence values")
+    text = (
+        "[TASK] Verbalize the verified comparison plan.\n"
+        f"[VERIFIED_RELATION] {label}\n"
+        f"[VALUE_1] {slots.get('VALUE_1', '')}\n"
+        f"[VALUE_2] {slots.get('VALUE_2', '')}"
+    )
+    return _utf8_prefix(text, max_bytes)
+
+
 def serialize_source_for_config(record: dict[str, Any], config: dict[str, Any]) -> str:
     model_config = config["model"]
     max_bytes = int(model_config["max_input_tokens"]) - 2
@@ -203,6 +253,10 @@ def serialize_source_for_config(record: dict[str, Any], config: dict[str, Any]) 
         return serialize_grounded_source(record, max_bytes)
     if source_format == "comparison_slots_v1":
         return serialize_comparison_slots(record, max_bytes)
+    if source_format == "comparison_relation_v2":
+        return serialize_comparison_relation(record, max_bytes)
+    if source_format == "comparison_plan_v3":
+        return serialize_comparison_plan(record, max_bytes)
     if source_format != "evidence_json_v1":
         raise ValueError(f"unsupported source format: {source_format}")
     return serialize_source(record, max_bytes)
@@ -228,6 +282,14 @@ def serialization_coverage_for_config(
             )
         ]
         return 1.0 if all(value and value in serialized for value in required) else 0.0
+    if source_format in {"comparison_relation_v2", "comparison_plan_v3"}:
+        serialized = serialize_source_for_config(record, config)
+        slots = record.get("slots", {})
+        required = [str(slots.get("VALUE_1", "")), str(slots.get("VALUE_2", ""))]
+        if source_format == "comparison_plan_v3":
+            relation = record.get("composition", {}).get("relation")
+            required.append("SAME" if relation == "the same" else "DIFFERENT")
+        return 1.0 if all(value and value in serialized for value in required) else 0.0
     if source_format != "grounded_compact_v2":
         raise ValueError(f"unsupported source format: {source_format}")
     from nexus.realizer.grounded import evidence_candidates
@@ -248,6 +310,13 @@ def training_target_for_config(
         if not isinstance(target, str) or not target.strip():
             raise ValueError("slot_template_v1 record has no training_target")
         return target
+    if target_format == "relation_label_v2":
+        relation = record.get("composition", {}).get("relation")
+        if relation == "the same":
+            return "SAME"
+        if relation == "different":
+            return "DIFFERENT"
+        raise ValueError("relation_label_v2 record has no supported relation")
     if target_format != "answer_text_v1":
         raise ValueError(f"unsupported target format: {target_format}")
     return str(record["answer"])
@@ -338,6 +407,34 @@ def validate_readiness_for_training(
     readiness: dict[str, Any], manifest_path: Path, config_path: Path,
 ) -> list[str]:
     errors: list[str] = []
+    if readiness.get("schema_version") == "nexus-realizer-abstractive-full-readiness-v1":
+        checks = readiness.get("checks")
+        if not isinstance(checks, list) or not checks:
+            errors.append("missing readiness checks")
+            checks = []
+        if any(item.get("passed") is not True for item in checks if isinstance(item, dict)):
+            errors.append("readiness contains failed checks")
+        if readiness.get("blocking_checks"):
+            errors.append("readiness contains blocking checks")
+        if readiness.get("manifest_sha256") != sha256_file(manifest_path):
+            errors.append("readiness does not identify this dataset manifest")
+        if readiness.get("config_sha256") != sha256_file(config_path):
+            errors.append("readiness does not identify this training config")
+        if readiness.get("full_training_launched") is not False:
+            errors.append("readiness launch state is not pristine")
+        canonical_keys = (
+            "schema_version", "status", "blocking_checks", "checks", "source",
+            "dataset_sha256", "manifest_sha256", "config_sha256",
+            "weights_sha256", "preparation_sha256", "pilot_evaluation_sha256",
+            "full_training_launched", "authorization_scope",
+        )
+        canonical_payload = {key: readiness.get(key) for key in canonical_keys}
+        expected = hashlib.sha256(canonical_json(canonical_payload).encode("utf-8")).hexdigest()
+        if readiness.get("canonical_sha256") != expected:
+            errors.append("readiness canonical payload hash mismatch")
+        if readiness.get("status") != "READY_FOR_FULL_TRAINING":
+            errors.append("readiness status is not READY_FOR_FULL_TRAINING")
+        return errors
     if readiness.get("schema_version") != "nexus-realizer-readiness-v1":
         errors.append("unsupported readiness schema")
     checks = readiness.get("checks")

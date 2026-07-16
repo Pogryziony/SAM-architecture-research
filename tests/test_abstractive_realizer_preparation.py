@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -13,11 +14,13 @@ from benchmarks.abstractive_realizer_contracts import (
 )
 from benchmarks.acquire_realizer_train_data import load_verified_acquisition
 from benchmarks.build_abstractive_realizer_dataset import build_abstractive_dataset
+from benchmarks.check_abstractive_full_training_readiness import build_readiness
 from benchmarks.prepare_abstractive_realizer_run import evaluate_preparation
 from benchmarks.realizer_contracts import sha256_file, validate_dataset_manifest
 from benchmarks.train_nexus_realizer import (
     load_training_inputs, serialize_source_for_config,
     serialization_coverage_for_config, training_target_for_config,
+    validate_readiness_for_training,
 )
 
 
@@ -99,8 +102,69 @@ def test_trainer_loads_slot_contract_without_target_leakage(prepared_dataset):
     serialized = serialize_source_for_config(record, config)
     assert record["training_target"] not in serialized
     assert record["answer"] not in serialized
+    assert str(record["slots"]["SOURCE_1"]) not in serialized
+    assert str(record["slots"]["SOURCE_2"]) not in serialized
     assert serialization_coverage_for_config(record, config) == 1.0
-    assert training_target_for_config(record, config) == record["training_target"]
+    expected = "SAME" if record["composition"]["relation"] == "the same" else "DIFFERENT"
+    assert f"[VERIFIED_RELATION] {expected}" in serialized
+    assert training_target_for_config(record, config) == expected
+
+    tampered = json.loads(json.dumps(record))
+    tampered["composition"]["relation"] = (
+        "different" if record["composition"]["relation"] == "the same" else "the same"
+    )
+    with pytest.raises(ValueError, match="contradicts immutable evidence"):
+        serialize_source_for_config(tampered, config)
+
+
+def test_generation_subset_is_relation_balanced():
+    pytest.importorskip("torch")
+    from benchmarks.train_nexus_realizer_v2 import _select_generation_subset
+
+    records = [
+        {"id": f"same-{index}", "composition": {"relation": "the same"}}
+        for index in range(8)
+    ] + [
+        {"id": f"different-{index}", "composition": {"relation": "different"}}
+        for index in range(4)
+    ]
+    selected = _select_generation_subset(records, 6, 123)
+    relations = [record["composition"]["relation"] for record in selected]
+    assert relations.count("the same") == 3
+    assert relations.count("different") == 3
+    assert _select_generation_subset(records, 6, 123) == selected
+
+
+def test_constrained_candidate_scoring_returns_complete_allowed_label():
+    torch = pytest.importorskip("torch")
+    from nexus.realizer.decoder import score_candidate_texts
+    from nexus.realizer.tokenizer import ByteTokenizer
+
+    tokenizer = ByteTokenizer()
+    expected = tokenizer.encode("SAME", 32)
+
+    class PreferSame(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.anchor = torch.nn.Parameter(torch.zeros(()))
+
+        def forward(self, source, target):
+            logits = torch.full(
+                (target.shape[0], target.shape[1], tokenizer.vocab_size), -8.0,
+                device=target.device,
+            )
+            for position in range(target.shape[1]):
+                token = expected[min(position + 1, len(expected) - 1)]
+                logits[:, position, token] = 8.0 + self.anchor
+            return logits
+
+    selected, diagnostics = score_candidate_texts(
+        PreferSame(), [tokenizer.BOS, tokenizer.EOS],
+        ["SAME", "DIFFERENT"], tokenizer, max_length=32,
+    )
+    assert selected == "SAME"
+    assert diagnostics["strategy"] == "constrained_candidates"
+    assert diagnostics["score_margin"] > 0
 
 
 def test_no_write_preflight_passes(prepared_dataset):
@@ -114,3 +178,46 @@ def test_no_write_preflight_passes(prepared_dataset):
     assert result["status"] == "READY_FOR_BOUNDED_PILOT"
     assert result["preflight"]["status"] == "PREFLIGHT_PASS"
     assert result["preflight"]["weights_written"] is False
+
+
+def test_full_training_readiness_binds_pilot_inputs(prepared_dataset, tmp_path):
+    root, manifest = prepared_dataset
+    config_path = Path("training/nexus_realizer_abstractive_v1.json")
+    preparation = {
+        "status": "READY_FOR_BOUNDED_PILOT",
+        "blocking_checks": [],
+        "dataset_sha256": manifest["dataset_sha256"],
+        "config_sha256": sha256_file(config_path),
+    }
+    preparation_path = tmp_path / "preparation.json"
+    preparation_path.write_text(json.dumps(preparation), encoding="utf-8")
+    weights_path = tmp_path / "model.pt"
+    weights_path.write_bytes(b"test-weights")
+    identity = {
+        "commit": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], text=True,
+        ).strip(),
+        "tree": subprocess.check_output(
+            ["git", "rev-parse", "HEAD^{tree}"], text=True,
+        ).strip(),
+    }
+    evaluation = {
+        "status": "PILOT_CHECKPOINT_ACCEPTED",
+        "blocking_checks": [],
+        "checks": [{"name": "quality", "passed": True}],
+        "dataset_sha256": manifest["dataset_sha256"],
+        "config_sha256": sha256_file(config_path),
+        "weights_sha256": sha256_file(weights_path),
+        "source": identity,
+    }
+    evaluation_path = tmp_path / "evaluation.json"
+    evaluation_path.write_text(json.dumps(evaluation), encoding="utf-8")
+    readiness = build_readiness(
+        preparation_path, evaluation_path, root / "manifest.json",
+        config_path, weights_path,
+    )
+    assert readiness["status"] == "READY_FOR_FULL_TRAINING"
+    assert readiness["full_training_launched"] is False
+    assert validate_readiness_for_training(
+        readiness, root / "manifest.json", config_path,
+    ) == []

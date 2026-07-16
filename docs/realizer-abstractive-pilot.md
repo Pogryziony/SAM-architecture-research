@@ -1,8 +1,8 @@
 # NEXUS Realizer — bounded multi-evidence pilot
 
-**Status:** `READY_FOR_BOUNDED_PILOT`. The committed readiness artifact passes
-all 15 blocking checks. No training was launched and no checkpoint was
-promoted by this preparation run.
+**Status:** `PILOT_CHECKPOINT_ACCEPTED` and `READY_FOR_FULL_TRAINING`. The
+bounded 1→3 epoch pilot is complete, the full 356-record evaluation passes and
+the accepted checkpoint is committed. Full training was not launched.
 
 ## Objective
 
@@ -37,22 +37,35 @@ Source families are paired into disjoint components before splitting. An atomic
 claim cannot appear in two compositions, and a source family cannot cross the
 train/validation boundary.
 
-## Slot-preserving target
+## Correct reasoning/realization boundary
 
-The neural target contains placeholders for exact evidence bindings:
+The first pilot exposed an architectural error. A free byte-level decoder was
+asked both to compare values and to reproduce six control placeholders. Its
+teacher-forced validation loss reached 0.0043 while free generation achieved
+0% correct slots and 0% correct relations. A shorter relation-only target fixed
+the structure but reached only 72% balanced relation accuracy (52% for
+`DIFFERENT`). Neither failed checkpoint was promoted.
+
+Comparison is deterministic symbolic reasoning and does not belong in the
+Realizer. NEXUS now computes and verifies the relation from the two immutable
+values. The neural input contains this verified answer plan as `SAME` or
+`DIFFERENT`; a plan contradicting its values fails closed before inference.
+The model is evaluated on adherence to the plan, not credited with discovering
+the relation.
+
+Constrained decoding selects only an allowed relation label. The runtime then
+uses the fixed slot-preserving template:
 
 ```text
 [SOURCE_1] reports [VALUE_1] for [SUBJECT_1], while [SOURCE_2] reports
 [VALUE_2] for [SUBJECT_2]; the values are different.
 ```
 
-The model must reproduce all six placeholders exactly once and decide whether
-the values are `the same` or `different`. Only after generation does the
-runtime replace placeholders with immutable evidence values. This prevents a
-neural decoder from inventing or misspelling paths, keys and numbers.
-
-The input serializer contains both evidence bindings and the question. It does
-not contain the training target or the final materialized answer.
+Only after relation-plan selection does the runtime replace placeholders with
+immutable sources, subjects and values. The model never regenerates paths,
+keys or numbers. This is the intended NEXUS split: symbolic components decide
+what is true; the constrained Realizer controls how the verified result is
+expressed.
 
 ## Why BPE is not introduced in this pilot
 
@@ -91,17 +104,17 @@ quarantines 44 source families from the consumed v1 validation split and has
 zero normalized question or answer overlap with all v1 records. It contains
 1,383 configuration comparisons and 259 table comparisons.
 
-The readiness artifact reports `READY_FOR_BOUNDED_PILOT` with no blocking
-checks. The CPU model has 1,058,051 parameters. The no-write preflight loss is
-6.179254 with finite gradients; the 30-step overfit smoke reduces loss from
-6.192694 to 1.360204 (78.04%).
+The current readiness artifact reports `READY_FOR_BOUNDED_PILOT` with no
+blocking checks, including independent verification of every symbolic relation
+plan. The CPU model has 959,747 parameters. Preparation writes no weights.
 
 Registered identities:
 
-- source commit: `cd3824bf6a4f7f158eec58dc552706accdc2a3a8`;
-- source tree: `45e31734f384688c2a7e49bf8b4cfd575f2c9c5e`;
+- source commit: `0d1aeae63712eacf5d3da014799a0303d8d0e61d`;
+- source tree: `13373da1f034b9bc2ab44f5703f7dfa9f5c628f1`;
 - dataset SHA-256: `7aaa4ee9566da98d67bf07f8a773b47e7dfb479a85b64d488e97446d2ef9b5c1`;
-- readiness canonical SHA-256: `e854a80695aede2fa703898923f47aa8f54353393ff8088143ccabdb0dce3361`.
+- config SHA-256: `92f5610fd900e927a43a7d40fc331d6c6425e87fbaaa61e2162e1766055a8ee4`;
+- readiness canonical SHA-256: `c0eaaddaa96ef05b02d5bca2aaa5d60dfcbb5f59e7ad7f1c0a1e538ea46a3a50`.
 
 Two independent readiness evaluations of the same immutable inputs produced
 the same canonical hash. Timing remains diagnostic and is excluded from the
@@ -109,17 +122,42 @@ canonical identity.
 
 ## Pilot schedule and stop conditions
 
-Training is limited to one epoch first and three epochs maximum. Epoch 1 may
-continue only when all three conditions pass on raw neural output:
+Training was limited to one epoch first and three epochs maximum. Epoch 1 was
+allowed to continue only after all conditions passed on a relation-balanced
+validation subset:
 
-- slot placeholder exact rate at least 80%;
-- relation accuracy at least 70%;
-- materialized exact match at least 40%.
+- slot placeholder exact rate 100%;
+- overall relation-plan adherence at least 80%;
+- per-class relation-plan adherence at least 70%;
+- materialized exact match at least 80%.
 
-Promotion requires at least 98% exact slot preservation, 95% relation accuracy,
-95% materialized exact match and at most 1% hallucination. Falling loss cannot
-override a failed text-level gate. A failed epoch-1 gate stops the run and marks
-the checkpoint rejected.
+Promotion requires at least 98% exact slot preservation, 95% overall and
+per-class relation-plan adherence, 95% materialized exact match and at most 1%
+hallucination. Falling loss cannot override a failed text-level gate.
+
+## Registered pilot result
+
+The final bounded pilot completed three CPU epochs in 64.9 seconds. Training
+loss decreased from 0.1371 at epoch 1 to 0.00077 at epoch 3; validation loss
+decreased from 0.000351 to 0.000129. Quality was already saturated after epoch
+1 and remained unchanged:
+
+| Metric | Epoch 1 | Epoch 2 | Epoch 3 | Full validation |
+|---|---:|---:|---:|---:|
+| Materialized exact match | 100% | 100% | 100% | 100% (356/356) |
+| Relation-plan adherence | 100% | 100% | 100% | 100% |
+| Minimum per-class adherence | 100% | 100% | 100% | 100% |
+| Slot preservation | 100% | 100% | 100% | 100% |
+| Hallucination | 0% | 0% | 0% | 0% |
+
+The accepted epoch-3 weights have SHA-256
+`bfa5855a57fba8db34e896d77848942733c5570049c927d4310646bea444e152`.
+The full evaluation canonical SHA-256 is
+`6a9d5e5756ebbdedd57432295de56196b003daa9e64336febc42ad15ac8ef6a2`.
+The final readiness artifact says `READY_FOR_FULL_TRAINING`, has no blocking
+checks and canonical SHA-256
+`4fc860a48aa992d5daa22cf53a174bd423a5dc73c480bef21ec078b16d315139`.
+Its `full_training_launched` field is `false`.
 
 ## Reproduction commands
 
@@ -132,7 +170,7 @@ python benchmarks/prepare_abstractive_realizer_run.py \
   --output benchmarks/results/realizer/abstractive_v1_readiness.json
 ```
 
-After a committed readiness result passes, the next action is exactly one epoch:
+The historical one-epoch command was:
 
 ```bash
 python benchmarks/train_nexus_realizer_v2.py \
@@ -145,5 +183,16 @@ python benchmarks/train_nexus_realizer_v2.py \
   --output-dir models/realizer/abstractive_v1_pilot
 ```
 
-That command is documented for the next run; this preparation change does not
-execute full training or promote a checkpoint.
+Full checkpoint evaluation is reproduced with:
+
+```bash
+python benchmarks/evaluate_abstractive_realizer_checkpoint.py \
+  --manifest data/distillation/realizer_abstractive_v1/manifest.json \
+  --config training/nexus_realizer_abstractive_v1.json \
+  --weights models/realizer/abstractive_v1_plan_v3/model.pt \
+  --output /tmp/abstractive-v1-evaluation.json
+```
+
+No additional training is justified by the pilot metrics: epochs 2 and 3
+reduced loss without improving answer quality. A full run remains technically
+authorized but must be an explicit future decision; it was not launched here.
