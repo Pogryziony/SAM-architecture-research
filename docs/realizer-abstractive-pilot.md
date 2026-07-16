@@ -196,3 +196,26 @@ python benchmarks/evaluate_abstractive_realizer_checkpoint.py \
 No additional training is justified by the pilot metrics: epochs 2 and 3
 reduced loss without improving answer quality. A full run remains technically
 authorized but must be an explicit future decision; it was not launched here.
+
+## Runtime integration
+
+The accepted checkpoint is now available as the opt-in
+`abstractive_plan_v3` backend. `ProductionNEXUSConfig.comparison_plan()` binds
+the exact model directory, training configuration and expected checkpoint
+SHA-256 into the immutable pipeline identity. `answer_question()` invokes this
+backend only for questions parsed as comparisons.
+
+For a complete grounded profile, `ProductionNEXUSConfig.grounded()` routes
+factual lookups to Pointer/Copy and comparisons to this checkpoint while
+leaving other intents on their existing path.
+
+The runtime accepts exactly two supported registered evidence facts, derives
+`SAME` or `DIFFERENT` symbolically, verifies the checkpoint and configuration
+hashes, asks the model to follow that immutable plan and materializes sources,
+subjects and values outside neural weights. Missing PyTorch, missing or changed
+artifacts, ambiguous evidence, unknown evidence syntax and a neural label that
+contradicts the plan all return `Insufficient evidence to answer.` without
+falling through to unconstrained generation.
+
+See `docs/realizer-abstractive-runtime-integration.md` for the integration
+report and remaining scope limits.

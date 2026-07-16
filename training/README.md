@@ -103,4 +103,9 @@ with 100% exact match and plan adherence, 0% hallucination and fail-closed
 handling of a plan that contradicts evidence. The accepted weights and manifest
 are under `models/realizer/abstractive_v1_plan_v3/`. The full-training readiness
 artifact explicitly records `full_training_launched: false`; do not start a
-longer run without a separate decision. See `docs/realizer-abstractive-pilot.md`.
+longer run without a separate decision. The checkpoint is available to the
+answer pipeline through `ProductionNEXUSConfig.comparison_plan()` and the
+combined `ProductionNEXUSConfig.grounded()` profile; runtime
+artifact validation and scope are documented in
+`docs/realizer-abstractive-runtime-integration.md`. See also
+`docs/realizer-abstractive-pilot.md`.

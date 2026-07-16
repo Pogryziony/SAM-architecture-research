@@ -29,6 +29,9 @@ from nexus.reasoning.verifier import Verifier, VerificationResult
 from nexus.reasoning.audit import build_reasoning_audit
 from nexus.reasoning.post_edit import edit_answer
 from nexus.realizer.pointer_copy import realize_pointer_copy
+from nexus.realizer.comparison_plan import (
+    BACKEND_NAME, HYBRID_BACKEND_NAME, realize_comparison_plan,
+)
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
 # ── Insufficiency detection patterns ────────────────────────────────
@@ -137,12 +140,38 @@ def _pointer_copy_result(
     intent: str,
 ):
     """Return Pointer/Copy v3 output for configured factual queries."""
-    if config.realizer_backend != "pointer_copy" or intent != "factual_lookup":
+    if (
+        config.realizer_backend not in {"pointer_copy", HYBRID_BACKEND_NAME}
+        or intent != "factual_lookup"
+    ):
         return None
     return realize_pointer_copy({
         "question": question,
         "evidence_pack": evidence_pack,
     })
+
+
+def _comparison_plan_result(
+    question: str,
+    evidence_pack: dict[str, Any],
+    config: NEXUSConfig,
+    intent: str,
+    label_selector=None,
+):
+    """Return the comparison Realizer result for its narrow registered intent."""
+    if (
+        config.realizer_backend not in {BACKEND_NAME, HYBRID_BACKEND_NAME}
+        or intent != "comparison"
+    ):
+        return None
+    return realize_comparison_plan(
+        question,
+        evidence_pack,
+        model_dir=config.realizer_model_dir,
+        config_path=config.realizer_config_path,
+        expected_weights_sha256=config.realizer_checkpoint_sha256,
+        label_selector=label_selector,
+    )
 
 
 def _build_synth_prompt(
@@ -245,6 +274,7 @@ def answer_question(
     dialogue_state=None,
     normalizer=None,
     entry_nodes_override: list[str] | None = None,
+    comparison_label_selector=None,
 ) -> dict[str, Any]:
     """
     Run the complete NEXUS pipeline on a natural language question.
@@ -274,14 +304,15 @@ def answer_question(
           instead of the parser's results. Parser is still called for intent
           detection. The override controls which entities actually reach
           traversal and evidence building.
+       comparison_label_selector: Optional dependency injection for comparison
+          runtime tests. Production callers leave it unset so the registered,
+          hash-verified checkpoint is loaded.
     """
     if max_depth is None:
        max_depth = config.max_depth
     if beam_width is None:
        beam_width = config.beam_width
 
-    if model is None:
-       model = get_available_model()
     if verifier is None:
        verifier = Verifier(hallucination_threshold=config.hallucination_threshold)
 
@@ -383,20 +414,30 @@ def answer_question(
     if not paths and parsed.entity_ids:
         direct_pack = build_zero_hop_pack(graph, parsed.entity_ids, question=question)
         if direct_pack:
+            comparison = _comparison_plan_result(
+                question, direct_pack, config, parsed.intent,
+                comparison_label_selector,
+            )
             pointer = _pointer_copy_result(
                 question, direct_pack, config, parsed.intent,
             )
             answer_direct = (
-                pointer.answer if pointer is not None
+                comparison.answer if comparison is not None
+                else pointer.answer if pointer is not None
                 else _tier3_generate_answer(
-                    question, direct_pack, model, verifier, config,
+                    question,
+                    direct_pack,
+                    model if model is not None else get_available_model(),
+                    verifier,
+                    config,
                 )
             )
             result["answer"] = answer_direct
             result["raw_answer"] = answer_direct
             result["evidence_pack"] = direct_pack
             result["realization"] = (
-                pointer.to_dict() if pointer is not None else None
+                comparison.to_dict() if comparison is not None
+                else pointer.to_dict() if pointer is not None else None
             )
             result["cascade_level"] = 3
             result["verification"] = verifier.verify(answer_direct, direct_pack)
@@ -453,6 +494,20 @@ def answer_question(
     # evidence before any prompt or generative model call, preventing altered
     # identifiers and numeric values.
     t0 = time.perf_counter()
+    comparison = _comparison_plan_result(
+        question, evidence_pack, config, parsed.intent,
+        comparison_label_selector,
+    )
+    if comparison is not None:
+        timing["realize_time"] = round(time.perf_counter() - t0, 6)
+        result["answer"] = comparison.answer
+        result["raw_answer"] = comparison.answer
+        result["realization"] = comparison.to_dict()
+        result["cascade_level"] = 1 if comparison.strategy == BACKEND_NAME else 0
+        result["verification"] = verifier.verify(comparison.answer, evidence_pack)
+        result["timing"] = timing
+        return _attach_reasoning_audit(result, graph, paths, config, max_paths)
+
     pointer = _pointer_copy_result(
         question, evidence_pack, config, parsed.intent,
     )
@@ -467,6 +522,8 @@ def answer_question(
         return _attach_reasoning_audit(result, graph, paths, config, max_paths)
 
     # ── Step 4: Build prompt ──
+    if model is None:
+        model = get_available_model()
     t0 = time.perf_counter()
     prompt = build_prompt(question, evidence_json)
     timing["prompt_time"] = round(time.perf_counter() - t0, 6)

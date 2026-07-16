@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any
@@ -93,6 +94,9 @@ class ProductionNEXUSConfig(NEXUSConfig):
                     "enable_normalization": self.enable_normalization,
                     "post_edit_enabled": self.post_edit_enabled,
                     "realizer_backend": self.realizer_backend,
+                    "realizer_model_dir": self.realizer_model_dir,
+                    "realizer_config_path": self.realizer_config_path,
+                    "realizer_checkpoint_sha256": self.realizer_checkpoint_sha256,
                     "tier3_backend": self.tier3_backend,
                     "dialogue_decay": self.dialogue_decay,
                     "dialogue_boost": self.dialogue_boost,
@@ -126,6 +130,9 @@ class ProductionNEXUSConfig(NEXUSConfig):
                 "enable_normalization": self.enable_normalization,
                 "post_edit_enabled": self.post_edit_enabled,
                 "realizer_backend": self.realizer_backend,
+                "realizer_model_dir": self.realizer_model_dir,
+                "realizer_config_path": self.realizer_config_path,
+                "realizer_checkpoint_sha256": self.realizer_checkpoint_sha256,
                 "tier3_backend": self.tier3_backend,
                 "dialogue_decay": self.dialogue_decay,
                 "dialogue_boost": self.dialogue_boost,
@@ -162,6 +169,50 @@ class ProductionNEXUSConfig(NEXUSConfig):
             "enable_embedding_er": False,
             "enable_normalization": False,
             "realizer_backend": "pointer_copy",
+        }
+        kwargs.update(overrides)
+        return cls(pipeline_id=PipelineIdentity(lexical_fallback=True), **kwargs)
+
+    @classmethod
+    def comparison_plan(cls, **overrides: Any) -> "ProductionNEXUSConfig":
+        """Factory for the accepted fail-closed comparison-plan Realizer."""
+        from nexus.realizer.comparison_plan import (
+            BACKEND_NAME,
+            DEFAULT_CONFIG_PATH,
+            DEFAULT_MODEL_DIR,
+            DEFAULT_WEIGHTS_SHA256,
+        )
+
+        kwargs: dict[str, Any] = {
+            "enable_associative_encoder": False,
+            "enable_embedding_er": False,
+            "enable_normalization": False,
+            "realizer_backend": BACKEND_NAME,
+            "realizer_model_dir": DEFAULT_MODEL_DIR,
+            "realizer_config_path": DEFAULT_CONFIG_PATH,
+            "realizer_checkpoint_sha256": DEFAULT_WEIGHTS_SHA256,
+        }
+        kwargs.update(overrides)
+        return cls(pipeline_id=PipelineIdentity(lexical_fallback=True), **kwargs)
+
+    @classmethod
+    def grounded(cls, **overrides: Any) -> "ProductionNEXUSConfig":
+        """Factory routing factual QA and comparisons to grounded realizers."""
+        from nexus.realizer.comparison_plan import (
+            DEFAULT_CONFIG_PATH,
+            DEFAULT_MODEL_DIR,
+            DEFAULT_WEIGHTS_SHA256,
+            HYBRID_BACKEND_NAME,
+        )
+
+        kwargs: dict[str, Any] = {
+            "enable_associative_encoder": False,
+            "enable_embedding_er": False,
+            "enable_normalization": False,
+            "realizer_backend": HYBRID_BACKEND_NAME,
+            "realizer_model_dir": DEFAULT_MODEL_DIR,
+            "realizer_config_path": DEFAULT_CONFIG_PATH,
+            "realizer_checkpoint_sha256": DEFAULT_WEIGHTS_SHA256,
         }
         kwargs.update(overrides)
         return cls(pipeline_id=PipelineIdentity(lexical_fallback=True), **kwargs)
@@ -228,6 +279,19 @@ def validate_config(config: ProductionNEXUSConfig) -> list[str]:
                 errors.append(
                     f"encoder model_dir not found: {model_dir}"
                 )
+
+    allowed_realizers = {
+        "synth", "pointer_copy", "abstractive_plan_v3", "grounded_v1",
+    }
+    if config.realizer_backend not in allowed_realizers:
+        errors.append(f"unsupported realizer_backend: {config.realizer_backend}")
+    if config.realizer_backend in {"abstractive_plan_v3", "grounded_v1"}:
+        if not config.realizer_model_dir:
+            errors.append("comparison Realizer model_dir is empty")
+        if not config.realizer_config_path:
+            errors.append("comparison Realizer config_path is empty")
+        if not re.fullmatch(r"[0-9a-f]{64}", config.realizer_checkpoint_sha256):
+            errors.append("comparison Realizer checkpoint SHA-256 is invalid")
 
     if config.max_entry_nodes < 1:
         errors.append("max_entry_nodes must be >= 1")

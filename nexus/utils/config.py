@@ -103,6 +103,13 @@ class NEXUSConfig:
     # their original semantics.  Production callers can select pointer_copy.
     realizer_backend: str = "synth"
 
+    # Accepted comparison-plan Realizer identity.  These fields are ignored
+    # unless ``realizer_backend == "abstractive_plan_v3"``.  Keeping the
+    # expected hash in configuration makes a replaced checkpoint fail closed.
+    realizer_model_dir: str = ""
+    realizer_config_path: str = ""
+    realizer_checkpoint_sha256: str = ""
+
     # Tier-3 cascade backend — which answer generator to use for 0-hop evidence.
     #   "synth" (default): SynthesizingModel — template-based, never refuses.
     #   "llm_no_refusal": LLM with a prompt template that omits the
