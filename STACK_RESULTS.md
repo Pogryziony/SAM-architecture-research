@@ -18,7 +18,7 @@
 | 2 | Realization L1 | Registered 30-case run passes for seeds 0/1/42 with one canonical hash; relevance 78.33%. | ✅ PASS |
 | 3 | Dialogue State | Full 110-turn run passes: reference resolution 87.5%, single-turn regression 0 and dialogue-state p50 0.048ms. | ✅ PASS |
 | 4 | Realization L2 | Pointer/Copy v3 is accepted for extractive factual QA after auditing all 7,127 targets: 100% exact match, 0% hallucination, 0 pp position-shuffle drop. The neural v2 checkpoint remains rejected. | ✅ EXTRACTIVE PASS |
-| 4N | Neural comparison pilot preparation | 1,642 unique two-evidence compositions; 15/15 data, serialization, CPU preflight and overfit gates pass. Training has not started. | ✅ READY FOR 1 EPOCH |
+| 4N | Constrained comparison-plan Realizer | Bounded 1→3 epoch CPU pilot accepted. Full validation: 356/356 exact, 100% adherence for both relation classes, 100% slots, 0% hallucination; contradictory plans fail closed. Full training was not launched. | ✅ PILOT ACCEPTED |
 | 5 | Freeze | This document | 🔄 |
 
 ---
@@ -117,16 +117,17 @@ with canonical SHA-256
 ## Remaining work after Pointer/Copy v3
 
 1. **Keep Pointer/Copy scoped** to factual answers that are complete evidence candidates; do not claim abstractive capability.
-2. **Run exactly one bounded comparison epoch** on `realizer_abstractive_v1`; continue only if all epoch-1 raw-neural gates pass.
-3. **Select any future neural checkpoint by raw output quality**; slot materialization or deterministic fallback metrics cannot hide a bad neural output.
+2. **Keep comparison in symbolic reasoning**: the Realizer follows a verified answer plan and is not credited with discovering `SAME` or `DIFFERENT`.
+3. **Do not extend training from loss alone**: quality saturated at epoch 1 and stayed at 100% through epoch 3.
 4. **Keep evidence immutable**: evaluations need hashes and the exact dataset, config, source commit and source tree.
 5. **Do not reuse consumed frozen data**: historical ER3 frozen results remain reporting-only.
 
-The new preparation artifact is
-`benchmarks/results/realizer/abstractive_v1_readiness.json`. Its canonical
+The accepted checkpoint is
+`models/realizer/abstractive_v1_plan_v3/model.pt`. Full evaluation canonical
 SHA-256 is
-`e854a80695aede2fa703898923f47aa8f54353393ff8088143ccabdb0dce3361`.
-This authorizes a one-epoch pilot, not deployment or checkpoint promotion.
+`6a9d5e5756ebbdedd57432295de56196b003daa9e64336febc42ad15ac8ef6a2`.
+The final readiness artifact says `READY_FOR_FULL_TRAINING` while explicitly
+recording `full_training_launched: false`.
 
 ---
 

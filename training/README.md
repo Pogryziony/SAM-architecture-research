@@ -84,7 +84,7 @@ registered Stage 2 results keep their original semantics.
 
 See `docs/realizer-v2-quality-recovery.md` for the design and promotion gates.
 
-## Next neural experiment: multi-evidence slot pilot
+## Accepted constrained comparison-plan pilot
 
 The next dataset is built separately with
 `benchmarks/build_abstractive_realizer_dataset.py`. It combines two distinct
@@ -92,8 +92,15 @@ train-only claims without reusing claims, excludes every consumed v1 validation
 source family and rejects targets equal to one evidence candidate. Its config is
 `training/nexus_realizer_abstractive_v1.json`.
 
-Run `benchmarks/prepare_abstractive_realizer_run.py` before training. It validates
-the dataset, verifies 100% binding serialization, instantiates the CPU model,
-runs forward/backward and a 30-step overfit smoke, and writes no weights. Full
-training remains limited to epoch 1 first and at most epoch 3. See
-`docs/realizer-abstractive-pilot.md` for the exact gates and command.
+The initial slot-generation pilot was rejected because low teacher-forced loss
+did not translate into valid control output. The accepted architecture keeps
+comparison in symbolic NEXUS reasoning: a verified `SAME`/`DIFFERENT` plan is
+passed to the Realizer, constrained decoding preserves that plan and the
+runtime materializes exact evidence slots.
+
+The bounded three-epoch CPU pilot is complete. Full validation passes 356/356
+with 100% exact match and plan adherence, 0% hallucination and fail-closed
+handling of a plan that contradicts evidence. The accepted weights and manifest
+are under `models/realizer/abstractive_v1_plan_v3/`. The full-training readiness
+artifact explicitly records `full_training_launched: false`; do not start a
+longer run without a separate decision. See `docs/realizer-abstractive-pilot.md`.

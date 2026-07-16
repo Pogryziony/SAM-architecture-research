@@ -1,0 +1,163 @@
+{
+  "blocking_checks": [],
+  "canonical_sha256": "c0eaaddaa96ef05b02d5bca2aaa5d60dfcbb5f59e7ad7f1c0a1e538ea46a3a50",
+  "checks": [
+    {
+      "name": "training_config",
+      "passed": true,
+      "requirement": "valid constrained relation-selection pilot config",
+      "value": []
+    },
+    {
+      "name": "pair_count",
+      "passed": true,
+      "requirement": ">= 1000 unique compositions",
+      "value": 1642
+    },
+    {
+      "name": "train_size",
+      "passed": true,
+      "requirement": ">= 750 train records after family-disjoint validation split",
+      "value": 1286
+    },
+    {
+      "name": "split_balance",
+      "passed": true,
+      "requirement": "validation fraction within [0.15, 0.25]",
+      "value": 0.216809
+    },
+    {
+      "name": "consumed_validation_quarantine",
+      "passed": true,
+      "requirement": "all source families from consumed v1 validation excluded",
+      "value": 44
+    },
+    {
+      "name": "no_consumed_text_overlap",
+      "passed": true,
+      "requirement": "zero normalized question/answer overlap with v1",
+      "value": {
+        "answers": 0,
+        "questions": 0
+      }
+    },
+    {
+      "name": "multi_evidence_only",
+      "passed": true,
+      "requirement": "no target equals one evidence candidate",
+      "value": 0
+    },
+    {
+      "name": "atomic_claim_non_reuse",
+      "passed": true,
+      "requirement": "each atomic claim contributes to exactly one composition",
+      "value": {
+        "reuse": 0,
+        "used": 3284
+      }
+    },
+    {
+      "name": "relation_balance",
+      "passed": true,
+      "requirement": "no relation class exceeds 80%",
+      "value": {
+        "counts": {
+          "different": 461,
+          "the same": 1181
+        },
+        "largest_share": 0.719245
+      }
+    },
+    {
+      "name": "task_coverage",
+      "passed": true,
+      "requirement": "at least two source task families",
+      "value": {
+        "config_value_comparison": 1383,
+        "table_value_comparison": 259
+      }
+    },
+    {
+      "name": "symbolic_relation_plan",
+      "passed": true,
+      "requirement": "every neural input plan is independently verified from both values",
+      "value": 1642
+    },
+    {
+      "name": "serialization_coverage",
+      "passed": true,
+      "requirement": "verified relation plan and both values retained",
+      "value": {
+        "mean": 1.0,
+        "min": 1.0
+      }
+    },
+    {
+      "name": "pytorch_cpu",
+      "passed": true,
+      "requirement": "CPU PyTorch is installed",
+      "value": true
+    },
+    {
+      "name": "parameter_budget",
+      "passed": true,
+      "requirement": "<= 50000000",
+      "value": 959747
+    },
+    {
+      "name": "preflight",
+      "passed": true,
+      "requirement": "finite forward/backward below initial-loss ceiling; no weights",
+      "value": {
+        "elapsed_seconds": 0.048,
+        "gradient_finite": true,
+        "initial_loss": 6.246982,
+        "parameter_count": 959747,
+        "status": "PREFLIGHT_PASS",
+        "weights_written": false
+      }
+    },
+    {
+      "name": "overfit_smoke",
+      "passed": true,
+      "requirement": ">=15% loss reduction on one example per relation; no weights",
+      "value": {
+        "elapsed_seconds": 0.834,
+        "final_loss": 0.334533,
+        "initial_loss": 6.465034,
+        "relative_reduction": 0.948255,
+        "status": "OVERFIT_PASS",
+        "steps": 30,
+        "weights_written": false
+      }
+    }
+  ],
+  "config_sha256": "92f5610fd900e927a43a7d40fc331d6c6425e87fbaaa61e2162e1766055a8ee4",
+  "created_utc": "2026-07-16T15:57:23.931300+00:00",
+  "dataset_manifest_sha256": "5aa8954b0ec1e2060f1563a9d2eb890254f69f2410225f59006cf20055d94b1c",
+  "dataset_sha256": "7aaa4ee9566da98d67bf07f8a773b47e7dfb479a85b64d488e97446d2ef9b5c1",
+  "overfit_smoke": {
+    "elapsed_seconds": 0.834,
+    "final_loss": 0.334533,
+    "initial_loss": 6.465034,
+    "relative_reduction": 0.948255,
+    "status": "OVERFIT_PASS",
+    "steps": 30,
+    "weights_written": false
+  },
+  "preflight": {
+    "elapsed_seconds": 0.048,
+    "gradient_finite": true,
+    "initial_loss": 6.246982,
+    "parameter_count": 959747,
+    "status": "PREFLIGHT_PASS",
+    "weights_written": false
+  },
+  "runtime": {
+    "cuda": false,
+    "python": "3.12.13",
+    "torch": "2.13.0+cpu"
+  },
+  "schema_version": "nexus-realizer-abstractive-readiness-v1",
+  "status": "READY_FOR_BOUNDED_PILOT"
+}

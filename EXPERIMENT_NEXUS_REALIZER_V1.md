@@ -2,8 +2,9 @@
 
 **Pre-registered**: 2026-07-11
 **Status**: V1 and neural v2 checkpoints rejected; Pointer/Copy v3 accepted for
-extractive factual QA. A separate slot-preserving comparison dataset passes
-preparation and is authorized for exactly one bounded pilot epoch.
+extractive factual QA. The separate constrained comparison-plan pilot
+checkpoint is accepted after three bounded CPU epochs and full validation.
+Full training is ready but was not launched.
 **Repository**: SAM-architecture-research
 
 ---
@@ -138,18 +139,27 @@ without reuse, quarantine all 44 consumed validation source families and have
 zero normalized question/answer overlap with v1. Source families are split as
 disjoint components, yielding 1,286 train and 356 validation records.
 
-The output contract is slot-preserving: the neural model generates a fixed
-comparison structure and the `the same`/`different` relation while exact source
-paths, subjects and values are materialized from immutable evidence after
-generation. This directly tests instruction following and composition without
-asking a byte decoder to regenerate identifiers.
+The initial output contract incorrectly asked the neural Realizer to perform
+comparison reasoning and reproduce six byte-level placeholders. It failed the
+epoch-1 quality gates despite very low teacher-forced loss. NEXUS now computes
+and verifies the relation symbolically, then passes a `SAME`/`DIFFERENT` answer
+plan to the neural Realizer. Constrained decoding preserves the plan; exact
+source paths, subjects and values are materialized from immutable evidence.
+This tests instruction adherence without crediting the model for reasoning
+performed by the graph-first system.
 
-`benchmarks/results/realizer/abstractive_v1_readiness.json` reports
-`READY_FOR_BOUNDED_PILOT`, 15/15 passing checks and canonical SHA-256
-`e854a80695aede2fa703898923f47aa8f54353393ff8088143ccabdb0dce3361`.
-Preparation wrote no weights. The next permitted action is one epoch; epoch 2
-is blocked unless the raw neural slot, relation and materialized-answer gates
-all pass.
+The accepted 959,747-parameter checkpoint completes the bounded 1→3 epoch
+schedule. All three epochs score 100% on their balanced generation checks. The
+full 356-record validation reports 100% exact materialization, 100% adherence
+for both relation classes, 100% slots, 0% hallucination and fail-closed handling
+of a contradictory plan. Weights SHA-256:
+`bfa5855a57fba8db34e896d77848942733c5570049c927d4310646bea444e152`.
+
+`benchmarks/results/realizer/abstractive_v1_plan_v3_full_readiness.json`
+reports `READY_FOR_FULL_TRAINING`, canonical SHA-256
+`4fc860a48aa992d5daa22cf53a174bd423a5dc73c480bef21ec078b16d315139`
+and `full_training_launched: false`. Quality did not improve after epoch 1, so
+additional epochs require a separate justification rather than falling loss.
 
 ## First-run outcome and protocol amendment
 

@@ -1,0 +1,32 @@
+{
+  "schema_version": "nexus-realizer-abstractive-checkpoint-v1",
+  "status": "PILOT_CHECKPOINT_ACCEPTED",
+  "source_commit": "0d1aeae63712eacf5d3da014799a0303d8d0e61d",
+  "source_tree": "13373da1f034b9bc2ab44f5703f7dfa9f5c628f1",
+  "dataset_sha256": "7aaa4ee9566da98d67bf07f8a773b47e7dfb479a85b64d488e97446d2ef9b5c1",
+  "config_sha256": "92f5610fd900e927a43a7d40fc331d6c6425e87fbaaa61e2162e1766055a8ee4",
+  "effective_config_sha256": "e16404b789293f46a68de138bca13eb8f02106353ea1173e499d920195f5486b",
+  "decoder_strategy": "constrained_relation_v2",
+  "parameter_count": 959747,
+  "epochs_completed": 3,
+  "best_epoch": 3,
+  "best_validation_loss": 0.000129,
+  "weights": {
+    "path": "model.pt",
+    "sha256": "bfa5855a57fba8db34e896d77848942733c5570049c927d4310646bea444e152",
+    "size_bytes": 3861813,
+    "stored_in_git": true
+  },
+  "full_validation": {
+    "count": 356,
+    "materialized_exact_match": 1.0,
+    "slot_placeholder_exact": 1.0,
+    "relation_accuracy": 1.0,
+    "relation_accuracy_different": 1.0,
+    "relation_accuracy_same": 1.0,
+    "hallucination_rate": 0.0,
+    "tampered_plan_fails_closed": true,
+    "canonical_sha256": "6a9d5e5756ebbdedd57432295de56196b003daa9e64336febc42ad15ac8ef6a2"
+  },
+  "external_training_run_manifest_sha256": "ddc428e46aae253a9cd26a0bbaef826f55b9a010e460e7dd9adf3ea4721fda8e"
+}
