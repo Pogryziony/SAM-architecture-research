@@ -1,8 +1,9 @@
 """CPU trainer and no-write preflight for NEXUS Realizer v1.
 
 Run ``--mode preflight`` before any training.  ``--mode train`` additionally
-requires a readiness artifact with status READY_FOR_TRAINING.  Weight output is
-rejected when it resolves inside the git repository.
+requires a readiness artifact with status READY_FOR_TRAINING.  Repository
+weight output is accepted only below the configured ``models/realizer`` root;
+external output directories remain supported.
 """
 
 from __future__ import annotations
