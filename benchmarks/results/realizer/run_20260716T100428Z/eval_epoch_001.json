@@ -1,0 +1,42 @@
+{
+  "samples": 100,
+  "unique_outputs": 1,
+  "uniqueness_ratio": 0.01,
+  "eos_rate": 1.0,
+  "avg_length": 32.0,
+  "avg_rep_3gram": 0.0,
+  "latency_p50_ms": 307.4792140000136,
+  "top_outputs": [
+    [
+      "ooo senamtri___plll,,, cccfffIII",
+      100
+    ]
+  ],
+  "examples": [
+    {
+      "question": "What behavior or responsibility is documented for nexus.reasoning.audit.CounterE",
+      "ground_truth": "nexus.reasoning.audit.CounterEvidence: A graph edge that challenges at least one",
+      "generated": "ooo senamtri___plll,,, cccfffIII"
+    },
+    {
+      "question": "What value is assigned to model.memory.selector_use_hop_count in sam-lm/configs/",
+      "ground_truth": "In sam-lm/configs/sam_chain_learned_selector_top_by_hop_dense.yaml, model.memory",
+      "generated": "ooo senamtri___plll,,, cccfffIII"
+    },
+    {
+      "question": "What value is assigned to model.type in sam-lm/configs/retrieval_compact_overfit",
+      "ground_truth": "In sam-lm/configs/retrieval_compact_overfit_100.yaml, model.type is set to \"retr",
+      "generated": "ooo senamtri___plll,,, cccfffIII"
+    },
+    {
+      "question": "What does sam-lm/docs/experiment-0-13a-noisy-memory.md, under What this invalida",
+      "ground_truth": "\"SAM collapses with any noise\" \u2014 wrong.",
+      "generated": "ooo senamtri___plll,,, cccfffIII"
+    },
+    {
+      "question": "In sam-lm/experiments/diagnosis_report.md, under SAM-LM Experiment 0 \u2014 Diagnosis",
+      "ground_truth": "Date: 2026-06-16 Status: Pipeline bugs fixed. Full rerun completed. Retrieval is",
+      "generated": "ooo senamtri___plll,,, cccfffIII"
+    }
+  ]
+}

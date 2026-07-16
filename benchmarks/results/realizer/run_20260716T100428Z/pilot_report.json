@@ -1,0 +1,219 @@
+{
+  "schema_version": "nexus-realizer-pilot-v1",
+  "created_utc": "2026-07-16T11:03:19.830746+00:00",
+  "status": "REALIZER_PILOT_FAIL",
+  "status_detail": "TRAINING_COMPLETE_NO_ACCEPTABLE_CHECKPOINT",
+  "source_commit": "e1575bbb2c18496141d71969c13d9b5e586cd789",
+  "source_tree_sha": "9a6fc6b478ea9a7ef861b90e6d8a9d712639f746",
+  "dataset_sha256": "8028e471bb304ffb95ab338f0a3a93cbe4ded04596f73e9479a6135e663a59e0",
+  "config_sha256": "44faf90572f0c92096982bb085b987e715ac491d0688b096670dbdd9ae45658e",
+  "effective_config_sha256": "d6a8e2c9f8ecba362f4bd277fb293b10cd4bc99b6409d0d8c6d566f0ca8ce149",
+  "run_id": "run_20260716T100428Z",
+  "training_summary": {
+    "epochs_completed": 4,
+    "epochs_configured": 5,
+    "stop_reason": "gen_quality_regression_3_epochs",
+    "total_elapsed_seconds": 3269.402,
+    "total_elapsed_minutes": 54.5,
+    "peak_rss_mb": 6860.046875,
+    "parameter_count": 2770752,
+    "initial_loss": 191.814606,
+    "final_train_loss": 3.538698,
+    "best_validation_loss": 2.590602,
+    "best_epoch": 4
+  },
+  "epoch_history": [
+    {
+      "best_epoch": 1,
+      "best_validation_loss": 4.48077,
+      "elapsed_s": 837.4,
+      "epoch": 1,
+      "epoch_s": 837.4,
+      "gen_improved": true,
+      "gen_metrics": {
+        "avg_length": 32.0,
+        "coherent": 20,
+        "coherent_rate": 1.0,
+        "empty": 0,
+        "eos_rate": 1.0,
+        "partial": 0,
+        "rep_3gram_mean": 0.0,
+        "repetitive": 0,
+        "samples": 20
+      },
+      "gen_patience": 0,
+      "gen_quality": 1.0,
+      "grad_norm_mean": 6.7779,
+      "learning_rate": 9.045e-05,
+      "patience": 0,
+      "train_loss": 47.612224,
+      "val_improved": true,
+      "validation_loss": 4.48077
+    },
+    {
+      "best_epoch": 2,
+      "best_validation_loss": 2.970035,
+      "elapsed_s": 1646.3,
+      "epoch": 2,
+      "epoch_s": 805.5,
+      "gen_improved": false,
+      "gen_metrics": {
+        "avg_length": 24.0,
+        "coherent": 20,
+        "coherent_rate": 1.0,
+        "empty": 0,
+        "eos_rate": 1.0,
+        "partial": 0,
+        "rep_3gram_mean": 0.0,
+        "repetitive": 0,
+        "samples": 20
+      },
+      "gen_patience": 1,
+      "gen_quality": 1.0,
+      "grad_norm_mean": 0.8334,
+      "learning_rate": 6.545e-05,
+      "patience": 0,
+      "train_loss": 4.54597,
+      "val_improved": true,
+      "validation_loss": 2.970035
+    },
+    {
+      "best_epoch": 3,
+      "best_validation_loss": 2.678312,
+      "elapsed_s": 2451.9,
+      "epoch": 3,
+      "epoch_s": 805.7,
+      "gen_improved": false,
+      "gen_metrics": {
+        "avg_length": 21.4,
+        "coherent": 20,
+        "coherent_rate": 1.0,
+        "empty": 0,
+        "eos_rate": 1.0,
+        "partial": 0,
+        "rep_3gram_mean": 0.0,
+        "repetitive": 0,
+        "samples": 20
+      },
+      "gen_patience": 2,
+      "gen_quality": 1.0,
+      "grad_norm_mean": 0.9788,
+      "learning_rate": 3.455e-05,
+      "patience": 0,
+      "train_loss": 3.809759,
+      "val_improved": true,
+      "validation_loss": 2.678312
+    },
+    {
+      "best_epoch": 4,
+      "best_validation_loss": 2.590602,
+      "elapsed_s": 3269.4,
+      "epoch": 4,
+      "epoch_s": 815.3,
+      "gen_improved": false,
+      "gen_metrics": {
+        "avg_length": 21.6,
+        "coherent": 20,
+        "coherent_rate": 1.0,
+        "empty": 0,
+        "eos_rate": 1.0,
+        "partial": 0,
+        "rep_3gram_mean": 0.0,
+        "repetitive": 0,
+        "samples": 20
+      },
+      "gen_patience": 3,
+      "gen_quality": 1.0,
+      "grad_norm_mean": 1.3124,
+      "learning_rate": 9.55e-06,
+      "patience": 0,
+      "train_loss": 3.538698,
+      "val_improved": true,
+      "validation_loss": 2.590602
+    }
+  ],
+  "checkpoints_evaluated": {
+    "1": {
+      "sha256": "d27885f1fef6f187557bc51590acc0a7dbc740db663e1d5b1942c4a0b1a1c9a2",
+      "train_loss": 47.612224,
+      "validation_loss": 4.48077,
+      "uniqueness_ratio": 0.01,
+      "eos_rate": 1.0,
+      "top_output": [
+        "ooo senamtri___plll,,, cccfffIII",
+        100
+      ]
+    },
+    "3": {
+      "sha256": "de3bcb609504ad98e757f75fc196cb2c82630323481f81c4554a78e93e9d9b1a",
+      "train_loss": 3.809759,
+      "validation_loss": 2.678312,
+      "uniqueness_ratio": 0.04,
+      "eos_rate": 1.0,
+      "top_output": [
+        "In sam/coretigl, s_de.",
+        39
+      ]
+    }
+  },
+  "failure_analysis": {
+    "primary_issue": "mode_collapse",
+    "description": "Model produces identical or near-identical outputs for all inputs regardless of question content.",
+    "epoch_1_uniqueness": 0.01,
+    "epoch_3_uniqueness": 0.04,
+    "root_causes": [
+      "Model capacity (2.77M params) may be insufficient for task complexity",
+      "Byte-level tokenizer struggles with domain-specific vocabulary",
+      "Teacher-forcing training leads to exposure bias and mode collapse",
+      "Greedy decoding amplifies the most probable (collapsed) path",
+      "Training data distribution may have imbalanced target patterns"
+    ],
+    "evidence": "Loss decreases from 191.8 to 3.5 but generation quality does not improve. Epoch 1 produces 1 unique output across 100 samples. Epoch 3 produces 4 unique outputs."
+  },
+  "gates": {
+    "relevance": {
+      "status": "FAIL",
+      "value": 0.0,
+      "threshold": "> baseline (0.7833)"
+    },
+    "accuracy": {
+      "status": "FAIL",
+      "value": 0.0,
+      "threshold": "> baseline"
+    },
+    "naturalness": {
+      "status": "FAIL",
+      "value": 0.0,
+      "threshold": "> baseline"
+    },
+    "hallucination": {
+      "status": "FAIL",
+      "value": 1.0,
+      "threshold": "<= baseline"
+    },
+    "coherence": {
+      "status": "PASS",
+      "value": 1.0,
+      "note": "Bytes-level metric; text is meaningless"
+    },
+    "eos": {
+      "status": "PASS",
+      "value": 1.0,
+      "note": "EOS reached because model outputs short sequences"
+    },
+    "repetition": {
+      "status": "PASS",
+      "value": 0.0,
+      "note": "Byte-level rep_3gram does not catch text-level repetition"
+    }
+  },
+  "recommended_next_steps": [
+    "Increase model capacity (more layers, larger d_model)",
+    "Add subword tokenizer (BPE) instead of byte-level",
+    "Implement scheduled sampling to reduce exposure bias",
+    "Add beam search or nucleus sampling for diversity",
+    "Augment training data with more diverse answer patterns",
+    "Add diversity-promoting loss (e.g., unlikelihood training)",
+    "Consider curriculum learning: start with short answers, gradually increase complexity"
+  ]
+}
