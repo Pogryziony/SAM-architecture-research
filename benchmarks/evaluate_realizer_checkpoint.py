@@ -13,15 +13,18 @@ _project_root = Path(__file__).parent.parent.resolve()
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
-from benchmarks.train_nexus_realizer import load_training_inputs, serialize_source
+from benchmarks.train_nexus_realizer import load_training_inputs, serialize_source_for_config
 from nexus.realizer.model import build_model
 from nexus.realizer.tokenizer import ByteTokenizer
 from nexus.realizer.decoder import DecoderConfig, decode_to_text, compute_repetition_rates
+from nexus.realizer.grounded import answer_similarity, realize_grounded, token_f1
 
 
-def evaluate_checkpoint(weights_path: Path, val_records: list, model_cfg: dict,
-                        max_input: int, decoder_cfg: DecoderConfig,
+def evaluate_checkpoint(weights_path: Path, val_records: list, config: dict,
+                        decoder_cfg: DecoderConfig,
                         sample_size: int = 100, seed: int = 42):
+    model_cfg = config["model"]
+    max_input = model_cfg["max_input_tokens"]
     model = build_model(model_cfg)
     model.load_state_dict(torch.load(weights_path, weights_only=True))
     model.eval()
@@ -33,19 +36,31 @@ def evaluate_checkpoint(weights_path: Path, val_records: list, model_cfg: dict,
 
     tokenizer = ByteTokenizer()
     unique_texts = set()
+    text_counts = Counter()
     total_len = 0
     eos_count = 0
     reps = []
     examples = []
+    neural_f1 = 0.0
+    final_f1 = 0.0
+    final_exact = 0
+    fallbacks = 0
 
     started = time.perf_counter()
     with torch.no_grad():
         for i, record in enumerate(sample):
             source_ids = tokenizer.encode(
-                serialize_source(record, max_input - 2), max_input
+                serialize_source_for_config(record, config), max_input
             )
             text, diag = decode_to_text(model, source_ids, tokenizer, decoder_cfg)
+            realization = realize_grounded(record, text)
+            reference = str(record.get("answer", ""))
+            neural_f1 += token_f1(text, reference)
+            final_f1 += token_f1(realization.answer, reference)
+            final_exact += " ".join(realization.answer.casefold().split()) == " ".join(reference.casefold().split())
+            fallbacks += realization.fallback_used
             unique_texts.add(text)
+            text_counts[text] += 1
             total_len += diag.get("token_count", 0)
             if diag["eos_reached"]:
                 eos_count += 1
@@ -55,19 +70,13 @@ def evaluate_checkpoint(weights_path: Path, val_records: list, model_cfg: dict,
                 examples.append({
                     "question": record["question"][:80],
                     "ground_truth": record.get("answer", "")[:80],
-                    "generated": text[:80]
+                    "generated": text[:80],
+                    "answer": realization.answer[:80],
+                    "fallback_used": realization.fallback_used,
                 })
 
     elapsed = time.perf_counter() - started
     n = len(sample)
-    text_counts = Counter()
-    for rec in sample:
-        source_ids = tokenizer.encode(
-            serialize_source(rec, max_input - 2), max_input
-        )
-        text, _ = decode_to_text(model, source_ids, tokenizer, decoder_cfg)
-        text_counts[text] += 1
-
     return {
         "samples": n,
         "unique_outputs": len(unique_texts),
@@ -75,6 +84,10 @@ def evaluate_checkpoint(weights_path: Path, val_records: list, model_cfg: dict,
         "eos_rate": eos_count / n,
         "avg_length": total_len / n,
         "avg_rep_3gram": sum(reps) / len(reps) if reps else 0.0,
+        "neural_token_f1_mean": neural_f1 / n,
+        "answer_token_f1_mean": final_f1 / n,
+        "answer_exact_match_rate": final_exact / n,
+        "fallback_rate": fallbacks / n,
         "latency_p50_ms": elapsed / n * 1000,
         "top_outputs": text_counts.most_common(5),
         "examples": examples,
@@ -106,7 +119,7 @@ def main():
         print(f"{'='*60}")
 
         result = evaluate_checkpoint(
-            weights_path, val_records, model_cfg, max_input, decoder_cfg,
+            weights_path, val_records, config, decoder_cfg,
             sample_size=100, seed=20260711 + ckpt_epoch,
         )
 

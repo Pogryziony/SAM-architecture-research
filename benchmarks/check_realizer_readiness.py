@@ -23,14 +23,14 @@ from benchmarks.realizer_contracts import (
 )
 from benchmarks.run_nexus_oracle import validate_oracle_artifact
 from nexus.realizer.model import build_model, parameter_count, validate_model_config
-from benchmarks.train_nexus_realizer import serialization_coverage
+from benchmarks.train_nexus_realizer import serialization_coverage_for_config
 
 
 READINESS_SCHEMA_VERSION = "nexus-realizer-readiness-v1"
 
 
 def estimate_parameter_count(model: dict[str, Any]) -> int:
-    """Conservative count for the configured tied-embedding Transformer."""
+    """Conservative count for legacy tied-head and stable untied models."""
     d = int(model["d_model"])
     f = int(model["dim_feedforward"])
     enc = int(model["encoder_layers"])
@@ -40,7 +40,10 @@ def estimate_parameter_count(model: dict[str, Any]) -> int:
     embeddings = vocab * d + positions * d
     encoder = enc * (4 * d * d + 2 * d * f + 16 * d + f)
     decoder = dec * (8 * d * d + 2 * d * f + 24 * d + f)
-    return embeddings + encoder + decoder
+    output_head = 0
+    if model.get("architecture") == "stable_transformer_v2":
+        output_head = vocab * d + vocab + 2 * d
+    return embeddings + encoder + decoder + output_head
 
 
 def evaluate_readiness(
@@ -58,14 +61,22 @@ def evaluate_readiness(
         checks.append({"name": name, "passed": bool(passed), "value": value, "requirement": requirement})
 
     config_errors = validate_model_config(config.get("model", {}))
-    check("training_config_valid", not config_errors, config_errors, "valid nexus-realizer-training-v1 config")
+    config_schema = config.get("schema_version")
+    config_errors.extend(
+        [] if config_schema in {
+            "nexus-realizer-training-v1", "nexus-realizer-training-v2"
+        } else ["unsupported training config schema"]
+    )
+    check(
+        "training_config_valid", not config_errors, config_errors,
+        "valid NEXUS Realizer training config",
+    )
     dataset_errors = validate_dataset_manifest(dataset_manifest, dataset_root)
     check("dataset_manifest_valid", not dataset_errors, dataset_errors, "hash-verified dataset manifest")
     coverage_values: list[float] = []
     dataset_record_errors: list[str] = []
     loaded_splits: dict[str, list[dict[str, Any]]] = {"train": [], "validation": []}
     if not dataset_errors and not config_errors:
-        budget = int(config["model"]["max_input_tokens"]) - 2
         for split in ("train", "validation"):
             path = dataset_root / dataset_manifest["splits"][split]["path"]
             for index, line in enumerate(path.read_text(encoding="utf-8").splitlines()):
@@ -77,7 +88,9 @@ def evaluate_readiness(
                         dataset_record_errors.append(f"{split}[{index}]:{','.join(record_errors)}")
                     if record.get("dataset_split") != split:
                         dataset_record_errors.append(f"{split}[{index}]:split_mismatch")
-                    coverage_values.append(serialization_coverage(record, budget))
+                    coverage_values.append(
+                        serialization_coverage_for_config(record, config)
+                    )
         try:
             assert_no_split_leakage(loaded_splits)
         except ValueError as exc:

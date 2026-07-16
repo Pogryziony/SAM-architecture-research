@@ -41,8 +41,8 @@ general-purpose LLM reasoning path.
 | Canonical baseline (Stage 0) | ✅ **VALID** — dependency-free lexical RAG and lexical NEXUS both answer the registered 30 cases; 25 cases form the paired comparison. |
 | Realization L1 (Stage 2) | ✅ **PASS** — registered 30-case protocol passes for `PYTHONHASHSEED=0,1,42`: relevance 78.33%, accuracy delta +15.34pp, naturalness +22.40 and hallucination delta -5.12pp. All seeds have the same canonical content hash. |
 | Dialogue state (Stage 3) | ✅ **PASS** — full 110-turn protocol: reference resolution 87.5%, zero single-turn regression and dialogue-state p50 0.048ms. Resolver and complete-pipeline latency remain separate diagnostics. |
-| Realization L2 (Stage 4) | ✅ **GO FOR TRAINING** — 7,127 unique train-only pairs, oracle, readiness, CPU preflight and 50-step no-write overfit smoke pass. Pilot training completed 2026-07-16 with REALIZER_PILOT_FAIL result. |
-| End-to-end QA | 🔴 **REALIZER_PILOT_FAIL** — first controlled pilot (4 epochs) confirmed mode collapse at all checkpoints. Architectural changes needed before retraining. |
+| Realization L2 (Stage 4) | 🟡 **V2 RECOVERY VALIDATED** — historical v1 checkpoints remain rejected. Grounded realization scores 100% exact match and 0% hallucination on all 1,434 validation records; stable v2 preflight and overfit-smoke pass. A fresh short neural pilot is still required. |
+| End-to-end QA | 🟡 **GROUNDED PATH PASS / NEURAL PENDING** — supported graph evidence is returned fail-closed; a neural answer is accepted only after grounding checks. No failed v1 checkpoint is deployed. |
 
 ### Quick start (NEXUS)
 
@@ -74,6 +74,7 @@ for p in paths:
 - [Graph Reasoning](docs/graph-reasoning.md) — traversal, path scoring, evidence building, verification
 - [Auditability & Reasoning Roadmap](docs/nexus-auditability-roadmap.md) — proof traces, provenance, oracle evaluation, and staged acceptance gates
 - [Realizer v1 Training Status](docs/nexus-realizer-pretraining-status.md) — verified Phase 0–4 gates, evidence and safe pilot procedure
+- [Realizer v2 Quality Recovery](docs/realizer-v2-quality-recovery.md) — checkpoint root cause, grounded runtime, stable model and promotion rules
 - [Pilot Integrity and Next Run](docs/nexus-pilot-integrity.md) — preset wiring, artifact identity, resolver contracts and launch rules
 - [RAG vs NEXUS](docs/rag-vs-graph-nexus.md) — detailed comparison, when to use which
 
@@ -125,4 +126,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-16 (Phase 0–4 readiness passes; the next authorized action is a short, generation-aware Realizer pilot.)*
+*Last updated: 2026-07-16 (grounded Realizer v2 validated; the next neural action is a bounded 1–3 epoch pilot with text-level gates.)*

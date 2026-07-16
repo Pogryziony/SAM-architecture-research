@@ -45,7 +45,6 @@ import torch
 
 from benchmarks.train_nexus_realizer import (
     load_training_inputs,
-    serialization_coverage,
     _encode,
     _batch,
     _assert_configured_output,
@@ -53,11 +52,19 @@ from benchmarks.train_nexus_realizer import (
     apply_training_overrides,
     effective_config_sha256,
     validate_readiness_for_training,
-    serialize_source,
+    serialize_source_for_config,
+    serialization_coverage_for_config,
 )
 from nexus.realizer.model import build_model, parameter_count, validate_model_config
 from nexus.realizer.tokenizer import ByteTokenizer
 from nexus.realizer.decoder import DecoderConfig, decode_to_text, compute_repetition_rates
+from nexus.realizer.grounded import (
+    answer_similarity,
+    grounding_score,
+    evidence_candidates,
+    realize_grounded,
+    token_f1,
+)
 
 # Try to import psutil for memory tracking (optional)
 try:
@@ -69,7 +76,12 @@ except ImportError:
 
 
 def _peak_rss_mb() -> float | None:
-    """Return peak RSS in MB if psutil available, else None."""
+    """Return current RSS in MB if psutil is available.
+
+    The value is sampled after expensive phases and the maximum sample is
+    tracked by the caller.  It is intentionally not labelled as an operating
+    system peak because ``psutil`` does not expose that portably.
+    """
     if not _HAS_PSUTIL:
         return None
     try:
@@ -93,26 +105,47 @@ def _generate_and_score(
 ) -> dict[str, Any]:
     """Generate answers and compute quality metrics on validation subset."""
     tokenizer = ByteTokenizer()
-    from benchmarks.train_nexus_realizer import serialize_source
-
-    coherent = 0
-    partial_count = 0
+    readable = 0
     repetitive = 0
     empty = 0
     eos_count = 0
     total_len = 0
     rep_3gram_sum = 0.0
     total = 0
+    neural_exact = 0
+    final_exact = 0
+    neural_similarity = 0.0
+    final_similarity = 0.0
+    neural_token_f1 = 0.0
+    final_token_f1 = 0.0
+    neural_grounded = 0
+    fallback_count = 0
+    neural_outputs: set[str] = set()
+    final_outputs: set[str] = set()
 
     model.eval()
     with torch.no_grad():
         for i, record in enumerate(val_records[:max_samples]):
             source_ids = tokenizer.encode(
-                serialize_source(record, config["model"]["max_input_tokens"] - 2),
+                serialize_source_for_config(record, config),
                 config["model"]["max_input_tokens"],
             )
             text, diag = decode_to_text(model, source_ids, tokenizer, decoder_cfg)
+            realization = realize_grounded(record, text)
+            final_text = realization.answer
+            reference = str(record.get("answer", "")).strip()
             total += 1
+            neural_outputs.add(text)
+            final_outputs.add(final_text)
+            neural_exact += " ".join(text.casefold().split()) == " ".join(reference.casefold().split())
+            final_exact += " ".join(final_text.casefold().split()) == " ".join(reference.casefold().split())
+            neural_similarity += answer_similarity(text, reference)
+            final_similarity += answer_similarity(final_text, reference)
+            neural_token_f1 += token_f1(text, reference)
+            final_token_f1 += token_f1(final_text, reference)
+            candidates = evidence_candidates(record)
+            neural_grounded += grounding_score(text, candidates) >= 0.72
+            fallback_count += realization.fallback_used
 
             # Categorize
             words = text.split()
@@ -122,10 +155,8 @@ def _generate_and_score(
                 trigrams = [tuple(words[j:j + 3]) for j in range(len(words) - 2)]
                 if trigrams and len(set(trigrams)) / len(trigrams) < 0.4:
                     repetitive += 1
-                elif trigrams and len(set(trigrams)) / len(trigrams) < 0.7:
-                    partial_count += 1
                 else:
-                    coherent += 1
+                    readable += 1
 
             if diag["eos_reached"]:
                 eos_count += 1
@@ -136,14 +167,25 @@ def _generate_and_score(
 
     n = max(total, 1)
     return {
-        "coherent_rate": round(coherent / n, 4),
-        "coherent": coherent,
-        "partial": partial_count,
+        "coherent_rate": round(readable / n, 4),
+        "coherent": readable,
+        "partial": 0,
         "repetitive": repetitive,
         "empty": empty,
         "eos_rate": round(eos_count / n, 4),
         "avg_length": round(total_len / n, 1),
         "rep_3gram_mean": round(rep_3gram_sum / n, 4),
+        "neural_exact_match_rate": round(neural_exact / n, 4),
+        "neural_similarity_mean": round(neural_similarity / n, 4),
+        "neural_token_f1_mean": round(neural_token_f1 / n, 4),
+        "neural_grounded_rate": round(neural_grounded / n, 4),
+        "neural_unique_outputs": len(neural_outputs),
+        "neural_uniqueness_ratio": round(len(neural_outputs) / n, 4),
+        "answer_exact_match_rate": round(final_exact / n, 4),
+        "answer_similarity_mean": round(final_similarity / n, 4),
+        "answer_token_f1_mean": round(final_token_f1 / n, 4),
+        "answer_unique_outputs": len(final_outputs),
+        "fallback_rate": round(fallback_count / n, 4),
         "samples": total,
     }
 
@@ -280,17 +322,16 @@ def _generate_sample_predictions(
 ) -> list[dict[str, Any]]:
     """Generate per-example predictions with evidence and ground truth."""
     tokenizer = ByteTokenizer()
-    from benchmarks.train_nexus_realizer import serialize_source
-
     predictions: list[dict[str, Any]] = []
     model.eval()
     with torch.no_grad():
         for i, record in enumerate(records[:max_samples]):
             source_ids = tokenizer.encode(
-                serialize_source(record, config["model"]["max_input_tokens"] - 2),
+                serialize_source_for_config(record, config),
                 config["model"]["max_input_tokens"],
             )
             text, diag = decode_to_text(model, source_ids, tokenizer, decoder_cfg)
+            realization = realize_grounded(record, text)
             rep_rates = compute_repetition_rates(
                 tokenizer.encode(text, decoder_cfg.max_length)
             )
@@ -299,6 +340,8 @@ def _generate_sample_predictions(
                 "id": record.get("id", f"sample_{i}"),
                 "question": record["question"],
                 "generated_text": text,
+                "answer": realization.answer,
+                "realization": realization.to_dict(),
                 "ground_truth": record.get("answer", ""),
                 "evidence_keys": list(record.get("evidence_pack", {}).keys()) if isinstance(record.get("evidence_pack"), dict) else [],
                 "eos_reached": diag.get("eos_reached", False),
@@ -355,6 +398,10 @@ def train_v2(
     if decoder_config is None:
         decoder_config = DecoderConfig(
             strategy="greedy", repetition_penalty=1.2, no_repeat_ngram_size=3,
+            max_length=min(
+                int(config["training"].get("generation_max_tokens", 128)),
+                int(config["model"]["max_output_tokens"]),
+            ),
         )
 
     try:
@@ -372,7 +419,7 @@ def train_v2(
     train_examples = _encode(splits["train"], config)
     validation_examples = _encode(splits["validation"], config)
     coverage_values = [
-        serialization_coverage(record, config["model"]["max_input_tokens"] - 2)
+        serialization_coverage_for_config(record, config)
         for records in splits.values()
         for record in records
     ]
@@ -385,6 +432,12 @@ def train_v2(
     source, target = _batch(train_examples[:bs], torch)
     model.train()
     first_loss = float(_loss(model, source, target, torch).detach())
+    initial_loss_max = float(config["training"].get("initial_loss_max", float("inf")))
+    if not math.isfinite(first_loss) or first_loss > initial_loss_max:
+        raise RuntimeError(
+            f"pathological initial loss {first_loss:.4f} exceeds "
+            f"configured maximum {initial_loss_max:.4f}"
+        )
 
     # Validation records for generation-aware checks (same subset every epoch)
     rng_val = random.Random(seed + 1)
@@ -466,8 +519,15 @@ def train_v2(
         epoch_elapsed = time.perf_counter() - epoch_start
         total_elapsed = time.perf_counter() - started
 
-        # Composite quality score: coherent_rate - rep_rate
-        gen_quality = gen_metrics["coherent_rate"] - gen_metrics["rep_3gram_mean"]
+        # Select neural checkpoints by label-aware validation quality.  The
+        # grounded fallback is reported separately and cannot hide collapse.
+        gen_quality = (
+            0.45 * gen_metrics["neural_token_f1_mean"]
+            + 0.25 * gen_metrics["neural_similarity_mean"]
+            + 0.20 * gen_metrics["neural_grounded_rate"]
+            + 0.10 * gen_metrics["neural_uniqueness_ratio"]
+            - 0.20 * gen_metrics["rep_3gram_mean"]
+        )
 
         val_improved = validation_loss < best_val_loss - 1e-6
         gen_improved = gen_quality > best_gen_quality + 0.01
@@ -537,18 +597,36 @@ def train_v2(
             f"[{improved_flag}{gen_flag}] epoch {epoch + 1:>3d}/{steps} | "
             f"train {train_loss:.4f} | val {validation_loss:.4f} "
             f"(best {best_val_loss:.4f} @ {best_epoch}) | "
-            f"gen coh {gen_metrics['coherent_rate']:.0%} "
+            f"neural f1 {gen_metrics['neural_token_f1_mean']:.0%} "
+            f"ground {gen_metrics['neural_grounded_rate']:.0%} "
+            f"unique {gen_metrics['neural_uniqueness_ratio']:.0%} "
+            f"fallback {gen_metrics['fallback_rate']:.0%} "
             f"rep3 {gen_metrics['rep_3gram_mean']:.2f} "
             f"eos {gen_metrics['eos_rate']:.0%} | "
             f"{total_elapsed:.0f}s"
         )
 
         # Safety stops
+        current_rss = _peak_rss_mb()
+        max_rss = float(config["training"].get("max_peak_rss_mb", float("inf")))
+        if current_rss is not None and current_rss > max_rss:
+            print(
+                f"STOP: sampled RSS {current_rss:.1f} MB exceeds "
+                f"configured budget {max_rss:.1f} MB"
+            )
+            break
         if not (math.isfinite(validation_loss) and math.isfinite(train_loss)):
             print("STOP: non-finite loss detected")
             break
         if gen_metrics["repetitive"] > gen_val_samples * 0.5:
             print(f"STOP: excessive repetition ({gen_metrics['repetitive']}/{gen_val_samples})")
+            break
+        if (
+            epoch + 1 >= 2
+            and gen_metrics["neural_uniqueness_ratio"] < 0.10
+            and gen_metrics["neural_token_f1_mean"] < 0.10
+        ):
+            print("STOP: neural mode collapse detected by text-level metrics")
             break
         if gen_patience >= 3:
             print(f"STOP: generation quality regressed for {gen_patience} epochs")
@@ -639,7 +717,7 @@ def main() -> int:
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, help="Path to dataset manifest (required unless --list-presets)")
-    parser.add_argument("--config", default="training/nexus_realizer_v1.json", type=Path)
+    parser.add_argument("--config", default="training/nexus_realizer_v2.json", type=Path)
     parser.add_argument("--mode", choices=("pilot", "train"), default="pilot")
     parser.add_argument("--preset", default=None, help="Training intensity preset (smoke/quick/pilot/standard/full)")
     parser.add_argument("--list-presets", action="store_true", help="List available presets and exit")
@@ -691,6 +769,7 @@ def main() -> int:
             "learning_rate": args.lr,
         }
 
+    decoder_file_config = json.loads(args.config.read_text(encoding="utf-8"))
     dc = DecoderConfig(
         strategy=args.decoder_strategy or training_overrides.get("decoder_strategy", "greedy"),
         repetition_penalty=(
@@ -706,6 +785,16 @@ def main() -> int:
         beam_width=args.beam_width,
         temperature=args.temperature,
         top_k=args.top_k,
+        # Per-epoch generation remains bounded even when the training contract
+        # retains a handful of much longer reference answers.  Final answers
+        # are never truncated because Grounded Realizer can copy the complete
+        # supported evidence sentence.
+        max_length=min(
+            int(decoder_file_config["training"].get(
+                "generation_max_tokens", 128
+            )),
+            int(decoder_file_config["model"]["max_output_tokens"]),
+        ),
     )
 
     try:

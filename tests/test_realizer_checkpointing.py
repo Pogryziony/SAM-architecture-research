@@ -26,6 +26,12 @@ from nexus.realizer.decoder import DecoderConfig
 from nexus.realizer.model import build_model
 
 
+_FAST_DECODER = DecoderConfig(
+    strategy="greedy", repetition_penalty=1.2,
+    no_repeat_ngram_size=3, max_length=16,
+)
+
+
 @pytest.fixture
 def small_dataset(tmp_path: Path) -> tuple[Path, Path]:
     """Build a minimal distillation dataset for testing."""
@@ -131,6 +137,7 @@ def test_early_stopping_stops_within_patience(small_dataset, tmp_path: Path):
         manifest_path, config_path, mode="pilot",
         output_dir=output_dir,
         training_overrides={"epochs": 10, "patience": 2},
+        decoder_config=_FAST_DECODER,
         checkpoint_epochs=[],
     )
     # With patience=2 and 10 epochs, should stop early (not reach 10)
@@ -146,6 +153,7 @@ def test_checkpoints_saved_at_specified_epochs(small_dataset, tmp_path: Path):
         manifest_path, config_path, mode="pilot",
         output_dir=output_dir,
         training_overrides={"epochs": 5, "patience": 3},
+        decoder_config=_FAST_DECODER,
         checkpoint_epochs=[1, 3, 5],
     )
     saved = result.get("saved_checkpoints", [])
@@ -176,12 +184,14 @@ def test_config_invariance_across_runs(small_dataset, tmp_path: Path):
         manifest_path, config_path, mode="pilot",
         output_dir=output_dir1,
         training_overrides={"epochs": 2, "patience": 1},
+        decoder_config=_FAST_DECODER,
         checkpoint_epochs=[],
     )
     result2 = train_v2(
         manifest_path, config_path, mode="pilot",
         output_dir=output_dir2,
         training_overrides={"epochs": 2, "patience": 1},
+        decoder_config=_FAST_DECODER,
         checkpoint_epochs=[],
     )
     assert result1["effective_config_sha256"] == result2["effective_config_sha256"]
@@ -196,12 +206,14 @@ def test_custom_training_overrides_affect_effective_hash(small_dataset, tmp_path
         manifest_path, config_path, mode="pilot",
         output_dir=output_dir1,
         training_overrides={"epochs": 2, "learning_rate": 0.001},
+        decoder_config=_FAST_DECODER,
         checkpoint_epochs=[],
     )
     result2 = train_v2(
         manifest_path, config_path, mode="pilot",
         output_dir=output_dir2,
         training_overrides={"epochs": 3, "learning_rate": 0.002},
+        decoder_config=_FAST_DECODER,
         checkpoint_epochs=[],
     )
     assert result1["effective_config_sha256"] != result2["effective_config_sha256"]
@@ -217,7 +229,7 @@ def test_generate_sample_predictions_returns_valid_output(small_dataset):
     model = build_model({"d_model": 192, "decoder_layers": 3, "dim_feedforward": 512,
                          "dropout": 0.1, "encoder_layers": 3, "max_input_tokens": 1024,
                          "max_output_tokens": 256, "nhead": 6, "vocab_size": 259})
-    decoder_cfg = DecoderConfig(strategy="greedy", repetition_penalty=1.2, no_repeat_ngram_size=3)
+    decoder_cfg = _FAST_DECODER
     preds = _generate_sample_predictions(
         model, records, {"model": {"max_input_tokens": 1024, "max_output_tokens": 256}},
         decoder_cfg, max_samples=3,
@@ -239,6 +251,7 @@ def test_six_epochs_with_checkpoint_epochs(small_dataset, tmp_path: Path):
         manifest_path, config_path, mode="pilot",
         output_dir=output_dir,
         training_overrides={"epochs": 6, "patience": 5},
+        decoder_config=_FAST_DECODER,
         checkpoint_epochs=[1, 3, 5],
     )
     saved = result.get("saved_checkpoints", [])

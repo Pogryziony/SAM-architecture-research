@@ -29,8 +29,9 @@ split, and reproducibility hashes.
    configured in-repository checkpoint root; an external output directory is
    also valid. Every checkpoint SHA-256 is recorded in its run manifest.
 
-The committed configuration is `training/nexus_realizer_v1.json`; its default
-is 5 epochs with early-stopping patience 3. No command overwrites an existing
+The historical configuration is `training/nexus_realizer_v1.json`. New runs use
+`training/nexus_realizer_v2.json`: three epochs, patience 1, batch size 2,
+stable initialization and compact evidence-first input. No command overwrites an existing
 dataset, evaluation artifact, report or training directory.
 
 ## Pilot outcome: `REALIZER_PILOT_FAIL`
@@ -46,4 +47,19 @@ Key findings:
 - Epoch 3: 4 unique outputs across 100 validation samples
 - Byte-level coherence/EOS/repetition metrics are misleading — they pass while text-level quality fails
 - Memory budget (500 MB) exceeded: peak RSS ~6.9 GB
-- Architectural changes (subword tokenizer, model capacity, diversity training) needed before retraining
+- The later diagnosis superseded the initial tokenizer/capacity hypothesis: pathological v1 initialization and an extractive objective were the verified primary causes
+
+## V2 recovery status
+
+- `nexus/realizer/grounded.py` returns complete supported evidence and rejects
+  unreadable, numerically invented or materially unsupported neural answers.
+- `stable_transformer_v2` starts near the theoretical uniform loss instead of
+  about 191 and passes a 50-step overfit smoke without writing weights.
+- `benchmarks/evaluate_grounded_realizer.py` evaluates labels only after answer
+  generation and writes a hash sidecar.
+- Full validation result: 1,434/1,434 exact, 0% hallucination and 1,434 unique
+  outputs. This validates the grounded runtime, not a neural checkpoint.
+- The next run is a single 1–3 epoch neural pilot. Never extend it merely
+  because loss falls; promote only raw-neural text quality.
+
+See `docs/realizer-v2-quality-recovery.md` for the design and promotion gates.

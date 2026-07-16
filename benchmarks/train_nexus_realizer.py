@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import random
 import sys
 import time
@@ -37,7 +38,9 @@ def load_training_inputs(manifest_path: Path, config_path: Path) -> tuple[dict[s
     config = json.loads(config_path.read_text(encoding="utf-8"))
     errors = validate_dataset_manifest(manifest, manifest_path.parent)
     errors.extend(validate_model_config(config.get("model", {})))
-    if config.get("schema_version") != "nexus-realizer-training-v1":
+    if config.get("schema_version") not in {
+        "nexus-realizer-training-v1", "nexus-realizer-training-v2",
+    }:
         errors.append("unsupported training config schema")
     if manifest.get("schema_version") != config.get("data", {}).get("manifest_schema"):
         errors.append("dataset/config schema mismatch")
@@ -134,6 +137,67 @@ def serialize_source(record: dict[str, Any], max_bytes: int | None = None) -> st
     return _serialize_with_units(record, max_bytes)[0]
 
 
+def _utf8_prefix(text: str, max_bytes: int) -> str:
+    """Return a valid UTF-8 prefix that fits the exact byte budget."""
+    return text.encode("utf-8")[:max_bytes].decode("utf-8", errors="ignore")
+
+
+def serialize_grounded_source(record: dict[str, Any], max_bytes: int) -> str:
+    """Put the answer-bearing evidence first and omit graph bookkeeping.
+
+    The v1 serializer spent most of its 1024-token budget on JSON keys, edge
+    metadata and repeated source paths.  For realization the complete fact is
+    the important unit.  It is placed first so truncation cannot silently keep
+    the question while dropping the evidence required to answer it.
+    """
+    from nexus.realizer.grounded import evidence_candidates
+
+    candidates = evidence_candidates(record)
+    if not candidates:
+        return _utf8_prefix(
+            "[EVIDENCE] Insufficient evidence.\n[QUESTION] "
+            + str(record.get("question", "")).strip(),
+            max_bytes,
+        )
+    primary = candidates[0].text
+    prefix = f"[EVIDENCE] {primary}\n[QUESTION] "
+    if len(prefix.encode("utf-8")) >= max_bytes:
+        return _utf8_prefix(prefix, max_bytes)
+    question_budget = max_bytes - len(prefix.encode("utf-8"))
+    return prefix + _utf8_prefix(str(record.get("question", "")).strip(), question_budget)
+
+
+def serialize_source_for_config(record: dict[str, Any], config: dict[str, Any]) -> str:
+    model_config = config["model"]
+    max_bytes = int(model_config["max_input_tokens"]) - 2
+    source_format = config.get("data", {}).get("source_format", "evidence_json_v1")
+    if source_format == "grounded_compact_v2":
+        return serialize_grounded_source(record, max_bytes)
+    if source_format != "evidence_json_v1":
+        raise ValueError(f"unsupported source format: {source_format}")
+    return serialize_source(record, max_bytes)
+
+
+def serialization_coverage_for_config(
+    record: dict[str, Any], config: dict[str, Any]
+) -> float:
+    """Measure retention of evidence needed by the configured source format."""
+    source_format = config.get("data", {}).get("source_format", "evidence_json_v1")
+    if source_format == "evidence_json_v1":
+        return serialization_coverage(
+            record, int(config["model"]["max_input_tokens"]) - 2
+        )
+    if source_format != "grounded_compact_v2":
+        raise ValueError(f"unsupported source format: {source_format}")
+    from nexus.realizer.grounded import evidence_candidates
+
+    candidates = evidence_candidates(record)
+    if not candidates:
+        return 1.0
+    serialized = serialize_source_for_config(record, config)
+    return 1.0 if candidates[0].text in serialized else 0.0
+
+
 def serialization_coverage(record: dict[str, Any], max_bytes: int) -> float:
     """Coverage of the top three ranked fact/number units (or edges)."""
     full = _evidence_units(record)
@@ -152,7 +216,7 @@ def _encode(records: Sequence[dict[str, Any]], config: dict[str, Any]) -> list[t
     return [
         (
             tokenizer.encode(
-                serialize_source(record, model_config["max_input_tokens"] - 2),
+                serialize_source_for_config(record, config),
                 model_config["max_input_tokens"],
             ),
             tokenizer.encode(record["answer"], model_config["max_output_tokens"]),
@@ -295,7 +359,7 @@ def run(
     train_examples = _encode(splits["train"], config)
     validation_examples = _encode(splits["validation"], config)
     coverage_values = [
-        serialization_coverage(record, config["model"]["max_input_tokens"] - 2)
+        serialization_coverage_for_config(record, config)
         for records in splits.values()
         for record in records
     ]
@@ -309,6 +373,12 @@ def run(
     source, target = _batch(train_examples[:batch_size], torch)
     model.train()
     first_loss = float(_loss(model, source, target, torch).detach())
+    initial_loss_max = float(config["training"].get("initial_loss_max", float("inf")))
+    if not math.isfinite(first_loss) or first_loss > initial_loss_max:
+        raise RuntimeError(
+            f"pathological initial loss {first_loss:.4f} exceeds "
+            f"configured maximum {initial_loss_max:.4f}"
+        )
 
     if mode == "preflight":
         loss = _loss(model, source, target, torch)

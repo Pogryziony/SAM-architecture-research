@@ -17,7 +17,7 @@
 | ER3 | Entity Ranker V3 | **CHECKPOINT VERIFIED**. Exact checkpoint is committed with config and vocabulary. Manifest size and SHA-256 checks pass before deserialization. | ✅ READY |
 | 2 | Realization L1 | Registered 30-case run passes for seeds 0/1/42 with one canonical hash; relevance 78.33%. | ✅ PASS |
 | 3 | Dialogue State | Full 110-turn run passes: reference resolution 87.5%, single-turn regression 0 and dialogue-state p50 0.048ms. | ✅ PASS |
-| 4 | Realization L2 | 7,127 unique pairs, valid oracle/readiness, CPU preflight and no-write overfit smoke pass; pilot training completed 2026-07-16 with mode collapse (REALIZER_PILOT_FAIL). | 🔴 FAIL |
+| 4 | Realization L2 | Historical checkpoints failed. Grounded v2 now reaches 100% exact match, 0% hallucination and 1,434/1,434 unique answers on validation; stable neural v2 passes preflight and overfit smoke but has no promoted checkpoint yet. | 🟡 GROUNDED PASS / NEURAL PENDING |
 | 5 | Freeze | This document | 🔄 |
 
 ---
@@ -106,10 +106,10 @@ quality checks and early stopping.
 
 ---
 
-## Remaining work after Phase 4 readiness
+## Remaining work after Realizer v2 recovery
 
-1. **Run the Realizer pilot**: execute 1, then 3, then at most 5 epochs; stop as soon as registered answer quality fails to improve.
-2. **Select by answer quality**: decoder coherence alone is insufficient; relevance, accuracy, naturalness and hallucination must improve together.
+1. **Run one bounded neural pilot**: evaluate epoch 1 and continue to at most epoch 3 only while raw-neural text quality improves.
+2. **Select by raw neural answer quality**: exact match, token F1, grounding and uniqueness select checkpoints. Grounded fallback scores are separate and cannot hide collapse.
 3. **Keep evidence immutable**: checkpoints, predictions and metrics need hashes and must point to the exact dataset, config and source commit.
 4. **Do not reuse consumed frozen data**: historical ER3 frozen results remain reporting-only.
 
