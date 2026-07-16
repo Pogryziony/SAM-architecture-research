@@ -271,6 +271,8 @@ def test_readiness_aggregates_all_gates_and_blocks_runtime_or_data(tmp_path: Pat
         "schema_version": "nexus-stage2-v1", "source_sha": "a", "source_tree_sha": "t", "config_hash": "b",
         "registered_baseline_sha256": "c", "questions_total": 30,
         "question_set_sha256": "d", "canonical_content_sha256": "e",
+        "protocol": "registered_stage2_v1", "protocol_kind": "registered",
+        "registered_gate_status": "PASS",
         "case_order": [f"q{i}" for i in range(30)],
         "per_question": [{"evidence": {}} for _ in range(30)], "status": "PASS",
         "metrics": {"relevance_rate": 0.8, "naturalness_improvement": 6.0, "hallucination_delta_vs_baseline": 0.0, "accuracy_delta_vs_baseline": -0.01},

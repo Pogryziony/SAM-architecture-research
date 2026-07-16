@@ -290,9 +290,11 @@ def test_documentation_references_existing_artifacts():
             rm_er3_status = line.strip()
             break
 
-    expected = "VALIDATION PASS / EXTERNAL CHECKPOINT REQUIRED"
+    expected = "CHECKPOINT VERIFIED"
     assert expected in sr_er3_status
     assert expected in rm_er3_status
+    assert "EXTERNAL CHECKPOINT REQUIRED" not in sr_er3_status
+    assert "EXTERNAL CHECKPOINT REQUIRED" not in rm_er3_status
     assert "AUDITABLE PASS" not in sr_er3_status
     assert "AUDITABLE PASS" not in rm_er3_status
 

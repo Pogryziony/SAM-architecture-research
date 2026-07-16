@@ -1,7 +1,7 @@
 # EXPERIMENT: NEXUS Realizer v1 — CPU-First Evidence-to-Answer Model
 
 **Pre-registered**: 2026-07-11
-**Status**: FIRST TRAINING COMPLETE, DEPLOYMENT REJECTED — corrected pilot blocked pending Stage 0/2/3 reruns.
+**Status**: PHASE 0–4 READY — short corrected pilot authorized; deployment remains unapproved.
 **Repository**: SAM-architecture-research
 
 ---
@@ -49,7 +49,7 @@ Output: grounded natural-language answer
 - Learning rate: 1e-4 (to be validated on learning curves)
 - Seed: 20260711
 - Pilot order: 1, then 3, then at most 5 epochs with generation-aware checks
-- Extended limit: 50 only after a separate decision based on registered pilot metrics
+- Extended presets: 8 or 12 epochs only after a separate decision based on registered pilot metrics
 - Batch size: 16
 - Train/validation split: 80/20 by entity-family to reduce leakage
 
@@ -99,7 +99,7 @@ Per example:
 
 ## Artifact Policy
 
-- Weights: NEVER committed to git. SHA-256 recorded in manifest.
+- Weights: may be committed under a configured `models/` subdirectory; SHA-256 and byte size are mandatory in the manifest.
 - Config: committed
 - Tokenizer: committed (text file, not binary)
 - Training log: committed
@@ -116,11 +116,13 @@ Per example:
 - `benchmarks/acquire_realizer_train_data.py` extracts unique atomic targets
   from an explicit train-only repository corpus; it does not paraphrase the
   existing questions or read validation/test labels.
-- `benchmarks/check_realizer_readiness.py` aggregates all gates into one
+- `benchmarks/check_realizer_readiness.py` aggregates model/data gates into one
   `READY_FOR_TRAINING` or `BLOCKED` artifact.
+- `benchmarks/check_phase4_readiness.py` combines Phase 0–4 evidence into the
+  final `GO_FOR_REALIZER_TRAINING` decision.
 - `benchmarks/train_nexus_realizer.py` provides no-write preflight,
-  overfit-smoke, and guarded training modes. Weight paths inside git are
-  rejected.
+  overfit-smoke, and guarded training modes. Repository weights are accepted
+  only below the configured `models/realizer/` root.
 
 Current verified results and the launch procedure are documented in
 `docs/nexus-realizer-pretraining-status.md`.
@@ -133,11 +135,14 @@ all registered answer-quality measures. Decoder diagnostics showed that the
 byte-level greedy autoregressive path entered repetition loops. Repetition
 penalty `1.2` and no-repeat trigram blocking removed the observed loops.
 
-This does not retroactively make the trained checkpoint acceptable. The next
-run must use the corrected generation-aware trainer and proceed through 1, 3
-and 5 epochs. Every run records the effective preset values. Training stops on
-non-finite loss, validation regression, repetition recurrence or worsening
-registered answer-quality metrics.
+This does not retroactively make the trained checkpoint acceptable. The
+corrected Phase 0–4 contract now passes: 7,127 unique train-only pairs, valid
+oracle and Stage 0, deterministic registered Stage 2, passing Stage 3, model
+readiness, CPU preflight and overfit smoke. The next run must use the corrected
+generation-aware trainer and proceed through 1, 3 and at most 5 epochs. Every
+run records effective preset values. Training stops on non-finite loss,
+validation regression, repetition recurrence or worsening registered
+answer-quality metrics.
 
 ## Budget Compliance
 

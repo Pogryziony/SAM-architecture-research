@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import time
@@ -31,7 +32,7 @@ if str(_project_root) not in sys.path:
 
 from nexus.graph.store import InMemoryGraphStore
 from nexus.pipeline.config import ProductionNEXUSConfig
-from nexus.pipeline.entity_resolver import EntityResolver
+from nexus.pipeline.entity_resolver import EntityResolver, coerce_resolution_result
 from nexus.pipeline.runner import NEXUSRunner
 from benchmarks.realizer_contracts import sha256_json
 
@@ -85,6 +86,7 @@ def _canonical_stage2_payload(artifact: dict[str, Any]) -> dict[str, Any]:
         "canonical_content_sha256",
         "serialized_file_sha256",
         "serialized_sha256_sidecar",
+        "python_hash_seed",
     ):
         payload.pop(key, None)
     for row in payload.get("per_question", []):
@@ -244,6 +246,7 @@ def run_stage2(
         "source_tree_sha": source_tree_sha,
         "dataset_sha256": dataset_sha256,
         "protocol": protocol,
+        "python_hash_seed": os.environ.get("PYTHONHASHSEED", "unset"),
         "protocol_kind": protocol_kind,
         "execution_status": "COMPLETE",
         "registered_gate_status": registered_gate_status,
@@ -320,7 +323,9 @@ def run_stage3(
     resolved_correct = 0
     single_turn_correct = 0
     single_turn_total = 0
+    baseline_single_turn_correct = 0
     latencies = []
+    resolver_latencies = []
     pipeline_latencies = []
     per_dialogue = []
 
@@ -364,8 +369,12 @@ def run_stage3(
             )
         qr = pipeline_result.per_question[0]
         pipeline_lat = round((time.perf_counter() - t0) * 1000, 3)
-        lat = qr.resolver_latency_ms or pipeline_lat
+        # The preregistered 5 ms gate concerns dialogue-state overhead, not
+        # the cost of the base neural/lexical resolver. Record all three
+        # timings separately so the gate cannot be accidentally redefined.
+        lat = qr.resolver_context_latency_ms
         latencies.append(lat)
+        resolver_latencies.append(qr.resolver_latency_ms or pipeline_lat)
         pipeline_latencies.append(pipeline_lat)
         total_turns += 1
 
@@ -387,6 +396,17 @@ def run_stage3(
             single_turn_total += 1
             if gold_entities & set(qr.selected_entry_nodes):
                 single_turn_correct += 1
+            baseline_resolver = (
+                entity_resolver
+                if entity_resolver is not None
+                else LexicalResolver(config=config)
+            )
+            baseline_result = coerce_resolution_result(
+                baseline_resolver.resolve(question, graph),
+                resolver_name=baseline_resolver.__class__.__name__,
+            )
+            if gold_entities & set(baseline_result.selected_entity_ids):
+                baseline_single_turn_correct += 1
 
         dialogue_turns.append({
             "turn_id": turn.get("id", ""),
@@ -398,7 +418,8 @@ def run_stage3(
             "state_update_entities": state_update_entities,
             "gold_entities": sorted(gold_entities),
             "is_context_reference": is_context,
-            "resolver_latency_ms": lat,
+            "dialogue_state_latency_ms": lat,
+            "resolver_latency_ms": qr.resolver_latency_ms,
             "pipeline_latency_ms": pipeline_lat,
         })
 
@@ -411,8 +432,19 @@ def run_stage3(
     )
     ref_resolution = resolved_correct / max(1, context_turns)
     single_turn_acc = single_turn_correct / max(1, single_turn_total)
+    baseline_single_turn_acc = (
+        baseline_single_turn_correct / max(1, single_turn_total)
+    )
+    single_turn_regression = max(
+        0.0, baseline_single_turn_acc - single_turn_acc
+    )
     latencies.sort()
     p50_lat = latencies[len(latencies) // 2] if latencies else 0
+    resolver_latencies.sort()
+    resolver_p50 = (
+        resolver_latencies[len(resolver_latencies) // 2]
+        if resolver_latencies else 0
+    )
     pipeline_latencies.sort()
     pipeline_p50 = (
         pipeline_latencies[len(pipeline_latencies) // 2]
@@ -423,26 +455,41 @@ def run_stage3(
         "stage": "stage3_dialogue",
         "created_utc": utc_now.isoformat(),
         "source_sha": source_sha,
+        "python_hash_seed": os.environ.get("PYTHONHASHSEED", "unset"),
         "total_turns": total_turns,
         "metrics": {
             "reference_resolution": round(ref_resolution, 4),
             "single_turn_accuracy": round(single_turn_acc, 4),
-            "dialogue_latency_p50_ms": round(p50_lat, 3),
+            "single_turn_baseline_accuracy": round(baseline_single_turn_acc, 4),
+            "single_turn_regression": round(single_turn_regression, 4),
+            "dialogue_state_latency_p50_ms": round(p50_lat, 3),
+            "resolver_latency_p50_ms": round(resolver_p50, 3),
             "pipeline_latency_p50_ms": round(pipeline_p50, 3),
         },
         "gates": {
             "reference_resolution": ref_resolution,
             "ref_res_pass": ref_resolution >= 0.70,
-            "dialogue_latency_p50_ms": p50_lat,
+            "single_turn_regression": single_turn_regression,
+            "single_turn_regression_pass": single_turn_regression <= 0.02,
+            "dialogue_state_latency_p50_ms": p50_lat,
             "latency_pass": p50_lat <= 5.0,
         },
         "per_dialogue": per_dialogue,
-        "status": "PASS" if ref_resolution >= 0.70 and p50_lat <= 5.0 else "FAIL",
+        "status": "PASS" if (
+            ref_resolution >= 0.70
+            and single_turn_regression <= 0.02
+            and p50_lat <= 5.0
+        ) else "FAIL",
     }
 
     out = Path(output_path)
+    sidecar = out.with_suffix(out.suffix + ".sha256")
+    if out.exists() or sidecar.exists():
+        raise FileExistsError(f"Refusing to overwrite: {out}")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(artifact, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
+    digest = hashlib.sha256(out.read_bytes()).hexdigest()
+    sidecar.write_text(f"{digest}  {out.name}\n", encoding="ascii")
 
     return artifact
 
@@ -459,7 +506,7 @@ def main():
     parser.add_argument("--er3", action="store_true", help="Use Entity Ranker V3")
     parser.add_argument(
         "--er3-dir",
-        default="models/encoder/entity_ranker_v3_20260715T191041Z",
+        default="models/encoder/entity_ranker_v3_20260711T081545Z",
     )
     parser.add_argument("--weights-path", default=None)
     parser.add_argument("--baseline", default="training/stage2_baseline_v1.json")

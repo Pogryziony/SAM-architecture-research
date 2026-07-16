@@ -385,6 +385,11 @@ class SynthesizingModel(ModelInterface):
         self._language = self._detect_language(question)
         self._entity_mentions = {}
 
+        # The offline RAG baseline uses the same synthesizer as NEXUS but
+        # supplies raw document excerpts instead of graph evidence sections.
+        if "DOCUMENT EXCERPTS:" in prompt:
+            return self._synthesize_document_excerpts(prompt, question)
+
         # Check for "no evidence" marker
         if "(No evidence found" in prompt:
             return "Insufficient evidence to answer."
@@ -561,6 +566,48 @@ class SynthesizingModel(ModelInterface):
         ) if paragraphs else "Insufficient evidence to answer."
 
     # ── Specialized zero-LLM synthesis methods ──
+
+    @staticmethod
+    def _synthesize_document_excerpts(prompt: str, question: str) -> str:
+        """Extract the most question-relevant sentences from RAG excerpts."""
+
+        section = _extract_section(prompt, "DOCUMENT EXCERPTS:", "Sources:")
+        if not section:
+            return "Insufficient evidence to answer."
+        stopwords = {
+            "a", "an", "and", "are", "as", "at", "be", "by", "did",
+            "does", "for", "from", "how", "in", "is", "it", "of", "on",
+            "or", "the", "this", "to", "was", "were", "what", "when",
+            "which", "with",
+        }
+        query_terms = {
+            token for token in re.findall(r"[\w%+.-]+", question.casefold())
+            if len(token) > 1 and token not in stopwords
+        }
+        candidates: list[tuple[int, int, str]] = []
+        order = 0
+        for raw_line in section.splitlines():
+            line = raw_line.strip()
+            if not line or re.match(r"^\[\d+\]\s+[^:]+:$", line):
+                continue
+            for sentence in re.split(r"(?<=[.!?])\s+", line):
+                clean = re.sub(r"\s+", " ", sentence).strip(" -*#`")
+                if not 20 <= len(clean) <= 600:
+                    continue
+                terms = set(re.findall(r"[\w%+.-]+", clean.casefold()))
+                overlap = len(query_terms & terms)
+                numeric_bonus = 2 if re.search(r"\d", question) and re.search(r"\d", clean) else 0
+                candidates.append((overlap + numeric_bonus, -order, clean))
+                order += 1
+        if not candidates:
+            return "Insufficient evidence to answer."
+        candidates.sort(reverse=True)
+        best_score, _, best = candidates[0]
+        if best_score <= 0:
+            return "Insufficient evidence to answer."
+        if not best.endswith((".", "!", "?")):
+            best += "."
+        return best
 
     @staticmethod
     def _detect_question_type_from_prompt(question: str) -> str:

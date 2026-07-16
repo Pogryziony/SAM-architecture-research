@@ -41,7 +41,8 @@ class TestPresetsLoader:
 
     def test_full_is_maximal(self):
         p = get_preset("full")
-        assert p["epochs"] == 50
+        assert p["epochs"] == 12
+        assert p["epochs"] == max(get_preset(name)["epochs"] for name in list_presets())
 
     def test_unknown_preset_raises(self):
         with pytest.raises(KeyError, match="nonexistent"):
@@ -80,7 +81,7 @@ class TestApplyPreset:
 
     def test_cli_none_does_not_override(self):
         params = apply_preset("quick", {"epochs": 99}, cli_overrides={"epochs": None})
-        assert params["epochs"] == 5  # None = not provided, use preset
+        assert params["epochs"] == 3  # None = not provided, use preset
 
     def test_model_defaults_applied(self):
         params = apply_preset("smoke", {}, model_type="er3")
@@ -89,12 +90,12 @@ class TestApplyPreset:
 
     def test_pilot_with_model_defaults(self):
         params = apply_preset("pilot", {}, model_type="realizer")
-        assert params["epochs"] == 12
+        assert params["epochs"] == 5
         assert params["learning_rate"] == 0.0005
 
     def test_patience_from_preset(self):
         params = apply_preset("full", {})
-        assert params["patience"] == 10
+        assert params["patience"] == 5
 
     def test_batch_size_from_preset(self):
         smoke = apply_preset("smoke", {})

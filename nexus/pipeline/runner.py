@@ -48,6 +48,7 @@ class QuestionResult:
     resolver_threshold: float | None = None
     resolver_rejection_reason: str = ""
     resolver_latency_ms: float = 0.0
+    resolver_context_latency_ms: float = 0.0
     selected_entry_nodes: list[str] = field(default_factory=list)
     graph_paths_count: int = 0
     path_scores: list[float] = field(default_factory=list)
@@ -283,6 +284,7 @@ class NEXUSRunner:
                 qr.resolver_threshold = resolution.threshold
                 qr.resolver_rejection_reason = resolution.rejection_reason
                 qr.resolver_latency_ms = resolution.latency_ms
+                qr.resolver_context_latency_ms = resolution.context_latency_ms
                 qr.resolution_candidates = [
                     {"entity_id": item.entity_id, "score": item.score}
                     for item in resolution.candidates
@@ -412,6 +414,7 @@ class NEXUSRunner:
                     "resolver_threshold": qr.resolver_threshold,
                     "resolver_rejection_reason": qr.resolver_rejection_reason,
                     "resolver_latency_ms": qr.resolver_latency_ms,
+                    "resolver_context_latency_ms": qr.resolver_context_latency_ms,
                     "selected_entry_nodes": qr.selected_entry_nodes,
                     "graph_paths_count": qr.graph_paths_count,
                     "path_scores": qr.path_scores,

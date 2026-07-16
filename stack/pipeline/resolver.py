@@ -50,6 +50,21 @@ class ER3Resolver:
         )
         self._canonical_texts = [build_entity_text(cid, graph) for cid in self._canonical_ids]
         self._mapping = build_canonical_mapping(graph)
+        # Entity descriptions are static for the lifetime of the resolver.
+        # Precomputing their projections removes repeated neural work from
+        # every question without changing scores or rankings.
+        self._entity_projections = None
+        if all(
+            hasattr(self._model, name)
+            for name in ("encode_entities", "project_entities")
+        ):
+            with torch.no_grad():
+                entity_embeddings = self._model.encode_entities(
+                    self._canonical_texts, self._tokenizer
+                )
+                self._entity_projections = self._model.project_entities(
+                    entity_embeddings
+                )
 
     @classmethod
     def from_directory(cls, model_dir: str, graph: InMemoryGraphStore,
@@ -125,12 +140,27 @@ class ER3Resolver:
         started = time.perf_counter()
         offsets, indices = self._tokenizer.tokenize_batch([question])
         with torch.no_grad():
-            scores = self._model(
-                torch.tensor(indices),
-                torch.tensor(offsets[:-1]),
-                self._canonical_texts,
-                self._tokenizer,
-            )
+            if self._entity_projections is not None and all(
+                hasattr(self._model, name)
+                for name in ("encode_question", "project_question", "score")
+            ):
+                question_encoding = self._model.encode_question(
+                    torch.tensor(indices), torch.tensor(offsets[:-1])
+                )
+                question_projection = self._model.project_question(
+                    question_encoding
+                )
+                scores = self._model.score(
+                    question_projection,
+                    self._entity_projections.unsqueeze(0),
+                )
+            else:
+                scores = self._model(
+                    torch.tensor(indices),
+                    torch.tensor(offsets[:-1]),
+                    self._canonical_texts,
+                    self._tokenizer,
+                )
         scored = sorted(
             (
                 (self._canonical_ids[index], float(scores[0][index].detach()))
@@ -209,7 +239,11 @@ class DialogueAwareResolver:
             self.base.resolve(question, graph),
             resolver_name=self.base.__class__.__name__,
         )
+        context_started = time.perf_counter()
         contextual = self.dialogue_state.resolve_references(question, graph)
+        context_latency_ms = round(
+            (time.perf_counter() - context_started) * 1000, 3
+        )
         selected: list[str] = []
         for entity_id in [*contextual, *base_result.selected_entity_ids]:
             if entity_id not in selected:
@@ -233,6 +267,7 @@ class DialogueAwareResolver:
             fallback_used=base_result.fallback_used,
             rejection_reason="" if selected else "no_candidate_selected",
             latency_ms=round((time.perf_counter() - started) * 1000, 3),
+            context_latency_ms=context_latency_ms,
         )
 
 

@@ -1,5 +1,5 @@
 {
-  "manifest_schema_version": "2.0",
+  "manifest_schema_version": "3.0",
   "run_id": "entity_ranker_v3_20260711T081545Z",
   "training_source_sha": "ae9b6ee2f67ca2aaa7467e158d5318908d047511",
   "architecture": "question_conditioned_dot_product_v3",
@@ -24,14 +24,21 @@
       "path": "models/encoder/entity_ranker_v3_20260711T081545Z/vocab.json",
       "sha256": "e69d55991720318689487832d1b38e16b60164b90e3b792d9adef7aa2ace8364",
       "size_bytes": 62575
+    },
+    "weights.pt": {
+      "path": "models/encoder/entity_ranker_v3_20260711T081545Z/weights.pt",
+      "sha256": "8be5156f94b3d05fd24927592b48d1a1df38dccf4dbbecdfb3df815777f514c7",
+      "size": 3487600,
+      "size_bytes": 3487600,
+      "stored_in_git": true
     }
   },
   "external_weights": {
-    "storage": "external",
-    "published": false,
+    "storage": "repository",
+    "published": true,
     "local_filename": "weights.pt",
     "sha256": "8be5156f94b3d05fd24927592b48d1a1df38dccf4dbbecdfb3df815777f514c7",
     "size_bytes": 3487600,
-    "recovery_note": "Not stored in the repository. Supply the original file locally; evaluation fails closed if it is absent or mismatched."
+    "recovery_note": "Recovered byte-for-byte from Git history and committed for reproducible Phase 4 validation."
   }
 }

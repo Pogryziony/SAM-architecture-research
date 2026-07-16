@@ -133,6 +133,23 @@ def evaluate_readiness(
         for row in stage2_artifact.get("per_question", [])
     )
     check("stage2_evidence_integrity", evidence_valid, evidence_valid, "evidence pack recorded for every case")
+    registered_stage2_pass = (
+        stage2_artifact.get("protocol") == "registered_stage2_v1"
+        and stage2_artifact.get("protocol_kind") == "registered"
+        and int(stage2_artifact.get("questions_total", 0)) == 30
+        and stage2_artifact.get("registered_gate_status") == "PASS"
+        and stage2_artifact.get("status") == "PASS"
+    )
+    check(
+        "stage2_registered_gate",
+        registered_stage2_pass,
+        {
+            "protocol": stage2_artifact.get("protocol"),
+            "questions_total": stage2_artifact.get("questions_total"),
+            "status": stage2_artifact.get("status"),
+        },
+        "registered_stage2_v1 PASS on exactly 30 cases",
+    )
     relevance = stage2_metrics.get("relevance_rate")
     naturalness_delta = stage2_metrics.get("naturalness_improvement")
     hallucination_delta = stage2_metrics.get("hallucination_delta_vs_baseline")
@@ -159,7 +176,23 @@ def evaluate_readiness(
     max_params = int(config.get("training", {}).get("max_parameters", 50_000_000))
     check("parameter_budget", actual_params == 0 or actual_params <= max_params, actual_params, f"<= {max_params}")
     check("pytorch_runtime", torch_available, torch_available, "PyTorch train extra installed")
-    check("weights_policy", config.get("artifact_policy", {}).get("allow_weights_in_repository") is False, config.get("artifact_policy"), "weights forbidden in repository")
+    artifact_policy = config.get("artifact_policy", {})
+    allow_repository_weights = bool(
+        artifact_policy.get("allow_weights_in_repository", False)
+    )
+    repository_root = artifact_policy.get("repository_output_root")
+    repository_policy_safe = not allow_repository_weights or (
+        isinstance(repository_root, str)
+        and repository_root.startswith("models/")
+        and ".." not in Path(repository_root).parts
+        and not Path(repository_root).is_absolute()
+    )
+    check(
+        "weights_policy",
+        repository_policy_safe,
+        artifact_policy,
+        "repository weights disabled or restricted to an explicit models/ subdirectory",
+    )
 
     failed = [item["name"] for item in checks if not item["passed"]]
     return {
@@ -196,12 +229,15 @@ def main() -> int:
     result["readiness_canonical_sha256"] = hashlib.sha256(
         json.dumps(canonical_payload, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
-    if args.output.exists():
+    sidecar = args.output.with_suffix(args.output.suffix + ".sha256")
+    if args.output.exists() or sidecar.exists():
         raise FileExistsError(f"refusing to overwrite: {args.output}")
     args.output.parent.mkdir(parents=True, exist_ok=True)
+    result["serialized_sha256_sidecar"] = sidecar.name
     serialized = json.dumps(result, indent=2, sort_keys=True) + "\n"
-    result["serialized_file_sha256"] = hashlib.sha256(serialized.encode()).hexdigest()
-    args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    args.output.write_text(serialized, encoding="utf-8")
+    digest = hashlib.sha256(args.output.read_bytes()).hexdigest()
+    sidecar.write_text(f"{digest}  {args.output.name}\n", encoding="ascii")
     print(json.dumps({"status": result["status"], "blocking_checks": result["blocking_checks"]}, sort_keys=True))
     return 0 if result["status"] == "READY_FOR_TRAINING" else 2
 

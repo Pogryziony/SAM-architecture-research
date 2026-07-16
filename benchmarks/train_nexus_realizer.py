@@ -180,10 +180,35 @@ def _loss(model: Any, source: Any, target: Any, torch: Any):
     )
 
 
-def _assert_external_output(output_dir: Path) -> None:
+def _assert_external_output(
+    output_dir: Path,
+    *,
+    allow_in_repository: bool = False,
+    repository_output_root: str | None = None,
+) -> None:
     resolved = output_dir.resolve()
-    if resolved == _project_root or _project_root in resolved.parents:
+    inside_repository = resolved == _project_root or _project_root in resolved.parents
+    if inside_repository and not allow_in_repository:
         raise ValueError("weight output must be outside the git repository")
+    if inside_repository:
+        if not repository_output_root:
+            raise ValueError(
+                "repository weight output requires repository_output_root"
+            )
+        allowed_root = (_project_root / repository_output_root).resolve()
+        if resolved != allowed_root and allowed_root not in resolved.parents:
+            raise ValueError(
+                f"repository weight output must be under {allowed_root}"
+            )
+
+
+def _assert_configured_output(output_dir: Path, config: dict[str, Any]) -> None:
+    policy = config.get("artifact_policy", {})
+    _assert_external_output(
+        output_dir,
+        allow_in_repository=bool(policy.get("allow_weights_in_repository", False)),
+        repository_output_root=policy.get("repository_output_root"),
+    )
 
 
 def validate_readiness_for_training(
@@ -239,6 +264,7 @@ def run(
     apply_training_overrides(config, training_overrides)
     effective_training = dict(config["training"])
     effective_hash = effective_config_sha256(config)
+    config_file_sha = hashlib.sha256(config_path.read_bytes()).hexdigest()
     if mode == "train":
         if readiness_path is None:
             raise ValueError("--readiness is required for training")
@@ -250,7 +276,7 @@ def run(
             raise ValueError("training blocked: " + "; ".join(readiness_errors))
         if output_dir is None:
             raise ValueError("--output-dir is required for training")
-        _assert_external_output(output_dir)
+        _assert_configured_output(output_dir, config)
     try:
         import torch
     except ImportError as exc:
@@ -288,6 +314,8 @@ def run(
         loss.backward()
         return {
             "status": "PREFLIGHT_PASS",
+            "dataset_sha256": manifest["dataset_sha256"],
+            "config_sha256": config_file_sha,
             "parameter_count": params,
             "batch_size": batch_size,
             "source_shape": list(source.shape),
@@ -319,6 +347,8 @@ def run(
         status = "OVERFIT_PASS" if final_loss < first_loss * 0.95 else "OVERFIT_FAIL"
         return {
             "status": status,
+            "dataset_sha256": manifest["dataset_sha256"],
+            "config_sha256": config_file_sha,
             "parameter_count": params,
             "initial_loss": round(first_loss, 6),
             "final_loss": round(final_loss, 6),
@@ -424,7 +454,7 @@ def run(
     result = {
         "status": "TRAINING_COMPLETE",
         "dataset_sha256": manifest["dataset_sha256"],
-        "config_sha256": hashlib.sha256(config_path.read_bytes()).hexdigest(),
+        "config_sha256": config_file_sha,
         "effective_config_sha256": effective_hash,
         "effective_training_config": effective_training,
         "parameter_count": params,
@@ -453,6 +483,11 @@ def main() -> int:
     parser.add_argument("--list-presets", action="store_true", help="List available presets and exit")
     parser.add_argument("--readiness", type=Path)
     parser.add_argument("--output-dir", type=Path)
+    parser.add_argument(
+        "--report",
+        type=Path,
+        help="write an immutable JSON report plus .sha256 sidecar",
+    )
     parser.add_argument("--epochs", type=int, default=None, help="Override config epochs (for quick runs)")
     parser.add_argument("--patience", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=None)
@@ -498,6 +533,17 @@ def main() -> int:
     except (ValueError, RuntimeError, FileNotFoundError) as exc:
         print(json.dumps({"status": "BLOCKED", "error": str(exc)}, sort_keys=True))
         return 2
+    if args.report is not None:
+        sidecar = args.report.with_suffix(args.report.suffix + ".sha256")
+        if args.report.exists() or sidecar.exists():
+            raise FileExistsError(f"refusing to overwrite: {args.report}")
+        args.report.parent.mkdir(parents=True, exist_ok=True)
+        args.report.write_text(
+            json.dumps(result, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        digest = hashlib.sha256(args.report.read_bytes()).hexdigest()
+        sidecar.write_text(f"{digest}  {args.report.name}\n", encoding="ascii")
     print(json.dumps(result, sort_keys=True))
     return 0 if result["status"].endswith("PASS") or result["status"] == "TRAINING_COMPLETE" else 2
 

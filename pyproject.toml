@@ -12,6 +12,7 @@ dependencies = ["PyYAML>=6.0"]
 [project.optional-dependencies]
 test = ["pytest>=7.0"]
 train = ["torch>=2.3,<3"]
+semantic = ["sentence-transformers>=3,<6"]
 
 [tool.setuptools.packages.find]
 include = ["nexus*"]

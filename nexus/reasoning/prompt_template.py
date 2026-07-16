@@ -135,12 +135,14 @@ def _find_question_entity(
 
     q_words = set(re.findall(r'\w+', q_lower))
 
-    for nid in all_node_ids:
+    for nid in sorted(all_node_ids):
         nid_lower = nid.lower()
         # Direct match: node ID appears as a substring in the question
         if nid_lower in q_lower:
             score = len(nid_lower)  # longer match = better
-            if score > best_score:
+            if score > best_score or (
+                score == best_score and (best_match is None or nid < best_match)
+            ):
                 best_score = score
                 best_match = nid
                 continue
@@ -150,7 +152,10 @@ def _find_question_entity(
         # Remove common prefix words like "Exp_", "Decision_", "Concept_"
         meaningful = {w for w in nid_words if len(w) > 2}
         overlap = len(meaningful & q_words)
-        if overlap > 0 and overlap > best_score:
+        if overlap > 0 and (
+            overlap > best_score
+            or (overlap == best_score and (best_match is None or nid < best_match))
+        ):
             best_score = overlap
             best_match = nid
 
@@ -175,7 +180,10 @@ def _find_question_entity(
             meaningful_nid = {w for w in nid_words_set if len(w) > 2}
             entity_overlap = len(meaningful_nid & q_words)
             total_score = overlap + entity_overlap * 5
-            if total_score > best_score:
+            if total_score > best_score or (
+                total_score == best_score
+                and (best_match is None or nid < best_match)
+            ):
                 best_score = total_score
                 best_match = nid
 

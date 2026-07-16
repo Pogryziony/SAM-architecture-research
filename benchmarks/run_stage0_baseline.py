@@ -54,7 +54,11 @@ def _answer_ok(answer: Any, error: Any = None) -> bool:
     )
 
 
-def run_rag_baseline(questions: list[dict], model_name: str = "qwen2.5:latest") -> list[dict]:
+def run_rag_baseline(
+    questions: list[dict],
+    *,
+    backend: str = "lexical",
+) -> list[dict]:
     """Run RAG baseline using the existing rag_baseline module."""
     from benchmarks.rag_baseline import initialize_rag_pipeline, run_rag_pipeline
 
@@ -62,7 +66,7 @@ def run_rag_baseline(questions: list[dict], model_name: str = "qwen2.5:latest") 
     try:
         from nexus.reasoning.model_interface import get_available_model
         model = get_available_model()
-        rag_state = initialize_rag_pipeline(model)
+        rag_state = initialize_rag_pipeline(model, backend=backend)
     except Exception as exc:
         print(f"  WARNING: RAG initialization failed: {exc}")
         return [{"rag_answer": "", "rag_error": f"init_failed:{exc}", "rag_latency_ms": 0} for _ in questions]
@@ -71,12 +75,15 @@ def run_rag_baseline(questions: list[dict], model_name: str = "qwen2.5:latest") 
     for i, q in enumerate(questions):
         question = q["question"]
         try:
-            rag_result = run_rag_pipeline(question, rag_state, model)
+            rag_result = run_rag_pipeline(question, rag_state)
             results.append({
                 "rag_answer": rag_result.get("answer", ""),
                 "rag_chunks": rag_result.get("retrieved_chunks", [])[:3],
-                "rag_latency_ms": rag_result.get("rag_time_ms", 0),
+                "rag_latency_ms": round(
+                    float(rag_result.get("latency_s", 0)) * 1000, 3
+                ),
                 "rag_evidence": rag_result.get("evidence", {}),
+                "rag_error": rag_result.get("error") or "",
             })
         except Exception as exc:
             results.append({
@@ -99,6 +106,7 @@ def run_stage0(
     questions: list[dict],
     output_path: str,
     limit: int | None = None,
+    rag_backend: str = "lexical",
 ) -> dict[str, Any]:
     """Run the honest Stage 0 NEXUS vs RAG baseline."""
     questions = questions[:limit] if limit else questions
@@ -125,7 +133,7 @@ def run_stage0(
 
     # ── RAG arm ──
     print("Running RAG arm...")
-    rag_results = run_rag_baseline(questions)
+    rag_results = run_rag_baseline(questions, backend=rag_backend)
 
     # ── Score both arms ──
     nexus_scores: list[float | None] = []
@@ -187,7 +195,8 @@ def run_stage0(
 
     # ── Build artifact ──
     out_path = Path(output_path)
-    if out_path.exists():
+    sidecar = out_path.with_suffix(out_path.suffix + ".sha256")
+    if out_path.exists() or sidecar.exists():
         raise FileExistsError(f"Refusing to overwrite: {out_path}")
 
     train_path = _project_root / "stack" / "encoder" / "data" / "train.jsonl"
@@ -198,6 +207,7 @@ def run_stage0(
         "created_utc": utc_now.isoformat(),
         "source_sha": source_sha,
         "pipeline": "nexus_v1_lexical_only",
+        "rag_pipeline": f"rag_{rag_backend}_retrieval",
         "config_hash": config.config_hash,
         "question_source": "stack/encoder/data/train.jsonl",
         "question_source_sha256": train_hash,
@@ -229,6 +239,8 @@ def run_stage0(
         encoding="utf-8",
     )
     tmp.rename(out_path)
+    digest = hashlib.sha256(out_path.read_bytes()).hexdigest()
+    sidecar.write_text(f"{digest}  {out_path.name}\n", encoding="ascii")
 
     print(f"\nArtifact: {out_path}")
     print(f"NEXUS accuracy: {artifact['nexus']['mean_accuracy']:.4f}")
@@ -310,10 +322,18 @@ def main():
     parser.add_argument("--output", required=True, help="Output JSON path")
     parser.add_argument("--questions", default="stack/encoder/data/train.jsonl",
                         help="Question source (default: train.jsonl)")
+    parser.add_argument(
+        "--rag-backend",
+        choices=("lexical", "semantic"),
+        default="lexical",
+        help="offline lexical backend is the registered default",
+    )
     args = parser.parse_args()
 
     questions = load_questions(args.questions, args.limit)
-    artifact = run_stage0(questions, args.output, args.limit)
+    artifact = run_stage0(
+        questions, args.output, args.limit, rag_backend=args.rag_backend
+    )
 
     errors = validate_artifact(artifact)
     if errors:

@@ -37,11 +37,12 @@ general-purpose LLM reasoning path.
 | Reasoning pipeline | ✅ Designed — entity extraction → traversal → evidence → verify |
 | Graph store | ✅ Implemented — `InMemoryGraphStore` with 1,866 nodes |
 | Associative encoder (Stage 1D) | ✅ PASS — frozen-split entity_recall 65.82% (181/275) with validation-selected parser handoff cap 200; all immutable Stage 1 gates passed. |
-| Entity Ranker V3 | ⚠️ **VALIDATION PASS / EXTERNAL CHECKPOINT REQUIRED** — latest retrain reports canonical recall@10=72.53% and +39.0pp over the trivial baseline. Config and vocabulary are tracked; weights remain external and must match the manifest SHA-256. Historical frozen claims remain non-repeatable because that split is consumed. |
-| Realization L1 (Stage 2) | ⚠️ **RERUN REQUIRED** — the earlier registered 30-case baseline reported 78.33% relevance, but the committed July 15 artifacts are only 5-case smoke runs. The runner now distinguishes registered and smoke protocols and writes a real file-hash sidecar. |
-| Dialogue state (Stage 3) | ❌ **FAIL** — latest 110-turn run: reference resolution 15.62% and resolver p50 12.166ms. Stage 3 now uses the injected resolver path; it must be rerun with the verified external ER3 checkpoint. |
-| Realization L2 (Stage 4) | ⚠️ **PILOT BLOCKED** — 7,127 unique train-only pairs exist and the first 50-epoch CPU run completed, but post-training answer metrics regressed. Decoder repetition was diagnosed and mitigated; a new 1→3→5 epoch pilot is required after all gates pass. |
-| End-to-end QA | ❌ Not validated — Stage 0, registered Stage 2 and Stage 3 evidence must be regenerated under the corrected contracts. |
+| Entity Ranker V3 | ✅ **CHECKPOINT VERIFIED** — the 2 July model bundle includes config, vocabulary and the exact 3.49 MB checkpoint; file size and SHA-256 are checked before loading. Historical frozen claims remain consumed and are not reused for model selection. |
+| Canonical baseline (Stage 0) | ✅ **VALID** — dependency-free lexical RAG and lexical NEXUS both answer the registered 30 cases; 25 cases form the paired comparison. |
+| Realization L1 (Stage 2) | ✅ **PASS** — registered 30-case protocol passes for `PYTHONHASHSEED=0,1,42`: relevance 78.33%, accuracy delta +15.34pp, naturalness +22.40 and hallucination delta -5.12pp. All seeds have the same canonical content hash. |
+| Dialogue state (Stage 3) | ✅ **PASS** — full 110-turn protocol: reference resolution 87.5%, zero single-turn regression and dialogue-state p50 0.035ms. Resolver and complete-pipeline latency remain separate diagnostics. |
+| Realization L2 (Stage 4) | ✅ **GO FOR TRAINING** — 7,127 unique train-only pairs, oracle, readiness, CPU preflight and 50-step no-write overfit smoke pass. The default pilot is capped at 5 epochs with patience 3. |
+| End-to-end QA | ✅ Phase 0–4 training-readiness contract implemented; full Realizer training has deliberately not started yet. |
 
 ### Quick start (NEXUS)
 
@@ -72,8 +73,8 @@ for p in paths:
 - [Graph Memory Model](docs/graph-memory.md) — data model, node/edge types, construction pipeline
 - [Graph Reasoning](docs/graph-reasoning.md) — traversal, path scoring, evidence building, verification
 - [Auditability & Reasoning Roadmap](docs/nexus-auditability-roadmap.md) — proof traces, provenance, oracle evaluation, and staged acceptance gates
-- [Realizer v1 Training Status](docs/nexus-realizer-pretraining-status.md) — first-run outcome, current blockers, gates, and safe pilot procedure
-- [Pilot Integrity and Next Run](docs/nexus-pilot-integrity.md) — corrected preset wiring, resolver contracts, blockers, and safe pilot order
+- [Realizer v1 Training Status](docs/nexus-realizer-pretraining-status.md) — verified Phase 0–4 gates, evidence and safe pilot procedure
+- [Pilot Integrity and Next Run](docs/nexus-pilot-integrity.md) — preset wiring, artifact identity, resolver contracts and launch rules
 - [RAG vs NEXUS](docs/rag-vs-graph-nexus.md) — detailed comparison, when to use which
 
 ### Repository structure
@@ -124,4 +125,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-16 (training and decoder diagnosis recorded; corrected pilot remains fail-closed until Stage 0/2/3 are regenerated and pass.)*
+*Last updated: 2026-07-16 (Phase 0–4 readiness passes; the next authorized action is a short, generation-aware Realizer pilot.)*
