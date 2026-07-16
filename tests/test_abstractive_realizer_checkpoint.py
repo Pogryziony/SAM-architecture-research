@@ -9,9 +9,6 @@ import pytest
 
 from benchmarks.realizer_contracts import sha256_file
 from benchmarks.train_nexus_realizer import load_training_inputs
-from benchmarks.train_nexus_realizer_v2 import _generate_and_score
-from nexus.realizer.decoder import DecoderConfig
-from nexus.realizer.model import build_model, parameter_count
 
 
 ROOT = Path(__file__).parent.parent
@@ -33,6 +30,10 @@ def test_checkpoint_manifest_and_hash_are_exact():
 
 def test_checkpoint_follows_both_verified_relation_plans():
     torch = pytest.importorskip("torch")
+    from benchmarks.train_nexus_realizer_v2 import _generate_and_score
+    from nexus.realizer.decoder import DecoderConfig
+    from nexus.realizer.model import build_model, parameter_count
+
     manifest, config, splits = load_training_inputs(DATASET, CONFIG)
     model = build_model(config["model"])
     model.load_state_dict(torch.load(

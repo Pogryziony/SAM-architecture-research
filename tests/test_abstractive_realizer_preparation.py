@@ -22,9 +22,6 @@ from benchmarks.train_nexus_realizer import (
     serialization_coverage_for_config, training_target_for_config,
     validate_readiness_for_training,
 )
-from benchmarks.train_nexus_realizer_v2 import _select_generation_subset
-from nexus.realizer.decoder import score_candidate_texts
-from nexus.realizer.tokenizer import ByteTokenizer
 
 
 @pytest.fixture(scope="module")
@@ -121,6 +118,9 @@ def test_trainer_loads_slot_contract_without_target_leakage(prepared_dataset):
 
 
 def test_generation_subset_is_relation_balanced():
+    pytest.importorskip("torch")
+    from benchmarks.train_nexus_realizer_v2 import _select_generation_subset
+
     records = [
         {"id": f"same-{index}", "composition": {"relation": "the same"}}
         for index in range(8)
@@ -137,6 +137,9 @@ def test_generation_subset_is_relation_balanced():
 
 def test_constrained_candidate_scoring_returns_complete_allowed_label():
     torch = pytest.importorskip("torch")
+    from nexus.realizer.decoder import score_candidate_texts
+    from nexus.realizer.tokenizer import ByteTokenizer
+
     tokenizer = ByteTokenizer()
     expected = tokenizer.encode("SAME", 32)
 
