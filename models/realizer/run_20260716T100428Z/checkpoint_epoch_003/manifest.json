@@ -1,0 +1,49 @@
+{
+  "config_sha256": "44faf90572f0c92096982bb085b987e715ac491d0688b096670dbdd9ae45658e",
+  "dataset_sha256": "8028e471bb304ffb95ab338f0a3a93cbe4ded04596f73e9479a6135e663a59e0",
+  "decoder_config": {
+    "max_length": 256,
+    "no_repeat_ngram_size": 3,
+    "repetition_penalty": 1.2,
+    "strategy": "greedy"
+  },
+  "effective_config_sha256": "d6a8e2c9f8ecba362f4bd277fb293b10cd4bc99b6409d0d8c6d566f0ca8ce149",
+  "effective_training_config": {
+    "batch_size": 16,
+    "early_stopping_patience": 3,
+    "epochs": 5,
+    "learning_rate": 0.0001,
+    "max_parameters": 50000000,
+    "weight_decay": 0.01
+  },
+  "elapsed_seconds": 2454.077,
+  "epoch": 3,
+  "epoch_seconds": 805.67,
+  "gen_metrics": {
+    "avg_length": 21.4,
+    "coherent": 20,
+    "coherent_rate": 1.0,
+    "empty": 0,
+    "eos_rate": 1.0,
+    "partial": 0,
+    "rep_3gram_mean": 0.0,
+    "repetitive": 0,
+    "samples": 20
+  },
+  "learning_rate": 3.455e-05,
+  "optimizer_sha256": "37350562b5e8f69162c1f0cdd7deae57e5cd464bb3270256ae654003e9205d25",
+  "parameter_count": 2770752,
+  "peak_rss_mb": 6860.87109375,
+  "sample_predictions_count": 10,
+  "sample_predictions_sha256": "76059c41bbf7ddae00a405615daa49acad256350c54a01a3d6b7a4a3e140e7e7",
+  "scheduler_sha256": "eb6fa442d462852d00a913789b91e8a04d7b349691a9bbc81bc9c932b42c0bfd",
+  "schema_version": "nexus-realizer-checkpoint-v1",
+  "stop_reason": "epoch_complete",
+  "train_loss": 3.809759,
+  "validation_loss": 2.678312,
+  "weights": {
+    "path": "models\\realizer\\run_20260716T100428Z\\checkpoint_epoch_003\\model.pt",
+    "sha256": "de3bcb609504ad98e757f75fc196cb2c82630323481f81c4554a78e93e9d9b1a",
+    "size_bytes": 11112759
+  }
+}

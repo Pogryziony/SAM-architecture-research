@@ -1,0 +1,11 @@
+# Prevent CRLF conversion for hash-sensitive files
+*.jsonl -text
+*.pt -text
+*.sha256 -text
+*.json text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.cfg text eol=lf

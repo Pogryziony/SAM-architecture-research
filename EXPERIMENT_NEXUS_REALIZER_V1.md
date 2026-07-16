@@ -1,7 +1,7 @@
 # EXPERIMENT: NEXUS Realizer v1 — CPU-First Evidence-to-Answer Model
 
 **Pre-registered**: 2026-07-11
-**Status**: PHASE 0–4 READY — short corrected pilot authorized; deployment remains unapproved.
+**Status**: REALIZER_PILOT_FAIL — mode collapse in first controlled pilot; architectural changes needed.
 **Repository**: SAM-architecture-research
 
 ---
@@ -143,6 +143,92 @@ generation-aware trainer and proceed through 1, 3 and at most 5 epochs. Every
 run records effective preset values. Training stops on non-finite loss,
 validation regression, repetition recurrence or worsening registered
 answer-quality metrics.
+
+## Pilot run outcome: `REALIZER_PILOT_FAIL`
+
+**Run ID**: `run_20260716T100428Z`
+**Date**: 2026-07-16
+**Commit**: `e1575bbb2c18496141d71969c13d9b5e586cd789` (PR #22 merge)
+**Tree SHA**: `7b1920947a155404c58bf98701fdd4f8d54c696e`
+
+### Training summary
+
+| Metric | Value |
+|--------|-------|
+| Epochs completed | 4 (stopped early: gen quality regression) |
+| Configured epochs | 5 |
+| Total elapsed | 54.5 minutes |
+| Initial loss | 191.815 |
+| Final train loss | 3.539 |
+| Best validation loss | 2.591 (epoch 4) |
+| Model parameters | 2,770,752 |
+| Peak RSS | ~6,860 MB (exceeded 500 MB budget) |
+
+### Epoch metrics
+
+| Epoch | Train Loss | Val Loss | Gen Coh | Rep3 | EOS | Time |
+|-------|-----------|----------|---------|------|-----|------|
+| 1 | 47.612 | 4.481 | 100% | 0.00 | 100% | 13.9 min |
+| 2 | 4.546 | 2.970 | 100% | 0.00 | 100% | 13.4 min |
+| 3 | 3.810 | 2.678 | 100% | 0.00 | 100% | 13.4 min |
+| 4 | 3.539 | 2.591 | 100% | 0.00 | 100% | 13.6 min |
+
+### Checkpoint evaluation (100 validation samples)
+
+| Epoch | SHA-256 | Unique outputs | Uniqueness |
+|-------|---------|---------------|------------|
+| 1 | `d27885f1...` | 1/100 | 1.0% |
+| 3 | `de3bcb60...` | 4/100 | 4.0% |
+
+### Gate results
+
+| Gate | Status | Value | Threshold |
+|------|--------|-------|-----------|
+| Relevance | **FAIL** | 0.0% | >= 77% |
+| Accuracy | **FAIL** | 0.0% | >= baseline - 2pp |
+| Naturalness | **FAIL** | 0.0 | >= 5pt improvement |
+| Hallucination | **FAIL** | 100% | <= baseline |
+| Coherence (bytes) | PASS | 100% | — |
+| EOS | PASS | 100% | — |
+| Repetition (bytes) | PASS | 0.00 | — |
+
+### Root cause: Mode collapse
+
+Both checkpoints suffer from catastrophic mode collapse:
+- **Epoch 1**: ALL 100 samples produce identical output: `ooo senamtri___plll,,, cccfffIII`
+- **Epoch 3**: Only 4 unique outputs across 100 samples, all variations of `In sam/coretigl, ...`
+
+The byte-level coherence/EOS/repetition metrics misleadingly show perfect scores
+because they operate on byte-level token sequences that happen to be short and
+non-repeating at the byte level, while the text-level output is completely
+meaningless.
+
+### Key findings
+
+1. **Loss is misleading**: Train loss dropped from 191.8 to 3.5, but generation quality did not improve. Loss alone cannot determine model quality.
+2. **Generation-aware checks caught the issue**: The gen_patience safety stop triggered at epoch 4, preventing wasted computation.
+3. **Memory budget exceeded**: Peak RSS of ~6.9 GB far exceeds the 500 MB budget. The Python process with PyTorch, the model, and dataset all contribute.
+4. **Byte-level tokenizer limitations**: The byte-level tokenizer (259 symbols) prevents the model from learning meaningful word/subword patterns, contributing to mode collapse.
+5. **Model capacity likely insufficient**: 2.78M parameters may be inadequate for learning evidence-to-answer mapping across 7,127 training pairs with diverse question types.
+
+### Recommended next steps
+
+1. Switch from byte-level to BPE/subword tokenizer (e.g., 1000-8000 tokens)
+2. Increase model capacity: d_model ≥ 256, more encoder/decoder layers
+3. Add diversity-promoting training: unlikelihood loss, scheduled sampling
+4. Add beam search or nucleus sampling (top-p) for diverse generation
+5. Implement streaming/batched inference to control memory
+6. Consider curriculum: train on short factual answers first, then longer ones
+7. Add runtime text-level diversity metrics (not just byte-level rep_3gram)
+
+### Decision
+
+**No checkpoint is acceptable.** Both checkpoint epochs (1 and 3) fail all
+registered answer-quality gates. Training artifacts are preserved for
+diagnostics. This does NOT authorize a longer training run — the identified
+architectural issues must be addressed first.
+
+Full report: `benchmarks/results/realizer/run_20260716T100428Z/pilot_report.json`
 
 ## Budget Compliance
 

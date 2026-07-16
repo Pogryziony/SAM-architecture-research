@@ -32,3 +32,18 @@ split, and reproducibility hashes.
 The committed configuration is `training/nexus_realizer_v1.json`; its default
 is 5 epochs with early-stopping patience 3. No command overwrites an existing
 dataset, evaluation artifact, report or training directory.
+
+## Pilot outcome: `REALIZER_PILOT_FAIL`
+
+**Run**: `run_20260716T100428Z` (2026-07-16)
+**Result**: Mode collapse at all checkpoint epochs. No acceptable checkpoint.
+**Artifacts**: `models/realizer/run_20260716T100428Z/`
+**Report**: `benchmarks/results/realizer/run_20260716T100428Z/pilot_report.json`
+
+Key findings:
+- Loss decreased from 191.8 to 3.5, but generation quality did not improve
+- Epoch 1: 1 unique output across 100 validation samples
+- Epoch 3: 4 unique outputs across 100 validation samples
+- Byte-level coherence/EOS/repetition metrics are misleading — they pass while text-level quality fails
+- Memory budget (500 MB) exceeded: peak RSS ~6.9 GB
+- Architectural changes (subword tokenizer, model capacity, diversity training) needed before retraining

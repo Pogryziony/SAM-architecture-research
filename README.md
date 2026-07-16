@@ -41,8 +41,8 @@ general-purpose LLM reasoning path.
 | Canonical baseline (Stage 0) | ✅ **VALID** — dependency-free lexical RAG and lexical NEXUS both answer the registered 30 cases; 25 cases form the paired comparison. |
 | Realization L1 (Stage 2) | ✅ **PASS** — registered 30-case protocol passes for `PYTHONHASHSEED=0,1,42`: relevance 78.33%, accuracy delta +15.34pp, naturalness +22.40 and hallucination delta -5.12pp. All seeds have the same canonical content hash. |
 | Dialogue state (Stage 3) | ✅ **PASS** — full 110-turn protocol: reference resolution 87.5%, zero single-turn regression and dialogue-state p50 0.048ms. Resolver and complete-pipeline latency remain separate diagnostics. |
-| Realization L2 (Stage 4) | ✅ **GO FOR TRAINING** — 7,127 unique train-only pairs, oracle, readiness, CPU preflight and 50-step no-write overfit smoke pass. The default pilot is capped at 5 epochs with patience 3. |
-| End-to-end QA | ✅ Phase 0–4 training-readiness contract implemented; full Realizer training has deliberately not started yet. |
+| Realization L2 (Stage 4) | ✅ **GO FOR TRAINING** — 7,127 unique train-only pairs, oracle, readiness, CPU preflight and 50-step no-write overfit smoke pass. Pilot training completed 2026-07-16 with REALIZER_PILOT_FAIL result. |
+| End-to-end QA | 🔴 **REALIZER_PILOT_FAIL** — first controlled pilot (4 epochs) confirmed mode collapse at all checkpoints. Architectural changes needed before retraining. |
 
 ### Quick start (NEXUS)
 

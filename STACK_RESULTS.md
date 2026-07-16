@@ -17,7 +17,7 @@
 | ER3 | Entity Ranker V3 | **CHECKPOINT VERIFIED**. Exact checkpoint is committed with config and vocabulary. Manifest size and SHA-256 checks pass before deserialization. | ✅ READY |
 | 2 | Realization L1 | Registered 30-case run passes for seeds 0/1/42 with one canonical hash; relevance 78.33%. | ✅ PASS |
 | 3 | Dialogue State | Full 110-turn run passes: reference resolution 87.5%, single-turn regression 0 and dialogue-state p50 0.048ms. | ✅ PASS |
-| 4 | Realization L2 | 7,127 unique pairs, valid oracle/readiness, CPU preflight and no-write overfit smoke pass; default pilot is 5 epochs with early stopping. | ✅ GO FOR TRAINING |
+| 4 | Realization L2 | 7,127 unique pairs, valid oracle/readiness, CPU preflight and no-write overfit smoke pass; pilot training completed 2026-07-16 with mode collapse (REALIZER_PILOT_FAIL). | 🔴 FAIL |
 | 5 | Freeze | This document | 🔄 |
 
 ---

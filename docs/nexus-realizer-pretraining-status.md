@@ -1,12 +1,39 @@
 # NEXUS Realizer v1 — training status
 
-**Decision: GO FOR REALIZER TRAINING. Phase 0–4 pre-training gates pass.**
+**Decision: REALIZER_PILOT_FAIL. Mode collapse in first controlled pilot; no acceptable checkpoint.**
 
-The repository now contains everything required to reproduce the decision:
-the verified Entity Ranker V3 (ER3) checkpoint, the unique train-only dataset,
-immutable benchmark artifacts and a final all-or-nothing readiness checker.
-This decision authorizes a short training pilot. It does not approve a model
-for deployment and does not claim that post-training answer quality passes.
+## Pilot outcome (2026-07-16)
+
+The first controlled pilot training (`run_20260716T100428Z`) completed 4 epochs
+(stopped early by gen quality regression). Despite loss decreasing from 191.8 to
+3.5, both checkpoint epochs (1 and 3) exhibit catastrophic mode collapse:
+
+- **Epoch 1**: 1 unique output across 100 validation samples
+- **Epoch 3**: 4 unique outputs across 100 validation samples
+
+All registered answer-quality gates FAIL:
+- Relevance: 0% (threshold: >= 77%)
+- Accuracy: 0% (threshold: >= baseline - 2pp)
+- Naturalness: 0 points (threshold: >= 5pt improvement)
+- Hallucination: 100% (threshold: <= baseline)
+
+**Root cause**: The byte-level tokenizer (259 symbols) and small model capacity
+(2.77M parameters) lead to mode collapse where the model outputs the same
+nonsense sequence regardless of input. The loss decreases are misleading — 
+teacher-forcing loss minimization does not translate to generation quality when
+the model lacks sufficient capacity to learn the evidence-to-answer mapping.
+
+Full report: `benchmarks/results/realizer/run_20260716T100428Z/pilot_report.json`
+Training artifacts: `models/realizer/run_20260716T100428Z/`
+
+## Next steps
+
+Before another training attempt, address:
+1. Replace byte-level tokenizer with BPE/subword tokenizer
+2. Increase model capacity (d_model >= 256, more layers)
+3. Add diversity-promoting training techniques
+4. Implement text-level (not byte-level) quality metrics
+5. Add nucleus sampling for diverse generation
 
 ## Confirmed results
 
@@ -92,3 +119,10 @@ Stop after any failed generation-aware or registered answer-quality gate. The
 8- and 12-epoch presets require a separate decision backed by improvement in
 relevance, naturalness, accuracy and hallucination. A 50-epoch preset has been
 removed because training loss alone did not predict usable answers.
+
+## First pilot: REALIZER_PILOT_FAIL
+
+Run `run_20260716T100428Z` completed 4 epochs. Mode collapse confirmed at both
+checkpoint epochs (1 and 3). No checkpoint passes any answer-quality gate.
+Training artifacts preserved for diagnostics at `models/realizer/run_20260716T100428Z/`.
+Full evaluation at `benchmarks/results/realizer/run_20260716T100428Z/`.

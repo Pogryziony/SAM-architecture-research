@@ -1,0 +1,54 @@
+{
+  "samples": 100,
+  "unique_outputs": 4,
+  "uniqueness_ratio": 0.04,
+  "eos_rate": 1.0,
+  "avg_length": 21.35,
+  "avg_rep_3gram": 0.0,
+  "latency_p50_ms": 198.53130799998326,
+  "top_outputs": [
+    [
+      "In sam/coretigl, s_de.",
+      39
+    ],
+    [
+      "In sam/coretigl, 1_de.",
+      39
+    ],
+    [
+      "In sameritod_cl, 1.",
+      21
+    ],
+    [
+      "In samerigcod_th, 1.",
+      1
+    ]
+  ],
+  "examples": [
+    {
+      "question": "What value is assigned to model.memory.num_subkeys in sam-lm/configs/sam_oracle_",
+      "ground_truth": "In sam-lm/configs/sam_oracle_text_dense.yaml, model.memory.num_subkeys is set to",
+      "generated": "In sam/coretigl, s_de."
+    },
+    {
+      "question": "What value is assigned to train.log_every in sam-lm/configs/sam_chain_learned_se",
+      "ground_truth": "In sam-lm/configs/sam_chain_learned_selector_top_by_hop_dense.yaml, train.log_ev",
+      "generated": "In sam/coretigl, s_de."
+    },
+    {
+      "question": "What value is assigned to train.device in sam-lm/configs/sam_retrieved_ext_weigh",
+      "ground_truth": "In sam-lm/configs/sam_retrieved_ext_weighted_top3_dense.yaml, train.device is se",
+      "generated": "In sam/coretigl, 1_de."
+    },
+    {
+      "question": "What value is assigned to memory_score_temperature in sam-lm/configs/sam_retriev",
+      "ground_truth": "In sam-lm/configs/sam_retrieved_ext_weighted_top3_dense.yaml, memory_score_tempe",
+      "generated": "In sam/coretigl, 1_de."
+    },
+    {
+      "question": "What value is assigned to train.eval_every in sam-lm/configs/sam_retrieved_fixed",
+      "ground_truth": "In sam-lm/configs/sam_retrieved_fixed_top4_dense.yaml, train.eval_every is set t",
+      "generated": "In sam/coretigl, s_de."
+    }
+  ]
+}
