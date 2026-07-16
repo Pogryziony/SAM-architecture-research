@@ -98,6 +98,16 @@ The adversarial set includes a correct answer outside the first position, wrong
 number, wrong file, wrong configuration key, missing evidence and conflicting
 evidence. Missing and conflicting evidence must fail closed.
 
+### Registered result
+
+The registered 1,434-record validation run is
+`benchmarks/results/realizer/pointer_copy_v3_20260716.json`. It reports 100%
+candidate availability, exact match, token F1, uniqueness and shuffled-order
+exact match; unsupported-number, unsupported-identifier, wrong-candidate and
+hallucination rates are all 0%. Median selection latency is 0.037 ms and all six
+adversarial checks pass. Its canonical SHA-256 is
+`046b53747fb2e722f4ed6cbd56b392df1920360a87a347d5e5de2c5caef1deab`.
+
 ## Grounding diagnostics
 
 `nexus.realizer.grounded.grounding_diagnostics` reports both a continuous

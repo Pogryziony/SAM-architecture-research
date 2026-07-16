@@ -17,7 +17,7 @@
 | ER3 | Entity Ranker V3 | **CHECKPOINT VERIFIED**. Exact checkpoint is committed with config and vocabulary. Manifest size and SHA-256 checks pass before deserialization. | ✅ READY |
 | 2 | Realization L1 | Registered 30-case run passes for seeds 0/1/42 with one canonical hash; relevance 78.33%. | ✅ PASS |
 | 3 | Dialogue State | Full 110-turn run passes: reference resolution 87.5%, single-turn regression 0 and dialogue-state p50 0.048ms. | ✅ PASS |
-| 4 | Realization L2 | Pointer/Copy v3 is accepted for extractive factual QA after auditing all 7,127 targets. The neural v2 checkpoint remains rejected and is not used by the accepted path. | ✅ EXTRACTIVE PASS |
+| 4 | Realization L2 | Pointer/Copy v3 is accepted for extractive factual QA after auditing all 7,127 targets: 100% exact match, 0% hallucination, 0 pp position-shuffle drop. The neural v2 checkpoint remains rejected. | ✅ EXTRACTIVE PASS |
 | 5 | Freeze | This document | 🔄 |
 
 ---
@@ -106,6 +106,10 @@ and evidence, copies the selected text verbatim, ignores candidate position and
 fails closed when evidence is missing or ambiguous. It is integrated as an
 explicit runtime backend for factual lookups. The neural v2 checkpoint remains
 rejected; no fallback metric promotes it.
+
+Registered evidence: `benchmarks/results/realizer/pointer_copy_v3_20260716.json`
+with canonical SHA-256
+`046b53747fb2e722f4ed6cbd56b392df1920360a87a347d5e5de2c5caef1deab`.
 
 ---
 

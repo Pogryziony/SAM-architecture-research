@@ -41,7 +41,7 @@ general-purpose LLM reasoning path.
 | Canonical baseline (Stage 0) | ✅ **VALID** — dependency-free lexical RAG and lexical NEXUS both answer the registered 30 cases; 25 cases form the paired comparison. |
 | Realization L1 (Stage 2) | ✅ **PASS** — registered 30-case protocol passes for `PYTHONHASHSEED=0,1,42`: relevance 78.33%, accuracy delta +15.34pp, naturalness +22.40 and hallucination delta -5.12pp. All seeds have the same canonical content hash. |
 | Dialogue state (Stage 3) | ✅ **PASS** — full 110-turn protocol: reference resolution 87.5%, zero single-turn regression and dialogue-state p50 0.048ms. Resolver and complete-pipeline latency remain separate diagnostics. |
-| Realization L2 (Stage 4) | ✅ **POINTER/COPY V3 ACCEPTED FOR EXTRACTIVE FACTUAL QA** — the target audit found 7,127/7,127 answers already present as complete evidence candidates. The deterministic, label-free selector copies the selected evidence exactly and fails closed on ambiguity. The neural v2 checkpoint remains rejected. |
+| Realization L2 (Stage 4) | ✅ **POINTER/COPY V3 ACCEPTED FOR EXTRACTIVE FACTUAL QA** — the target audit found 7,127/7,127 answers already present as complete evidence candidates. Validation: 100% exact match, 0% hallucination and no position-shuffle drop. The neural v2 checkpoint remains rejected. Evidence: `benchmarks/results/realizer/pointer_copy_v3_20260716.json`. |
 | End-to-end QA | 🟡 **FACTUAL EXTRACTIVE PATH READY** — `ProductionNEXUSConfig.pointer_copy()` connects Pointer/Copy to the real runtime. Comparison, synthesis and genuinely abstractive answers still use the existing path and require separate data and evaluation. |
 
 ### Quick start (NEXUS)
