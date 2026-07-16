@@ -346,11 +346,18 @@ def main() -> int:
         },
         "label_use": "classification_and_scoring_only",
         "realization_input": "question_and_evidence_only",
+        "canonical_exclusions": [
+            "created_utc",
+            "evaluation_checkout",
+            "validation.metrics.latency_p50_ms",
+        ],
         "train_dataset_classification": dict(sorted(train_classification.items())),
         "validation": validation,
     }
     canonical = copy.deepcopy(artifact)
     canonical.pop("created_utc")
+    canonical.pop("evaluation_checkout")
+    canonical["validation"]["metrics"].pop("latency_p50_ms")
     artifact["canonical_sha256"] = hashlib.sha256(
         json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
