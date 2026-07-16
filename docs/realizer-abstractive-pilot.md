@@ -1,7 +1,8 @@
 # NEXUS Realizer — bounded multi-evidence pilot
 
-**Planned status:** run preparation only. Full training must not start until the
-committed readiness artifact says `READY_FOR_BOUNDED_PILOT`.
+**Status:** `READY_FOR_BOUNDED_PILOT`. The committed readiness artifact passes
+all 15 blocking checks. No training was launched and no checkpoint was
+promoted by this preparation run.
 
 ## Objective
 
@@ -81,6 +82,30 @@ Before training, all of the following must pass:
 | Initial loss | finite and at most 10 |
 | Overfit smoke | at least 15% loss reduction |
 | Weights written by preparation | none |
+
+## Registered preparation result
+
+The immutable dataset contains 1,642 compositions: 1,286 train and 356
+validation records (21.6809%). It consumes 3,284 atomic claims exactly once,
+quarantines 44 source families from the consumed v1 validation split and has
+zero normalized question or answer overlap with all v1 records. It contains
+1,383 configuration comparisons and 259 table comparisons.
+
+The readiness artifact reports `READY_FOR_BOUNDED_PILOT` with no blocking
+checks. The CPU model has 1,058,051 parameters. The no-write preflight loss is
+6.179254 with finite gradients; the 30-step overfit smoke reduces loss from
+6.192694 to 1.360204 (78.04%).
+
+Registered identities:
+
+- source commit: `cd3824bf6a4f7f158eec58dc552706accdc2a3a8`;
+- source tree: `45e31734f384688c2a7e49bf8b4cfd575f2c9c5e`;
+- dataset SHA-256: `7aaa4ee9566da98d67bf07f8a773b47e7dfb479a85b64d488e97446d2ef9b5c1`;
+- readiness canonical SHA-256: `e854a80695aede2fa703898923f47aa8f54353393ff8088143ccabdb0dce3361`.
+
+Two independent readiness evaluations of the same immutable inputs produced
+the same canonical hash. Timing remains diagnostic and is excluded from the
+canonical identity.
 
 ## Pilot schedule and stop conditions
 
