@@ -19,6 +19,13 @@
   "elapsed_seconds": 2454.077,
   "epoch": 3,
   "epoch_seconds": 805.67,
+  "files": {
+    "model.pt": {
+      "sha256": "de3bcb609504ad98e757f75fc196cb2c82630323481f81c4554a78e93e9d9b1a",
+      "size": 11112759,
+      "stored_in_git": true
+    }
+  },
   "gen_metrics": {
     "avg_length": 21.4,
     "coherent": 20,
@@ -31,6 +38,7 @@
     "samples": 20
   },
   "learning_rate": 3.455e-05,
+  "manifest_sha256": "8a687f284401f085d75b1a6485aa78a7da3571c7c42f0e0a81b10176b5568ea1",
   "optimizer_sha256": "37350562b5e8f69162c1f0cdd7deae57e5cd464bb3270256ae654003e9205d25",
   "parameter_count": 2770752,
   "peak_rss_mb": 6860.87109375,

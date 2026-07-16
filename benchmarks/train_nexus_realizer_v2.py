@@ -247,6 +247,16 @@ def _save_checkpoint(
 
     # Save manifest with SHA-256 sidecar
     manifest_path = ckpt_dir / "manifest.json"
+
+    # Add files metadata for existing test compatibility
+    checkpoint_info["files"] = {
+        "model.pt": {
+            "sha256": weights_sha,
+            "size": weights_size,
+            "stored_in_git": True,
+        }
+    }
+
     manifest_path.write_text(
         json.dumps(checkpoint_info, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
