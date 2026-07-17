@@ -163,7 +163,7 @@ def test_previous_realizer_records_are_registered_as_exclusions():
     assert sum(item["records_scanned"] for item in manifests) == 8_769
     assert questions
     assert text_keys
-    assert {item["path"] for item in manifests} == {
+    assert {Path(item["path"]).as_posix() for item in manifests} == {
         "data/distillation/realizer_v1/manifest.json",
         "data/distillation/realizer_abstractive_v1/manifest.json",
     }

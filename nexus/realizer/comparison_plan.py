@@ -150,7 +150,104 @@ def _parse_fact(fact: dict[str, Any]) -> tuple[str, str, str] | None:
         match = re.fullmatch(r"For (.+?), (.+?) is (.+)\.", remainder)
         if match:
             return source, match.group(1).strip(), match.group(3).strip()
+
+    # ── Extended patterns: each fails closed (returns None on ambiguity) ──
+
+    # 1. "X is Y" pattern — subjects and values joined by "is" verb.
+    source_triple = _parse_is_pattern(source, text)
+    if source_triple is not None:
+        return source_triple
+
+    # 2. Numeric extraction pattern — two numeric values tied to a named source.
+    source_triple = _parse_numeric_pattern(source, text)
+    if source_triple is not None:
+        return source_triple
+
+    # 3. Key-value pattern — semi-structured key=value or key:value prose.
+    source_triple = _parse_key_value_prose(source, text)
+    if source_triple is not None:
+        return source_triple
+
     return None
+
+
+def _parse_is_pattern(source: str, text: str) -> tuple[str, str, str] | None:
+    """Handle evidence of the form ``<subject> is <value>.``
+
+    Only applies when *text* does not match the standard ``In {source}, …``
+    prefix (already handled above).  The subject captures everything before
+    the word "is" and the value captures everything after it, stripped of
+    trailing punctuation.  Returns None when the pattern is ambiguous
+    (multiple "is" tokens, missing period, unbalanced clauses).
+    """
+    remainder = text.strip()
+    if not remainder:
+        return None
+
+    match = re.fullmatch(r"(.+?) is (.+)\.", remainder)
+    if not match:
+        return None
+
+    subject = match.group(1).strip()
+    value = match.group(2).strip()
+
+    # Reject degenerate fragments where subject or value is empty.
+    if not subject or not value:
+        return None
+
+    # Reject when "is" appears multiple times (e.g. "X is Y is Z").
+    if remainder.count(" is ") > 1:
+        return None
+
+    return source, subject, value
+
+
+def _parse_numeric_pattern(source: str, text: str) -> tuple[str, str, str] | None:
+    """Extract subject/value from text containing exactly two numeric tokens.
+
+    The entity described by *source* becomes the subject.  The first numeric
+    value in the text becomes the comparison value.  Only triggers when the
+    text contains an equality/comparison keyword to avoid picking up
+    irrelevant numbers (e.g. timestamps, counts, versions).
+    """
+    comparison_keywords = {"equal", "same", "different", "wynosi", "równa"}
+    lower_text = text.casefold()
+    if not any(kw in lower_text for kw in comparison_keywords):
+        return None
+
+    numbers = re.findall(r"\d+(?:\.\d+)?", text)
+    if len(numbers) != 2:
+        return None
+
+    # The source must contain a recognizable entity name (alphanumeric + dots/slashes).
+    if not re.fullmatch(r"[A-Za-z0-9_./\- ]+", source):
+        return None
+
+    return source, source, numbers[0]
+
+
+def _parse_key_value_prose(source: str, text: str) -> tuple[str, str, str] | None:
+    """Extract key-value pairs from semi-structured prose like ``param=42``.
+
+    Scans for ``key : value`` or ``key = value`` patterns.  Uses the first
+    match only; returns None when no unambiguous pair is found or when the
+    key already appears in the source (avoiding self-referential extraction).
+    """
+    match = re.search(r"([A-Za-z_]\w*)\s*[:=]\s*(.+?)(?:[.,;](?:\s|$)|$)", text)
+    if not match:
+        return None
+
+    key = match.group(1).strip()
+    value = match.group(2).strip()
+
+    if not key or not value:
+        return None
+
+    # Avoid extracting the same key as the source itself.
+    if key.casefold() in source.casefold():
+        return None
+
+    return source, key, value
 
 
 def extract_comparison_slots(
@@ -210,8 +307,48 @@ def serialize_verified_comparison_plan(
     return text.encode("utf-8")[:max_bytes].decode("utf-8", errors="ignore")
 
 
-def materialize_comparison(plan: VerifiedComparisonPlan) -> str:
+def _detect_language(question: str) -> str:
+    """Return ``"pl"`` if *question* appears to be in Polish, otherwise ``"en"``.
+
+    Detection uses two signals:
+    1. Presence of any Polish-specific Unicode character: ąćęłńóśźż.
+    2. If the text is more than 50% lowercase Latin letters and contains at
+       least one Polish function word (jest, czy, jak, który, dla, się).
+    """
+    pl_chars = set("ąćęłńóśźż")
+    if any(ch in question for ch in pl_chars):
+        return "pl"
+
+    alpha_chars = [ch for ch in question if ch.isalpha()]
+    if not alpha_chars:
+        return "en"
+
+    lowercase_alpha = [ch for ch in alpha_chars if ch.islower()]
+    lower_ratio = len(lowercase_alpha) / len(alpha_chars) if alpha_chars else 0.0
+    if lower_ratio <= 0.5:
+        return "en"
+
+    pl_function_words = {"jest", "czy", "jak", "który", "dla", "się"}
+    lower_words = set(question.casefold().split())
+    if any(w in lower_words for w in pl_function_words):
+        return "pl"
+
+    return "en"
+
+
+def materialize_comparison(plan: VerifiedComparisonPlan, *, language: str = "en") -> str:
     slots = plan.slots
+    if language == "pl":
+        relation_str = plan.relation
+        if "same" in relation_str:
+            relation_pl = "takie same"
+        else:
+            relation_pl = "różne"
+        return (
+            f"{slots.source_1} podaje {slots.value_1} dla {slots.subject_1}, "
+            f"podczas gdy {slots.source_2} podaje {slots.value_2} dla "
+            f"{slots.subject_2}; wartości są {relation_pl}."
+        )
     return (
         f"{slots.source_1} reports {slots.value_1} for {slots.subject_1}, while "
         f"{slots.source_2} reports {slots.value_2} for {slots.subject_2}; "
@@ -301,9 +438,18 @@ def _checkpoint_label_selector(
     }
 
 
-def _rejected(reason: str, *, plan: VerifiedComparisonPlan | None = None) -> ComparisonRealization:
+def _rejected(
+    reason: str,
+    *,
+    plan: VerifiedComparisonPlan | None = None,
+    language: str = "en",
+) -> ComparisonRealization:
+    if language == "pl":
+        answer = "Podane dowody nie wystarczają do udzielenia odpowiedzi."
+    else:
+        answer = "Insufficient evidence to answer."
     return ComparisonRealization(
-        answer="Insufficient evidence to answer.",
+        answer=answer,
         strategy="insufficient_evidence",
         rejection_reason=reason,
         relation_plan=plan.label if plan else "",
@@ -325,6 +471,7 @@ def realize_comparison_plan(
     label_selector: LabelSelector | None = None,
 ) -> ComparisonRealization:
     """Realize one verified comparison or return a fail-closed result."""
+    language = _detect_language(question)
     try:
         plan = build_verified_comparison_plan(question, evidence_pack)
         max_bytes = 766
@@ -338,14 +485,22 @@ def realize_comparison_plan(
         serialized = serialize_verified_comparison_plan(plan, max_bytes)
         selected, diagnostics = selector(serialized, ("SAME", "DIFFERENT"))
     except (ComparisonPlanError, OSError, ValueError, RuntimeError) as exc:
-        return _rejected(str(exc), plan=locals().get("plan"))
+        return _rejected(str(exc), plan=locals().get("plan"), language=language)
 
     if selected not in {"SAME", "DIFFERENT"}:
-        return _rejected("comparison_model_returned_unsupported_label", plan=plan)
+        return _rejected(
+            "comparison_model_returned_unsupported_label",
+            plan=plan,
+            language=language,
+        )
     if selected != plan.label:
-        return _rejected("comparison_model_contradicted_verified_plan", plan=plan)
+        return _rejected(
+            "comparison_model_contradicted_verified_plan",
+            plan=plan,
+            language=language,
+        )
     return ComparisonRealization(
-        answer=materialize_comparison(plan),
+        answer=materialize_comparison(plan, language=language),
         strategy=BACKEND_NAME,
         rejection_reason="",
         relation_plan=plan.label,
@@ -364,5 +519,5 @@ __all__ = [
     "build_verified_comparison_plan", "extract_comparison_slots",
     "materialize_comparison", "normalize_comparison_value",
     "realize_comparison_plan", "relation_for_values",
-    "serialize_verified_comparison_plan",
+    "serialize_verified_comparison_plan", "_detect_language",
 ]

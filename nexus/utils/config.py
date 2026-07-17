@@ -99,16 +99,19 @@ class NEXUSConfig:
     # Post-edit — disabled by default; masks model's true accuracy
     post_edit_enabled: bool = False
 
-    # Realizer v3 is opt-in so historical registered Stage 2 artifacts retain
-    # their original semantics.  Production callers can select pointer_copy.
-    realizer_backend: str = "synth"
+    # The default grounded profile routes factual lookups to Pointer/Copy v3
+    # and comparisons to the hash-verified comparison-plan checkpoint.  Callers
+    # can opt out by selecting ``"synth"`` or ``"pointer_copy"`` explicitly.
+    realizer_backend: str = "grounded_v1"
 
-    # Accepted comparison-plan Realizer identity.  These fields are ignored
-    # unless ``realizer_backend == "abstractive_plan_v3"``.  Keeping the
-    # expected hash in configuration makes a replaced checkpoint fail closed.
-    realizer_model_dir: str = ""
-    realizer_config_path: str = ""
-    realizer_checkpoint_sha256: str = ""
+    # Accepted comparison-plan Realizer identity bound into the default
+    # grounded profile.  Keeping the expected hash in configuration makes
+    # a replaced checkpoint fail closed.
+    realizer_model_dir: str = "models/realizer/abstractive_v1_plan_v3"
+    realizer_config_path: str = "training/nexus_realizer_abstractive_v1.json"
+    realizer_checkpoint_sha256: str = (
+        "bfa5855a57fba8db34e896d77848942733c5570049c927d4310646bea444e152"
+    )
 
     # Tier-3 cascade backend — which answer generator to use for 0-hop evidence.
     #   "synth" (default): SynthesizingModel — template-based, never refuses.

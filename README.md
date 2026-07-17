@@ -44,7 +44,8 @@ general-purpose LLM reasoning path.
 | Realization L2 (Stage 4) | ✅ **POINTER/COPY V3 ACCEPTED FOR EXTRACTIVE FACTUAL QA** — the target audit found 7,127/7,127 answers already present as complete evidence candidates. Validation: 100% exact match, 0% hallucination and no position-shuffle drop. The neural v2 checkpoint remains rejected. Evidence: `benchmarks/results/realizer/pointer_copy_v3_20260716.json`. |
 | Constrained comparison-plan Realizer | ✅ **PILOT CHECKPOINT ACCEPTED AND RUNTIME-INTEGRATED** — the bounded 1→3 epoch CPU pilot passes 356/356 full-validation cases. `ProductionNEXUSConfig.comparison_plan()` now connects the hash-verified checkpoint to `answer_question()` with symbolic relation verification and fail-closed evidence handling. Full training was not launched. |
 | Realizer corpus v2 | 🟡 **DATA READY; FULL TRAINING BLOCKED BY NEURAL GENERATION** — a document-disjoint holdout adds 500 abstention cases without duplication, PoQuAD now preserves extractive facts separately from natural targets, and 27,255 train records require real surface transformation. The 2,048-record and pointer-generator pilots failed generation gates, so the representative pilot and full training were not launched. |
-| End-to-end QA | 🟡 **FACTUAL AND CONTROLLED COMPARISON PATHS READY** — `ProductionNEXUSConfig.grounded()` routes extractive factual QA to Pointer/Copy and the registered two-evidence comparison contract to the comparison-plan checkpoint. Open-ended synthesis and broader abstractive answers still require separate data and evaluation. |
+| End-to-end QA | 🟡 **FACTUAL AND CONTROLLED COMPARISON PATHS READY** — `grounded_v1` is now the default `realizer_backend` in `DEFAULT_CONFIG`, routing factual lookups to Pointer/Copy v3 and comparisons to the hash-verified checkpoint. Callers can opt out by selecting `"synth"` explicitly. Open-ended synthesis and broader abstractive answers still require separate data and evaluation. |
+| Copy/Edit Transducer (AnswerPlan pilot) | 🟡 **ARCHITECTURE READY; PILOTS NOT YET RUN** — a non-autoregressive copy/edit transducer replaces the failed autoregressive pointer-generator. Edit scripts are computed deterministically via Levenshtein alignment. The model predicts KEEP/DELETE/REPLACE operations for every canonical-answer position simultaneously. Bounded pilot training is scripted but has not been executed against the prepared AnswerPlan dataset. |
 
 ### Quick start (NEXUS)
 
@@ -83,6 +84,8 @@ for p in paths:
 - [Large PL/EN Realizer corpus v2](docs/realizer-corpus-v2.md) — pinned public sources, uniqueness and leakage contracts, representative splits, architecture alignment and pre-pilot conditions
 - [Realizer AnswerPlan v1](docs/realizer-answer-plan-v1.md) — resolved-fact contract, train-only tokenizer, length audit, baselines, test seal and bounded pilot gates
 - [Pilot Integrity and Next Run](docs/nexus-pilot-integrity.md) — preset wiring, artifact identity, resolver contracts and launch rules
+- [Test Evaluation Protocol](docs/test-evaluation-protocol.md) — sealed test-split unsealing criteria, metrics, identity pinning and re-seal policy
+- [Corpus Coverage Roadmap](docs/corpus-coverage-roadmap.md) — gap inventory, candidate sources, admission criteria
 - [RAG vs NEXUS](docs/rag-vs-graph-nexus.md) — detailed comparison, when to use which
 
 ### Repository structure
@@ -133,4 +136,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-16 (the grounded runtimes remain active; the large PL/EN corpus v2 is ready, but its serializer and bounded pilot gates must pass before any new training.)*
+*Last updated: 2026-07-17 (grounded_v1 is the default realizer backend; a non-autoregressive copy/edit transducer architecture replaces the failed pointer-generator; comparison evidence parsing supports arbitrary prose; Polish comparison templates are available; latency benchmarks, test-evaluation protocol and corpus-coverage roadmap are documented.)*

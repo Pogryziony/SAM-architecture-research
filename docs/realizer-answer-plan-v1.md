@@ -141,3 +141,13 @@ a constrained edit-script target, not another unconstrained sequence decoder.
 Abstention stays deterministic because upstream NEXUS has already made that
 decision. The new architecture must first pass 64-record overfit and the 2,048
 pilot before the representative stage can run.
+
+## Related documents
+
+- [Test Evaluation Protocol](test-evaluation-protocol.md) — the single
+  permitted opening of the sealed test split, with precondition checklist,
+  JSON schema for results, and post-evaluation re-sealing rules
+- [Realizer Corpus v2](realizer-corpus-v2.md) — corpus sources, split policy
+  and leakage prevention
+- [Corpus Coverage Roadmap](corpus-coverage-roadmap.md) — planned data source
+  additions for future corpus versions
