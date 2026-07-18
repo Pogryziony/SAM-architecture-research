@@ -99,14 +99,19 @@ class NEXUSConfig:
     # Post-edit — disabled by default; masks model's true accuracy
     post_edit_enabled: bool = False
 
-    # The default grounded profile routes factual lookups to Pointer/Copy v3
-    # and comparisons to the hash-verified comparison-plan checkpoint.  Callers
-    # can opt out by selecting ``"synth"`` or ``"pointer_copy"`` explicitly.
-    realizer_backend: str = "grounded_v1"
+    # ``synth`` is the library default and preserves historical registered
+    # semantics across all stages.  For production QA workloads, callers should
+    # opt into ``ProductionNEXUSConfig.grounded()``, which routes factual
+    # lookups to Pointer/Copy v3 and comparisons to the hash-verified
+    # comparison-plan checkpoint.
+    realizer_backend: str = "synth"
 
-    # Accepted comparison-plan Realizer identity bound into the default
-    # grounded profile.  Keeping the expected hash in configuration makes
-    # a replaced checkpoint fail closed.
+    # Accepted comparison-plan Realizer identity.  These fields are pre-bound
+    # so ``ProductionNEXUSConfig.grounded()`` and the explicit comparison-plan
+    # factory work without callers having to paste hashes.  They are ignored
+    # unless ``realizer_backend`` selects a comparison-capable backend.
+    # Keeping the expected hash in configuration makes a replaced checkpoint
+    # fail closed.
     realizer_model_dir: str = "models/realizer/abstractive_v1_plan_v3"
     realizer_config_path: str = "training/nexus_realizer_abstractive_v1.json"
     realizer_checkpoint_sha256: str = (
