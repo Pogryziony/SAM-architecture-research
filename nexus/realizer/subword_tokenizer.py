@@ -60,6 +60,21 @@ class TrainOnlySubwordTokenizer:
             ids.append(self.EOS)
         return ids
 
+    def decode_token(self, token_id: int) -> str:
+        """Decode a single token ID to its string representation."""
+        if token_id == self.PAD:
+            return ""
+        if token_id == self.BOS:
+            return ""
+        if token_id == self.EOS:
+            return ""
+        if self.BYTE_OFFSET <= token_id < self.BYTE_OFFSET + self.BYTE_VOCAB:
+            return bytes([token_id - self.BYTE_OFFSET]).decode("utf-8", errors="replace")
+        index = token_id - self.BYTE_OFFSET - self.BYTE_VOCAB
+        if 0 <= index < len(self.pieces):
+            return self.pieces[index]
+        raise ValueError(f"unknown token id: {token_id}")
+
     def decode(self, ids: Iterable[int], skip_special_tokens: bool = True) -> str:
         output: list[str] = []
         byte_buffer = bytearray()

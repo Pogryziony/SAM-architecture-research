@@ -14,10 +14,16 @@ from nexus.reasoning.answer import answer_question
 from nexus.reasoning.model_interface import ModelInterface
 from nexus.realizer.comparison_plan import (
     BACKEND_NAME,
+    ComparisonSlots,
     DEFAULT_WEIGHTS_SHA256,
     HYBRID_BACKEND_NAME,
+    VerifiedComparisonPlan,
+    _detect_language,
+    _parse_fact,
+    _rejected,
     build_verified_comparison_plan,
     extract_comparison_slots,
+    materialize_comparison,
     realize_comparison_plan,
 )
 from nexus.utils.config import NEXUSConfig
@@ -250,3 +256,144 @@ def test_registered_checkpoint_runs_end_to_end_on_balanced_validation_sample():
         assert result["answer"] == record["answer"], record["id"]
         assert result["realization"]["strategy"] == BACKEND_NAME
         assert result["realization"]["checkpoint_sha256"] == DEFAULT_WEIGHTS_SHA256
+
+
+# ── Evidence parsing: extended patterns ──
+
+
+def test_parse_fact_handles_is_pattern():
+    """X-is-Y pattern: subject and value joined by the verb "is"."""
+    fact = {"text": "rate is 0.5.", "source": "configs/a.yaml"}
+    result = _parse_fact(fact)
+    assert result == ("configs/a.yaml", "rate", "0.5")
+
+    # "is" appearing multiple times should fail-closed.
+    fact_ambiguous = {"text": "rate is 0.5 is not enough.", "source": "configs/a.yaml"}
+    assert _parse_fact(fact_ambiguous) is None
+
+    # Missing source should return None.
+    fact_no_source = {"text": "rate is 0.5.", "source": ""}
+    assert _parse_fact(fact_no_source) is None
+
+
+def test_parse_fact_handles_numeric_extraction():
+    """Numeric extraction: two numeric values in text with equality keyword."""
+    fact = {
+        "text": "SourceA equals 42 and 42.",
+        "source": "SourceA",
+    }
+    result = _parse_fact(fact)
+    assert result == ("SourceA", "SourceA", "42")
+
+    # No comparison keyword — should not trigger.
+    fact_no_kw = {
+        "text": "SourceA has 42 and 42.",
+        "source": "SourceA",
+    }
+    assert _parse_fact(fact_no_kw) is None
+
+    # Polish keyword "wynosi" should also trigger.
+    fact_pl = {
+        "text": "SourceA wynosi 42 i 42.",
+        "source": "SourceA",
+    }
+    assert _parse_fact(fact_pl) == ("SourceA", "SourceA", "42")
+
+    # More than two numeric values — fail-closed.
+    fact_three = {
+        "text": "SourceA equals 42, 43, and 44.",
+        "source": "SourceA",
+    }
+    assert _parse_fact(fact_three) is None
+
+
+def test_parse_fact_handles_key_value_prose():
+    """Key-value pattern: semi-structured key=value or key:value in prose."""
+    fact_eq = {
+        "text": "Some intro; rate=0.5, other stuff.",
+        "source": "configs/a.yaml",
+    }
+    result = _parse_fact(fact_eq)
+    assert result == ("configs/a.yaml", "rate", "0.5")
+
+    fact_colon = {
+        "text": "threshold: 0.7; other.",
+        "source": "configs/b.yaml",
+    }
+    result = _parse_fact(fact_colon)
+    assert result == ("configs/b.yaml", "threshold", "0.7")
+
+    # Source name appearing as key should not self-extract.
+    fact_self = {
+        "text": "configs/a.yaml: 0.5.",
+        "source": "configs/a.yaml",
+    }
+    assert _parse_fact(fact_self) is None
+
+
+# ── Polish language support ──
+
+
+def test_polish_comparison_template():
+    """Polish template uses correct subject placement and relation strings."""
+    plan_same = VerifiedComparisonPlan(
+        slots=ComparisonSlots(
+            source_1="raport_A", subject_1="szybkość", value_1="100 km/h",
+            source_2="raport_B", subject_2="szybkość", value_2="100 km/h",
+        ),
+        relation="the same",
+        label="SAME",
+    )
+    answer_pl = materialize_comparison(plan_same, language="pl")
+    assert "podaje" in answer_pl
+    assert "podczas gdy" in answer_pl
+    assert "takie same" in answer_pl
+    assert "raport_A" in answer_pl
+    assert "raport_B" in answer_pl
+
+    plan_diff = VerifiedComparisonPlan(
+        slots=ComparisonSlots(
+            source_1="raport_A", subject_1="szybkość", value_1="100 km/h",
+            source_2="raport_B", subject_2="szybkość", value_2="120 km/h",
+        ),
+        relation="different",
+        label="DIFFERENT",
+    )
+    answer_pl = materialize_comparison(plan_diff, language="pl")
+    assert "różne" in answer_pl
+
+    # English still works.
+    answer_en = materialize_comparison(plan_diff, language="en")
+    assert "reports" in answer_en
+    assert "the values are different" in answer_en
+
+
+def test_polish_insufficient_evidence():
+    """Polish rejection message uses the correct translation."""
+    rejected = _rejected("test_reason", plan=None, language="pl")
+    assert rejected.answer == "Podane dowody nie wystarczają do udzielenia odpowiedzi."
+    assert rejected.strategy == "insufficient_evidence"
+
+    # English default.
+    rejected_en = _rejected("test_reason", plan=None, language="en")
+    assert rejected_en.answer == "Insufficient evidence to answer."
+
+
+def test_language_detection():
+    """_detect_language correctly identifies Polish vs English questions."""
+    # Polish-specific characters signal Polish.
+    assert _detect_language("Jaką wartość ma parametr?") == "pl"
+
+    # Polish function words with mostly lowercase letters signal Polish.
+    assert _detect_language("Czy to jest poprawne?") == "pl"
+    assert _detect_language("Jak to działa dla ciebie?") == "pl"
+    assert _detect_language("Który z nich jest szybszy?") == "pl"
+    assert _detect_language("To się nie zgadza.") == "pl"
+
+    # English (no Polish chars, no Polish function words).
+    assert _detect_language("What is the value?") == "en"
+    assert _detect_language("Compare rate in A and B.") == "en"
+
+    # Mostly uppercase or non-alpha — English default.
+    assert _detect_language("ABC DEF GHI") == "en"
+    assert _detect_language("123 456 789") == "en"

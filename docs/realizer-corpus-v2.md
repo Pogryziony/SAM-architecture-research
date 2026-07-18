@@ -177,3 +177,14 @@ holdout: 2,408 records, including 500 abstentions, with no duplication. Full
 training remains blocked for a different reason: bounded neural pilots still
 fail EOS, exact-match and token-F1 generation gates. The representative pilot
 must not run until the 2,048-record stage passes.
+
+## Related documents
+
+- [Corpus Coverage Roadmap](corpus-coverage-roadmap.md) — planned data source
+  additions for long explanations, causal reasoning, scientific prose,
+  enterprise structured data and dialogue
+- [Realizer AnswerPlan v1](realizer-answer-plan-v1.md) — data preparation,
+  pilot protocol and test-seal policy
+- [Test Evaluation Protocol](test-evaluation-protocol.md) — one-time test
+  evaluation process with precondition gates, JSON schema and re-sealing
+  rules

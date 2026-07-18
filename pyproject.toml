@@ -20,3 +20,6 @@ include = ["nexus*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "torch: tests that require PyTorch (skipped when unavailable)",
+]
