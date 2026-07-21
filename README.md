@@ -97,6 +97,7 @@ for p in paths:
 
 - [Analysis & Roadmap](ANALYSIS_AND_ROADMAP.md) — full architecture, roadmap, research questions
 - [Stack-v1 freeze](docs/stack-v1-freeze.md) — authoritative Stage 0–4 freeze attestation
+- [Branch history archive](docs/branch-history.md) — deleted/merged topic branches with tip SHAs and PR links
 - [Production profiles](docs/production-profiles.md) — library default vs grounded production QA
 - [Graph Memory Model](docs/graph-memory.md) — data model, node/edge types, construction pipeline
 - [Graph Reasoning](docs/graph-reasoning.md) — traversal, path scoring, evidence building, verification

@@ -52,6 +52,11 @@ Architecture allow/deny list: [`training/REJECTED_ARCHITECTURES.json`](../traini
 - AnswerPlan autoregressive pilots remain **blocked**; copy/edit transducer pilots were not part of this freeze.
 - ER3 frozen-split aggregate remains **reporting-only** (do not re-evaluate).
 
+## Related history
+
+Merged topic branches used to produce this freeze (and earlier NEXUS stages) are
+catalogued with tip SHAs in [`docs/branch-history.md`](branch-history.md).
+
 ## Hard budgets (unchanged)
 
 - Peak RSS ≤ 500 MB  
