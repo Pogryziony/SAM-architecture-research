@@ -221,15 +221,31 @@ def incident_paths_for_entities(
     entity_ids: Sequence[str],
     *,
     max_paths: int = 12,
+    as_valid_at: str = "",
+    as_known_at: str = "",
 ) -> list[Path]:
-    """Build one-hop paths from real incident edges for audit when traversal is empty."""
+    """Build one-hop paths from real incident edges for audit when traversal is empty.
+
+    Optional bi-temporal cutoffs keep incident enrichment aligned with traversal.
+    """
+    from nexus.graph.bitemporal import filter_edges_bitemporal
+
     paths: list[Path] = []
     seen: set[tuple[str, str, str, bool]] = set()
     for entity_id in entity_ids:
         eid = str(entity_id)
         if not graph.has_node(eid):
             continue
-        for edge in graph.get_outgoing(eid):
+        outgoing = list(graph.get_outgoing(eid))
+        incoming = list(graph.get_incoming(eid))
+        if as_valid_at or as_known_at:
+            outgoing = filter_edges_bitemporal(
+                outgoing, as_valid_at=as_valid_at, as_known_at=as_known_at,
+            )
+            incoming = filter_edges_bitemporal(
+                incoming, as_valid_at=as_valid_at, as_known_at=as_known_at,
+            )
+        for edge in outgoing:
             key = (edge.source, edge.type, edge.target, False)
             if key in seen:
                 continue
@@ -237,7 +253,7 @@ def incident_paths_for_entities(
             paths.append(Path(steps=[PathStep(edge=edge, reversed=False)]))
             if len(paths) >= max_paths:
                 return paths
-        for edge in graph.get_incoming(eid):
+        for edge in incoming:
             key = (edge.source, edge.type, edge.target, True)
             if key in seen:
                 continue

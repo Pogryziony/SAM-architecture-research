@@ -266,6 +266,22 @@ def extract_comparison_slots(
         mentioned = [item for item in candidates if item[0] in question]
         if len(mentioned) == 2:
             candidates = mentioned
+        else:
+            # Prefer sources / subjects whose tokens appear in the question so
+            # hub experiments do not steal comparative slots.
+            q = question.casefold()
+
+            def _mention_score(item: tuple[str, str, str]) -> int:
+                source, subject, _value = item
+                score = 0
+                for token in re.findall(r"[a-z0-9_]+", f"{source} {subject}".casefold()):
+                    if len(token) > 2 and token in q:
+                        score += 1
+                return score
+
+            ranked = sorted(candidates, key=_mention_score, reverse=True)
+            if _mention_score(ranked[0]) > 0 and _mention_score(ranked[1]) > 0:
+                candidates = ranked[:2]
     if len(candidates) != 2:
         raise ComparisonPlanError("comparison_requires_exactly_two_supported_facts")
     if candidates[0][0] == candidates[1][0]:

@@ -12,7 +12,7 @@ import hashlib
 import json
 import subprocess
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
@@ -156,7 +156,12 @@ class NEXUSRunner:
         for record in questions:
             qid = str(record.get("id", ""))
             question = str(record["question"])
-            qr = self._run_single(qid, question, model)
+            qr = self._run_single(
+                qid,
+                question,
+                model,
+                config_override=self._config_for_record(record),
+            )
             results.append(qr)
             if qr.failure_category:
                 failed += 1
@@ -214,6 +219,7 @@ class NEXUSRunner:
                 str(record["question"]),
                 model,
                 entry_nodes_override=[str(item) for item in record["gold_entities"]],
+                config_override=self._config_for_record(record),
             )
             results.append(qr)
             if qr.failure_category:
@@ -233,24 +239,38 @@ class NEXUSRunner:
             evaluation_mode="oracle",
         )
 
+    def _config_for_record(self, record: dict[str, Any]):
+        """Apply per-question bi-temporal cutoffs when the oracle record carries them."""
+        as_known_at = str(record.get("as_known_at") or "").strip()
+        as_valid_at = str(record.get("as_valid_at") or "").strip()
+        if not as_known_at and not as_valid_at:
+            return None
+        return replace(
+            self.config,
+            as_known_at=as_known_at,
+            as_valid_at=as_valid_at,
+        )
+
     def _run_single(
         self,
         qid: str,
         question: str,
         model: ModelInterface,
         entry_nodes_override: list[str] | None = None,
+        config_override: Any | None = None,
     ) -> QuestionResult:
         qr = QuestionResult(
             question_id=qid,
             question=question,
             question_hash=hashlib.sha256(question.encode("utf-8")).hexdigest()[:16],
         )
+        active_config = config_override if config_override is not None else self.config
 
         try:
             resolution: ResolutionResult | None = None
             # ── Entity resolution: injected resolver, oracle, or lexical ──
             if entry_nodes_override is not None:
-                oracle_entities = list(entry_nodes_override)[:self.config.max_entry_nodes]
+                oracle_entities = list(entry_nodes_override)[:active_config.max_entry_nodes]
                 qr.predicted_entities = oracle_entities
                 qr.entity_resolution_method = "oracle"
                 qr.resolver_name = "oracle"
@@ -263,7 +283,7 @@ class NEXUSRunner:
                     self.graph,
                     model=model,
                     verifier=self.verifier,
-                    config=self.config,
+                    config=active_config,
                     normalizer=self._normalizer,
                     dialogue_state=self._dialogue_state,
                     entry_nodes_override=oracle_entities,
@@ -276,7 +296,7 @@ class NEXUSRunner:
                     self._entity_resolver.resolve(question, self.graph),
                     resolver_name=self._entity_resolver.__class__.__name__,
                 )
-                selected = resolution.selected_entity_ids[:self.config.max_entry_nodes]
+                selected = resolution.selected_entity_ids[:active_config.max_entry_nodes]
                 qr.predicted_entities = list(resolution.selected_entity_ids)
                 qr.entity_resolution_method = resolution.resolver_name
                 qr.resolver_name = resolution.resolver_name
@@ -295,7 +315,7 @@ class NEXUSRunner:
 
                 result = answer_question(
                     question, self.graph, model=model,
-                    verifier=self.verifier, config=self.config,
+                    verifier=self.verifier, config=active_config,
                     normalizer=self._normalizer,
                     dialogue_state=self._dialogue_state,
                     entry_nodes_override=selected,
@@ -306,7 +326,7 @@ class NEXUSRunner:
             else:
                 result_raw = answer_question(
                     question, self.graph, model=model,
-                    verifier=self.verifier, config=self.config,
+                    verifier=self.verifier, config=active_config,
                     normalizer=self._normalizer,
                     dialogue_state=self._dialogue_state,
                 )
@@ -315,7 +335,9 @@ class NEXUSRunner:
                     qr.parsed_intent = parsed.intent
                     qr.predicted_entities = list(parsed.entity_ids)
                     qr.entity_resolution_method = parsed.resolution_method
-                    qr.selected_entry_nodes = list(parsed.entity_ids[:self.config.max_entry_nodes])
+                    qr.selected_entry_nodes = list(
+                        parsed.entity_ids[:active_config.max_entry_nodes]
+                    )
                     qr.lexical_fallback_used = True
 
             # ── Continue with answer_question if lexical ──
