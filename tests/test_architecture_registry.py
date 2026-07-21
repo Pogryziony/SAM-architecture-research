@@ -45,6 +45,16 @@ def test_answer_plan_prepare_data_still_allowed():
 
 
 def test_autoregressive_answer_plan_entrypoint_is_blocked():
+    """Registry policy blocks AR AnswerPlan training without importing torch."""
+    with pytest.raises(ArchitectureBlockedError, match="FULL_TRAINING_BLOCKED"):
+        assert_training_allowed(
+            "training/realizer_answer_plan_v1.json",
+            action="full_training",
+        )
+
+
+def test_autoregressive_answer_plan_script_main_is_blocked():
+    """Blocked script ``main()`` must not require torch at import or call time."""
     from training.architecture_registry import ArchitectureBlockedError
     from benchmarks import train_answer_plan_pilots
 

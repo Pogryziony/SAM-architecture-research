@@ -18,17 +18,27 @@ _project_root = Path(__file__).parent.parent.resolve()
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
-import torch
-from torch.nn import functional as F
-
+# Torch is optional at import time so the fail-closed ``main()`` entrypoint
+# (and no-torch CI) can load this module. Neural helpers import torch lazily.
 from benchmarks.realizer_corpus_v2_contracts import iter_jsonl, normalized_text, sha256_file, sha256_json
-from nexus.realizer.pointer_generator import build_pointer_generator
 from nexus.realizer.plan_serializer import serialize_answer_plan_for_model
 from nexus.realizer.subword_tokenizer import TrainOnlySubwordTokenizer
 
 
 _WORD_RE = re.compile(r"\w+", re.UNICODE)
 _NUMBER_RE = re.compile(r"(?<!\w)[+-]?(?:\d+(?:[.,]\d+)?)(?!\w)")
+
+
+def _require_torch():
+    """Lazy torch import so fail-closed ``main()`` works without PyTorch."""
+    try:
+        import torch
+        from torch.nn import functional as F
+    except ImportError as exc:
+        raise RuntimeError(
+            "PyTorch is required for autoregressive AnswerPlan pilot helpers"
+        ) from exc
+    return torch, F
 
 
 def _token_f1(prediction: str, target: str) -> float:
@@ -104,7 +114,8 @@ def _load_stratified(
     return selected
 
 
-def _pad(sequences: list[list[int]], pad: int = 0) -> torch.Tensor:
+def _pad(sequences: list[list[int]], pad: int = 0):
+    torch, _F = _require_torch()
     width = max(map(len, sequences))
     result = torch.full((len(sequences), width), pad, dtype=torch.long)
     for index, values in enumerate(sequences):
@@ -127,6 +138,7 @@ def _batches(rows: list[dict[str, Any]], batch_size: int, seed: int):
 
 
 def _teacher_metrics(model: Any, rows: list[dict[str, Any]], batch_size: int) -> dict[str, float]:
+    torch, F = _require_torch()
     model.eval()
     loss_sum = correct = tokens = 0
     with torch.no_grad():
@@ -144,6 +156,7 @@ def _generate(
     model: Any, source_ids: list[int], copy_mask_values: list[bool],
     tokenizer: TrainOnlySubwordTokenizer, max_tokens: int,
 ) -> tuple[str, bool]:
+    torch, _F = _require_torch()
     model.eval()
     source = torch.tensor([source_ids], dtype=torch.long)
     copy_mask = torch.tensor([copy_mask_values], dtype=torch.bool)
@@ -241,6 +254,9 @@ def run_stage(
     tokenizer: TrainOnlySubwordTokenizer, output: Path, epochs: int,
     batch_size: int, seed: int,
 ) -> dict[str, Any]:
+    torch, F = _require_torch()
+    from nexus.realizer.pointer_generator import build_pointer_generator
+
     torch.manual_seed(seed)
     config = {
         "architecture": "pointer_generator_v1", "vocab_size": tokenizer.vocab_size,
