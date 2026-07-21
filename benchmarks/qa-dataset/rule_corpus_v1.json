@@ -1,0 +1,65 @@
+{
+  "corpus_id": "rule_corpus_v1",
+  "preregistration_id": "rule-engine-v1",
+  "schema_version": "nexus-rule-corpus-v1",
+  "rules": [
+    {
+      "rule_id": "trans_depends_on",
+      "version": "1",
+      "body": [["x", "depends_on", "y"], ["y", "depends_on", "z"]],
+      "head": ["x", "depends_on", "z"]
+    },
+    {
+      "rule_id": "trans_derived_from",
+      "version": "1",
+      "body": [["x", "derived_from", "y"], ["y", "derived_from", "z"]],
+      "head": ["x", "derived_from", "z"]
+    },
+    {
+      "rule_id": "trans_replaces",
+      "version": "1",
+      "body": [["x", "replaces", "y"], ["y", "replaces", "z"]],
+      "head": ["x", "replaces", "z"]
+    },
+    {
+      "rule_id": "validates_depends_bridge",
+      "version": "1",
+      "body": [["x", "validates", "y"], ["y", "depends_on", "z"]],
+      "head": ["x", "validates", "z"]
+    },
+    {
+      "rule_id": "depends_derived_bridge",
+      "version": "1",
+      "body": [["x", "depends_on", "y"], ["y", "derived_from", "z"]],
+      "head": ["x", "depends_on", "z"]
+    },
+    {
+      "rule_id": "replaces_depends_bridge",
+      "version": "1",
+      "body": [["x", "replaces", "y"], ["y", "depends_on", "z"]],
+      "head": ["x", "depends_on", "z"]
+    }
+  ],
+  "development_graph": {
+    "nodes": ["A", "B", "C", "D", "E", "F", "X_old", "X_mid", "X_new"],
+    "edges": [
+      ["A", "depends_on", "B"],
+      ["B", "depends_on", "C"],
+      ["D", "derived_from", "E"],
+      ["E", "derived_from", "F"],
+      ["A", "validates", "B"],
+      ["X_old", "replaces", "X_mid"],
+      ["X_mid", "replaces", "X_new"],
+      ["X_mid", "depends_on", "C"],
+      ["B", "derived_from", "F"]
+    ]
+  },
+  "development_gold": [
+    ["A", "depends_on", "C"],
+    ["D", "derived_from", "F"],
+    ["X_old", "replaces", "X_new"],
+    ["A", "validates", "C"],
+    ["A", "depends_on", "F"],
+    ["X_old", "depends_on", "C"]
+  ]
+}

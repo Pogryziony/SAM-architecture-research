@@ -24,3 +24,33 @@ jobs:
 
       - name: Run Stage-gate checks
         run: python benchmarks/ci_stage_gates.py --gate all
+
+  kuzu-store:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies with Kuzu
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test,kuzu]"
+
+      - name: Verify kuzu import
+        run: python -c "import kuzu; print(kuzu.__version__)"
+
+      - name: Run Kuzu store tests (must not skip)
+        env:
+          NEXUS_REQUIRE_KUZU: '1'
+        run: |
+          OUTPUT=$(python -m pytest tests/test_kuzu_store.py -v --tb=short 2>&1)
+          echo "$OUTPUT"
+          if echo "$OUTPUT" | grep -E "skipped|SKIPPED"; then
+            echo "::error::Kuzu tests were skipped; nexus-graph[kuzu] must be installed."
+            exit 1
+          fi
+          echo "$OUTPUT" | grep -E "passed"

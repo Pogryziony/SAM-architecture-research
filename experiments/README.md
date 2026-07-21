@@ -46,6 +46,15 @@ AnswerPlan / Realizer training status (no full training by default):
 python benchmarks/record_answer_plan_status.py --force
 ```
 
+Stage 4 rule corpus development eval (frozen mode sealed):
+
+```bash
+python benchmarks/eval_rule_engine.py --mode development --output benchmarks/results/rule_corpus_v1_dev_eval_TIMESTAMP.json
+```
+
+Stage 5 contradiction policy prereg: `EXPERIMENT_CONTRADICTION_POLICY_V1.md`
+(unit coverage in `tests/test_conflict_policy.py`; contradiction F1 campaign not yet run).
+
 Canonical graph rebuild (deterministic content hash):
 
 ```bash

@@ -335,6 +335,24 @@ def build_reasoning_audit(
     else:
         action = "answer"
 
+    # Stage 5 conflict policy: unresolved conflicts never stay unconditional.
+    from nexus.reasoning.conflict_policy import (
+        apply_conflict_policy,
+        classify_graph_conflicts,
+    )
+
+    policy = apply_conflict_policy(
+        classify_graph_conflicts(
+            contradicts=[
+                (item.source, item.relation, item.target)
+                for item in counter_evidence
+            ],
+        ),
+        base_recommendation=action,
+    )
+    action = policy.recommendation
+    components["conflict_policy"] = policy.to_dict()
+
     return ReasoningAudit(
         proof_steps=proof_steps,
         counter_evidence=counter_evidence,

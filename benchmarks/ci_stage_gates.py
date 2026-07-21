@@ -31,8 +31,20 @@ def gate_traversal_units() -> None:
         "tests/test_traversal_budgets.py",
         "tests/test_traversal_budget_campaign.py",
         "tests/test_rule_engine.py",
+        "tests/test_rule_corpus_v1.py",
+        "tests/test_conflict_policy.py",
+        "tests/test_bitemporal_replay.py",
+        "tests/test_deterministic_realization_gates.py",
         "tests/test_union_resolver.py",
         "-q", "--tb=short",
+    ])
+
+
+def gate_rule_corpus() -> None:
+    _run([
+        sys.executable,
+        "benchmarks/eval_rule_engine.py",
+        "--mode", "development",
     ])
 
 
@@ -89,13 +101,15 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--gate",
-        choices=("all", "traversal", "oracle", "answer_plan"),
+        choices=("all", "traversal", "oracle", "answer_plan", "rules"),
         default="all",
     )
     args = parser.parse_args(argv)
     if args.gate in ("all", "traversal"):
         gate_traversal_units()
         gate_traversal_small_campaign()
+    if args.gate in ("all", "rules"):
+        gate_rule_corpus()
     if args.gate in ("all", "oracle"):
         gate_oracle_smoke()
     if args.gate in ("all", "answer_plan"):
