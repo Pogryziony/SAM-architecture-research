@@ -32,10 +32,11 @@ def _get_embedding_module():
 
 INTENT_KEYWORDS: list[tuple[str, str, str]] = [
     # (regex pattern, intent, default_direction)
+    # Comparison before causal/diagnostic so "how does X differ" / "compare" win.
+    (r"\b(compare|compared to|vs\.?|versus|difference|differ|diff)\b", "comparison", "both"),
     (r"\b(why|cause|reason|led to)\b",       "causal_explanation", "in"),
     (r"\bwhat\s+depends\b",                   "dependency_chain",  "both"),
     (r"\bwhat\s+affects?\b",                  "impact_analysis",   "out"),
-    (r"\b(compare|vs\.?|versus|difference|diff)", "comparison",    "both"),
     (r"\b(what\s+is|what\s+are|how\s+many|how\s+much|list|who)\b", "factual_lookup",    "both"),
     (r"\b(how\b(?:\s+(?:do|does|to|can|should|would|could|did|is|are))?|diagnose|debug|fix|broken|wrong|error|bug|issue)", "diagnostic", "in"),
 ]

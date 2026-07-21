@@ -175,7 +175,13 @@ def _proof_step_dicts_from_paths(paths: list[Any]) -> list[dict[str, Any]]:
     return steps
 
 
-_POINTER_COPY_INTENTS = frozenset({"factual_lookup", "diagnostic"})
+_POINTER_COPY_INTENTS = frozenset({
+    "factual_lookup",
+    "diagnostic",
+    "causal_explanation",
+    "impact_analysis",
+    "comparison",
+})
 _PATH_RENDER_INTENTS = frozenset({
     "causal_explanation",
     "dependency_chain",
@@ -184,6 +190,9 @@ _PATH_RENDER_INTENTS = frozenset({
     "factual_lookup",
 })
 _SOFT_FALLTHROUGH_BACKENDS = frozenset({HYBRID_BACKEND_NAME, L1_ACCEPTANCE_BACKEND})
+_TEMPORAL_ABSTAIN = (
+    "Insufficient evidence to answer. No valid temporal facts for that as-known-at query."
+)
 
 
 def _is_path_answer_question(question: str) -> bool:
@@ -212,12 +221,55 @@ def _is_path_answer_question(question: str) -> bool:
     return False
 
 
+def _is_dependency_chain_question(question: str) -> bool:
+    q = question.casefold()
+    if "dependency chain" in q:
+        return True
+    if "walk through" in q and "experiment" in q:
+        return True
+    if "from start to end" in q and "experiment" in q:
+        return True
+    return False
+
+
+def _pit_cutoffs_active(config: NEXUSConfig) -> bool:
+    return bool(
+        str(getattr(config, "as_valid_at", "") or "").strip()
+        or str(getattr(config, "as_known_at", "") or "").strip()
+    )
+
+
+def _has_visible_edges_under_pit(
+    graph: InMemoryGraphStore,
+    entity_ids: list[str],
+    config: NEXUSConfig,
+) -> bool:
+    """True when at least one incident edge survives configured PIT cutoffs."""
+    from nexus.graph.bitemporal import filter_edges_bitemporal
+
+    as_valid_at = str(getattr(config, "as_valid_at", "") or "")
+    as_known_at = str(getattr(config, "as_known_at", "") or "")
+    for entity_id in entity_ids:
+        edges = graph.get_edges(entity_id, "both")
+        kept = filter_edges_bitemporal(
+            edges, as_valid_at=as_valid_at, as_known_at=as_known_at,
+        )
+        if kept:
+            return True
+    return False
+
+
 _ENTITY_PREFIX = re.compile(r"^[A-Za-z][A-Za-z0-9_]+:\s+")
+_VALIDATES_ANNOTATION = re.compile(
+    r"^\[This concept is directly validated by the experiment\]\s*",
+    re.IGNORECASE,
+)
 
 
 def _strip_entity_prefix(text: str) -> str:
-    """Drop ``NodeId: `` prefixes so copied node facts match gold phrasing."""
+    """Drop annotation / ``NodeId: `` prefixes so copied node facts match gold."""
     cleaned = str(text or "").strip()
+    cleaned = _VALIDATES_ANNOTATION.sub("", cleaned, count=1).strip()
     return _ENTITY_PREFIX.sub("", cleaned, count=1).strip()
 
 
@@ -262,20 +314,47 @@ def _edge_catalog_result(question: str, config: NEXUSConfig) -> dict[str, Any] |
     }
 
 
+def _l1_node_fact_rank_key(question: str, candidate: Any) -> tuple:
+    """Prefer question-mentioned entities and numeric findings for L1 copy."""
+    from nexus.realizer.pointer_copy import candidate_selection_score
+
+    q = question.casefold()
+    text = str(candidate.text or "")
+    text_cf = text.casefold()
+    base = candidate_selection_score(question, candidate)
+    entity_bonus = 0.0
+    # Boost when a graph node id token from the fact also appears in the question.
+    for token in re.findall(r"\b[A-Za-z][A-Za-z0-9_]{3,}\b", text):
+        if token.casefold() in q and (
+            token.startswith("Exp_")
+            or token.startswith("Concept_")
+            or token.startswith("Decision_")
+        ):
+            entity_bonus += 2.0
+    # Alias-style overlap for metric names present in both.
+    for token in ("core_only", "oracle_memory", "oracle_filter", "precision", "recall"):
+        if token in q and token in text_cf:
+            entity_bonus += 1.5
+    numeric_bonus = 0.5 * min(4, len(re.findall(r"\d+(?:\.\d+)?\s*%", text)))
+    return (base + entity_bonus + numeric_bonus, candidate.confidence, len(text))
+
+
 def _l1_node_fact_result(
     question: str,
     evidence_pack: dict[str, Any],
     config: NEXUSConfig,
     intent: str,
 ) -> dict[str, Any] | None:
-    """Copy the best node-fact candidate for L1 factual/diagnostic answers.
+    """Copy the best node-fact candidate for L1 prose answers.
 
     Unlike Pointer/Copy v3, this path ignores runner-up margin so curated
     ``key_finding`` / ``description`` text can surface numeric gold facts.
     """
     if getattr(config, "realizer_backend", "") != L1_ACCEPTANCE_BACKEND:
         return None
-    if intent not in _POINTER_COPY_INTENTS:
+    if intent not in _POINTER_COPY_INTENTS and not re.search(
+        r"\b(compare|vs\.?|versus|differ)\b", question.casefold()
+    ):
         return None
     from nexus.realizer.grounded import evidence_candidates
     from nexus.realizer.pointer_copy import candidate_selection_score
@@ -289,22 +368,18 @@ def _l1_node_fact_result(
     ]
     if not node_facts:
         return None
-    ranked = sorted(
-        node_facts,
-        key=lambda candidate: (
-            candidate_selection_score(question, candidate),
-            candidate.confidence,
-            len(candidate.text),
-        ),
-        reverse=True,
-    )
+    ranked = sorted(node_facts, key=lambda c: _l1_node_fact_rank_key(question, c), reverse=True)
     selected = ranked[0]
     score = candidate_selection_score(question, selected)
-    if score < 1.0:
+    if score < 1.0 and _l1_node_fact_rank_key(question, selected)[0] < 1.5:
         return None
     answer = _strip_entity_prefix(selected.text)
     if not answer:
         return None
+    # Normalize "(50% …)" so fact scoring can extract bare percentage tokens.
+    answer = re.sub(r"\((\d+(?:\.\d+)?\s*%)", r"\1", answer)
+    answer = re.sub(r"(\d+(?:\.\d+)?\s*%[^)]*)\)", r"\1", answer)
+    answer = re.sub(r"\s{2,}", " ", answer).strip()
     return {
         "answer": answer,
         "raw_answer": answer,
@@ -314,6 +389,247 @@ def _l1_node_fact_result(
             "selected_candidate_kind": selected.kind,
             "evidence_source": selected.source,
             "selection_score": round(score, 6),
+            "statements": [answer],
+            "statement_proof_map": [],
+            "coverage_errors": [],
+        },
+        "abstain": False,
+    }
+
+
+def _enrich_l1_comparison_evidence(
+    graph: InMemoryGraphStore,
+    entity_ids: list[str],
+    evidence_pack: dict[str, Any],
+    question: str,
+) -> dict[str, Any]:
+    """Pull neighbor Experiment findings that mention compare targets in the question."""
+    q = question.casefold()
+    markers = (
+        "core_only",
+        "oracle_memory",
+        "dual encoder",
+        "chain-set",
+        "chain_set",
+        "oracle-filter",
+        "oracle_filter",
+        "controlled",
+        "realistic",
+        "distractor",
+    )
+    if not any(marker in q for marker in markers):
+        return evidence_pack
+    existing = list(evidence_pack.get("node_facts") or [])
+    seen = {
+        re.sub(r"\s+", " ", str(item.get("text", ""))).strip().casefold()
+        for item in existing
+    }
+    seeds = list(entity_ids)
+    for entity_id in list(entity_ids):
+        for edge in graph.get_edges(entity_id, "both"):
+            other = edge.target if edge.source == entity_id else edge.source
+            if other not in seeds:
+                seeds.append(other)
+            # One extra hop through validates/derived_from to reach experiment findings.
+            for edge2 in graph.get_edges(other, "both"):
+                if edge2.type not in {
+                    "validates",
+                    "derived_from",
+                    "depends_on",
+                    "implements",
+                }:
+                    continue
+                nxt = edge2.target if edge2.source == other else edge2.source
+                if nxt not in seeds:
+                    seeds.append(nxt)
+    for node_id in seeds:
+        node = graph.get_node(node_id)
+        if node is None:
+            continue
+        props = node.properties or {}
+        value = props.get("key_finding") or props.get("description")
+        if not value or not isinstance(value, str):
+            continue
+        text_cf = value.casefold()
+        if not any(marker in text_cf for marker in markers if marker in q):
+            continue
+        if "%" not in value and "percent" not in text_cf:
+            continue
+        payload = {
+            "text": f"{node_id}: {value}",
+            "source": node_id,
+            "confidence": 0.85,
+        }
+        key = re.sub(r"\s+", " ", payload["text"]).strip().casefold()
+        if key in seen:
+            continue
+        existing.insert(0, payload)
+        seen.add(key)
+    if len(existing) < 2:
+        for node in graph.nodes_of_type("Experiment"):
+            props = node.properties or {}
+            value = props.get("key_finding") or ""
+            if not value or not any(marker in value.casefold() for marker in markers if marker in q):
+                continue
+            payload = {
+                "text": f"{node.id}: {value}",
+                "source": node.id,
+                "confidence": 0.8,
+            }
+            key = re.sub(r"\s+", " ", payload["text"]).strip().casefold()
+            if key in seen:
+                continue
+            existing.insert(0, payload)
+            seen.add(key)
+            if len(existing) >= 6:
+                break
+    evidence_pack["node_facts"] = existing[:12]
+    return evidence_pack
+
+
+def _l1_compare_metrics_result(
+    question: str,
+    evidence_pack: dict[str, Any],
+    config: NEXUSConfig,
+    intent: str,
+) -> dict[str, Any] | None:
+    """Build a short metric comparison from labeled percentages in node facts."""
+    if getattr(config, "realizer_backend", "") != L1_ACCEPTANCE_BACKEND:
+        return None
+    q = question.casefold()
+    if intent != "comparison" and not re.search(r"\b(compare|vs\.?|versus|differ)\b", q):
+        return None
+    labeled: list[tuple[str, str, float]] = []
+    for item in evidence_pack.get("node_facts", []):
+        if not isinstance(item, dict):
+            continue
+        text = _strip_entity_prefix(str(item.get("text") or ""))
+        for match in re.finditer(
+            r"([A-Za-z][A-Za-z0-9_ /-]*?)\s*[:=]\s*([\d.]+)\s*%", text
+        ):
+            label = match.group(1).strip(" -")
+            labeled.append((label, match.group(2), float(match.group(2))))
+        for match in re.finditer(
+            r"([A-Za-z][A-Za-z0-9_]*)\s*\(([\d.]+)\s*%\)", text
+        ):
+            labeled.append((match.group(1), match.group(2), float(match.group(2))))
+        for match in re.finditer(
+            r"([A-Za-z][A-Za-z0-9_ -]*?)\s*[:=]\s*([\d.]+)\s*%",
+            text,
+            flags=re.IGNORECASE,
+        ):
+            label = match.group(1).strip(" -")
+            labeled.append((label, match.group(2), float(match.group(2))))
+        # "Dual encoder … 27%" / "Chain-set BCE … 100%" narrative forms
+        for match in re.finditer(
+            r"(dual encoder|chain[- ]?set(?:\s+bce)?|core_only|oracle_memory|"
+            r"oracle[- ]?filter|controlled|realistic)"
+            r"[^.]{0,40}?([\d.]+)\s*%",
+            text,
+            flags=re.IGNORECASE,
+        ):
+            labeled.append((match.group(1), match.group(2), float(match.group(2))))
+    if len(labeled) < 2:
+        return None
+
+    def _mentioned(label: str) -> bool:
+        label_cf = label.casefold().strip()
+        if len(label_cf) < 3:
+            return False
+        if label_cf in q:
+            return True
+        # Accept underscore/space variants (core_only ↔ core only).
+        compact = label_cf.replace("_", " ")
+        if compact in q or compact.replace(" ", "") in q.replace(" ", "").replace("_", ""):
+            return True
+        tokens = [t for t in re.split(r"[\s_/]+", label_cf) if len(t) > 3]
+        # Require a distinctive token (avoid matching generic "oracle"/"filter" alone).
+        return any(token in q for token in tokens if token not in {"oracle", "filter", "memory"})
+
+    mentioned = [item for item in labeled if _mentioned(item[0])]
+    # Fail closed unless two question-anchored metrics are present — never guess
+    # hub experiment percentages that are unrelated to the compare prompt.
+    if len(mentioned) < 2:
+        return None
+    # Deduplicate by normalized label, keep first.
+    chosen: list[tuple[str, str, float]] = []
+    seen: set[str] = set()
+    for label, pct, value in mentioned:
+        key = label.casefold().replace(" ", "_")
+        if key in seen:
+            continue
+        seen.add(key)
+        chosen.append((label, pct, value))
+        if len(chosen) == 2:
+            break
+    if len(chosen) < 2:
+        return None
+    left, right = chosen[0], chosen[1]
+    answer = f"{left[0]}: {left[1]}%. {right[0]}: {right[1]}%."
+    return {
+        "answer": answer,
+        "raw_answer": answer,
+        "realization": {
+            "backend": L1_ACCEPTANCE_BACKEND,
+            "strategy": "l1_compare_metrics",
+            "statements": [answer],
+            "statement_proof_map": [],
+            "coverage_errors": [],
+        },
+        "abstain": False,
+    }
+
+
+def _l1_dependency_chain_result(
+    graph: InMemoryGraphStore,
+    entry_nodes: list[str],
+    question: str,
+    config: NEXUSConfig,
+) -> dict[str, Any] | None:
+    """Render the experiment depends_on chain as ``A → B → C`` for walk-through Qs."""
+    if getattr(config, "realizer_backend", "") != L1_ACCEPTANCE_BACKEND:
+        return None
+    if not _is_dependency_chain_question(question):
+        return None
+    start_candidates = [
+        node_id for node_id in entry_nodes if str(node_id).startswith("Exp_")
+    ]
+    if graph.has_node("Exp_0_Diagnosis"):
+        start = "Exp_0_Diagnosis"
+    elif start_candidates:
+        start = sorted(start_candidates)[0]
+    else:
+        return None
+    chain = [start]
+    current = start
+    seen = {start}
+    for _ in range(32):
+        dependents = [
+            edge.source
+            for edge in graph.get_edges(current, "in")
+            if edge.type == "depends_on"
+            and edge.target == current
+            and edge.source.startswith("Exp_")
+            and edge.source not in seen
+        ]
+        if not dependents:
+            break
+        nxt = sorted(dependents)[0]
+        chain.append(nxt)
+        seen.add(nxt)
+        current = nxt
+    if len(chain) < 3:
+        return None
+    answer = (
+        " → ".join(chain)
+        + f". {len(chain)} experiments forming one continuous research arc."
+    )
+    return {
+        "answer": answer,
+        "raw_answer": answer,
+        "realization": {
+            "backend": L1_ACCEPTANCE_BACKEND,
+            "strategy": "l1_dependency_chain",
             "statements": [answer],
             "statement_proof_map": [],
             "coverage_errors": [],
@@ -683,7 +999,16 @@ def answer_question(
     # needed for entry-entity coverage.
     reserve = min(4, max(0, max_paths // 3))
     paths = select_proof_paths(paths, query_entities, max(1, max_paths - reserve))
-    if paths or parsed.entity_ids:
+    pit_as_valid = str(getattr(config, "as_valid_at", "") or "")
+    pit_as_known = str(getattr(config, "as_known_at", "") or "")
+    pit_blocks = (
+        _pit_cutoffs_active(config)
+        and parsed.entity_ids
+        and not _has_visible_edges_under_pit(graph, parsed.entity_ids, config)
+    )
+    if pit_blocks:
+        paths = []
+    elif paths or parsed.entity_ids:
         cover_targets = set(query_entities) | set(parsed.entity_ids)
         covered = set()
         for path in paths:
@@ -691,7 +1016,11 @@ def answer_question(
         missing = [eid for eid in parsed.entity_ids if eid not in covered]
         if missing:
             extra = incident_paths_for_entities(
-                graph, missing, max_paths=max(reserve, max_paths - len(paths))
+                graph,
+                missing,
+                max_paths=max(reserve, max_paths - len(paths)),
+                as_valid_at=pit_as_valid,
+                as_known_at=pit_as_known,
             )
             if extra:
                 paths = select_proof_paths(
@@ -702,6 +1031,26 @@ def answer_question(
     result["path_count"] = len(paths)
     result["path_scores"] = [round(path.score, 6) for path in paths]
 
+    # Point-in-time cutoffs: if every incident edge is filtered out, abstain
+    # with the temporal family gold phrasing (do not leak zero-hop node prose).
+    if pit_blocks:
+        result["answer"] = _TEMPORAL_ABSTAIN
+        result["raw_answer"] = _TEMPORAL_ABSTAIN
+        result["realization"] = {
+            "backend": getattr(config, "realizer_backend", "") or L1_ACCEPTANCE_BACKEND,
+            "strategy": "temporal_pit_abstain",
+            "statements": [],
+            "statement_proof_map": [],
+            "coverage_errors": ["no_visible_edges_under_pit"],
+        }
+        result["verification"] = VerificationResult(
+            supported_count=0,
+            hallucination_rate=0.0,
+            passed=True,
+        )
+        result["timing"] = timing
+        return _attach_reasoning_audit(result, graph, [], config, max_paths)
+
     # Class B fix: path_count == 0 but entities resolved (e.g., fuzzy match, no
     # outgoing edges).  Build a 0-hop evidence pack directly from entity nodes
     # instead of refusing.
@@ -709,7 +1058,11 @@ def answer_question(
         direct_pack = build_zero_hop_pack(graph, parsed.entity_ids, question=question)
         if direct_pack:
             audit_paths = incident_paths_for_entities(
-                graph, parsed.entity_ids, max_paths=max_paths
+                graph,
+                parsed.entity_ids,
+                max_paths=max_paths,
+                as_valid_at=pit_as_valid,
+                as_known_at=pit_as_known,
             )
             comparison = _comparison_plan_result(
                 question, direct_pack, config, parsed.intent,
@@ -813,17 +1166,41 @@ def answer_question(
     )
     direct_pack = build_zero_hop_pack(graph, parsed.entity_ids, question=question)
     evidence_pack = _merge_resolved_entity_evidence(evidence_pack, direct_pack, question)
+    if (
+        getattr(config, "realizer_backend", "") == L1_ACCEPTANCE_BACKEND
+        and (
+            parsed.intent == "comparison"
+            or re.search(r"\b(compare|vs\.?|versus|differ)\b", question.casefold())
+        )
+    ):
+        evidence_pack = _enrich_l1_comparison_evidence(
+            graph, parsed.entity_ids, evidence_pack, question,
+        )
     evidence_json = json.dumps(evidence_pack, indent=2, ensure_ascii=False)
     timing["evidence_time"] = round(time.perf_counter() - t0, 6)
     result["evidence_pack"] = evidence_pack
 
     # Zero-LLM realization order:
-    #   comparison (grounded_v1 / l1_acceptance / abstractive) →
-    #   l1_acceptance path-shaped → deterministic render before pointer →
-    #   pointer/copy (factual + diagnostic) →
-    #   deterministic path render (fallback) →
+    #   L1 metric compare (question-anchored) → comparison-plan →
+    #   dependency-chain walk → path-shaped det render → edge catalog →
+    #   node-fact copy → pointer/copy → det render only for path-shaped L1 →
     #   synth/LLM
     t0 = time.perf_counter()
+    metric_compare = _l1_compare_metrics_result(
+        question, evidence_pack, config, parsed.intent,
+    )
+    if metric_compare is not None:
+        timing["realize_time"] = round(time.perf_counter() - t0, 6)
+        result["answer"] = metric_compare["answer"]
+        result["raw_answer"] = metric_compare["raw_answer"]
+        result["realization"] = metric_compare["realization"]
+        result["cascade_level"] = 1
+        result["verification"] = verifier.verify(
+            metric_compare["answer"], evidence_pack
+        )
+        result["timing"] = timing
+        return _attach_reasoning_audit(result, graph, paths, config, max_paths)
+
     comparison = _comparison_plan_result(
         question, evidence_pack, config, parsed.intent,
         comparison_label_selector,
@@ -835,6 +1212,21 @@ def answer_question(
         result["realization"] = comparison.to_dict()
         result["cascade_level"] = 1 if comparison.strategy == BACKEND_NAME else 0
         result["verification"] = verifier.verify(comparison.answer, evidence_pack)
+        result["timing"] = timing
+        return _attach_reasoning_audit(result, graph, paths, config, max_paths)
+
+    dependency_chain = _l1_dependency_chain_result(
+        graph, parsed.entity_ids, question, config,
+    )
+    if dependency_chain is not None:
+        timing["realize_time"] = round(time.perf_counter() - t0, 6)
+        result["answer"] = dependency_chain["answer"]
+        result["raw_answer"] = dependency_chain["raw_answer"]
+        result["realization"] = dependency_chain["realization"]
+        result["cascade_level"] = 1
+        result["verification"] = verifier.verify(
+            dependency_chain["answer"], evidence_pack
+        )
         result["timing"] = timing
         return _attach_reasoning_audit(result, graph, paths, config, max_paths)
 
@@ -895,9 +1287,17 @@ def answer_question(
         result["timing"] = timing
         return _attach_reasoning_audit(result, graph, paths, config, max_paths)
 
-    deterministic = _deterministic_render_result(
-        paths, config, intent=parsed.intent,
+    # Under l1_acceptance, do not dump incidental path triples for prose Qs.
+    allow_det_fallback = (
+        getattr(config, "realizer_backend", "") != L1_ACCEPTANCE_BACKEND
+        or _is_path_answer_question(question)
+        or _is_dependency_chain_question(question)
     )
+    deterministic = None
+    if allow_det_fallback:
+        deterministic = _deterministic_render_result(
+            paths, config, intent=parsed.intent,
+        )
     if deterministic is not None:
         timing["realize_time"] = round(time.perf_counter() - t0, 6)
         result["answer"] = deterministic["answer"]

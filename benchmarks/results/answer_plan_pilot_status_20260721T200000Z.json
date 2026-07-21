@@ -1,0 +1,33 @@
+{
+  "binding_constraint_non_dummy_realization": false,
+  "ci_mode": false,
+  "copy_edit_pilots": {
+    "reason": "Non-dummy realization is NOT the binding constraint: oracle_fact=0.602, predicted_fact=0.602, proof=0.9734, path=0.9688, entry=0.9543, realizer_backend=l1_acceptance/model=SynthesizingModel. Predicted does not lag a strong oracle surface score, so AnswerPlan edit-transducer training is not justified.",
+    "status": "NOT_RUN"
+  },
+  "created_utc": "2026-07-21T17:44:40.594026+00:00",
+  "evidence": {
+    "artifact": "benchmarks/results/oracle_vs_predicted_union_l1_acceptance_full_20260721T200000Z.json",
+    "dummy_model": false,
+    "entry_recall_mean": 0.9543,
+    "fact_accuracy_mean": 0.602,
+    "gold_entity_coverage_mean": 0.805,
+    "gold_path_recall_mean": 0.9688,
+    "model": "SynthesizingModel",
+    "oracle_fact_accuracy_mean": 0.602,
+    "proof_valid_rate": 0.9734,
+    "realizer_backend": "l1_acceptance"
+  },
+  "full_training": {
+    "reason": "Sealed until copy/edit pilots pass under an authorized prepared-root readiness gate.",
+    "status": "FULL_TRAINING_BLOCKED"
+  },
+  "next_action": "Keep AnswerPlan pilots deferred. Prefer graph/provenance/intent gaps over Realizer weight training unless a future grounded paired run shows fact_accuracy as the limiter.",
+  "realizer_training_decision": {
+    "reason": "Non-dummy realization is NOT the binding constraint: oracle_fact=0.602, predicted_fact=0.602, proof=0.9734, path=0.9688, entry=0.9543, realizer_backend=l1_acceptance/model=SynthesizingModel. Predicted does not lag a strong oracle surface score, so AnswerPlan edit-transducer training is not justified.",
+    "train_now": false
+  },
+  "schema_version": "nexus-answer-plan-status-v1",
+  "source_sha": "186ab6accfcb1ae9a1cc0964f3e4562697462534",
+  "status": "RECORDED"
+}

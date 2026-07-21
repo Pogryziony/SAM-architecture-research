@@ -52,6 +52,10 @@ L1 acceptance paired publish (default realizer is `l1_acceptance`):
 python benchmarks/run_oracle_vs_predicted.py --predicted-resolver union --realizer-backend l1_acceptance --model synth --output benchmarks/results/oracle_vs_predicted_union_l1_acceptance_full_TIMESTAMP.json
 ```
 
+Temporal family PIT cutoffs are fields on the oracle record (`as_known_at` /
+`as_valid_at`); the runner applies them per question. AnswerPlan stays deferred
+unless a paired artifact shows oracle fact ≥0.50 and predicted lag ≥0.15.
+
 Pure deterministic path-render publish:
 
 ```bash

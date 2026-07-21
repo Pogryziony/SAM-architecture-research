@@ -336,6 +336,16 @@ def _extract_node_facts(
         entity_bonus = 0
         if target_entity and target_entity.lower() in fact_text:
             entity_bonus = 20
+        # Prefer facts whose node id / source is literally named in the question.
+        source = str(f.get("source") or "")
+        if source and source.lower() in (question or "").lower():
+            entity_bonus += 15
+        # Prefer numeric findings when the question asks about rates/accuracy/%.
+        if re.search(r"\d+(?:\.\d+)?\s*%", fact_text) and any(
+            token in (question or "").lower()
+            for token in ("%", "precision", "recall", "accuracy", "performance", "compare")
+        ):
+            entity_bonus += 8
         f["_relevance"] = overlap + entity_bonus
 
     # Sort by relevance descending, then priority descending, then source

@@ -204,10 +204,12 @@ thresholds; no unresolved conflict yields an unconditional answer.
 fields; canonical graph payload schema is `nexus-canonical-graph-v2`.
 Production ingest (`populate_from_experiments`, `ingest_docs`,
 `ingest_generic`) stamps edges via `stable_ingest_stamp()` with a fixed
-epoch. Traversal `beam_search` applies optional `as_valid_at` /
-`as_known_at` cutoffs from config via `filter_edges_bitemporal`.
-`bitemporal_oracle_v1.jsonl` + `run_bitemporal_replay.py` exercise
-valid/known filters and look-ahead rejection.
+epoch. Traversal `beam_search` and incident-path enrichment apply optional
+`as_valid_at` / `as_known_at` cutoffs from config via
+`filter_edges_bitemporal`. Oracle family `family_temporal_001` carries
+ISO cutoffs; `NEXUSRunner` applies them per question so paired eval
+abstains end-to-end. `bitemporal_oracle_v1.jsonl` +
+`run_bitemporal_replay.py` remain the isolated filter/lookahead gate.
 
 Gate: deterministic historical replay and no look-ahead leakage.
 
@@ -220,11 +222,14 @@ Gate: deterministic historical replay and no look-ahead leakage.
 
 **Partial implementation (2026-07-21):** `l1_acceptance` is the default
 paired-publish L1 backend: relation/multi-hop path render, margin-tolerant
-node-fact copy (gold-friendly phrasing), edge-catalog answers from
-`EDGE_TYPE_WEIGHTS`, and comparison-plan for comparisons.
-`deterministic_render` remains available for pure proof→statement runs.
-`grounded_v1` keeps pointer/copy + path-render fallback. Learned Realizer
-training remains optional and deferred.
+node-fact copy for factual/diagnostic/causal prose, question-anchored metric
+compare for comparative prompts, dependency-chain walk-throughs, edge-catalog
+answers from `EDGE_TYPE_WEIGHTS`, and comparison-plan fallback.
+Per-record `as_known_at` / `as_valid_at` cutoffs flow through
+`NEXUSRunner` into traversal + incident enrichment; temporal family questions
+abstain when no edges survive PIT. `deterministic_render` remains available
+for pure proof→statement runs. AnswerPlan training stays sealed unless oracle
+fact ≥0.50 and predicted lags by ≥0.15.
 
 Gate: zero unsupported statements and identical output for identical structured
 input.

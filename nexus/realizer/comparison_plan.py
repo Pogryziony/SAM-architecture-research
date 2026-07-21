@@ -263,6 +263,8 @@ def extract_comparison_slots(
             candidates.append(parsed)
 
     if len(candidates) > 2:
+        # Fail closed unless exactly two sources are named in the question.
+        # Do not silently pick a top-2 guess from hub metrics.
         mentioned = [item for item in candidates if item[0] in question]
         if len(mentioned) == 2:
             candidates = mentioned
