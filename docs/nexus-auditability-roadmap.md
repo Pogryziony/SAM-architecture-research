@@ -95,11 +95,13 @@ split or retroactively applied to historical artifacts.
   diagnostics.
 
 **Partial implementation (2026-07-21):** Frozen contract `oracle_v1` lives in
-`benchmarks/qa-dataset/oracle_v1.jsonl` (+ manifest; 182 records after gold
-expansion). Build with `python benchmarks/build_frozen_oracle_dataset.py`.
-Paired reporting: `python benchmarks/run_oracle_vs_predicted.py --output ...`
-(smoke artifact under `benchmarks/results/oracle_vs_predicted_smoke_*.json`).
-Broader hop / temporal coverage and full-dataset publication remain open.
+`benchmarks/qa-dataset/oracle_v1.jsonl` (+ manifest; **188 records** including
+curated `oracle_families_v1` coverage for direct/two-hop/three-hop/
+contradiction/no-answer/temporal). Build with
+`python benchmarks/build_frozen_oracle_dataset.py`. Full paired publication:
+`benchmarks/results/oracle_vs_predicted_full_*.json` via
+`python benchmarks/run_oracle_vs_predicted.py --output ...`. Further family
+expansion and bi-temporal gold remain open.
 
 Gate: 100% valid records, deterministic rerun, and complete provenance for the
 benchmark artifact.
@@ -114,8 +116,10 @@ benchmark artifact.
 **Partial implementation (2026-07-21):** `NEXUSConfig.max_expanded_edges` /
 `max_expanded_nodes` / `max_traversal_ms` and `TraversalStats` report
 truncation. Answer pipeline attaches `traversal_stats` to results; truncated
-search forces `conditional_answer` in the reasoning audit (never unconditional
-`answer`). Synthetic RSS/p95 campaign remains open.
+search forces `conditional_answer`. Synthetic campaign
+`python benchmarks/run_traversal_budget_campaign.py --output ...` measures
+small/medium/large graphs against NEXUS hard p50/p95/RSS limits and requires
+tight-budget truncation. Reference-CPU preregistration remains open.
 
 Gate: no unbounded traversal; p95 and RSS remain inside the assigned NEXUS
 budget on small, medium, and large synthetic graphs.

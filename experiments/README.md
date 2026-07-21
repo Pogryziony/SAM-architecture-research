@@ -26,8 +26,14 @@ python experiments/entity-extraction/evaluate_extraction.py
 Frozen oracle dataset + paired oracle/predicted reporting:
 
 ```bash
-python benchmarks/build_frozen_oracle_dataset.py
-python benchmarks/run_oracle_vs_predicted.py --output benchmarks/results/oracle_vs_predicted_TIMESTAMP.json
+python benchmarks/build_frozen_oracle_dataset.py --force
+python benchmarks/run_oracle_vs_predicted.py --output benchmarks/results/oracle_vs_predicted_full_TIMESTAMP.json
+```
+
+Synthetic traversal budget campaign (small/medium/large):
+
+```bash
+python benchmarks/run_traversal_budget_campaign.py --output benchmarks/results/traversal_budget_campaign_TIMESTAMP.json
 ```
 
 Canonical graph rebuild (deterministic content hash):

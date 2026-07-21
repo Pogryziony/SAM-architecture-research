@@ -231,6 +231,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--output", required=True)
     parser.add_argument("--limit", type=int)
+    parser.add_argument("--force", action="store_true")
     args = parser.parse_args(argv)
 
     records_path = Path(args.records)
@@ -241,6 +242,7 @@ def main(argv: list[str] | None = None) -> int:
         "schema_version": ORACLE_SCHEMA_VERSION,
         "file_sha256": sha256_file(records_path),
         "record_count": len(records),
+        "full_dataset": args.limit is None,
         "sources": {str(records_path.as_posix()): sha256_file(records_path)},
     }
     from benchmarks.run_benchmark import build_benchmark_graph
@@ -251,7 +253,7 @@ def main(argv: list[str] | None = None) -> int:
         records, graph, source_sha=source_sha, dataset_identity=dataset_identity
     )
     output = Path(args.output)
-    if output.exists():
+    if output.exists() and not args.force:
         raise FileExistsError(f"refusing to overwrite: {output}")
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(

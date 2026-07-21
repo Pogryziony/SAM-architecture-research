@@ -5,7 +5,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from benchmarks.build_frozen_oracle_dataset import build_frozen_dataset, write_frozen_dataset
+from benchmarks.build_frozen_oracle_dataset import (
+    DEFAULT_FAMILIES,
+    build_frozen_dataset,
+    merge_oracle_records,
+    write_frozen_dataset,
+)
 from benchmarks.run_oracle_vs_predicted import (
     pair_rows,
     summarize_rows,
@@ -17,16 +22,21 @@ from benchmarks.run_nexus_oracle import validate_oracle_records
 _ROOT = Path(__file__).resolve().parents[1]
 _QUESTIONS = _ROOT / "stack" / "encoder" / "data" / "val.jsonl"
 _RELATIONS = _ROOT / "benchmarks" / "qa-dataset" / "relation_gold.jsonl"
+_FAMILIES = DEFAULT_FAMILIES
 _ORACLE_V1 = _ROOT / "benchmarks" / "qa-dataset" / "oracle_v1.jsonl"
 _ORACLE_MANIFEST = _ROOT / "benchmarks" / "qa-dataset" / "oracle_v1.manifest.json"
 
 
 def test_build_frozen_oracle_dataset_is_valid(tmp_path: Path):
-    records, manifest = build_frozen_dataset(_QUESTIONS, _RELATIONS)
+    records, manifest = build_frozen_dataset(
+        _QUESTIONS, _RELATIONS, families_path=_FAMILIES
+    )
     assert validate_oracle_records(records) == []
     assert manifest["record_count"] == len(records)
     assert manifest["sha256"]
     assert "relation" in manifest["category_counts"]
+    assert "two_hop" in manifest["category_counts"]
+    assert "no_answer" in manifest["category_counts"]
     out = tmp_path / "oracle_v1.jsonl"
     man = tmp_path / "oracle_v1.manifest.json"
     write_frozen_dataset(records, manifest, out, man, force=True)
@@ -35,10 +45,31 @@ def test_build_frozen_oracle_dataset_is_valid(tmp_path: Path):
     assert len(loaded) == len(records)
 
 
+def test_family_merge_rejects_duplicate_ids():
+    base = [{
+        "id": "family_direct_001",
+        "question": "Q?",
+        "gold_answer": "A",
+        "gold_entities": ["X"],
+        "gold_path": [],
+        "path_required": False,
+        "should_abstain": False,
+        "category": "direct_lookup",
+        "source_split": "validation",
+    }]
+    try:
+        merge_oracle_records(base, base)
+        raise AssertionError("expected duplicate id failure")
+    except ValueError as exc:
+        assert "duplicate oracle record id" in str(exc)
+
+
 def test_committed_oracle_v1_matches_rebuild():
     assert _ORACLE_V1.exists(), "oracle_v1.jsonl must be committed"
     assert _ORACLE_MANIFEST.exists(), "oracle_v1.manifest.json must be committed"
-    records, manifest = build_frozen_dataset(_QUESTIONS, _RELATIONS)
+    records, manifest = build_frozen_dataset(
+        _QUESTIONS, _RELATIONS, families_path=_FAMILIES
+    )
     committed = [
         json.loads(line)
         for line in _ORACLE_V1.read_text(encoding="utf-8").splitlines()
@@ -48,6 +79,7 @@ def test_committed_oracle_v1_matches_rebuild():
     committed_manifest = json.loads(_ORACLE_MANIFEST.read_text(encoding="utf-8"))
     assert committed_manifest["sha256"] == manifest["sha256"]
     assert committed_manifest["record_count"] == manifest["record_count"]
+    assert committed_manifest["record_count"] >= 188
 
 
 def test_pair_rows_and_validate_paired_artifact():

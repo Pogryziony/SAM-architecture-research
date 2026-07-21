@@ -33,8 +33,9 @@ Steps 1-6 are non-LLM, CPU-native operations. Only steps 7-8 involve a language 
 exhausted, `TraversalStats.truncated` is set with a reason
 (`max_expanded_edges` / `max_expanded_nodes` / `max_traversal_ms`). Truncation
 means the search is incomplete — the reasoning audit must not recommend an
-unconditional answer. See `nexus/graph/traversal.py` and
-`tests/test_traversal_budgets.py`.
+unconditional answer. See `nexus/graph/traversal.py`,
+`tests/test_traversal_budgets.py`, and the synthetic campaign
+`benchmarks/run_traversal_budget_campaign.py`.
 
 ## Step 1: Question Parsing
 
