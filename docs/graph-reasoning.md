@@ -109,8 +109,9 @@ These weights determine which edge types are preferred during traversal:
 | `validates` | 0.80 | Validation relationships confirm/test behavior |
 | `contradicts` | 0.75 | Contradictions are strong negative signals |
 | `implements` | 0.70 | Implementation tells us "how" |
-| `derived_from` | 0.60 | Derivation shows provenance |
+| `derived_from` | 0.60 | Conceptual derivation (e.g. decision → supporting concept) |
 | `replaces` | 0.55 | Historical context |
+| `sub_experiment` | 0.50 | Structural parentage (run → experiment, metric → run); not scored in relation F1 |
 | `related_to` | 0.30 | Weak association — used only if no stronger edges |
 | `mentioned_in` | 0.20 | Co-occurrence — weakest signal, mainly for source tracing |
 

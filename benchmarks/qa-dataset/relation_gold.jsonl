@@ -4,7 +4,6 @@
 {"source": "Exp_0_12_Selection", "target": "Concept_SelectorBottleneck", "edge_type": "validates", "evidence": "ANALYSIS_AND_ROADMAP.md"}
 {"source": "Exp_0_13A_NoisyMemory", "target": "Concept_NoiseTolerance", "edge_type": "validates", "evidence": "ANALYSIS_AND_ROADMAP.md"}
 {"source": "Exp_0_12_Selection", "target": "Concept_RetrievalMismatch", "edge_type": "contradicts", "evidence": "ANALYSIS_AND_ROADMAP.md"}
-{"source": "Exp_0_6_Validation_core_only", "target": "Exp_0_6_Validation", "edge_type": "derived_from", "evidence": "sam-lm/experiments/experiment_0_6_report.md"}
 {"source": "Decision_PivotToNEXUS", "target": "Concept_SelectorBottleneck", "edge_type": "derived_from", "evidence": "ANALYSIS_AND_ROADMAP.md"}
 {"source": "Decision_PivotToNEXUS", "target": "Concept_ArchitectureWorks", "edge_type": "derived_from", "evidence": "ANALYSIS_AND_ROADMAP.md"}
 {"source": "Decision_PivotToNEXUS", "target": "Concept_PivotToNEXUS", "edge_type": "derived_from", "evidence": "ANALYSIS_AND_ROADMAP.md"}

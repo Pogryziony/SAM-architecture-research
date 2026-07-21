@@ -15,7 +15,11 @@ _EXP_PATTERN = re.compile(r"^Exp_\d+.*$")
 # Canonical concept pattern: Concept_<Name> (alphabetic name only, no variants/underscores)
 _CONCEPT_PATTERN = re.compile(r"^Concept_[A-Z][a-zA-Z]+$")
 _DECISION_PATTERN = re.compile(r"^Decision_[A-Z][a-zA-Z0-9]+$")
-_PARENT_EDGE_TYPES = frozenset({"derived_from", "mentioned_in", "belongs_to"})
+# sub_experiment carries structural parentage (run→experiment, metric→run).
+# derived_from remains for conceptual derivation (decision→concept, etc.).
+_PARENT_EDGE_TYPES = frozenset({
+    "derived_from", "sub_experiment", "mentioned_in", "belongs_to",
+})
 _PARENT_PROPERTY_KEYS = (
     "parent_id", "parent_entity", "experiment_id", "source_entity", "mentioned_in"
 )

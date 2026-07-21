@@ -1,0 +1,20 @@
+{
+  "category_counts": {
+    "comparative": 19,
+    "diagnostic": 45,
+    "factual": 78,
+    "multi-hop": 8,
+    "negative_relation": 3,
+    "relation": 27
+  },
+  "created_utc": "2026-07-21T10:24:34.714026+00:00",
+  "dataset_id": "oracle_v1",
+  "file_sha256": "85e72e6733f13a87e797c67095e19671e9c7f8d4915064dd0cc7c8cc58d2e24e",
+  "record_count": 180,
+  "schema_version": "nexus-oracle-v1",
+  "sha256": "6629f06c0cc72aad74eb0d20c30fe04b9e2b957b040acbb46a8c5c7827acac43",
+  "sources": {
+    "C:/Users/Pogry/Projects/SAM-architecture-research/benchmarks/qa-dataset/relation_gold.jsonl": "cf79e2b5e89673531596a5ddad71db407927e7a914a85fac1c0f28f88d556b8f",
+    "C:/Users/Pogry/Projects/SAM-architecture-research/stack/encoder/data/val.jsonl": "f95e212502c7c5ad5a615a3e1921e62ef7e1e961a229f44be63e3f829fdacd09"
+  }
+}

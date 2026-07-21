@@ -85,10 +85,37 @@ def provenance_coverage(records: list[SourceRecord]) -> float:
     return present / len(records)
 
 
+def provenance_dicts_for_sources(
+    sources: list[str] | list[SourceRecord] | None,
+) -> list[dict[str, Any]]:
+    """Serialize normalized provenance for node ``properties['provenance']``."""
+    return [record.to_dict() for record in normalize_sources(sources)]
+
+
+def attach_provenance_to_properties(
+    properties: dict[str, Any] | None,
+    sources: list[str] | list[SourceRecord] | None,
+) -> dict[str, Any]:
+    """Return properties with structured provenance attached (compat path).
+
+    Legacy ``Node.sources`` strings remain the source of truth for adapters;
+    this copies normalized ``SourceRecord`` dicts into ``properties`` so
+    downstream readiness/audit code can require coverage without breaking
+    free-form ingestion.
+    """
+    props = dict(properties or {})
+    records = provenance_dicts_for_sources(sources)
+    if records:
+        props["provenance"] = records
+    return props
+
+
 __all__ = [
     "SourceRecord",
+    "attach_provenance_to_properties",
     "normalize_sources",
     "parse_freeform_source",
     "provenance_coverage",
+    "provenance_dicts_for_sources",
     "source_id_for",
 ]

@@ -27,6 +27,19 @@ def _populated_graph() -> InMemoryGraphStore:
     return graph
 
 
+def _has_metrics_dumps() -> bool:
+    """True when local SAM experiment metrics dumps are present (not always in CI)."""
+    from nexus.ingestion.populate_from_experiments import EXPERIMENTS_DIR, RUN_MAP
+    for pattern in RUN_MAP:
+        path = EXPERIMENTS_DIR / pattern / "metrics.json"
+        if path.exists():
+            return True
+        nested = EXPERIMENTS_DIR / pattern
+        if nested.is_dir() and any(nested.glob("*/metrics.json")):
+            return True
+    return False
+
+
 def _load_gold() -> tuple[list[dict], list[dict]]:
     """Load the gold-standard relation dataset."""
     import sys
@@ -89,9 +102,32 @@ class TestEdgeTypesPresent:
         edges = [e for nid in graph._nodes for e in graph.get_outgoing(nid) if e.type == "derived_from"]
         assert len(edges) > 0, "Expected at least one 'derived_from' edge in the graph"
 
+    def test_sub_experiment_present(self, graph):
+        if not _has_metrics_dumps():
+            pytest.skip("SAM metrics dumps not present in this checkout")
+        edges = [e for nid in graph._nodes for e in graph.get_outgoing(nid) if e.type == "sub_experiment"]
+        assert len(edges) > 0, "Expected at least one 'sub_experiment' structural edge"
+
+    def test_curated_causal_edges_present(self, graph):
+        types = {e.type for nid in graph._nodes for e in graph.get_outgoing(nid)}
+        for required in ("blocked_by", "caused_by", "implements"):
+            assert required in types, f"Expected curated '{required}' edge in the graph"
+
     def test_contradicts_present(self, graph):
         edges = [e for nid in graph._nodes for e in graph.get_outgoing(nid) if e.type == "contradicts"]
         assert len(edges) > 0, "Expected at least one 'contradicts' edge in the graph"
+
+    def test_run_parent_links_are_sub_experiment_not_derived_from(self, graph):
+        """Structural run→parent edges must not inflate conceptual derived_from FPs."""
+        derived = [
+            e for nid in graph._nodes
+            for e in graph.get_outgoing(nid)
+            if e.type == "derived_from" and e.source.startswith("Exp_") and "_Validation_" in e.source
+        ]
+        assert derived == [], (
+            "Sub-run parent links should use sub_experiment, not derived_from: "
+            f"{[(e.source, e.target) for e in derived[:5]]}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -301,6 +337,25 @@ class TestEvaluation:
         results = mod.evaluate(gold, negatives, predicted)
         assert len(results["negative_examples_hit"]) == 1
 
+    def test_populated_graph_relation_f1_above_interim_gate(self, graph, gold_positives, gold_negatives):
+        """Interim gate after structural/curated relation fixes (was ~12.5% F1)."""
+        import sys
+        _project_root = Path(__file__).resolve().parents[1]
+        sys.path.insert(0, str(_project_root))
+        eval_path = _project_root / "experiments" / "relation-extraction" / "evaluate_relations.py"
+        spec = importlib.util.spec_from_file_location("eval_rel_gate", eval_path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+
+        semantic = mod.extract_semantic_edges(graph)
+        structural = mod.extract_structural_edges(graph)
+        results = mod.evaluate(gold_positives, gold_negatives, semantic)
+        if _has_metrics_dumps():
+            assert len(structural) > 0
+        assert results["global"]["recall"] >= 0.95
+        assert results["global"]["f1"] >= 0.50
+        assert results["false_negatives"] == []
+
 
 # ---------------------------------------------------------------------------
 # Test: Semantic vs co-occurrence separation
@@ -334,3 +389,24 @@ class TestSemanticCooccurrenceSeparation:
         assert len(cooccurrence) == 1
         assert cooccurrence[0]["source"] == "A"
         assert cooccurrence[0]["target"] == "C"
+
+    def test_sub_experiment_excluded_from_semantic(self):
+        import sys
+        _project_root = Path(__file__).resolve().parents[1]
+        sys.path.insert(0, str(_project_root))
+        eval_path = _project_root / "experiments" / "relation-extraction" / "evaluate_relations.py"
+        spec = importlib.util.spec_from_file_location("eval_rel5", eval_path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+
+        g = InMemoryGraphStore()
+        g.add_node(ng.Node(id="Run", type="Experiment"))
+        g.add_node(ng.Node(id="Parent", type="Experiment"))
+        g.add_edge(ng.Edge(type="sub_experiment", source="Run", target="Parent", confidence=1.0))
+        g.add_edge(ng.Edge(type="depends_on", source="Run", target="Parent", confidence=0.9))
+
+        semantic = mod.extract_semantic_edges(g)
+        structural = mod.extract_structural_edges(g)
+        assert ("Run", "Parent", "sub_experiment") not in semantic
+        assert len(structural) == 1
+        assert ("Run", "Parent", "depends_on") in semantic
