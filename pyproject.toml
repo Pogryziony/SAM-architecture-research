@@ -14,9 +14,13 @@ test = ["pytest>=7.0"]
 train = ["torch>=2.3,<3"]
 semantic = ["sentence-transformers>=3,<6"]
 data = ["pyarrow>=18,<20"]
+stack = []
+
+[project.scripts]
+nexus = "nexus.api:main"
 
 [tool.setuptools.packages.find]
-include = ["nexus*"]
+include = ["nexus*", "stack*", "training*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
