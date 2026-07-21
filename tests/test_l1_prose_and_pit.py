@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
-
 from nexus.graph import Edge, Node
+from nexus.graph.family_curations import apply_oracle_family_curations
 from nexus.graph.store import InMemoryGraphStore
 from nexus.pipeline.config import ProductionNEXUSConfig
 from nexus.pipeline.runner import NEXUSRunner
@@ -156,6 +155,87 @@ def test_temporal_family_pit_cutoffs_abstain_end_to_end():
     qr = pipeline.per_question[0]
     assert "No valid temporal facts" in qr.answer
     assert qr.reasoning_action in {"abstain", "answer", "conditional_answer", ""}
+
+
+def _graph_with_family_curations() -> InMemoryGraphStore:
+    graph = InMemoryGraphStore()
+    graph.add_node(Node(id="Decision_PivotToNEXUS", type="Decision"))
+    apply_oracle_family_curations(graph)
+    return graph
+
+
+def test_l1_qualitative_compare_rag_updates():
+    config = ProductionNEXUSConfig.l1_acceptance(max_entry_nodes=4)
+    result = answer_question(
+        "Compare RAG vs NEXUS for knowledge updates.",
+        _graph_with_family_curations(),
+        model=_NeverGenerate(),
+        config=config,
+        entry_nodes_override=["Decision_PivotToNEXUS"],
+    )
+    assert result["realization"]["strategy"] == "l1_qualitative_compare"
+    assert "re-index" in result["answer"].casefold()
+    assert "replaces" in result["answer"].casefold()
+    assert "O(1)" in result["answer"]
+
+
+def test_l1_qualitative_compare_phase_prose():
+    config = ProductionNEXUSConfig.l1_acceptance(max_entry_nodes=4)
+    result = answer_question(
+        "Compare SAM phase 1-4 research vs NEXUS phase 5.",
+        _graph_with_family_curations(),
+        model=_NeverGenerate(),
+        config=config,
+        entry_nodes_override=["Decision_PivotToNEXUS"],
+    )
+    assert result["realization"]["strategy"] == "l1_qualitative_compare"
+    assert "Phase 1-4" in result["answer"]
+    assert "Phase 5" in result["answer"]
+
+
+def test_temporal_valid_window_and_retract_families():
+    graph = _graph_with_family_curations()
+    config = ProductionNEXUSConfig.l1_acceptance(max_entry_nodes=4)
+    runner = NEXUSRunner(graph, config, model=_NeverGenerate())
+    records = [
+        {
+            "id": "family_temporal_002",
+            "question": (
+                "As valid in 2019, did Concept_LegacyFlatMemory depend on "
+                "Module_LegacySelector?"
+            ),
+            "gold_entities": ["Concept_LegacyFlatMemory"],
+            "as_known_at": "",
+            "as_valid_at": "2019-06-01T00:00:00+00:00",
+        },
+        {
+            "id": "family_temporal_003",
+            "question": (
+                "As known in mid-2026, does Claim_TempPivotDependency still "
+                "depend on Module_LegacySelector?"
+            ),
+            "gold_entities": ["Claim_TempPivotDependency"],
+            "as_known_at": "2026-06-01T00:00:00+00:00",
+            "as_valid_at": "",
+        },
+        {
+            "id": "family_temporal_004",
+            "question": (
+                "As known after the NEXUS pivot, according to the graph, "
+                "what does Decision_PivotToNEXUS replace?"
+            ),
+            "gold_entities": ["Decision_PivotToNEXUS", "Concept_LegacyFlatMemory"],
+            "as_known_at": "2026-07-09T00:00:00+00:00",
+            "as_valid_at": "2026-07-09T00:00:00+00:00",
+        },
+    ]
+    pipeline = runner.run_oracle(records, source_sha="test")
+    assert not pipeline.errors
+    by_id = {qr.question_id: qr for qr in pipeline.per_question}
+    assert "as-valid-at" in by_id["family_temporal_002"].answer
+    assert "retracted" in by_id["family_temporal_003"].answer.casefold()
+    assert "Concept_LegacyFlatMemory" in by_id["family_temporal_004"].answer
+    assert "replaces" in by_id["family_temporal_004"].answer.casefold()
 
 
 def test_answer_plan_binding_requires_oracle_fact_and_predicted_lag():

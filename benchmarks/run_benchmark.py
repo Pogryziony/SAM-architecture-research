@@ -339,6 +339,11 @@ def build_benchmark_graph(config: NEXUSConfig = DEFAULT_CONFIG) -> tuple[InMemor
     if sam_exp_dir.exists():
         ingest_directory(sam_exp_dir, graph, config=config)
 
+    # Step 3: Oracle-family dual compare facts + bi-temporal family edges.
+    from nexus.graph.family_curations import apply_oracle_family_curations
+
+    family_curation_stats = apply_oracle_family_curations(graph)
+
     edge_type_counts: dict[str, int] = {}
     for node_id in graph._nodes:
         for edge in graph.get_outgoing(node_id):
@@ -348,6 +353,7 @@ def build_benchmark_graph(config: NEXUSConfig = DEFAULT_CONFIG) -> tuple[InMemor
         "node_count": graph.node_count,
         "edge_count": graph.edge_count,
         "edge_type_counts": edge_type_counts,
+        "family_curations": family_curation_stats,
         "effective_config": {
             "enable_cooccurrence_edges": config.enable_cooccurrence_edges,
             "enable_embedding_er": config.enable_embedding_er,
@@ -360,6 +366,7 @@ def build_benchmark_graph(config: NEXUSConfig = DEFAULT_CONFIG) -> tuple[InMemor
             "2. ingest_directory('docs/', graph)",
             "3. ingest_directory('sam-lm/docs/', graph)",
             "4. ingest_directory('sam-lm/experiments/', graph)",
+            "5. apply_oracle_family_curations(graph)",
         ],
         "fixes_applied": [
             "P0: entity filter, relations constrained 10K->116 edges, entity ranking",
