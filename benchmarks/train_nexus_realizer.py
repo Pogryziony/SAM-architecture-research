@@ -751,6 +751,10 @@ def main() -> int:
     try:
         if args.manifest is None:
             raise ValueError("--manifest is required unless --list-presets is used")
+        if args.mode == "train":
+            from training.architecture_registry import assert_training_allowed
+
+            assert_training_allowed(args.config, action="full_training")
         result = run(
             args.manifest, args.config, mode=args.mode,
             readiness_path=args.readiness, output_dir=args.output_dir,

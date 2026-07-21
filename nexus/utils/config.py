@@ -87,6 +87,10 @@ class NEXUSConfig:
     max_depth: int = 4
     beam_width: int = 25
     edge_confidence_threshold: float = 0.3
+    # Explicit expansion budgets (auditability Stage 2). Exhaustion is reported
+    # as truncation — never as a silent complete search.
+    max_expanded_edges: int = 10_000
+    max_expanded_nodes: int = 5_000
 
     # Verification
     hallucination_threshold: float = 0.2

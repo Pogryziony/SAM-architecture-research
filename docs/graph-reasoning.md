@@ -25,6 +25,15 @@ In NEXUS, the "reasoning" step is not an LLM call — it's a structured walk thr
 
 Steps 1-6 are non-LLM, CPU-native operations. Only steps 7-8 involve a language model.
 
+### Traversal budgets
+
+`NEXUSConfig.max_expanded_edges` (default 10_000) and
+`max_expanded_nodes` (default 5_000) bound beam search expansion. When a budget
+is exhausted, `TraversalStats.truncated` is set with a reason
+(`max_expanded_edges` / `max_expanded_nodes`). Truncation means the search is
+incomplete — never treat it as a full exploration. See
+`nexus/graph/traversal.py` and `tests/test_traversal_budgets.py`.
+
 ## Step 1: Question Parsing
 
 Input: *"Why does the DHM migration test not pass after changing WO status?"*

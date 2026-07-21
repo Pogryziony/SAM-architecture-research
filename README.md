@@ -46,10 +46,33 @@ general-purpose LLM reasoning path.
 | Realizer corpus v2 | 🟡 **DATA READY; FULL TRAINING BLOCKED BY NEURAL GENERATION** — a document-disjoint holdout adds 500 abstention cases without duplication, PoQuAD now preserves extractive facts separately from natural targets, and 27,255 train records require real surface transformation. The 2,048-record and pointer-generator pilots failed generation gates, so the representative pilot and full training were not launched. |
 | End-to-end QA | 🟡 **FACTUAL AND CONTROLLED COMPARISON PATHS READY** — `ProductionNEXUSConfig.grounded()` is the recommended production profile, routing factual lookups to Pointer/Copy v3 and comparisons to the hash-verified checkpoint. `"synth"` remains the library default for backward compatibility. Open-ended synthesis and broader abstractive answers still require separate data and evaluation. |
 | Copy/Edit Transducer (AnswerPlan pilot) | 🟡 **ARCHITECTURE READY; PILOTS NOT YET RUN** — a non-autoregressive copy/edit transducer replaces the failed autoregressive pointer-generator. Edit scripts are computed deterministically via Levenshtein alignment. The model predicts KEEP/DELETE/REPLACE operations for every canonical-answer position simultaneously. Bounded pilot training is scripted but has not been executed against the prepared AnswerPlan dataset. |
+| Stack-v1 freeze | ✅ **DOCUMENTED** — Stage 0–4 evidence frozen by identity; see [docs/stack-v1-freeze.md](docs/stack-v1-freeze.md). Rejected Realizer architectures are listed in [training/REJECTED_ARCHITECTURES.json](training/REJECTED_ARCHITECTURES.json). |
+
+### Production profile vs library default
+
+| Use case | Config |
+|----------|--------|
+| **Recommended production QA** | `ProductionNEXUSConfig.grounded()` — Pointer/Copy v3 + comparison-plan |
+| Extractive factual only | `ProductionNEXUSConfig.pointer_copy()` |
+| Historical Stage 2 reproduction | `NEXUSConfig()` / `realizer_backend="synth"` (**library default**) |
+
+Details: [docs/production-profiles.md](docs/production-profiles.md).
 
 ### Quick start (NEXUS)
 
 ```bash
+pip install -e ".[test]"
+
+# Recommended production profile (not the library synth default)
+python -c "from nexus.pipeline.config import ProductionNEXUSConfig; print(ProductionNEXUSConfig.grounded().realizer_backend)"
+
+# CLI (builds the canonical project graph)
+python -m nexus profiles
+python -m nexus ask "What was the oracle memory accuracy in Experiment 0.6?" --profile grounded --json
+
+# Deterministic canonical graph content hash
+python benchmarks/build_canonical_graph.py --print-hash-only
+
 # Explore the graph data model
 python -c "from nexus.graph import Node, Edge, EDGE_TYPE_WEIGHTS; print(EDGE_TYPE_WEIGHTS)"
 
@@ -73,6 +96,8 @@ for p in paths:
 ### Documentation (NEXUS)
 
 - [Analysis & Roadmap](ANALYSIS_AND_ROADMAP.md) — full architecture, roadmap, research questions
+- [Stack-v1 freeze](docs/stack-v1-freeze.md) — authoritative Stage 0–4 freeze attestation
+- [Production profiles](docs/production-profiles.md) — library default vs grounded production QA
 - [Graph Memory Model](docs/graph-memory.md) — data model, node/edge types, construction pipeline
 - [Graph Reasoning](docs/graph-reasoning.md) — traversal, path scoring, evidence building, verification
 - [Auditability & Reasoning Roadmap](docs/nexus-auditability-roadmap.md) — proof traces, provenance, oracle evaluation, and staged acceptance gates
@@ -136,4 +161,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-17 (grounded_v1 is the default realizer backend; a non-autoregressive copy/edit transducer architecture replaces the failed pointer-generator; comparison evidence parsing supports arbitrary prose; Polish comparison templates are available; latency benchmarks, test-evaluation protocol and corpus-coverage roadmap are documented.)*
+*Last updated: 2026-07-21 (stack-v1 freeze documented; library default Realizer remains `synth` for Stage 2 compatibility while `ProductionNEXUSConfig.grounded()` is the recommended production profile; rejected Realizer architectures are registry-gated; copy/edit transducer remains the AnswerPlan pilot path.)*

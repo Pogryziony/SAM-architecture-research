@@ -5,17 +5,29 @@ the archived SAM experiments in `../sam-lm/experiments/`.
 
 ## Experiment tracks
 
-| Track | Question | Directory |
-|-------|----------|-----------|
-| Entity extraction | Can we reliably extract typed entities from project artifacts? | `entity-extraction/` |
-| Relation extraction | Can we extract typed, directed relationships between entities? | `relation-extraction/` |
-| Graph traversal | Does traversal return relevant paths for domain questions? | `graph-traversal/` |
-| Path ranking | Can we score and rank paths so the correct reasoning chain is top-K? | `path-ranking/` |
+| Track | Question | Directory | Status |
+|-------|----------|-----------|--------|
+| Entity extraction | Can we reliably extract typed entities from project artifacts? | `entity-extraction/` | **Implemented** (`evaluate_extraction.py`) |
+| Relation extraction | Can we extract typed, directed relationships between entities? | `relation-extraction/` | **Implemented** (`evaluate_relations.py`); production should keep `enable_cooccurrence_edges=false` |
+| Graph traversal | Does traversal return relevant paths for domain questions? | `graph-traversal/` | **Scaffold** — unit coverage lives in `tests/test_traversal_budgets.py` and `tests/test_scoring.py`; dedicated experiment scripts not yet added |
+| Path ranking | Can we score and rank paths so the correct reasoning chain is top-K? | `path-ranking/` | **Scaffold** — ranking logic is in `nexus/graph/scoring.py` with tests; dedicated experiment scripts not yet added |
+
+Empty directories marked **Scaffold** are intentional placeholders. Do not cite them as active evaluation tracks until scripts and gold sets exist.
 
 ## Running experiments
 
-Each experiment directory contains its own config and run scripts.
-See the individual directories for details.
+Implemented tracks contain their own eval scripts. Example:
+
+```bash
+python experiments/relation-extraction/evaluate_relations.py
+python experiments/entity-extraction/evaluate_extraction.py
+```
+
+Canonical graph rebuild (deterministic content hash):
+
+```bash
+python benchmarks/build_canonical_graph.py --print-hash-only
+```
 
 ## Relationship to SAM experiments
 

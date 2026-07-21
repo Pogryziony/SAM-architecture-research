@@ -5,6 +5,14 @@ Training is fail-closed. A run may start only when the readiness artifact says
 the v1 contract because they lack structured evidence, proof audit, source
 split, and reproducibility hashes.
 
+**Architecture registry:** before launching any Realizer training command, check
+[`REJECTED_ARCHITECTURES.json`](REJECTED_ARCHITECTURES.json) via
+`training.architecture_registry.assert_training_allowed`. Rejected
+sequence-to-sequence pilots (v1, v2, AnswerPlan pointer-generator) must not be
+relaunched from teacher-forced loss alone. The accepted production paths are
+Pointer/Copy v3 and the comparison-plan pilot; AnswerPlan surface work continues
+only through the copy/edit transducer pilot sequence.
+
 ## Required order
 
 1. Build the oracle benchmark from the registered validation and relation-gold

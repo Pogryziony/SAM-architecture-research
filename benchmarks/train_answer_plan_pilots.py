@@ -18,17 +18,27 @@ _project_root = Path(__file__).parent.parent.resolve()
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
-import torch
-from torch.nn import functional as F
-
+# Torch is optional at import time so the fail-closed ``main()`` entrypoint
+# (and no-torch CI) can load this module. Neural helpers import torch lazily.
 from benchmarks.realizer_corpus_v2_contracts import iter_jsonl, normalized_text, sha256_file, sha256_json
-from nexus.realizer.pointer_generator import build_pointer_generator
 from nexus.realizer.plan_serializer import serialize_answer_plan_for_model
 from nexus.realizer.subword_tokenizer import TrainOnlySubwordTokenizer
 
 
 _WORD_RE = re.compile(r"\w+", re.UNICODE)
 _NUMBER_RE = re.compile(r"(?<!\w)[+-]?(?:\d+(?:[.,]\d+)?)(?!\w)")
+
+
+def _require_torch():
+    """Lazy torch import so fail-closed ``main()`` works without PyTorch."""
+    try:
+        import torch
+        from torch.nn import functional as F
+    except ImportError as exc:
+        raise RuntimeError(
+            "PyTorch is required for autoregressive AnswerPlan pilot helpers"
+        ) from exc
+    return torch, F
 
 
 def _token_f1(prediction: str, target: str) -> float:
@@ -104,7 +114,8 @@ def _load_stratified(
     return selected
 
 
-def _pad(sequences: list[list[int]], pad: int = 0) -> torch.Tensor:
+def _pad(sequences: list[list[int]], pad: int = 0):
+    torch, _F = _require_torch()
     width = max(map(len, sequences))
     result = torch.full((len(sequences), width), pad, dtype=torch.long)
     for index, values in enumerate(sequences):
@@ -127,6 +138,7 @@ def _batches(rows: list[dict[str, Any]], batch_size: int, seed: int):
 
 
 def _teacher_metrics(model: Any, rows: list[dict[str, Any]], batch_size: int) -> dict[str, float]:
+    torch, F = _require_torch()
     model.eval()
     loss_sum = correct = tokens = 0
     with torch.no_grad():
@@ -144,6 +156,7 @@ def _generate(
     model: Any, source_ids: list[int], copy_mask_values: list[bool],
     tokenizer: TrainOnlySubwordTokenizer, max_tokens: int,
 ) -> tuple[str, bool]:
+    torch, _F = _require_torch()
     model.eval()
     source = torch.tensor([source_ids], dtype=torch.long)
     copy_mask = torch.tensor([copy_mask_values], dtype=torch.bool)
@@ -241,6 +254,9 @@ def run_stage(
     tokenizer: TrainOnlySubwordTokenizer, output: Path, epochs: int,
     batch_size: int, seed: int,
 ) -> dict[str, Any]:
+    torch, F = _require_torch()
+    from nexus.realizer.pointer_generator import build_pointer_generator
+
     torch.manual_seed(seed)
     config = {
         "architecture": "pointer_generator_v1", "vocab_size": tokenizer.vocab_size,
@@ -286,53 +302,26 @@ def run_stage(
     }
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--prepared-root", type=Path, required=True)
-    parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--stages", nargs="+", choices=("overfit", "small", "representative"), default=["overfit", "small", "representative"])
-    parser.add_argument("--seed", type=int, default=20260716)
-    args = parser.parse_args()
-    root, output = args.prepared_root.resolve(), args.output.resolve()
-    if output.exists() and any(output.iterdir()):
-        raise FileExistsError(f"output is not empty: {output}")
-    output.mkdir(parents=True, exist_ok=True)
-    readiness = json.loads((root / "readiness.json").read_text())
-    if readiness["status"] != "READY_FOR_BOUNDED_PILOT" or readiness["pilot_protocol"]["full_training_authorized"]:
-        raise ValueError("prepared data does not authorize bounded-only pilots")
-    tokenizer = TrainOnlySubwordTokenizer.from_dict(json.loads((root / "tokenizer.json").read_text()))
-    prepared_tokenizer_sha256 = tokenizer.to_dict()["canonical_sha256"]
-    # Character/UTF-8 byte granularity lets the pointer edit inflected endings;
-    # unlike the historical tokenizer this path is lossless and is not capped at 256.
-    tokenizer = TrainOnlySubwordTokenizer([])
-    (output / "model_tokenizer.json").write_text(
-        json.dumps(tokenizer.to_dict(), ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
+def main(argv: list[str] | None = None) -> int:
+    """Entry point retained for discoverability; AR pilots are registry-blocked."""
+    parser = argparse.ArgumentParser(
+        description=(
+            "Blocked: autoregressive AnswerPlan pilots are rejected. "
+            "Use benchmarks/train_answer_plan_edit_transducer.py instead."
+        )
     )
-    validation = _load_stratified([root / "validation.jsonl", root / "abstention_validation.jsonl"], tokenizer, None, args.seed)
-    stage_specs = {"overfit": (64, 60, 16), "small": (2048, 1, 24), "representative": (17000, 1, 24)}
-    results = []
-    for stage in args.stages:
-        limit, epochs, batch = stage_specs[stage]
-        rows = _load_stratified([root / "train.jsonl"], tokenizer, limit, args.seed)
-        result = run_stage(stage, rows, validation, tokenizer, output, epochs, batch, args.seed)
-        results.append(result)
-        report = {
-            "schema_version": "nexus-answer-plan-pilot-run-v1",
-            "status": "PILOTS_IN_PROGRESS", "full_training_launched": False,
-            "prepared_manifest_sha256": json.loads((root / "manifest.json").read_text())["artifact_sha256"],
-            "readiness_sha256": readiness["canonical_sha256"], "stages": results,
-            "prepared_tokenizer_sha256": prepared_tokenizer_sha256,
-            "model_tokenizer_sha256": tokenizer.to_dict()["canonical_sha256"],
-            "model_tokenizer_reason": "lossless UTF-8 granularity for copy-and-inflect",
-        }
-        report["canonical_sha256"] = sha256_json(report)
-        (output / "pilot_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    report["status"] = "BOUNDED_PILOTS_COMPLETE"
-    report["canonical_sha256"] = sha256_json({k: v for k, v in report.items() if k != "canonical_sha256"})
-    (output / "pilot_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps({"status": report["status"], "canonical_sha256": report["canonical_sha256"], "stages": [item["name"] for item in results]}, indent=2))
-    return 0
+    parser.add_argument("--prepared-root", type=Path, required=False)
+    parser.add_argument("--output", type=Path, required=False)
+    parser.add_argument("--stages", nargs="+", default=None)
+    parser.add_argument("--seed", type=int, default=20260716)
+    parser.parse_args([] if argv is None else argv)
+    from training.architecture_registry import ArchitectureBlockedError
+
+    raise ArchitectureBlockedError(
+        "answer_plan_autoregressive_pointer_generator is FULL_TRAINING_BLOCKED: "
+        "use benchmarks/train_answer_plan_edit_transducer.py for AnswerPlan pilots "
+        "(see training/REJECTED_ARCHITECTURES.json)."
+    )
 
 
 if __name__ == "__main__":

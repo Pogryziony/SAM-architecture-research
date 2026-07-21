@@ -83,6 +83,8 @@ class ProductionNEXUSConfig(NEXUSConfig):
                     "max_entry_nodes": self.max_entry_nodes,
                     "max_depth": self.max_depth,
                     "beam_width": self.beam_width,
+                    "max_expanded_edges": self.max_expanded_edges,
+                    "max_expanded_nodes": self.max_expanded_nodes,
                     "edge_confidence_threshold": self.edge_confidence_threshold,
                     "hallucination_threshold": self.hallucination_threshold,
                     "readiness_answer_threshold": self.readiness_answer_threshold,
@@ -119,6 +121,8 @@ class ProductionNEXUSConfig(NEXUSConfig):
                 "max_entry_nodes": self.max_entry_nodes,
                 "max_depth": self.max_depth,
                 "beam_width": self.beam_width,
+                "max_expanded_edges": self.max_expanded_edges,
+                "max_expanded_nodes": self.max_expanded_nodes,
                 "edge_confidence_threshold": self.edge_confidence_threshold,
                 "hallucination_threshold": self.hallucination_threshold,
                 "readiness_answer_threshold": self.readiness_answer_threshold,
@@ -299,6 +303,10 @@ def validate_config(config: ProductionNEXUSConfig) -> list[str]:
         errors.append("max_depth must be >= 1")
     if config.beam_width < 1:
         errors.append("beam_width must be >= 1")
+    if getattr(config, "max_expanded_edges", 1) < 1:
+        errors.append("max_expanded_edges must be >= 1")
+    if getattr(config, "max_expanded_nodes", 1) < 1:
+        errors.append("max_expanded_nodes must be >= 1")
     if not 0.0 <= config.readiness_conditional_threshold <= 1.0:
         errors.append("readiness_conditional_threshold must be within [0, 1]")
     if not 0.0 <= config.readiness_answer_threshold <= 1.0:

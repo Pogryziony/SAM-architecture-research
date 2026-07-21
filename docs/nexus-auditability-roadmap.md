@@ -104,6 +104,10 @@ benchmark artifact.
 - Treat budget exhaustion as a visible conditional answer or abstention, never
   as a complete search.
 
+**Partial implementation (2026-07-21):** `NEXUSConfig.max_expanded_edges` /
+`max_expanded_nodes` and `TraversalStats` in `nexus/graph/traversal.py` report
+truncation. Optional wall-clock budget and readiness coupling remain open.
+
 Gate: no unbounded traversal; p95 and RSS remain inside the assigned NEXUS
 budget on small, medium, and large synthetic graphs.
 
@@ -114,6 +118,10 @@ budget on small, medium, and large synthetic graphs.
 - Record locator, content hash, observed time, extraction method, and source
   reliability.
 - Prevent unconditional answers when required provenance is incomplete.
+
+**Partial implementation (2026-07-21):** `nexus/graph/provenance.py` provides
+`SourceRecord` and free-form adapters. Ingestion still writes legacy strings;
+unconditional-answer provenance gates are not yet enforced.
 
 Gate: 100% provenance coverage for accepted benchmark answers and reproducible
 source resolution.

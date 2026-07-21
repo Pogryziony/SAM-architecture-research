@@ -985,6 +985,10 @@ def main() -> int:
     try:
         if args.manifest is None:
             raise ValueError("--manifest is required unless --list-presets is used")
+        if args.mode == "train":
+            from training.architecture_registry import assert_training_allowed
+
+            assert_training_allowed(args.config, action="full_training")
         ckpt_epochs = None
         if args.checkpoint_epochs is not None:
             ckpt_epochs = [int(e.strip()) for e in args.checkpoint_epochs.split(",") if e.strip()]

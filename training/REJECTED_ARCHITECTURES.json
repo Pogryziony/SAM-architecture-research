@@ -1,0 +1,90 @@
+{
+  "schema_version": "nexus-rejected-architectures-v1",
+  "updated": "2026-07-21",
+  "policy": [
+    "Do not launch full training for a rejected architecture without a new preregistered experiment that changes the architecture or data contract.",
+    "Teacher-forced loss alone is never a promotion signal.",
+    "Pointer/Copy v3 and the comparison-plan pilot remain the accepted production language paths for their scopes."
+  ],
+  "rejected": [
+    {
+      "id": "realizer_transformer_v1",
+      "config": "training/nexus_realizer_v1.json",
+      "status": "REALIZER_PILOT_FAIL",
+      "reason": "Mode collapse: unique outputs collapsed while loss decreased.",
+      "evidence": [
+        "models/realizer/run_20260716T100428Z/",
+        "benchmarks/results/realizer/run_20260716T100428Z/pilot_report.json"
+      ],
+      "allowed_actions": ["read_artifacts", "diagnose"]
+    },
+    {
+      "id": "realizer_transformer_v2",
+      "config": "training/nexus_realizer_v2.json",
+      "status": "REALIZER_NEURAL_CHECKPOINT_REJECTED",
+      "reason": "0% grounding rate on validation; grounded fallback succeeded, neural generation did not.",
+      "evidence": [
+        "models/realizer/v2_20260716T131357Z/",
+        "benchmarks/results/realizer/v2_20260716T131357Z/pilot_report_v2.json"
+      ],
+      "allowed_actions": ["read_artifacts", "diagnose"]
+    },
+    {
+      "id": "answer_plan_autoregressive_pointer_generator",
+      "config": "training/realizer_answer_plan_v1.json",
+      "status": "FULL_TRAINING_BLOCKED",
+      "reason": "Autoregressive pointer-generator and related sequence decoders failed overfit/small generation gates.",
+      "evidence": [
+        "docs/realizer-answer-plan-v1.md",
+        "benchmarks/results/realizer/answer_plan_v1_preparation_20260716.json"
+      ],
+      "allowed_actions": [
+        "read_artifacts",
+        "prepare_data",
+        "run_copy_edit_transducer_pilots"
+      ],
+      "replacement": "copy_edit_transducer_v1"
+    }
+  ],
+  "accepted": [
+    {
+      "id": "pointer_copy_v3",
+      "config": "training/pointer_copy_realizer_v3.json",
+      "status": "ACCEPTED",
+      "scope": "extractive factual QA where the answer is a complete evidence candidate",
+      "runtime": "ProductionNEXUSConfig.pointer_copy()",
+      "evidence": [
+        "benchmarks/results/realizer/pointer_copy_v3_20260716.json",
+        "docs/pointer-copy-realizer-v3.md"
+      ]
+    },
+    {
+      "id": "comparison_plan_v3",
+      "config": "training/nexus_realizer_abstractive_v1.json",
+      "status": "PILOT_CHECKPOINT_ACCEPTED",
+      "scope": "constrained SAME/DIFFERENT comparison plans; relation owned by NEXUS",
+      "runtime": "ProductionNEXUSConfig.comparison_plan() or grounded()",
+      "checkpoint": "models/realizer/abstractive_v1_plan_v3/",
+      "evidence": [
+        "models/realizer/abstractive_v1_plan_v3/manifest.json",
+        "docs/realizer-abstractive-pilot.md"
+      ],
+      "note": "full_training_launched remains false; do not extend from loss alone"
+    }
+  ],
+  "experimental": [
+    {
+      "id": "copy_edit_transducer_v1",
+      "status": "ARCHITECTURE_READY_PILOTS_NOT_RUN",
+      "entrypoints": [
+        "nexus/realizer/copy_edit_transducer.py",
+        "benchmarks/train_answer_plan_edit_transducer.py"
+      ],
+      "required_sequence": [
+        "64-record overfit smoke",
+        "2048-record one-epoch pilot",
+        "representative pilot only after both pass"
+      ]
+    }
+  ]
+}
