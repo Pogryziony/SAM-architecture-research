@@ -53,7 +53,10 @@ python benchmarks/run_oracle_vs_predicted.py --predicted-resolver union --realiz
 ```
 
 Temporal family PIT cutoffs are fields on the oracle record (`as_known_at` /
-`as_valid_at`); the runner applies them per question. AnswerPlan stays deferred
+`as_valid_at`); the runner applies them per question. Families cover known-at
+abstain, valid-window abstain, retract abstain, and an active `replaces`
+answer. Comparative qualitative pairs use curated dual `compare_*` facts via
+`l1_qualitative_compare` (not AnswerPlan weights). AnswerPlan stays deferred
 unless a paired artifact shows oracle fact ≥0.50 and predicted lag ≥0.15.
 
 Pure deterministic path-render publish:

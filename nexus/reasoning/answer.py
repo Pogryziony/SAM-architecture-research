@@ -41,6 +41,7 @@ from nexus.realizer.deterministic_render import (
     render_from_proof_steps,
     validate_statement_proof_coverage,
 )
+from nexus.realizer.l1_qualitative_compare import try_qualitative_compare
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
 DETERMINISTIC_RENDER_BACKEND = "deterministic_render"
@@ -190,9 +191,18 @@ _PATH_RENDER_INTENTS = frozenset({
     "factual_lookup",
 })
 _SOFT_FALLTHROUGH_BACKENDS = frozenset({HYBRID_BACKEND_NAME, L1_ACCEPTANCE_BACKEND})
-_TEMPORAL_ABSTAIN = (
+_TEMPORAL_ABSTAIN_KNOWN = (
     "Insufficient evidence to answer. No valid temporal facts for that as-known-at query."
 )
+_TEMPORAL_ABSTAIN_VALID = (
+    "Insufficient evidence to answer. No facts valid at that as-valid-at query."
+)
+_TEMPORAL_ABSTAIN_RETRACT = (
+    "Insufficient evidence to answer. Relevant facts were retracted before "
+    "that as-known-at query."
+)
+# Backward-compatible alias used by older tests/docs.
+_TEMPORAL_ABSTAIN = _TEMPORAL_ABSTAIN_KNOWN
 
 
 def _is_path_answer_question(question: str) -> bool:
@@ -257,6 +267,82 @@ def _has_visible_edges_under_pit(
         if kept:
             return True
     return False
+
+
+def _temporal_abstain_message(
+    graph: InMemoryGraphStore,
+    entity_ids: list[str],
+    config: NEXUSConfig,
+) -> str:
+    """Choose a differentiated PIT abstain reason from filtered edge stamps."""
+    from nexus.graph.bitemporal import (
+        BiTemporalStamp,
+        edge_to_fact,
+        is_known_at,
+        is_valid_at,
+    )
+
+    as_valid_at = str(getattr(config, "as_valid_at", "") or "").strip()
+    as_known_at = str(getattr(config, "as_known_at", "") or "").strip()
+    saw_retract = False
+    saw_valid_fail = False
+    saw_known_fail = False
+    for entity_id in entity_ids:
+        for edge in graph.get_edges(entity_id, "both"):
+            stamp = BiTemporalStamp.from_mapping(edge_to_fact(edge))
+            valid_ok = (not as_valid_at) or is_valid_at(stamp, as_valid_at)
+            known_ok = (not as_known_at) or is_known_at(stamp, as_known_at)
+            if valid_ok and known_ok:
+                continue
+            if as_valid_at and not valid_ok:
+                saw_valid_fail = True
+            if as_known_at and not known_ok:
+                # Retract-only when clearing retracted_at would make it known.
+                without_retract = BiTemporalStamp(
+                    valid_from=stamp.valid_from,
+                    valid_to=stamp.valid_to,
+                    observed_at=stamp.observed_at,
+                    retracted_at="",
+                )
+                if valid_ok and is_known_at(without_retract, as_known_at):
+                    saw_retract = True
+                else:
+                    saw_known_fail = True
+    if saw_retract and not saw_valid_fail:
+        return _TEMPORAL_ABSTAIN_RETRACT
+    if as_valid_at and saw_valid_fail and not saw_known_fail:
+        return _TEMPORAL_ABSTAIN_VALID
+    if as_valid_at and not as_known_at:
+        return _TEMPORAL_ABSTAIN_VALID
+    return _TEMPORAL_ABSTAIN_KNOWN
+
+
+def _l1_qualitative_compare_result(
+    question: str,
+    graph: InMemoryGraphStore,
+    entity_ids: list[str],
+    config: NEXUSConfig,
+) -> dict[str, Any] | None:
+    """Render curated dual-side compare_* properties when a template matches."""
+    if getattr(config, "realizer_backend", "") != L1_ACCEPTANCE_BACKEND:
+        return None
+    matched = try_qualitative_compare(question, graph, entity_ids)
+    if matched is None:
+        return None
+    answer, template = matched
+    return {
+        "answer": answer,
+        "raw_answer": answer,
+        "realization": {
+            "backend": L1_ACCEPTANCE_BACKEND,
+            "strategy": "l1_qualitative_compare",
+            "template": template.name,
+            "statements": [answer],
+            "statement_proof_map": [],
+            "coverage_errors": [],
+        },
+        "abstain": False,
+    }
 
 
 _ENTITY_PREFIX = re.compile(r"^[A-Za-z][A-Za-z0-9_]+:\s+")
@@ -1032,16 +1118,18 @@ def answer_question(
     result["path_scores"] = [round(path.score, 6) for path in paths]
 
     # Point-in-time cutoffs: if every incident edge is filtered out, abstain
-    # with the temporal family gold phrasing (do not leak zero-hop node prose).
+    # with differentiated temporal family gold phrasing (no zero-hop leakage).
     if pit_blocks:
-        result["answer"] = _TEMPORAL_ABSTAIN
-        result["raw_answer"] = _TEMPORAL_ABSTAIN
+        abstain_msg = _temporal_abstain_message(graph, parsed.entity_ids, config)
+        result["answer"] = abstain_msg
+        result["raw_answer"] = abstain_msg
         result["realization"] = {
             "backend": getattr(config, "realizer_backend", "") or L1_ACCEPTANCE_BACKEND,
             "strategy": "temporal_pit_abstain",
             "statements": [],
             "statement_proof_map": [],
             "coverage_errors": ["no_visible_edges_under_pit"],
+            "abstain_reason": abstain_msg,
         }
         result["verification"] = VerificationResult(
             supported_count=0,
@@ -1064,26 +1152,41 @@ def answer_question(
                 as_valid_at=pit_as_valid,
                 as_known_at=pit_as_known,
             )
-            comparison = _comparison_plan_result(
-                question, direct_pack, config, parsed.intent,
-                comparison_label_selector,
+            qualitative_compare = _l1_qualitative_compare_result(
+                question, graph, parsed.entity_ids, config,
             )
-            edge_catalog = None if comparison is not None else _edge_catalog_result(
-                question, config,
-            )
+            comparison = None
+            if qualitative_compare is None:
+                comparison = _comparison_plan_result(
+                    question, direct_pack, config, parsed.intent,
+                    comparison_label_selector,
+                )
+            edge_catalog = None
+            if qualitative_compare is None and comparison is None:
+                edge_catalog = _edge_catalog_result(question, config)
             node_fact = None
-            if comparison is None and edge_catalog is None:
+            if (
+                qualitative_compare is None
+                and comparison is None
+                and edge_catalog is None
+            ):
                 node_fact = _l1_node_fact_result(
                     question, direct_pack, config, parsed.intent,
                 )
             pointer = None
-            if comparison is None and edge_catalog is None and node_fact is None:
+            if (
+                qualitative_compare is None
+                and comparison is None
+                and edge_catalog is None
+                and node_fact is None
+            ):
                 pointer = _pointer_copy_result(
                     question, direct_pack, config, parsed.intent,
                 )
             deterministic = None
             if (
-                comparison is None
+                qualitative_compare is None
+                and comparison is None
                 and edge_catalog is None
                 and node_fact is None
                 and pointer is None
@@ -1091,7 +1194,10 @@ def answer_question(
                 deterministic = _deterministic_render_result(
                     audit_paths, config, intent=parsed.intent,
                 )
-            if comparison is not None:
+            if qualitative_compare is not None:
+                answer_direct = qualitative_compare["answer"]
+                realization = qualitative_compare["realization"]
+            elif comparison is not None:
                 answer_direct = comparison.answer
                 realization = comparison.to_dict()
             elif edge_catalog is not None:
@@ -1181,11 +1287,26 @@ def answer_question(
     result["evidence_pack"] = evidence_pack
 
     # Zero-LLM realization order:
-    #   L1 metric compare (question-anchored) → comparison-plan →
+    #   L1 qualitative dual-compare → metric compare → comparison-plan →
     #   dependency-chain walk → path-shaped det render → edge catalog →
     #   node-fact copy → pointer/copy → det render only for path-shaped L1 →
     #   synth/LLM
     t0 = time.perf_counter()
+    qualitative_compare = _l1_qualitative_compare_result(
+        question, graph, parsed.entity_ids, config,
+    )
+    if qualitative_compare is not None:
+        timing["realize_time"] = round(time.perf_counter() - t0, 6)
+        result["answer"] = qualitative_compare["answer"]
+        result["raw_answer"] = qualitative_compare["raw_answer"]
+        result["realization"] = qualitative_compare["realization"]
+        result["cascade_level"] = 1
+        result["verification"] = verifier.verify(
+            qualitative_compare["answer"], evidence_pack
+        )
+        result["timing"] = timing
+        return _attach_reasoning_audit(result, graph, paths, config, max_paths)
+
     metric_compare = _l1_compare_metrics_result(
         question, evidence_pack, config, parsed.intent,
     )

@@ -23,7 +23,7 @@ runner = NEXUSRunner(graph=graph, config=config)
 | `pointer_copy()` | pointer_copy | Extractive factual answers only |
 | `comparison_plan()` | abstractive_plan_v3 | Comparison questions only |
 | `deterministic_render()` | deterministic_render | Pure proof→statement path render |
-| `l1_acceptance()` | l1_acceptance | **L1 paired publish** — relation path render + node-fact copy + comparison |
+| `l1_acceptance()` | l1_acceptance | **L1 paired publish** — relation path render + node-fact copy + qualitative dual-compare + metric/comparison-plan |
 | `grounded()` | grounded_v1 | Factual + comparison routing with path-render fallback; `require_structured_provenance=True` |
 
 ## Library / experiment default
