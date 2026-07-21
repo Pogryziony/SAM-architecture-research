@@ -627,7 +627,14 @@ Phase 5 → Release:   All benchmarks documented, pipeline reproducible, API sta
 
 ---
 
-## Phase 4 Status — 2026-07-09
+## Phase 4 Status — 2026-07-09 (HISTORICAL)
+
+> **Historical artifact.** The 200-question paired run below predates the
+> registered Stage 0 / Stage 2 / Stage 3 / Pointer-Copy / comparison-plan
+> stack-v1 evidence. Do **not** treat these FAIL rows as the current stack
+> verdict. Authoritative status: [`STACK_RESULTS.md`](STACK_RESULTS.md) and
+> [`docs/stack-v1-freeze.md`](docs/stack-v1-freeze.md). The open entity-resolution
+> root-cause item remains valid follow-up work.
 
 **Results file**: `benchmarks/results/phase4_paired_20260709_183954Z.json`
 **Git commit**: e6e000f

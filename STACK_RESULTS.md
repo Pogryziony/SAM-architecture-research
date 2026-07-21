@@ -19,7 +19,7 @@
 | 3 | Dialogue State | Full 110-turn run passes: reference resolution 87.5%, single-turn regression 0 and dialogue-state p50 0.048ms. | ✅ PASS |
 | 4 | Realization L2 | Pointer/Copy v3 is accepted for extractive factual QA after auditing all 7,127 targets: 100% exact match, 0% hallucination, 0 pp position-shuffle drop. The neural v2 checkpoint remains rejected. | ✅ EXTRACTIVE PASS |
 | 4N | Constrained comparison-plan Realizer | Bounded 1→3 epoch CPU pilot accepted. Full validation: 356/356 exact, 100% adherence for both relation classes, 100% slots, 0% hallucination; contradictory plans fail closed. Full training was not launched. | ✅ PILOT ACCEPTED |
-| 5 | Freeze | This document | 🔄 |
+| 5 | Freeze | Documentation freeze over accepted Stage 0–4 evidence; production profiles and rejected-architecture registry recorded. See `docs/stack-v1-freeze.md`. | ✅ DOCUMENTED |
 
 ---
 
@@ -133,7 +133,7 @@ recording `full_training_launched: false`.
 
 ## Honest Scope Statement
 
-NEXUS is a curated-domain QA system for the SAM research project, with limited dialogue capability. It is NOT a general conversationalist. The associative encoder (Stage 1b) provides CPU-only entity+intent extraction. The graph engine (NEXUS) provides typed-traversal evidence. Realization is template-based (Stage 2). Dialogue state (Stage 3) handles anaphora and ellipsis. The stack fits within 500 MB RSS, runs CPU-only, and has zero GPU requirement.
+NEXUS is a curated-domain QA system for the SAM research project, with limited dialogue capability. It is NOT a general conversationalist. The associative encoder / Entity Ranker V3 provides CPU-only entity ranking. The graph engine (NEXUS) provides typed-traversal evidence. Realization L1 is template-based (Stage 2). Realization L2 for extractive factual QA is Pointer/Copy v3; constrained comparison uses the accepted comparison-plan pilot. Dialogue state (Stage 3) handles anaphora and ellipsis. The library default Realizer backend remains `synth` for historical Stage 2 semantics; production QA should use `ProductionNEXUSConfig.grounded()`. The stack fits within 500 MB RSS, runs CPU-only, and has zero GPU requirement.
 
 ---
 

@@ -110,9 +110,22 @@ def build_copy_edit_transducer(config: dict[str, Any]):
                         src_id = int(
                             source_ids[batch_idx, int(fact_positions[batch_idx, pos])]
                         )
-                        tokens.append(tokenizer.decode_token(src_id))
+                        tokens.append(_safe_decode_token(tokenizer, src_id))
                     else:
-                        tokens.append(tokenizer.decode_token(token_id))
+                        # Untrained heads may emit IDs outside the tokenizer
+                        # vocabulary; fall back to KEEP rather than crashing.
+                        tokens.append(
+                            _safe_decode_token(
+                                tokenizer,
+                                token_id,
+                                fallback_id=int(
+                                    source_ids[
+                                        batch_idx,
+                                        int(fact_positions[batch_idx, pos]),
+                                    ]
+                                ),
+                            )
+                        )
                 results.append(tokens)
             return results
 
@@ -176,6 +189,24 @@ def _token_id(tokenizer: Any, token: str) -> int:
     if raw:
         return OUTPUT_OFFSET + raw[0]
     return DELETE_ID
+
+
+def _safe_decode_token(
+    tokenizer: Any,
+    token_id: int,
+    *,
+    fallback_id: int | None = None,
+) -> str:
+    """Decode *token_id*, falling back to KEEP semantics on unknown IDs."""
+    try:
+        return str(tokenizer.decode_token(token_id))
+    except (ValueError, KeyError, IndexError):
+        if fallback_id is None:
+            return "[KEEP]"
+        try:
+            return str(tokenizer.decode_token(fallback_id))
+        except (ValueError, KeyError, IndexError):
+            return "[KEEP]"
 
 
 __all__ = [
