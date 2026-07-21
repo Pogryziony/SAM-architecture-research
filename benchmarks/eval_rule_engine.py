@@ -31,8 +31,9 @@ DEFAULT_FROZEN_CORPUS = (
     _project_root / "benchmarks" / "qa-dataset" / "rule_corpus_v1_frozen.json"
 )
 # Published in EXPERIMENT_RULE_ENGINE_V2.md — fail closed on mismatch.
+# Hash is over LF-normalized bytes so Windows/Linux checkouts agree.
 FROZEN_FILE_SHA256 = (
-    "58c36ca889b9e0d44ac476dac92de30ad7ed60715ddcaf2e24e0a6c480d8f03b"
+    "4a548758f9207a30ace958674f478dd4ee46ee6ca37db9004c9b0ff0b34cb5cf"
 )
 PRECISION_MIN = 0.90
 RECALL_MIN = 0.90
@@ -45,7 +46,9 @@ def load_corpus(path: Path) -> dict[str, Any]:
 
 
 def sha256_file(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    """SHA-256 of path contents with newlines normalized to LF."""
+    data = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(data).hexdigest()
 
 
 def rules_from_corpus(corpus: dict[str, Any]) -> list[Rule]:

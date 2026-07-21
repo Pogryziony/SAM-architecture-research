@@ -21,7 +21,7 @@ retuned against the frozen artifact after this preregistration lands.
 | Field | Value |
 |---|---|
 | `corpus_id` | `rule_corpus_v1_frozen` |
-| `frozen_file_sha256` | `58c36ca889b9e0d44ac476dac92de30ad7ed60715ddcaf2e24e0a6c480d8f03b` |
+| `frozen_file_sha256` | `4a548758f9207a30ace958674f478dd4ee46ee6ca37db9004c9b0ff0b34cb5cf` (LF-normalized) |
 | Rules | Shared with development `rule_corpus_v1` (≥12 Horn rules) |
 | Frozen graph | Disjoint node IDs from development (`P`…`Cause`) |
 | Gold inferred facts | Embedded `frozen_gold` (closure under shared rules) |
