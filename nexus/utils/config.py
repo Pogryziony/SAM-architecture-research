@@ -53,7 +53,10 @@ class NEXUSConfig:
 
     Realizer:
         realizer_backend: ``synth`` preserves the historical template path;
-            ``pointer_copy`` selects and copies evidence for factual queries.
+            ``pointer_copy`` selects and copies evidence for factual queries;
+            ``l1_acceptance`` is the zero-LLM L1 hybrid (path render + pointer).
+        as_valid_at / as_known_at: optional ISO timestamps for bi-temporal
+            traversal filtering (empty disables the filter).
     """
 
     # Model — pinned for reproducibility; change only in controlled experiments
@@ -101,6 +104,9 @@ class NEXUSConfig:
     path_score_focus: int = 2
     # Proof/evidence path budget after ranking.
     max_paths: int = 12
+    # Stage 6 point-in-time cutoffs for traversal (empty = no filter).
+    as_valid_at: str = ""
+    as_known_at: str = ""
 
     # Verification
     hallucination_threshold: float = 0.2

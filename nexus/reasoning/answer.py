@@ -44,6 +44,7 @@ from nexus.realizer.deterministic_render import (
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
 DETERMINISTIC_RENDER_BACKEND = "deterministic_render"
+L1_ACCEPTANCE_BACKEND = "l1_acceptance"
 
 # ── Insufficiency detection patterns ────────────────────────────────
 _INSUFFICIENCY_PATTERNS = [
@@ -182,6 +183,143 @@ _PATH_RENDER_INTENTS = frozenset({
     "diagnostic",
     "factual_lookup",
 })
+_SOFT_FALLTHROUGH_BACKENDS = frozenset({HYBRID_BACKEND_NAME, L1_ACCEPTANCE_BACKEND})
+
+
+def _is_path_answer_question(question: str) -> bool:
+    """True when the question asks for graph relations / multi-hop chains."""
+    if _explicit_relation_claim(question) is not None:
+        return True
+    q = question.casefold()
+    if " relation to " in q or re.search(r"\bhave the \w+ relation\b", q):
+        return True
+    if "linked through" in q or "which depends" in q:
+        return True
+    if "according to the graph" in q:
+        return True
+    if "depend on" in q and (" which " in q or " through " in q):
+        return True
+    if re.search(r"\bwhich experiments?\b", q):
+        return True
+    if re.search(r"\bwhich (experiment|entity|node|concept)\b", q) and any(
+        relation.replace("_", " ") in q or relation in q for relation in EDGE_TYPES
+    ):
+        return True
+    # Explicit typed-relation wording only — avoid prose "depends on" diagnostics.
+    for relation in EDGE_TYPES:
+        if f"the {relation} relation" in q:
+            return True
+    return False
+
+
+_ENTITY_PREFIX = re.compile(r"^[A-Za-z][A-Za-z0-9_]+:\s+")
+
+
+def _strip_entity_prefix(text: str) -> str:
+    """Drop ``NodeId: `` prefixes so copied node facts match gold phrasing."""
+    cleaned = str(text or "").strip()
+    return _ENTITY_PREFIX.sub("", cleaned, count=1).strip()
+
+
+def _is_edge_catalog_question(question: str) -> bool:
+    q = question.casefold()
+    if "edge type" not in q and "edge types" not in q:
+        return False
+    return any(
+        token in q
+        for token in ("weight", "weights", "traversal", "nexus graph", "relation")
+    ) or q.startswith("what are the")
+
+
+def _edge_catalog_result(question: str, config: NEXUSConfig) -> dict[str, Any] | None:
+    """Deterministic L1 answer from ``EDGE_TYPE_WEIGHTS`` for catalog questions."""
+    if getattr(config, "realizer_backend", "") != L1_ACCEPTANCE_BACKEND:
+        return None
+    if not _is_edge_catalog_question(question):
+        return None
+    from nexus.graph import EDGE_TYPE_WEIGHTS
+
+    ordered = sorted(
+        ((name, weight) for name, weight in EDGE_TYPE_WEIGHTS.items() if name != "sub_experiment"),
+        key=lambda item: (-item[1], item[0]),
+    )
+    q = question.casefold()
+    if "weight" in q:
+        answer = ", ".join(f"{name}={weight:.2f}" for name, weight in ordered) + "."
+    else:
+        answer = ", ".join(name for name, _ in ordered) + "."
+    return {
+        "answer": answer,
+        "raw_answer": answer,
+        "realization": {
+            "backend": L1_ACCEPTANCE_BACKEND,
+            "strategy": "edge_catalog",
+            "statements": [answer],
+            "statement_proof_map": [],
+            "coverage_errors": [],
+        },
+        "abstain": False,
+    }
+
+
+def _l1_node_fact_result(
+    question: str,
+    evidence_pack: dict[str, Any],
+    config: NEXUSConfig,
+    intent: str,
+) -> dict[str, Any] | None:
+    """Copy the best node-fact candidate for L1 factual/diagnostic answers.
+
+    Unlike Pointer/Copy v3, this path ignores runner-up margin so curated
+    ``key_finding`` / ``description`` text can surface numeric gold facts.
+    """
+    if getattr(config, "realizer_backend", "") != L1_ACCEPTANCE_BACKEND:
+        return None
+    if intent not in _POINTER_COPY_INTENTS:
+        return None
+    from nexus.realizer.grounded import evidence_candidates
+    from nexus.realizer.pointer_copy import candidate_selection_score
+
+    node_facts = [
+        candidate
+        for candidate in evidence_candidates(
+            {"question": question, "evidence_pack": evidence_pack}
+        )
+        if candidate.kind in {"node_fact", "path_node"} and candidate.text.strip()
+    ]
+    if not node_facts:
+        return None
+    ranked = sorted(
+        node_facts,
+        key=lambda candidate: (
+            candidate_selection_score(question, candidate),
+            candidate.confidence,
+            len(candidate.text),
+        ),
+        reverse=True,
+    )
+    selected = ranked[0]
+    score = candidate_selection_score(question, selected)
+    if score < 1.0:
+        return None
+    answer = _strip_entity_prefix(selected.text)
+    if not answer:
+        return None
+    return {
+        "answer": answer,
+        "raw_answer": answer,
+        "realization": {
+            "backend": L1_ACCEPTANCE_BACKEND,
+            "strategy": "l1_node_fact",
+            "selected_candidate_kind": selected.kind,
+            "evidence_source": selected.source,
+            "selection_score": round(score, 6),
+            "statements": [answer],
+            "statement_proof_map": [],
+            "coverage_errors": [],
+        },
+        "abstain": False,
+    }
 
 
 def _deterministic_render_result(
@@ -193,25 +331,21 @@ def _deterministic_render_result(
 ) -> dict[str, Any] | None:
     """Stage 7 zero-LLM L1 realization from proof steps when configured.
 
-    ``deterministic_render`` always uses this path. ``grounded_v1`` uses it as
-    a non-comparison fallback so relation / multi-hop / causal intents do not
-    fall through to an LLM.
+    ``deterministic_render`` always uses this path. ``grounded_v1`` /
+    ``l1_acceptance`` use it as a path-shaped fallback so relation / multi-hop
+    answers do not fall through to an LLM.
     """
     backend = getattr(config, "realizer_backend", "")
     if backend == DETERMINISTIC_RENDER_BACKEND:
         pass
-    elif backend == HYBRID_BACKEND_NAME:
+    elif backend in _SOFT_FALLTHROUGH_BACKENDS:
         if intent == "comparison":
             return None
-        if intent and intent not in _PATH_RENDER_INTENTS and intent != "":
-            # Unknown intents still get path render when proof steps exist.
-            pass
     else:
         return None
     proof_steps = _proof_step_dicts_from_paths(paths)
     if not proof_steps:
-        if require_paths or backend == HYBRID_BACKEND_NAME:
-            # Under grounded_v1, empty paths mean "try next realizer", not abstain.
+        if require_paths or backend in _SOFT_FALLTHROUGH_BACKENDS:
             return None
         return {
             "answer": "Insufficient evidence to answer. No proof steps available for deterministic render.",
@@ -228,7 +362,7 @@ def _deterministic_render_result(
     render = render_from_proof_steps(proof_steps)
     coverage_errors = validate_statement_proof_coverage(render)
     if coverage_errors or not render.get("answer"):
-        if backend == HYBRID_BACKEND_NAME:
+        if backend in _SOFT_FALLTHROUGH_BACKENDS:
             return None
         return {
             "answer": "Insufficient evidence to answer. Deterministic render coverage failed.",
@@ -259,7 +393,11 @@ def _pointer_copy_result(
     intent: str,
 ):
     """Return Pointer/Copy v3 output for configured factual/diagnostic queries."""
-    if config.realizer_backend not in {"pointer_copy", HYBRID_BACKEND_NAME}:
+    if config.realizer_backend not in {
+        "pointer_copy",
+        HYBRID_BACKEND_NAME,
+        L1_ACCEPTANCE_BACKEND,
+    }:
         return None
     if intent not in _POINTER_COPY_INTENTS:
         return None
@@ -267,10 +405,9 @@ def _pointer_copy_result(
         "question": question,
         "evidence_pack": evidence_pack,
     })
-    # Under grounded_v1, empty extractive candidates must fall through to
-    # deterministic path render instead of hard-stopping on insufficiency.
+    # Soft backends: empty extractive candidates fall through to path render.
     if (
-        config.realizer_backend == HYBRID_BACKEND_NAME
+        config.realizer_backend in _SOFT_FALLTHROUGH_BACKENDS
         and getattr(result, "strategy", "") == "insufficient_evidence"
     ):
         return None
@@ -286,7 +423,8 @@ def _comparison_plan_result(
 ):
     """Return the comparison Realizer result for its narrow registered intent."""
     if (
-        config.realizer_backend not in {BACKEND_NAME, HYBRID_BACKEND_NAME}
+        config.realizer_backend
+        not in {BACKEND_NAME, HYBRID_BACKEND_NAME, L1_ACCEPTANCE_BACKEND}
         or intent != "comparison"
     ):
         return None
@@ -577,17 +715,38 @@ def answer_question(
                 question, direct_pack, config, parsed.intent,
                 comparison_label_selector,
             )
-            pointer = None if comparison is not None else _pointer_copy_result(
-                question, direct_pack, config, parsed.intent,
+            edge_catalog = None if comparison is not None else _edge_catalog_result(
+                question, config,
             )
+            node_fact = None
+            if comparison is None and edge_catalog is None:
+                node_fact = _l1_node_fact_result(
+                    question, direct_pack, config, parsed.intent,
+                )
+            pointer = None
+            if comparison is None and edge_catalog is None and node_fact is None:
+                pointer = _pointer_copy_result(
+                    question, direct_pack, config, parsed.intent,
+                )
             deterministic = None
-            if comparison is None and pointer is None:
+            if (
+                comparison is None
+                and edge_catalog is None
+                and node_fact is None
+                and pointer is None
+            ):
                 deterministic = _deterministic_render_result(
                     audit_paths, config, intent=parsed.intent,
                 )
             if comparison is not None:
                 answer_direct = comparison.answer
                 realization = comparison.to_dict()
+            elif edge_catalog is not None:
+                answer_direct = edge_catalog["answer"]
+                realization = edge_catalog["realization"]
+            elif node_fact is not None:
+                answer_direct = node_fact["answer"]
+                realization = node_fact["realization"]
             elif pointer is not None:
                 answer_direct = pointer.answer
                 realization = pointer.to_dict()
@@ -659,9 +818,10 @@ def answer_question(
     result["evidence_pack"] = evidence_pack
 
     # Zero-LLM realization order:
-    #   comparison (grounded_v1 / abstractive) →
+    #   comparison (grounded_v1 / l1_acceptance / abstractive) →
+    #   l1_acceptance path-shaped → deterministic render before pointer →
     #   pointer/copy (factual + diagnostic) →
-    #   deterministic path render (L1 / grounded non-comparison fallback) →
+    #   deterministic path render (fallback) →
     #   synth/LLM
     t0 = time.perf_counter()
     comparison = _comparison_plan_result(
@@ -675,6 +835,50 @@ def answer_question(
         result["realization"] = comparison.to_dict()
         result["cascade_level"] = 1 if comparison.strategy == BACKEND_NAME else 0
         result["verification"] = verifier.verify(comparison.answer, evidence_pack)
+        result["timing"] = timing
+        return _attach_reasoning_audit(result, graph, paths, config, max_paths)
+
+    prefer_path_render = (
+        getattr(config, "realizer_backend", "") == L1_ACCEPTANCE_BACKEND
+        and _is_path_answer_question(question)
+    )
+    if prefer_path_render:
+        deterministic = _deterministic_render_result(
+            paths, config, intent=parsed.intent,
+        )
+        if deterministic is not None:
+            timing["realize_time"] = round(time.perf_counter() - t0, 6)
+            result["answer"] = deterministic["answer"]
+            result["raw_answer"] = deterministic["raw_answer"]
+            result["realization"] = deterministic["realization"]
+            result["cascade_level"] = 1
+            result["verification"] = verifier.verify(
+                deterministic["answer"], evidence_pack
+            )
+            result["timing"] = timing
+            return _attach_reasoning_audit(result, graph, paths, config, max_paths)
+
+    edge_catalog = _edge_catalog_result(question, config)
+    if edge_catalog is not None:
+        timing["realize_time"] = round(time.perf_counter() - t0, 6)
+        result["answer"] = edge_catalog["answer"]
+        result["raw_answer"] = edge_catalog["raw_answer"]
+        result["realization"] = edge_catalog["realization"]
+        result["cascade_level"] = 1
+        result["verification"] = verifier.verify(edge_catalog["answer"], evidence_pack)
+        result["timing"] = timing
+        return _attach_reasoning_audit(result, graph, paths, config, max_paths)
+
+    node_fact = _l1_node_fact_result(
+        question, evidence_pack, config, parsed.intent,
+    )
+    if node_fact is not None:
+        timing["realize_time"] = round(time.perf_counter() - t0, 6)
+        result["answer"] = node_fact["answer"]
+        result["raw_answer"] = node_fact["raw_answer"]
+        result["realization"] = node_fact["realization"]
+        result["cascade_level"] = 1
+        result["verification"] = verifier.verify(node_fact["answer"], evidence_pack)
         result["timing"] = timing
         return _attach_reasoning_audit(result, graph, paths, config, max_paths)
 

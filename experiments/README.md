@@ -46,7 +46,13 @@ AnswerPlan / Realizer training status (no full training by default):
 python benchmarks/record_answer_plan_status.py --force
 ```
 
-L1 acceptance paired publish (default realizer is `deterministic_render`):
+L1 acceptance paired publish (default realizer is `l1_acceptance`):
+
+```bash
+python benchmarks/run_oracle_vs_predicted.py --predicted-resolver union --realizer-backend l1_acceptance --model synth --output benchmarks/results/oracle_vs_predicted_union_l1_acceptance_full_TIMESTAMP.json
+```
+
+Pure deterministic path-render publish:
 
 ```bash
 python benchmarks/run_oracle_vs_predicted.py --predicted-resolver union --realizer-backend deterministic_render --model synth --output benchmarks/results/oracle_vs_predicted_union_l1_det_full_TIMESTAMP.json
