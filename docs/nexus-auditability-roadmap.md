@@ -102,13 +102,15 @@ contradiction/no-answer/temporal). Build with
 `nexus-oracle-vs-predicted-v2` defaults the predicted arm to
 `UnionResolver` (lexical∪frozen ER3 with question-gated handoff; no new
 training) and reports ER decomposition (`pool_recall`, `entry_recall`, proof
-`gold_entity_coverage`, path recall). Current full union artifact:
-`benchmarks/results/oracle_vs_predicted_union_full_*.json`
+`gold_entity_coverage`, path recall). Current full union+focus artifact:
+`benchmarks/results/oracle_vs_predicted_union_focus_full_*.json`
 (`predicted.entry_recall_mean≈0.95`, `pool_recall_mean=1.0`,
-`gold_path_recall_mean≈0.72`). Raw ER3-only and lexical-only paired artifacts
-remain historical baselines. Remaining gap is proof entity coverage / path
-quality after handoff; further family expansion and bi-temporal gold remain
-open.
+`gold_path_recall_mean≈0.96`, `gold_entity_coverage_mean≈0.61`). Path ranking
+now scores against `path_score_focus` leading entries (default 2) with
+`max_paths=12`, so hub fillers no longer bury gold edges outside the proof
+window. Raw ER3-only / pre-focus union paired artifacts remain historical
+baselines. Remaining gap is proof entity coverage (≈0.61 vs ≈0.70 target);
+further family expansion and bi-temporal gold remain open.
 
 Gate: 100% valid records, deterministic rerun, and complete provenance for the
 benchmark artifact.
@@ -123,7 +125,9 @@ benchmark artifact.
 **Partial implementation (2026-07-21):** `NEXUSConfig.max_expanded_edges` /
 `max_expanded_nodes` / `max_traversal_ms` and `TraversalStats` report
 truncation. Answer pipeline attaches `traversal_stats` to results; truncated
-search forces `conditional_answer`. Synthetic campaign
+search forces `conditional_answer`. Path ranking also exposes
+`path_score_focus` / `max_paths` so large ER handoffs stay expandable while
+proof selection stays focused. Synthetic campaign
 `python benchmarks/run_traversal_budget_campaign.py --output ...` measures
 small/medium/large graphs against NEXUS hard p50/p95/RSS limits and requires
 tight-budget truncation. Reference-CPU preregistration remains open.

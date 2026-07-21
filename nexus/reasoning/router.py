@@ -386,7 +386,11 @@ class RoutedPipeline:
             return result
 
         # ── Step 2: Traverse ──
-        query_entities = set(parsed.entity_ids)
+        from nexus.graph.scoring import focus_query_entities
+
+        query_entities = focus_query_entities(
+            parsed.entity_ids, getattr(self.config, "path_score_focus", 0)
+        )
         paths = traverse_with_intent(
             graph=self.graph,
             entry_nodes=parsed.entity_ids,

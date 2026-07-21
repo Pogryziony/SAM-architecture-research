@@ -16,6 +16,7 @@ from typing import Any
 
 from nexus.graph.store import InMemoryGraphStore
 from nexus.graph import EDGE_TYPES
+from nexus.graph.scoring import focus_query_entities
 from nexus.graph.traversal import TraversalStats, traverse_with_intent
 from nexus.query.parser import parse_question
 from nexus.reasoning.evidence_builder import (
@@ -274,7 +275,7 @@ def answer_question(
     verifier: Verifier | None = None,
     max_depth: int | None = None,
     beam_width: int | None = None,
-    max_paths: int = 7,
+    max_paths: int | None = None,
     config: NEXUSConfig = DEFAULT_CONFIG,
     embedding_index=None,
     dialogue_state=None,
@@ -318,6 +319,8 @@ def answer_question(
        max_depth = config.max_depth
     if beam_width is None:
        beam_width = config.beam_width
+    if max_paths is None:
+       max_paths = config.max_paths
 
     if verifier is None:
        verifier = Verifier(hallucination_threshold=config.hallucination_threshold)
@@ -400,7 +403,11 @@ def answer_question(
 
     # ── Step 2: Traverse ──
     t0 = time.perf_counter()
-    query_entities = set(parsed.entity_ids)
+    # Expand from the full entry set, but score/rank against the leading focus
+    # entities so hub fillers cannot bury gold edges via diluted coverage.
+    query_entities = focus_query_entities(
+        parsed.entity_ids, getattr(config, "path_score_focus", 0)
+    )
     traversal_stats = TraversalStats()
     paths = traverse_with_intent(
         graph=graph,

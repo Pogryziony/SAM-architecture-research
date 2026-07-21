@@ -895,7 +895,7 @@ def build_evidence(
     question: str,
     paths: list[Path],
     graph: InMemoryGraphStore,
-    max_paths: int = 7,
+    max_paths: int = 12,
     max_facts_per_path: int = 20,
     question_intent: str = "factual_lookup",
     target_entity: str | None = None,

@@ -294,11 +294,18 @@ class UnionResolver:
         *,
         top_k: int = 12,
         er3_pool_bonus: float = 1.0,
+        max_ungrounded_fillers: int | None = None,
     ):
         self.er3 = er3
         self.lexical = lexical or LexicalResolver()
         self.top_k = max(1, int(top_k))
         self.er3_pool_bonus = float(er3_pool_bonus)
+        # Optional cap on ungrounded ER3 fillers when mentions exist. Default
+        # None keeps full top_k padding so entry_recall stays high; path
+        # ranking focus (NEXUSConfig.path_score_focus) handles hub dilution.
+        self.max_ungrounded_fillers = (
+            None if max_ungrounded_fillers is None else max(0, int(max_ungrounded_fillers))
+        )
 
     def resolve(self, question: str, graph: InMemoryGraphStore) -> ResolutionResult:
         from stack.encoder.canonical_mapping import _is_canonical_id
@@ -371,12 +378,17 @@ class UnionResolver:
                 selected.append(entity_id)
             if len(selected) >= self.top_k:
                 break
-        if len(selected) < self.top_k:
+        filler_budget = self.top_k
+        if grounded and self.max_ungrounded_fillers is not None:
+            filler_budget = self.max_ungrounded_fillers
+        fillers_added = 0
+        if len(selected) < self.top_k and filler_budget > 0:
             for entity_id in fillers:
                 if entity_id in selected:
                     continue
                 selected.append(entity_id)
-                if len(selected) >= self.top_k:
+                fillers_added += 1
+                if len(selected) >= self.top_k or fillers_added >= filler_budget:
                     break
 
         if not selected:

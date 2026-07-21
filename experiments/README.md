@@ -28,8 +28,9 @@ Frozen oracle dataset + paired oracle/predicted reporting:
 ```bash
 python benchmarks/build_frozen_oracle_dataset.py --force
 # Default predicted arm = lexical∪ER3 union handoff (no training).
+# Path ranking uses NEXUSConfig.path_score_focus=2 and max_paths=12.
 # Use --predicted-resolver er3|lexical for historical baselines.
-python benchmarks/run_oracle_vs_predicted.py --predicted-resolver union --dummy-model --output benchmarks/results/oracle_vs_predicted_union_full_TIMESTAMP.json
+python benchmarks/run_oracle_vs_predicted.py --predicted-resolver union --dummy-model --output benchmarks/results/oracle_vs_predicted_union_focus_full_TIMESTAMP.json
 ```
 
 Synthetic traversal budget campaign (small/medium/large):
