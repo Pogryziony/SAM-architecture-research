@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from benchmarks.run_architecture_validation import decide_verdict
 from benchmarks.run_benchmark import build_benchmark_graph
-from benchmarks.run_oracle_vs_predicted import DEFAULT_ER3_DIR, build_predicted_runner
-from nexus.reasoning.model_interface import DummyModel
+from nexus.pipeline.config import ProductionNEXUSConfig
+from nexus.query.parser import parse_question
+from stack.pipeline.resolver import LexicalResolver, mention_score
 
 
 def test_decide_verdict_validated_when_thresholds_and_baselines_hold():
@@ -43,31 +44,27 @@ def test_decide_verdict_rejects_when_surface_fails():
     assert verdict["decision"] == "REJECTED"
 
 
-def test_entry_zero_aliases_recover_union_handoff():
+def test_entry_zero_aliases_recover_lexical_handoff():
+    """CI-safe lexical check (no torch/ER3 weights required)."""
     graph, _ = build_benchmark_graph()
-    runner, _ = build_predicted_runner(
-        graph,
-        predicted_resolver="union",
-        er3_dir=DEFAULT_ER3_DIR,
-        model=DummyModel(),
-        realizer_backend="l1_acceptance",
-    )
-    resolver = runner._entity_resolver
+    config = ProductionNEXUSConfig.l1_acceptance()
+    resolver = LexicalResolver(config=config)
     cases = [
         (
             "How does the rule-based verifier work?",
-            ["Decision_PivotToNEXUS"],
+            "Decision_PivotToNEXUS",
         ),
         (
             "Why does SAM's 3-hop reasoning collapse between +8 and +16 distractors?",
-            ["Decision_PivotToNEXUS"],
+            "Decision_PivotToNEXUS",
         ),
         (
             "What was the transition point from Phase 1 (Pipeline Setup) to Phase 2 (Core Validation)?",
-            ["Exp_0_Diagnosis", "Exp_0_13B_RealisticDistractors"],
+            "Exp_0_Diagnosis",
         ),
     ]
     for question, gold in cases:
         selected = list(resolver.resolve(question, graph).selected_entity_ids)
-        hits = [g for g in gold if g in selected]
-        assert hits, f"expected some gold in entry for: {question}"
+        parsed = parse_question(question, graph, config=config)
+        assert gold in selected or gold in parsed.entity_ids, question
+        assert mention_score(gold, question, graph) > 0.0, question
