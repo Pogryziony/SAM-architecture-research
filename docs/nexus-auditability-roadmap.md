@@ -99,14 +99,16 @@ split or retroactively applied to historical artifacts.
 curated `oracle_families_v1` coverage for direct/two-hop/three-hop/
 contradiction/no-answer/temporal). Build with
 `python benchmarks/build_frozen_oracle_dataset.py`. Paired publication schema
-`nexus-oracle-vs-predicted-v2` defaults the predicted arm to frozen
-Entity Ranker V3 (no new training) and reports ER decomposition
-(`pool_recall`, `entry_recall`, proof `gold_entity_coverage`, path recall).
-Current full ER3 artifact:
-`benchmarks/results/oracle_vs_predicted_er3_full_*.json`
-(`predicted.entry_recall_mean≈0.83`, `pool_recall_mean=1.0`). Lexical-only
-paired artifacts remain historical baselines. Further family expansion and
-bi-temporal gold remain open.
+`nexus-oracle-vs-predicted-v2` defaults the predicted arm to
+`UnionResolver` (lexical∪frozen ER3 with question-gated handoff; no new
+training) and reports ER decomposition (`pool_recall`, `entry_recall`, proof
+`gold_entity_coverage`, path recall). Current full union artifact:
+`benchmarks/results/oracle_vs_predicted_union_full_*.json`
+(`predicted.entry_recall_mean≈0.95`, `pool_recall_mean=1.0`,
+`gold_path_recall_mean≈0.72`). Raw ER3-only and lexical-only paired artifacts
+remain historical baselines. Remaining gap is proof entity coverage / path
+quality after handoff; further family expansion and bi-temporal gold remain
+open.
 
 Gate: 100% valid records, deterministic rerun, and complete provenance for the
 benchmark artifact.

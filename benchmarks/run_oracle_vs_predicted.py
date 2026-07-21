@@ -1,7 +1,9 @@
 """Paired oracle versus predicted reporting on the same frozen records.
 
 Oracle mode uses gold entry entities; predicted mode uses the stack ER path.
-Default predicted resolver is frozen Entity Ranker V3 (no new training).
+Default predicted resolver is lexical∪ER3 (`union`) with question-gated handoff
+over the frozen Entity Ranker V3 checkpoint (no new training). Use
+`--predicted-resolver er3` or `lexical` for historical baselines.
 Publication requires both modes, ER decomposition metrics, and paired deltas.
 """
 
@@ -227,6 +229,7 @@ def build_predicted_runner(
     predicted_resolver: str,
     er3_dir: str,
     model: Any | None = None,
+    union_top_k: int = 12,
 ) -> tuple[NEXUSRunner, dict[str, Any]]:
     """Construct the predicted-mode runner and resolver identity metadata."""
     if predicted_resolver == "lexical":
@@ -239,20 +242,41 @@ def build_predicted_runner(
         }
         return runner, identity
 
-    if predicted_resolver != "er3":
+    from stack.pipeline.resolver import ER3Resolver, LexicalResolver, UnionResolver
+
+    if predicted_resolver == "er3":
+        config = ProductionNEXUSConfig.with_entity_ranker_v3(er3_dir)
+        resolver = ER3Resolver.from_directory(er3_dir, graph)
+        runner = NEXUSRunner(graph, config, model=model, entity_resolver=resolver)
+        identity = {
+            "name": "entity_ranker_v3",
+            "model_dir": er3_dir,
+            "config_hash": config.config_hash,
+            "entity_ranker_v3_enabled": True,
+            "max_entry_nodes": config.max_entry_nodes,
+        }
+        return runner, identity
+
+    if predicted_resolver != "union":
         raise ValueError(f"unsupported predicted resolver: {predicted_resolver}")
 
-    from stack.pipeline.resolver import ER3Resolver
-
-    config = ProductionNEXUSConfig.with_entity_ranker_v3(er3_dir)
-    resolver = ER3Resolver.from_directory(er3_dir, graph)
+    # Union handoff needs a slightly larger entry budget than raw ER3 top-10,
+    # but still far below Stage 1D pool caps so hub noise stays bounded.
+    config = ProductionNEXUSConfig.with_entity_ranker_v3(
+        er3_dir, max_entry_nodes=max(12, int(union_top_k))
+    )
+    er3 = ER3Resolver.from_directory(er3_dir, graph)
+    resolver = UnionResolver(
+        er3, LexicalResolver(config=config), top_k=int(union_top_k)
+    )
     runner = NEXUSRunner(graph, config, model=model, entity_resolver=resolver)
     identity = {
-        "name": "entity_ranker_v3",
+        "name": "union_lexical_er3",
         "model_dir": er3_dir,
         "config_hash": config.config_hash,
         "entity_ranker_v3_enabled": True,
         "max_entry_nodes": config.max_entry_nodes,
+        "union_top_k": int(union_top_k),
     }
     return runner, identity
 
@@ -263,9 +287,10 @@ def run_paired_benchmark(
     *,
     source_sha: str,
     dataset_identity: dict[str, Any],
-    predicted_resolver: str = "er3",
+    predicted_resolver: str = "union",
     er3_dir: str = DEFAULT_ER3_DIR,
     model: Any | None = None,
+    union_top_k: int = 12,
 ) -> dict[str, Any]:
     errors = validate_oracle_records(records)
     if errors:
@@ -283,6 +308,7 @@ def run_paired_benchmark(
         predicted_resolver=predicted_resolver,
         er3_dir=er3_dir,
         model=model,
+        union_top_k=union_top_k,
     )
     predicted_pipeline = predicted_runner.run(records, source_sha=source_sha)
     if predicted_pipeline.errors:
@@ -335,11 +361,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--force", action="store_true")
     parser.add_argument(
         "--predicted-resolver",
-        choices=("er3", "lexical"),
-        default="er3",
-        help="Predicted-arm entity resolver (default: frozen ER3, no training).",
+        choices=("union", "er3", "lexical"),
+        default="union",
+        help="Predicted-arm resolver (default: lexical∪ER3 with question-gated handoff).",
     )
     parser.add_argument("--er3-dir", default=DEFAULT_ER3_DIR)
+    parser.add_argument("--union-top-k", type=int, default=12)
     parser.add_argument(
         "--dummy-model",
         action="store_true",
@@ -371,6 +398,7 @@ def main(argv: list[str] | None = None) -> int:
         predicted_resolver=args.predicted_resolver,
         er3_dir=args.er3_dir,
         model=model,
+        union_top_k=args.union_top_k,
     )
     output = Path(args.output)
     if output.exists() and not args.force:
