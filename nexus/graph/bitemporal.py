@@ -111,6 +111,34 @@ def assert_no_lookahead(
     return errors
 
 
+# Stable epoch for production ingest when source documents lack dates.
+# Must remain constant so canonical graph content hashes stay reproducible.
+DEFAULT_INGEST_EPOCH = "2026-07-08T00:00:00+00:00"
+
+
+def stable_ingest_stamp(
+    *,
+    observed_at: str = "",
+    valid_from: str = "",
+    valid_to: str = "",
+    retracted_at: str = "",
+    fallback_observed_at: str = DEFAULT_INGEST_EPOCH,
+) -> dict[str, str]:
+    """Return bi-temporal Edge kwargs with deterministic fallback stamps.
+
+    Prefer explicit provenance dates when available; otherwise use the fixed
+    ingest epoch (never ``datetime.now``).
+    """
+    observed = str(observed_at or "").strip() or fallback_observed_at
+    start = str(valid_from or "").strip() or observed
+    return {
+        "observed_at": observed,
+        "valid_from": start,
+        "valid_to": str(valid_to or "").strip(),
+        "retracted_at": str(retracted_at or "").strip(),
+    }
+
+
 def edge_to_fact(edge: Any) -> dict[str, Any]:
     """Project an Edge (or edge-like object) into a bi-temporal fact dict."""
     if hasattr(edge, "bitemporal_stamp"):

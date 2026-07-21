@@ -20,9 +20,43 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from nexus.graph import Node, Edge
+from nexus.graph.bitemporal import stable_ingest_stamp
 from nexus.graph.provenance import attach_provenance_to_properties
 from nexus.graph.store import InMemoryGraphStore
 from nexus.ingestion.entity_extractor import _extract_metrics, _extract_auto_aliases
+
+# Pivot decision date from ANALYSIS_AND_ROADMAP — used for decision-linked edges.
+_PIVOT_DATE = "2026-07-08T00:00:00+00:00"
+
+
+def _stamped_edge(
+    *,
+    type: str,
+    source: str,
+    target: str,
+    confidence: float = 1.0,
+    evidence: str = "",
+    observed_at: str = "",
+    valid_from: str = "",
+    valid_to: str = "",
+    retracted_at: str = "",
+) -> Edge:
+    """Create an Edge with deterministic bi-temporal stamps."""
+    stamp = stable_ingest_stamp(
+        observed_at=observed_at,
+        valid_from=valid_from,
+        valid_to=valid_to,
+        retracted_at=retracted_at,
+        fallback_observed_at=_PIVOT_DATE,
+    )
+    return Edge(
+        type=type,
+        source=source,
+        target=target,
+        confidence=confidence,
+        evidence=evidence,
+        **stamp,
+    )
 
 
 def _make_node(
@@ -311,7 +345,7 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
         # Link run to parent experiment as structural sub-experiment
         # (not conceptual derived_from — that type is reserved for decision/concept links).
         if graph.has_node(exp_id):
-            edge = Edge(
+            edge = _stamped_edge(
                 type="sub_experiment",
                 source=run_id,
                 target=exp_id,
@@ -352,7 +386,7 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
                 graph.add_node(metric_node)
                 
                 # Link metric to run as structural membership, not conceptual derivation.
-                edge = Edge(
+                edge = _stamped_edge(
                     type="sub_experiment",
                     source=metric_id,
                     target=run_id,
@@ -365,7 +399,7 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
     for exp_key, exp_def in EXPERIMENT_DEFS.items():
         for dep_id in exp_def.get("depends_on", []):
             if graph.has_node(exp_def["id"]) and graph.has_node(dep_id):
-                edge = Edge(
+                edge = _stamped_edge(
                     type="depends_on",
                     source=exp_def["id"],
                     target=dep_id,
@@ -440,7 +474,7 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
         
         for exp_id in concept_def["validated_by"]:
             if graph.has_node(exp_id):
-                edge = Edge(
+                edge = _stamped_edge(
                     type="validates",
                     source=exp_id,
                     target=concept_id,
@@ -451,7 +485,7 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
         
         for exp_id in concept_def["contradicted_by"]:
             if graph.has_node(exp_id):
-                edge = Edge(
+                edge = _stamped_edge(
                     type="contradicts",
                     source=exp_id,
                     target=concept_id,
@@ -495,7 +529,7 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
     # Link decision to supporting concepts (conceptual derivation — kept as derived_from)
     for concept_id in ["Concept_SelectorBottleneck", "Concept_PivotToNEXUS", "Concept_ArchitectureWorks"]:
         if graph.has_node(concept_id):
-            edge = Edge(
+            edge = _stamped_edge(
                 type="derived_from",
                 source=decision.id,
                 target=concept_id,
@@ -532,7 +566,7 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
     for source, target, edge_type, confidence, evidence in curated_relations:
         if graph.has_node(source) and graph.has_node(target):
             graph.add_edge(
-                Edge(
+                _stamped_edge(
                     type=edge_type,
                     source=source,
                     target=target,

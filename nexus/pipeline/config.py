@@ -209,7 +209,12 @@ class ProductionNEXUSConfig(NEXUSConfig):
 
     @classmethod
     def grounded(cls, **overrides: Any) -> "ProductionNEXUSConfig":
-        """Factory routing factual QA and comparisons to grounded realizers."""
+        """Factory for grounded zero-LLM realization.
+
+        Routes comparison → comparison-plan, factual/diagnostic → pointer/copy,
+        and other path-bearing intents → deterministic proof render before any
+        synth/LLM fallback.
+        """
         from nexus.realizer.comparison_plan import (
             DEFAULT_CONFIG_PATH,
             DEFAULT_MODEL_DIR,

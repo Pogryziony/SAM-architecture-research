@@ -11,17 +11,24 @@ from typing import Any, Sequence
 
 
 def render_from_proof_steps(proof_steps: Sequence[dict[str, Any]]) -> dict[str, Any]:
-    """Deterministically render L1 statements from proof steps."""
+    """Deterministically render L1 statements from proof steps.
+
+    Multi-step answers use an oracle-friendly ``Yes. A R B, and B R C.`` shape
+    so relation / multi-hop gold can score without an LLM.
+    """
     statements: list[str] = []
     mappings: list[dict[str, Any]] = []
+    cores: list[str] = []
     for index, step in enumerate(proof_steps):
         source = str(step.get("from_node") or step.get("source") or "")
         relation = str(step.get("relation") or "")
         target = str(step.get("to_node") or step.get("target") or "")
         if not (source and relation and target):
             continue
-        text = f"{source} {relation} {target}."
+        core = f"{source} {relation} {target}"
+        text = f"{core}."
         statements.append(text)
+        cores.append(core)
         mappings.append(
             {
                 "statement_index": len(statements) - 1,
@@ -32,7 +39,12 @@ def render_from_proof_steps(proof_steps: Sequence[dict[str, Any]]) -> dict[str, 
                 "to_node": target,
             }
         )
-    answer = " ".join(statements).strip()
+    if not cores:
+        answer = ""
+    elif len(cores) == 1:
+        answer = f"Yes. {cores[0]}."
+    else:
+        answer = "Yes. " + ", and ".join(cores) + "."
     return {
         "answer": answer,
         "statements": statements,

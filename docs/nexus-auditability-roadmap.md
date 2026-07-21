@@ -169,10 +169,10 @@ source resolution.
 `EXPERIMENT_RULE_ENGINE_V1.md`; frozen eval opened under
 `EXPERIMENT_RULE_ENGINE_V2.md` with published frozen file SHA-256
 (`python benchmarks/eval_rule_engine.py --mode frozen`). Optional
-`KuzuGraphStore` remains CI-exercised via `nexus-graph[kuzu]`. A grounded
-paired artifact (`grounded_v1` + SynthesizingModel) is published; AnswerPlan
-overfit+2048 stays deferred because oracle and predicted fact accuracy are
-both low (shared surface/realizer coverage gap, not ER-path realization).
+`KuzuGraphStore` remains CI-exercised via `nexus-graph[kuzu]`. L1 paired
+publish defaults to `deterministic_render`; oracle fact accuracy rose to
+~0.48 under that path. AnswerPlan overfit+2048 stays deferred (binding
+requires high oracle fact and a predicted lag).
 
 Gate: development F1 ≥ 0.90; frozen F1 ≥ 0.90 with exact file hash match.
 
@@ -185,10 +185,10 @@ Gate: development F1 ≥ 0.90; frozen F1 ≥ 0.90 with exact file hash match.
   and expected calibration error.
 
 **Partial implementation (2026-07-21):** Conflict policy wired into audit
-(including `replaces` supersession). Development campaign
-`benchmarks/eval_contradiction_policy.py` reports class macro-F1, policy
-accuracy, Brier, and ECE against `contradiction_gold_v1.jsonl`. Frozen
-contradiction gold remains sealed.
+(including `replaces` supersession). Development campaign remains under V1;
+frozen gold opened under `EXPERIMENT_CONTRADICTION_POLICY_V2.md` with
+published LF-normalized SHA
+(`python benchmarks/eval_contradiction_policy.py --mode frozen`).
 
 Gate: contradiction F1 and high-confidence answer accuracy meet preregistered
 thresholds; no unresolved conflict yields an unconditional answer.
@@ -201,9 +201,10 @@ thresholds; no unresolved conflict yields an unconditional answer.
 
 **Partial implementation (2026-07-21):** `Edge` carries first-class bi-temporal
 fields; canonical graph payload schema is `nexus-canonical-graph-v2`.
-`bitemporal_oracle_v1.jsonl` + `run_bitemporal_replay.py` exercise
-valid/known filters and look-ahead rejection. Broader ingest stamping across
-all production edges remains incremental.
+Production ingest (`populate_from_experiments`, `ingest_docs`,
+`ingest_generic`) stamps edges via `stable_ingest_stamp()` with a fixed
+epoch. `bitemporal_oracle_v1.jsonl` + `run_bitemporal_replay.py` exercise
+valid/known filters and look-ahead rejection.
 
 Gate: deterministic historical replay and no look-ahead leakage.
 
@@ -214,11 +215,12 @@ Gate: deterministic historical replay and no look-ahead leakage.
   uncertainty statement.
 - Keep any learned realizer optional and outside the zero-LLM acceptance path.
 
-**Partial implementation (2026-07-21):** `deterministic_render` is an allowed
-`realizer_backend` and is wired into `answer_question` before pointer /
-comparison / LLM paths (`ProductionNEXUSConfig.deterministic_render()`).
-Coverage failures abstain. Learned Realizer training remains optional and
-deferred.
+**Partial implementation (2026-07-21):** `deterministic_render` is the default
+paired-publish L1 backend and is wired into `answer_question`.
+`grounded_v1` expands beyond factual/comparison: pointer/copy for
+factual+diagnostic, deterministic path render for causal/path-bearing
+intents, comparison-plan for comparisons. Learned Realizer training remains
+optional and deferred.
 
 Gate: zero unsupported statements and identical output for identical structured
 input.

@@ -20,6 +20,8 @@ _DEFAULT_OUTPUT = (
     / "answer_plan_pilot_status_20260721T160000Z.json"
 )
 _EVIDENCE_CANDIDATES = (
+    "benchmarks/results/oracle_vs_predicted_union_l1_det_full_20260721T163000Z.json",
+    "benchmarks/results/oracle_vs_predicted_union_grounded_full_20260721T163000Z.json",
     "benchmarks/results/oracle_vs_predicted_union_grounded_full_20260721T160000Z.json",
     "benchmarks/results/oracle_vs_predicted_union_recall_full_20260721T151500Z.json",
 )
@@ -101,9 +103,9 @@ def _is_binding(evidence: dict) -> tuple[bool, str]:
         "Non-dummy realization is NOT the binding constraint: "
         f"oracle_fact={oracle_fact}, predicted_fact={fact}, proof={proof}, "
         f"path={path}, entry={entry}, realizer_backend={backend}/"
-        f"model={evidence.get('model')}. Shared low surface accuracy under "
-        "grounded_v1 points to realizer intent coverage / gold phrasing, not "
-        "AnswerPlan edit-transducer training."
+        f"model={evidence.get('model')}. Predicted does not lag a strong "
+        "oracle surface score, so AnswerPlan edit-transducer training is not "
+        "justified."
     )
 
 

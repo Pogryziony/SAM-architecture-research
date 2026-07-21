@@ -46,10 +46,22 @@ AnswerPlan / Realizer training status (no full training by default):
 python benchmarks/record_answer_plan_status.py --force
 ```
 
-Grounded/non-dummy paired publish (no Ollama; uses pointer/comparison grounded path):
+L1 acceptance paired publish (default realizer is `deterministic_render`):
+
+```bash
+python benchmarks/run_oracle_vs_predicted.py --predicted-resolver union --realizer-backend deterministic_render --model synth --output benchmarks/results/oracle_vs_predicted_union_l1_det_full_TIMESTAMP.json
+```
+
+Grounded hybrid publish (pointer/comparison + path-render fallback):
 
 ```bash
 python benchmarks/run_oracle_vs_predicted.py --predicted-resolver union --realizer-backend grounded_v1 --model synth --output benchmarks/results/oracle_vs_predicted_union_grounded_full_TIMESTAMP.json
+```
+
+Stage 5 contradiction frozen eval (`EXPERIMENT_CONTRADICTION_POLICY_V2.md`):
+
+```bash
+python benchmarks/eval_contradiction_policy.py --mode frozen --output benchmarks/results/contradiction_policy_frozen_TIMESTAMP.json
 ```
 
 Stage 4 rule corpus (development + frozen under `rule-engine-v2`):
