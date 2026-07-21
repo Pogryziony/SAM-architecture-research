@@ -16,7 +16,7 @@ from typing import Any
 
 from nexus.graph.store import InMemoryGraphStore
 from nexus.graph import EDGE_TYPES
-from nexus.graph.traversal import traverse_with_intent
+from nexus.graph.traversal import TraversalStats, traverse_with_intent
 from nexus.query.parser import parse_question
 from nexus.reasoning.evidence_builder import (
     build_evidence, build_evidence_pack, build_zero_hop_pack,
@@ -82,6 +82,7 @@ def _attach_reasoning_audit(
     max_paths: int,
 ) -> dict[str, Any]:
     """Attach the deterministic audit without changing answer semantics."""
+    traversal_stats = result.get("traversal_stats") or {}
     audit = build_reasoning_audit(
         paths[:max_paths],
         graph,
@@ -90,6 +91,11 @@ def _attach_reasoning_audit(
         result.get("answer", ""),
         answer_threshold=config.readiness_answer_threshold,
         conditional_threshold=config.readiness_conditional_threshold,
+        require_structured_provenance=bool(
+            getattr(config, "require_structured_provenance", False)
+        ),
+        traversal_truncated=bool(traversal_stats.get("truncated")),
+        traversal_stats=traversal_stats,
     )
     result["reasoning_audit"] = audit.to_dict()
     return result
@@ -395,6 +401,7 @@ def answer_question(
     # ── Step 2: Traverse ──
     t0 = time.perf_counter()
     query_entities = set(parsed.entity_ids)
+    traversal_stats = TraversalStats()
     paths = traverse_with_intent(
         graph=graph,
         entry_nodes=parsed.entity_ids,
@@ -403,8 +410,10 @@ def answer_question(
         max_depth=max_depth,
         beam_width=beam_width,
         config=config,
+        stats=traversal_stats,
     )
     timing["traverse_time"] = round(time.perf_counter() - t0, 6)
+    result["traversal_stats"] = traversal_stats.to_dict()
     result["path_count"] = len(paths)
     result["path_scores"] = [round(path.score, 6) for path in paths]
 

@@ -10,7 +10,8 @@ Implements beam search traversal with:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import time
+from dataclasses import dataclass
 from typing import Optional
 
 from . import Path, PathStep
@@ -29,6 +30,7 @@ class TraversalStats:
     truncation_reason: str = ""
     max_depth_reached: int = 0
     paths_returned: int = 0
+    elapsed_ms: float = 0.0
 
     def to_dict(self) -> dict:
         return {
@@ -38,6 +40,7 @@ class TraversalStats:
             "truncation_reason": self.truncation_reason,
             "max_depth_reached": self.max_depth_reached,
             "paths_returned": self.paths_returned,
+            "elapsed_ms": round(self.elapsed_ms, 3),
         }
 
 
@@ -67,6 +70,19 @@ def beam_search(
 
     max_edges = max(1, int(getattr(config, "max_expanded_edges", 10_000)))
     max_nodes = max(1, int(getattr(config, "max_expanded_nodes", 5_000)))
+    max_ms = float(getattr(config, "max_traversal_ms", 0.0) or 0.0)
+    started = time.perf_counter()
+
+    def _time_exhausted() -> bool:
+        if max_ms <= 0.0:
+            return False
+        elapsed_ms = (time.perf_counter() - started) * 1000.0
+        stats.elapsed_ms = elapsed_ms
+        if elapsed_ms >= max_ms:
+            stats.truncated = True
+            stats.truncation_reason = "max_traversal_ms"
+            return True
+        return False
 
     active_paths: list[tuple[str, list[PathStep], set[str]]] = [
         (node, [], {node}) for node in start_nodes if graph.has_node(node)
@@ -75,15 +91,17 @@ def beam_search(
     stats.expanded_nodes = len(seen_nodes)
 
     for depth in range(max_depth):
-        if stats.truncated:
+        if stats.truncated or _time_exhausted():
             break
         candidates: list[tuple[str, list[PathStep], set[str]]] = []
 
         for current, steps, visited in active_paths:
-            if stats.truncated:
+            if stats.truncated or _time_exhausted():
                 break
             edges = graph.get_edges(current, direction)
             for edge in edges:
+                if _time_exhausted():
+                    break
                 if stats.expanded_edges >= max_edges:
                     stats.truncated = True
                     stats.truncation_reason = "max_expanded_edges"
@@ -143,6 +161,7 @@ def beam_search(
         active_paths = [(node, steps, visited) for node, steps, visited, _ in scored[:beam_width]]
         stats.max_depth_reached = depth + 1
 
+    stats.elapsed_ms = (time.perf_counter() - started) * 1000.0
     results = []
     for _, steps, _ in active_paths:
         if steps:

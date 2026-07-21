@@ -17,6 +17,8 @@
 {"source": "Exp_0_8_Aggregation", "target": "Exp_0_7_ExternalText", "edge_type": "depends_on", "evidence": "sam-lm/docs/experiments.md"}
 {"source": "Exp_0_9_OracleFilter", "target": "Exp_0_8_Aggregation", "edge_type": "depends_on", "evidence": "sam-lm/docs/experiments.md"}
 {"source": "Exp_0_12_Selection", "target": "Exp_0_11_ChainRetrieval", "edge_type": "depends_on", "evidence": "sam-lm/docs/experiments.md"}
+{"source": "Exp_0_11_ChainRetrieval", "target": "Exp_0_10_RequiredSet", "edge_type": "depends_on", "evidence": "sam-lm/docs/experiments.md"}
+{"source": "Exp_0_13B_RealisticDistractors", "target": "Exp_0_13A_NoisyMemory", "edge_type": "depends_on", "evidence": "sam-lm/docs/experiments.md"}
 {"source": "Concept_SelectorBottleneck", "target": "Concept_RetrievalMismatch", "edge_type": "caused_by", "evidence": "ANALYSIS_AND_ROADMAP.md"}
 {"source": "Decision_PivotToNEXUS", "target": "Concept_PivotToNEXUS", "edge_type": "implements", "evidence": "ANALYSIS_AND_ROADMAP.md"}
 {"source": "Exp_0_13A_NoisyMemory", "target": "Concept_PivotToNEXUS", "edge_type": "validates", "evidence": "ANALYSIS_AND_ROADMAP.md"}

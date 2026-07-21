@@ -34,6 +34,24 @@ def _stable_id(*parts: str) -> str:
     return hashlib.sha256(payload).hexdigest()[:16]
 
 
+def _structured_locators(node: Any) -> list[str]:
+    """Extract non-empty locators from ``properties['provenance']`` records."""
+    raw = (getattr(node, "properties", None) or {}).get("provenance")
+    if not isinstance(raw, list):
+        return []
+    locators: list[str] = []
+    for item in raw:
+        if isinstance(item, dict):
+            locator = str(item.get("locator", "")).strip()
+            if locator:
+                locators.append(locator)
+        else:
+            locator = str(getattr(item, "locator", "")).strip()
+            if locator:
+                locators.append(locator)
+    return locators
+
+
 def _step_sources(step: PathStep, graph: InMemoryGraphStore) -> list[str]:
     sources: set[str] = set()
     if step.edge.evidence:
@@ -42,7 +60,17 @@ def _step_sources(step: PathStep, graph: InMemoryGraphStore) -> list[str]:
         node = graph.get_node(node_id)
         if node:
             sources.update(source for source in node.sources if source)
+            sources.update(_structured_locators(node))
     return sorted(sources)
+
+
+def _step_has_structured_provenance(step: PathStep, graph: InMemoryGraphStore) -> bool:
+    """True when both endpoints carry at least one structured locator."""
+    for node_id in (step.edge.source, step.edge.target):
+        node = graph.get_node(node_id)
+        if node is None or not _structured_locators(node):
+            return False
+    return True
 
 
 @dataclass(frozen=True)
@@ -91,6 +119,9 @@ class ReasoningAudit:
     recommended_action: str = "abstain"
     proof_valid: bool = False
     provenance_coverage: float = 0.0
+    structured_provenance_coverage: float = 0.0
+    traversal_truncated: bool = False
+    traversal_stats: dict[str, Any] = field(default_factory=dict)
     errors: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -102,6 +133,9 @@ class ReasoningAudit:
             "recommended_action": self.recommended_action,
             "proof_valid": self.proof_valid,
             "provenance_coverage": self.provenance_coverage,
+            "structured_provenance_coverage": self.structured_provenance_coverage,
+            "traversal_truncated": self.traversal_truncated,
+            "traversal_stats": dict(self.traversal_stats),
             "errors": list(self.errors),
         }
 
@@ -205,11 +239,16 @@ def build_reasoning_audit(
     *,
     answer_threshold: float = 0.70,
     conditional_threshold: float = 0.40,
+    require_structured_provenance: bool = False,
+    traversal_truncated: bool = False,
+    traversal_stats: dict[str, Any] | None = None,
 ) -> ReasoningAudit:
     """Build a deterministic, JSON-safe explanation of answer readiness.
 
     Thresholds are decision-policy inputs, not learned parameters.  The score
     is diagnostic until calibrated on a frozen NEXUS oracle benchmark.
+    Truncated traversal and incomplete provenance never yield an unconditional
+    ``answer`` recommendation.
     """
     proof_steps, errors = _build_proof_steps(paths, graph)
     counter_evidence = _find_counter_evidence(proof_steps, evidence_pack, graph)
@@ -236,6 +275,16 @@ def build_reasoning_audit(
         if provenance_items else 0.0
     )
 
+    structured_flags = [
+        _step_has_structured_provenance(step, graph)
+        for path in paths
+        for step in path.steps
+    ]
+    structured_provenance_coverage = (
+        sum(structured_flags) / len(structured_flags)
+        if structured_flags else 0.0
+    )
+
     hallucination_rate = _clip(
         getattr(verification, "hallucination_rate", 1.0)
         if verification is not None else 1.0
@@ -250,6 +299,7 @@ def build_reasoning_audit(
     components = {
         "evidence_quality": round(evidence_quality, 4),
         "provenance_coverage": round(provenance_coverage, 4),
+        "structured_provenance_coverage": round(structured_provenance_coverage, 4),
         "verification_support": round(verification_support, 4),
         "path_relevance": round(path_relevance, 4),
         "opposition_clarity": round(opposition_clarity, 4),
@@ -269,13 +319,17 @@ def build_reasoning_audit(
         verification is not None and getattr(verification, "passed", False)
     )
     insufficient = any(marker in answer.lower() for marker in _INSUFFICIENT_MARKERS)
+    provenance_incomplete = provenance_coverage < 1.0 or (
+        require_structured_provenance and structured_provenance_coverage < 1.0
+    )
 
     if insufficient or not proof_valid or not verification_passed:
         action = "abstain"
     elif readiness_score < conditional_threshold:
         action = "abstain"
     elif (counter_evidence
-          or provenance_coverage < 1.0
+          or provenance_incomplete
+          or traversal_truncated
           or readiness_score < answer_threshold):
         action = "conditional_answer"
     else:
@@ -289,6 +343,9 @@ def build_reasoning_audit(
         recommended_action=action,
         proof_valid=proof_valid,
         provenance_coverage=round(provenance_coverage, 4),
+        structured_provenance_coverage=round(structured_provenance_coverage, 4),
+        traversal_truncated=bool(traversal_truncated),
+        traversal_stats=dict(traversal_stats or {}),
         errors=errors,
     )
 

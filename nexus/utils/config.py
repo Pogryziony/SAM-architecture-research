@@ -91,6 +91,8 @@ class NEXUSConfig:
     # as truncation — never as a silent complete search.
     max_expanded_edges: int = 10_000
     max_expanded_nodes: int = 5_000
+    # Optional monotonic wall-clock budget in milliseconds. 0 disables the check.
+    max_traversal_ms: float = 0.0
 
     # Verification
     hallucination_threshold: float = 0.2
@@ -99,6 +101,9 @@ class NEXUSConfig:
     # the diagnostic recommendation; they do not rewrite model answers.
     readiness_answer_threshold: float = 0.70
     readiness_conditional_threshold: float = 0.40
+    # When True, unconditional answers require SourceRecord locators on proof
+    # nodes (legacy free-form sources alone are insufficient).
+    require_structured_provenance: bool = False
 
     # Post-edit — disabled by default; masks model's true accuracy
     post_edit_enabled: bool = False

@@ -27,12 +27,14 @@ Steps 1-6 are non-LLM, CPU-native operations. Only steps 7-8 involve a language 
 
 ### Traversal budgets
 
-`NEXUSConfig.max_expanded_edges` (default 10_000) and
-`max_expanded_nodes` (default 5_000) bound beam search expansion. When a budget
-is exhausted, `TraversalStats.truncated` is set with a reason
-(`max_expanded_edges` / `max_expanded_nodes`). Truncation means the search is
-incomplete — never treat it as a full exploration. See
-`nexus/graph/traversal.py` and `tests/test_traversal_budgets.py`.
+`NEXUSConfig.max_expanded_edges` (default 10_000),
+`max_expanded_nodes` (default 5_000), and optional `max_traversal_ms`
+(default `0` = disabled) bound beam search expansion. When a budget is
+exhausted, `TraversalStats.truncated` is set with a reason
+(`max_expanded_edges` / `max_expanded_nodes` / `max_traversal_ms`). Truncation
+means the search is incomplete — the reasoning audit must not recommend an
+unconditional answer. See `nexus/graph/traversal.py` and
+`tests/test_traversal_budgets.py`.
 
 ## Step 1: Question Parsing
 
@@ -134,6 +136,10 @@ These weights determine which edge types are preferred during traversal:
 | 4 | Deep causal chains | DHM → MigrationTest → Bug → StatusChange → WorkOrder |
 
 Default max_depth = 4. Can be increased for specific diagnostic queries.
+
+Expansion is also bounded by `max_expanded_edges`, `max_expanded_nodes`, and
+optional `max_traversal_ms`. Exhaustion sets `TraversalStats.truncated` and the
+reasoning audit must not recommend an unconditional answer.
 
 ## Step 4: Path Scoring
 
