@@ -1,7 +1,7 @@
 # EXPERIMENT: Rule Engine V1 — Bounded Horn Corpus + Preregistered F1
 
 **Pre-registered**: 2026-07-21  
-**Status**: ACTIVE — development corpus only; frozen eval sealed  
+**Status**: ACTIVE — development corpus; frozen eval opened under `rule-engine-v2`  
 **Repository**: SAM-architecture-research  
 **Preregistration ID**: `rule-engine-v1`  
 **Corpus**: `benchmarks/qa-dataset/rule_corpus_v1.json`  
@@ -21,7 +21,7 @@ be opened until this preregistration is committed.
 | Field | Value |
 |---|---|
 | `corpus_id` | `rule_corpus_v1` |
-| `rule_count` | 6 (versioned Horn rules) |
+| `rule_count` | ≥12 (versioned Horn rules; grown beyond toy engine) |
 | Relations used | `depends_on`, `derived_from`, `replaces`, `validates` |
 | Development graph | Embedded in corpus JSON (`development_graph`) |
 | Gold inferred facts | Embedded in corpus JSON (`development_gold`) |
@@ -35,12 +35,11 @@ be opened until this preregistration is committed.
 | F1 | ≥ 0.90 |
 | Every inferred fact has `rule_id` + non-empty `premises` | 100% |
 
-## Frozen evaluation (sealed)
+## Frozen evaluation
 
-- Frozen rule-eval split: **not opened** in this experiment version.
-- Any command with `--mode frozen` must fail closed until a future
-  preregistration publishes the frozen file hash and thresholds.
-- Do not retune rules against a frozen artifact.
+- Frozen split opened under **`EXPERIMENT_RULE_ENGINE_V2.md`**
+  (`preregistration_id=rule-engine-v2`) with published file SHA-256.
+- Do not retune rules against the frozen artifact after V2 lands.
 
 ## Non-goals
 

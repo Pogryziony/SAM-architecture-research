@@ -211,7 +211,8 @@ def _find_counter_evidence(
     seen: set[tuple[str, str, str]] = set()
     for node_id in sorted(evidence_nodes):
         for edge in graph.get_edges(node_id, "both"):
-            if edge.type != "contradicts":
+            # Stage 5: surface explicit contradictions and supersession edges.
+            if edge.type not in {"contradicts", "replaces"}:
                 continue
             key = (edge.source, edge.type, edge.target)
             if key in seen:
@@ -346,6 +347,12 @@ def build_reasoning_audit(
             contradicts=[
                 (item.source, item.relation, item.target)
                 for item in counter_evidence
+                if item.relation == "contradicts"
+            ],
+            replaces=[
+                (item.source, item.relation, item.target)
+                for item in counter_evidence
+                if item.relation == "replaces"
             ],
         ),
         base_recommendation=action,

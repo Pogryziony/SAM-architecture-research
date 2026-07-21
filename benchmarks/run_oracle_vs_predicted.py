@@ -36,12 +36,60 @@ from benchmarks.scoring import compute_fact_score
 from nexus.graph.store import InMemoryGraphStore
 from nexus.pipeline.config import ProductionNEXUSConfig
 from nexus.pipeline.runner import NEXUSRunner
-from nexus.reasoning.model_interface import DummyModel, get_available_model
+from nexus.reasoning.model_interface import (
+    DummyModel,
+    SynthesizingModel,
+    get_available_model,
+)
 
 
 PAIRED_SCHEMA_VERSION = "nexus-oracle-vs-predicted-v2"
 DEFAULT_ER3_DIR = "models/encoder/entity_ranker_v3_20260711T081545Z"
 _ABSTAIN_MARKERS = ("insufficient evidence", "cannot answer", "unable to determine")
+_REALIZER_BACKENDS = (
+    "synth",
+    "pointer_copy",
+    "grounded_v1",
+    "deterministic_render",
+)
+
+
+def _realizer_overrides(realizer_backend: str) -> dict[str, Any]:
+    """Map CLI realizer backend to ProductionNEXUSConfig kwargs."""
+    if realizer_backend == "synth":
+        return {"realizer_backend": "synth"}
+    if realizer_backend == "pointer_copy":
+        cfg = ProductionNEXUSConfig.pointer_copy()
+        return {
+            "realizer_backend": cfg.realizer_backend,
+            "require_structured_provenance": cfg.require_structured_provenance,
+        }
+    if realizer_backend == "deterministic_render":
+        cfg = ProductionNEXUSConfig.deterministic_render()
+        return {
+            "realizer_backend": cfg.realizer_backend,
+            "require_structured_provenance": cfg.require_structured_provenance,
+        }
+    if realizer_backend == "grounded_v1":
+        cfg = ProductionNEXUSConfig.grounded()
+        return {
+            "realizer_backend": cfg.realizer_backend,
+            "realizer_model_dir": cfg.realizer_model_dir,
+            "realizer_config_path": cfg.realizer_config_path,
+            "realizer_checkpoint_sha256": cfg.realizer_checkpoint_sha256,
+            "require_structured_provenance": cfg.require_structured_provenance,
+        }
+    raise ValueError(f"unsupported realizer backend: {realizer_backend}")
+
+
+def _select_model(model_name: str) -> Any:
+    if model_name == "dummy":
+        return DummyModel()
+    if model_name == "synth":
+        return SynthesizingModel()
+    if model_name == "auto":
+        return get_available_model()
+    raise ValueError(f"unsupported model: {model_name}")
 
 
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -244,22 +292,25 @@ def build_predicted_runner(
     model: Any | None = None,
     union_top_k: int = 12,
     union_anchor_k: int = 8,
+    realizer_backend: str = "synth",
 ) -> tuple[NEXUSRunner, dict[str, Any]]:
     """Construct the predicted-mode runner and resolver identity metadata."""
+    realizer_kwargs = _realizer_overrides(realizer_backend)
     if predicted_resolver == "lexical":
-        config = ProductionNEXUSConfig.lexical_only()
+        config = ProductionNEXUSConfig.lexical_only(**realizer_kwargs)
         runner = NEXUSRunner(graph, config, model=model)
         identity = {
             "name": "lexical",
             "config_hash": config.config_hash,
             "entity_ranker_v3_enabled": False,
+            "realizer_backend": realizer_backend,
         }
         return runner, identity
 
     from stack.pipeline.resolver import ER3Resolver, LexicalResolver, UnionResolver
 
     if predicted_resolver == "er3":
-        config = ProductionNEXUSConfig.with_entity_ranker_v3(er3_dir)
+        config = ProductionNEXUSConfig.with_entity_ranker_v3(er3_dir, **realizer_kwargs)
         resolver = ER3Resolver.from_directory(er3_dir, graph)
         runner = NEXUSRunner(graph, config, model=model, entity_resolver=resolver)
         identity = {
@@ -268,6 +319,7 @@ def build_predicted_runner(
             "config_hash": config.config_hash,
             "entity_ranker_v3_enabled": True,
             "max_entry_nodes": config.max_entry_nodes,
+            "realizer_backend": realizer_backend,
         }
         return runner, identity
 
@@ -277,7 +329,7 @@ def build_predicted_runner(
     # Union handoff needs a slightly larger entry budget than raw ER3 top-10,
     # but still far below Stage 1D pool caps so hub noise stays bounded.
     config = ProductionNEXUSConfig.with_entity_ranker_v3(
-        er3_dir, max_entry_nodes=max(12, int(union_top_k))
+        er3_dir, max_entry_nodes=max(12, int(union_top_k)), **realizer_kwargs
     )
     er3 = ER3Resolver.from_directory(er3_dir, graph)
     resolver = UnionResolver(
@@ -295,6 +347,7 @@ def build_predicted_runner(
         "max_entry_nodes": config.max_entry_nodes,
         "union_top_k": int(union_top_k),
         "union_anchor_k": int(union_anchor_k),
+        "realizer_backend": realizer_backend,
     }
     return runner, identity
 
@@ -310,13 +363,16 @@ def run_paired_benchmark(
     model: Any | None = None,
     union_top_k: int = 12,
     union_anchor_k: int = 8,
+    realizer_backend: str = "synth",
+    model_name: str = "auto",
 ) -> dict[str, Any]:
     errors = validate_oracle_records(records)
     if errors:
         raise ValueError("invalid oracle records: " + "; ".join(errors))
 
+    realizer_kwargs = _realizer_overrides(realizer_backend)
     # Oracle arm intentionally ignores ER — gold entities isolate graph/reasoning.
-    oracle_config = ProductionNEXUSConfig.lexical_only()
+    oracle_config = ProductionNEXUSConfig.lexical_only(**realizer_kwargs)
     oracle_runner = NEXUSRunner(graph, oracle_config, model=model)
     oracle_pipeline = oracle_runner.run_oracle(records, source_sha=source_sha)
     if oracle_pipeline.errors:
@@ -329,6 +385,7 @@ def run_paired_benchmark(
         model=model,
         union_top_k=union_top_k,
         union_anchor_k=union_anchor_k,
+        realizer_backend=realizer_backend,
     )
     predicted_pipeline = predicted_runner.run(records, source_sha=source_sha)
     if predicted_pipeline.errors:
@@ -337,6 +394,7 @@ def run_paired_benchmark(
     oracle_rows = score_mode_rows(records, oracle_pipeline.per_question)
     predicted_rows = score_mode_rows(records, predicted_pipeline.per_question)
     paired = pair_rows(oracle_rows, predicted_rows)
+    model_label = type(model).__name__ if model is not None else model_name
     artifact = {
         "schema_version": PAIRED_SCHEMA_VERSION,
         "created_utc": datetime.now(timezone.utc).isoformat(),
@@ -344,6 +402,8 @@ def run_paired_benchmark(
         "oracle_config_hash": oracle_config.config_hash,
         "config_hash": predicted_identity["config_hash"],
         "predicted_resolver": predicted_identity,
+        "realizer_backend": realizer_backend,
+        "model_name": model_label,
         "oracle_schema_version": ORACLE_SCHEMA_VERSION,
         "dataset": dataset_identity,
         "questions_total": len(records),
@@ -398,6 +458,18 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Force DummyModel for deterministic offline publication.",
     )
+    parser.add_argument(
+        "--model",
+        choices=("dummy", "synth", "auto"),
+        default="auto",
+        help="Surface model for non-grounded intents (default: auto-detect).",
+    )
+    parser.add_argument(
+        "--realizer-backend",
+        choices=_REALIZER_BACKENDS,
+        default="synth",
+        help="Realization backend for both arms (use grounded_v1 for non-dummy publish).",
+    )
     args = parser.parse_args(argv)
 
     records_path = Path(args.records)
@@ -415,7 +487,8 @@ def main(argv: list[str] | None = None) -> int:
 
     graph, _ = build_benchmark_graph()
     source_sha = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
-    model = DummyModel() if args.dummy_model else get_available_model()
+    model_name = "dummy" if args.dummy_model else args.model
+    model = _select_model(model_name)
     artifact = run_paired_benchmark(
         records,
         graph,
@@ -426,6 +499,8 @@ def main(argv: list[str] | None = None) -> int:
         model=model,
         union_top_k=args.union_top_k,
         union_anchor_k=args.union_anchor_k,
+        realizer_backend=args.realizer_backend,
+        model_name=model_name,
     )
     output = Path(args.output)
     if output.exists() and not args.force:
@@ -442,10 +517,13 @@ def main(argv: list[str] | None = None) -> int:
                 "status": "VALID",
                 "questions": len(records),
                 "predicted_resolver": args.predicted_resolver,
+                "realizer_backend": args.realizer_backend,
+                "model_name": type(model).__name__,
                 "sha256": digest,
                 "output": str(output),
                 "predicted_entry_recall_mean": artifact["predicted"]["metrics"]["entry_recall_mean"],
                 "predicted_pool_recall_mean": artifact["predicted"]["metrics"]["pool_recall_mean"],
+                "predicted_fact_accuracy_mean": artifact["predicted"]["metrics"]["fact_accuracy_mean"],
             }
         )
     )

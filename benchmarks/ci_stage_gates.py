@@ -33,8 +33,11 @@ def gate_traversal_units() -> None:
         "tests/test_rule_engine.py",
         "tests/test_rule_corpus_v1.py",
         "tests/test_conflict_policy.py",
+        "tests/test_contradiction_campaign.py",
         "tests/test_bitemporal_replay.py",
+        "tests/test_bitemporal_oracle.py",
         "tests/test_deterministic_realization_gates.py",
+        "tests/test_deterministic_answer_path.py",
         "tests/test_union_resolver.py",
         "-q", "--tb=short",
     ])
@@ -45,6 +48,25 @@ def gate_rule_corpus() -> None:
         sys.executable,
         "benchmarks/eval_rule_engine.py",
         "--mode", "development",
+    ])
+    _run([
+        sys.executable,
+        "benchmarks/eval_rule_engine.py",
+        "--mode", "frozen",
+    ])
+
+
+def gate_contradiction() -> None:
+    _run([
+        sys.executable,
+        "benchmarks/eval_contradiction_policy.py",
+    ])
+
+
+def gate_bitemporal() -> None:
+    _run([
+        sys.executable,
+        "benchmarks/run_bitemporal_replay.py",
     ])
 
 
@@ -101,7 +123,15 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--gate",
-        choices=("all", "traversal", "oracle", "answer_plan", "rules"),
+        choices=(
+            "all",
+            "traversal",
+            "oracle",
+            "answer_plan",
+            "rules",
+            "contradiction",
+            "bitemporal",
+        ),
         default="all",
     )
     args = parser.parse_args(argv)
@@ -110,6 +140,10 @@ def main(argv: list[str] | None = None) -> int:
         gate_traversal_small_campaign()
     if args.gate in ("all", "rules"):
         gate_rule_corpus()
+    if args.gate in ("all", "contradiction"):
+        gate_contradiction()
+    if args.gate in ("all", "bitemporal"):
+        gate_bitemporal()
     if args.gate in ("all", "oracle"):
         gate_oracle_smoke()
     if args.gate in ("all", "answer_plan"):

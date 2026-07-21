@@ -46,16 +46,32 @@ AnswerPlan / Realizer training status (no full training by default):
 python benchmarks/record_answer_plan_status.py --force
 ```
 
-Stage 4 rule corpus development eval (frozen mode sealed):
+Grounded/non-dummy paired publish (no Ollama; uses pointer/comparison grounded path):
+
+```bash
+python benchmarks/run_oracle_vs_predicted.py --predicted-resolver union --realizer-backend grounded_v1 --model synth --output benchmarks/results/oracle_vs_predicted_union_grounded_full_TIMESTAMP.json
+```
+
+Stage 4 rule corpus (development + frozen under `rule-engine-v2`):
 
 ```bash
 python benchmarks/eval_rule_engine.py --mode development --output benchmarks/results/rule_corpus_v1_dev_eval_TIMESTAMP.json
+python benchmarks/eval_rule_engine.py --mode frozen --output benchmarks/results/rule_corpus_v1_frozen_eval_TIMESTAMP.json
 ```
 
-Stage 5 contradiction policy prereg: `EXPERIMENT_CONTRADICTION_POLICY_V1.md`
-(unit coverage in `tests/test_conflict_policy.py`; contradiction F1 campaign not yet run).
+Stage 5 contradiction F1 / calibration campaign (`EXPERIMENT_CONTRADICTION_POLICY_V1.md`):
 
-Canonical graph rebuild (deterministic content hash):
+```bash
+python benchmarks/eval_contradiction_policy.py --output benchmarks/results/contradiction_policy_campaign_TIMESTAMP.json
+```
+
+Stage 6 bi-temporal oracle replay:
+
+```bash
+python benchmarks/run_bitemporal_replay.py --output benchmarks/results/bitemporal_replay_TIMESTAMP.json
+```
+
+Canonical graph rebuild (deterministic content hash; schema v2 bi-temporal fields):
 
 ```bash
 python benchmarks/build_canonical_graph.py --print-hash-only

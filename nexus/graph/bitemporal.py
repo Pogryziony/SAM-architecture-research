@@ -109,3 +109,37 @@ def assert_no_lookahead(
                 f"observed_at={stamp.observed_at} after as_known_at={as_known_at}"
             )
     return errors
+
+
+def edge_to_fact(edge: Any) -> dict[str, Any]:
+    """Project an Edge (or edge-like object) into a bi-temporal fact dict."""
+    if hasattr(edge, "bitemporal_stamp"):
+        return dict(edge.bitemporal_stamp())
+    return {
+        "source": str(getattr(edge, "source", "")),
+        "relation": str(getattr(edge, "type", getattr(edge, "relation", ""))),
+        "target": str(getattr(edge, "target", "")),
+        "valid_from": str(getattr(edge, "valid_from", "") or ""),
+        "valid_to": str(getattr(edge, "valid_to", "") or ""),
+        "observed_at": str(getattr(edge, "observed_at", "") or ""),
+        "retracted_at": str(getattr(edge, "retracted_at", "") or ""),
+    }
+
+
+def filter_edges_bitemporal(
+    edges: list[Any],
+    *,
+    as_valid_at: str = "",
+    as_known_at: str = "",
+) -> list[Any]:
+    """Keep edges whose bi-temporal stamps pass the cutoffs."""
+    kept: list[Any] = []
+    for edge in edges:
+        fact = edge_to_fact(edge)
+        stamp = BiTemporalStamp.from_mapping(fact)
+        if as_valid_at and not is_valid_at(stamp, as_valid_at):
+            continue
+        if as_known_at and not is_known_at(stamp, as_known_at):
+            continue
+        kept.append(edge)
+    return kept

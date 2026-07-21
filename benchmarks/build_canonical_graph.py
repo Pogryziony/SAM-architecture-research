@@ -59,11 +59,24 @@ def graph_content_payload(graph: Any, provenance: dict[str, Any]) -> dict[str, A
                 "target": edge.target,
                 "confidence": round(float(edge.confidence), 6),
                 "evidence": str(getattr(edge, "evidence", "") or ""),
+                # Stage 6 schema: include bi-temporal stamps when present.
+                # Empty strings are omitted from the identity payload so
+                # unstamped graphs remain stable across builds.
+                **{
+                    key: value
+                    for key, value in {
+                        "valid_from": str(getattr(edge, "valid_from", "") or ""),
+                        "valid_to": str(getattr(edge, "valid_to", "") or ""),
+                        "observed_at": str(getattr(edge, "observed_at", "") or ""),
+                        "retracted_at": str(getattr(edge, "retracted_at", "") or ""),
+                    }.items()
+                    if value
+                },
             })
     edges.sort(key=lambda item: (item["source"], item["type"], item["target"], item["confidence"]))
 
     return {
-        "schema_version": "nexus-canonical-graph-v1",
+        "schema_version": "nexus-canonical-graph-v2",
         "node_count": len(nodes),
         "edge_count": len(edges),
         "edge_type_counts": dict(sorted((provenance.get("edge_type_counts") or {}).items())),
@@ -71,6 +84,10 @@ def graph_content_payload(graph: Any, provenance: dict[str, Any]) -> dict[str, A
         "build_steps": provenance.get("build_steps") or [],
         "nodes": nodes,
         "edges": edges,
+        "bitemporal_schema": {
+            "edge_fields": ["valid_from", "valid_to", "observed_at", "retracted_at"],
+            "empty_means_unspecified": True,
+        },
     }
 
 

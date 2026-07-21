@@ -6,60 +6,592 @@
     {
       "rule_id": "trans_depends_on",
       "version": "1",
-      "body": [["x", "depends_on", "y"], ["y", "depends_on", "z"]],
-      "head": ["x", "depends_on", "z"]
+      "body": [
+        [
+          "x",
+          "depends_on",
+          "y"
+        ],
+        [
+          "y",
+          "depends_on",
+          "z"
+        ]
+      ],
+      "head": [
+        "x",
+        "depends_on",
+        "z"
+      ]
     },
     {
       "rule_id": "trans_derived_from",
       "version": "1",
-      "body": [["x", "derived_from", "y"], ["y", "derived_from", "z"]],
-      "head": ["x", "derived_from", "z"]
+      "body": [
+        [
+          "x",
+          "derived_from",
+          "y"
+        ],
+        [
+          "y",
+          "derived_from",
+          "z"
+        ]
+      ],
+      "head": [
+        "x",
+        "derived_from",
+        "z"
+      ]
     },
     {
       "rule_id": "trans_replaces",
       "version": "1",
-      "body": [["x", "replaces", "y"], ["y", "replaces", "z"]],
-      "head": ["x", "replaces", "z"]
+      "body": [
+        [
+          "x",
+          "replaces",
+          "y"
+        ],
+        [
+          "y",
+          "replaces",
+          "z"
+        ]
+      ],
+      "head": [
+        "x",
+        "replaces",
+        "z"
+      ]
     },
     {
       "rule_id": "validates_depends_bridge",
       "version": "1",
-      "body": [["x", "validates", "y"], ["y", "depends_on", "z"]],
-      "head": ["x", "validates", "z"]
+      "body": [
+        [
+          "x",
+          "validates",
+          "y"
+        ],
+        [
+          "y",
+          "depends_on",
+          "z"
+        ]
+      ],
+      "head": [
+        "x",
+        "validates",
+        "z"
+      ]
     },
     {
       "rule_id": "depends_derived_bridge",
       "version": "1",
-      "body": [["x", "depends_on", "y"], ["y", "derived_from", "z"]],
-      "head": ["x", "depends_on", "z"]
+      "body": [
+        [
+          "x",
+          "depends_on",
+          "y"
+        ],
+        [
+          "y",
+          "derived_from",
+          "z"
+        ]
+      ],
+      "head": [
+        "x",
+        "depends_on",
+        "z"
+      ]
     },
     {
       "rule_id": "replaces_depends_bridge",
       "version": "1",
-      "body": [["x", "replaces", "y"], ["y", "depends_on", "z"]],
-      "head": ["x", "depends_on", "z"]
+      "body": [
+        [
+          "x",
+          "replaces",
+          "y"
+        ],
+        [
+          "y",
+          "depends_on",
+          "z"
+        ]
+      ],
+      "head": [
+        "x",
+        "depends_on",
+        "z"
+      ]
+    },
+    {
+      "rule_id": "implements_depends_bridge",
+      "version": "1",
+      "body": [
+        [
+          "x",
+          "implements",
+          "y"
+        ],
+        [
+          "y",
+          "depends_on",
+          "z"
+        ]
+      ],
+      "head": [
+        "x",
+        "depends_on",
+        "z"
+      ]
+    },
+    {
+      "rule_id": "blocked_by_depends_bridge",
+      "version": "1",
+      "body": [
+        [
+          "x",
+          "blocked_by",
+          "y"
+        ],
+        [
+          "y",
+          "depends_on",
+          "z"
+        ]
+      ],
+      "head": [
+        "x",
+        "blocked_by",
+        "z"
+      ]
+    },
+    {
+      "rule_id": "caused_by_depends_bridge",
+      "version": "1",
+      "body": [
+        [
+          "x",
+          "caused_by",
+          "y"
+        ],
+        [
+          "y",
+          "depends_on",
+          "z"
+        ]
+      ],
+      "head": [
+        "x",
+        "caused_by",
+        "z"
+      ]
+    },
+    {
+      "rule_id": "validates_implements_bridge",
+      "version": "1",
+      "body": [
+        [
+          "x",
+          "validates",
+          "y"
+        ],
+        [
+          "y",
+          "implements",
+          "z"
+        ]
+      ],
+      "head": [
+        "x",
+        "validates",
+        "z"
+      ]
+    },
+    {
+      "rule_id": "derived_implements_bridge",
+      "version": "1",
+      "body": [
+        [
+          "x",
+          "derived_from",
+          "y"
+        ],
+        [
+          "y",
+          "implements",
+          "z"
+        ]
+      ],
+      "head": [
+        "x",
+        "derived_from",
+        "z"
+      ]
+    },
+    {
+      "rule_id": "replaces_implements_bridge",
+      "version": "1",
+      "body": [
+        [
+          "x",
+          "replaces",
+          "y"
+        ],
+        [
+          "y",
+          "implements",
+          "z"
+        ]
+      ],
+      "head": [
+        "x",
+        "implements",
+        "z"
+      ]
+    },
+    {
+      "rule_id": "trans_implements",
+      "version": "1",
+      "body": [
+        [
+          "x",
+          "implements",
+          "y"
+        ],
+        [
+          "y",
+          "implements",
+          "z"
+        ]
+      ],
+      "head": [
+        "x",
+        "implements",
+        "z"
+      ]
+    },
+    {
+      "rule_id": "depends_validates_bridge",
+      "version": "1",
+      "body": [
+        [
+          "x",
+          "depends_on",
+          "y"
+        ],
+        [
+          "y",
+          "validates",
+          "z"
+        ]
+      ],
+      "head": [
+        "x",
+        "depends_on",
+        "z"
+      ]
+    },
+    {
+      "rule_id": "related_depends_bridge",
+      "version": "1",
+      "body": [
+        [
+          "x",
+          "related_to",
+          "y"
+        ],
+        [
+          "y",
+          "depends_on",
+          "z"
+        ]
+      ],
+      "head": [
+        "x",
+        "related_to",
+        "z"
+      ]
     }
   ],
   "development_graph": {
-    "nodes": ["A", "B", "C", "D", "E", "F", "X_old", "X_mid", "X_new"],
+    "nodes": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "X_old",
+      "X_mid",
+      "X_new",
+      "Svc",
+      "Lib",
+      "Bug",
+      "RootCause"
+    ],
     "edges": [
-      ["A", "depends_on", "B"],
-      ["B", "depends_on", "C"],
-      ["D", "derived_from", "E"],
-      ["E", "derived_from", "F"],
-      ["A", "validates", "B"],
-      ["X_old", "replaces", "X_mid"],
-      ["X_mid", "replaces", "X_new"],
-      ["X_mid", "depends_on", "C"],
-      ["B", "derived_from", "F"]
+      [
+        "A",
+        "depends_on",
+        "B"
+      ],
+      [
+        "B",
+        "depends_on",
+        "C"
+      ],
+      [
+        "D",
+        "derived_from",
+        "E"
+      ],
+      [
+        "E",
+        "derived_from",
+        "F"
+      ],
+      [
+        "A",
+        "validates",
+        "B"
+      ],
+      [
+        "X_old",
+        "replaces",
+        "X_mid"
+      ],
+      [
+        "X_mid",
+        "replaces",
+        "X_new"
+      ],
+      [
+        "X_mid",
+        "depends_on",
+        "C"
+      ],
+      [
+        "B",
+        "derived_from",
+        "F"
+      ],
+      [
+        "G",
+        "implements",
+        "H"
+      ],
+      [
+        "H",
+        "depends_on",
+        "I"
+      ],
+      [
+        "H",
+        "implements",
+        "J"
+      ],
+      [
+        "Svc",
+        "blocked_by",
+        "Bug"
+      ],
+      [
+        "Bug",
+        "depends_on",
+        "RootCause"
+      ],
+      [
+        "Bug",
+        "caused_by",
+        "RootCause"
+      ],
+      [
+        "RootCause",
+        "depends_on",
+        "Lib"
+      ],
+      [
+        "A",
+        "validates",
+        "G"
+      ],
+      [
+        "D",
+        "derived_from",
+        "G"
+      ],
+      [
+        "X_new",
+        "implements",
+        "H"
+      ],
+      [
+        "C",
+        "validates",
+        "I"
+      ],
+      [
+        "A",
+        "related_to",
+        "B"
+      ]
     ]
   },
   "development_gold": [
-    ["A", "depends_on", "C"],
-    ["D", "derived_from", "F"],
-    ["X_old", "replaces", "X_new"],
-    ["A", "validates", "C"],
-    ["A", "depends_on", "F"],
-    ["X_old", "depends_on", "C"]
+    [
+      "A",
+      "depends_on",
+      "C"
+    ],
+    [
+      "A",
+      "depends_on",
+      "F"
+    ],
+    [
+      "A",
+      "depends_on",
+      "I"
+    ],
+    [
+      "A",
+      "related_to",
+      "C"
+    ],
+    [
+      "A",
+      "related_to",
+      "I"
+    ],
+    [
+      "A",
+      "validates",
+      "C"
+    ],
+    [
+      "A",
+      "validates",
+      "H"
+    ],
+    [
+      "A",
+      "validates",
+      "I"
+    ],
+    [
+      "A",
+      "validates",
+      "J"
+    ],
+    [
+      "B",
+      "depends_on",
+      "I"
+    ],
+    [
+      "Bug",
+      "caused_by",
+      "Lib"
+    ],
+    [
+      "Bug",
+      "depends_on",
+      "Lib"
+    ],
+    [
+      "D",
+      "derived_from",
+      "F"
+    ],
+    [
+      "D",
+      "derived_from",
+      "H"
+    ],
+    [
+      "D",
+      "derived_from",
+      "J"
+    ],
+    [
+      "G",
+      "depends_on",
+      "I"
+    ],
+    [
+      "G",
+      "implements",
+      "J"
+    ],
+    [
+      "Svc",
+      "blocked_by",
+      "Lib"
+    ],
+    [
+      "Svc",
+      "blocked_by",
+      "RootCause"
+    ],
+    [
+      "X_mid",
+      "depends_on",
+      "I"
+    ],
+    [
+      "X_mid",
+      "implements",
+      "H"
+    ],
+    [
+      "X_mid",
+      "implements",
+      "J"
+    ],
+    [
+      "X_new",
+      "depends_on",
+      "I"
+    ],
+    [
+      "X_new",
+      "implements",
+      "J"
+    ],
+    [
+      "X_old",
+      "depends_on",
+      "C"
+    ],
+    [
+      "X_old",
+      "depends_on",
+      "I"
+    ],
+    [
+      "X_old",
+      "implements",
+      "H"
+    ],
+    [
+      "X_old",
+      "implements",
+      "J"
+    ],
+    [
+      "X_old",
+      "replaces",
+      "X_new"
+    ]
   ]
 }
