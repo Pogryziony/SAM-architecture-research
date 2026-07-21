@@ -9,6 +9,8 @@ from stack.pipeline.resolver import (
     ER3Resolver,
     LexicalFallbackResolver,
     LexicalResolver,
+    UnionResolver,
+    mention_score,
 )
 
 __all__ = [
@@ -16,4 +18,6 @@ __all__ = [
     "ER3Resolver",
     "LexicalFallbackResolver",
     "LexicalResolver",
+    "UnionResolver",
+    "mention_score",
 ]
