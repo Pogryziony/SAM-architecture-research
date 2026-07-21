@@ -94,6 +94,12 @@ split or retroactively applied to historical artifacts.
 - Add publication guards rejecting missing records, hashes, or per-question
   diagnostics.
 
+**Partial implementation (2026-07-21):** Frozen contract `oracle_v1` lives in
+`benchmarks/qa-dataset/oracle_v1.jsonl` (+ manifest). Build with
+`python benchmarks/build_frozen_oracle_dataset.py`. Paired reporting scaffold:
+`python benchmarks/run_oracle_vs_predicted.py --output ...`. Broader hop /
+temporal coverage and full publication runs remain open.
+
 Gate: 100% valid records, deterministic rerun, and complete provenance for the
 benchmark artifact.
 
@@ -120,8 +126,10 @@ budget on small, medium, and large synthetic graphs.
 - Prevent unconditional answers when required provenance is incomplete.
 
 **Partial implementation (2026-07-21):** `nexus/graph/provenance.py` provides
-`SourceRecord` and free-form adapters. Ingestion still writes legacy strings;
-unconditional-answer provenance gates are not yet enforced.
+`SourceRecord`, free-form adapters, and `attach_provenance_to_properties`.
+Experiment populate + doc/generic ingestion now attach
+`properties["provenance"]` while keeping legacy `Node.sources` strings.
+Unconditional-answer provenance gates are not yet enforced.
 
 Gate: 100% provenance coverage for accepted benchmark answers and reproducible
 source resolution.

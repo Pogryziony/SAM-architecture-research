@@ -20,7 +20,6 @@ import json
 import sys
 from collections import defaultdict
 from pathlib import Path
-from datetime import datetime, timezone
 
 # Add project root to path
 _project_root = Path(__file__).resolve().parents[2]
@@ -33,15 +32,19 @@ from nexus.ingestion.populate_from_experiments import populate_graph, EXPERIMENT
 # Paths
 # ---------------------------------------------------------------------------
 GOLD_FILE = _project_root / "benchmarks" / "qa-dataset" / "relation_gold.jsonl"
-RESULTS_DIR = _project_root / "benchmarks" / "results"
 
 # ---------------------------------------------------------------------------
 # Semantic edge types (typed, non-co-occurrence)
 # ---------------------------------------------------------------------------
+# Conceptual / typed relations scored against gold.
+# Structural parentage (sub_experiment) is excluded — same role as
+# co-occurrence for precision: useful in the graph, not a gold FP.
 SEMANTIC_EDGE_TYPES = frozenset({
     "derived_from", "validates", "depends_on", "caused_by",
     "blocked_by", "implements", "contradicts", "replaces", "mentioned_in",
 })
+
+STRUCTURAL_EDGE_TYPES = frozenset({"sub_experiment"})
 
 COOCCURRENCE_EDGE_TYPE = "related_to"
 COOCCURRENCE_CONFIDENCE = 0.3
@@ -71,8 +74,8 @@ def load_gold(gold_path: Path) -> tuple[list[dict], list[dict]]:
 def extract_semantic_edges(graph: InMemoryGraphStore) -> set[tuple]:
     """Extract semantic edges from the graph.
 
-    Semantic edges: typed edges with confidence > 0.3.
-    Co-occurrence edges ("related_to" with confidence exactly 0.3) are excluded.
+    Semantic edges: types in ``SEMANTIC_EDGE_TYPES`` with confidence > 0.3.
+    Co-occurrence and structural (``sub_experiment``) edges are excluded.
 
     Returns:
         Set of (source, target, edge_type) tuples.
@@ -80,13 +83,30 @@ def extract_semantic_edges(graph: InMemoryGraphStore) -> set[tuple]:
     semantic = set()
     for source_nid in list(graph._nodes.keys()):
         for edge in graph.get_outgoing(source_nid):
-            # Skip co-occurrence edges
             if edge.type == COOCCURRENCE_EDGE_TYPE:
                 continue
-            # Only count semantic edges with confidence > 0.3
+            if edge.type in STRUCTURAL_EDGE_TYPES:
+                continue
+            if edge.type not in SEMANTIC_EDGE_TYPES:
+                continue
             if edge.confidence > COOCCURRENCE_CONFIDENCE:
                 semantic.add((edge.source, edge.target, edge.type))
     return semantic
+
+
+def extract_structural_edges(graph: InMemoryGraphStore) -> list[dict]:
+    """Extract structural parentage edges (``sub_experiment``)."""
+    structural = []
+    for source_nid in list(graph._nodes.keys()):
+        for edge in graph.get_outgoing(source_nid):
+            if edge.type in STRUCTURAL_EDGE_TYPES:
+                structural.append({
+                    "source": edge.source,
+                    "target": edge.target,
+                    "edge_type": edge.type,
+                    "confidence": edge.confidence,
+                })
+    return structural
 
 
 def extract_cooccurrence_edges(graph: InMemoryGraphStore) -> list[dict]:
@@ -196,7 +216,11 @@ def evaluate(
     }
 
 
-def print_report(results: dict, cooccurrence_count: int) -> None:
+def print_report(
+    results: dict,
+    cooccurrence_count: int,
+    structural_count: int = 0,
+) -> None:
     """Print a human-readable evaluation report."""
     print("=" * 72)
     print("RELATION EXTRACTION EVALUATION REPORT")
@@ -213,6 +237,8 @@ def print_report(results: dict, cooccurrence_count: int) -> None:
 
     print(f"\n  Co-occurrence edges (excluded from eval): {cooccurrence_count}")
     print(f"  (Co-occurrence = '{COOCCURRENCE_EDGE_TYPE}' edges with confidence = {COOCCURRENCE_CONFIDENCE})")
+    print(f"  Structural edges (excluded from eval): {structural_count}")
+    print(f"  (Structural = {sorted(STRUCTURAL_EDGE_TYPES)})")
 
     print("\n" + "-" * 72)
     print("Per edge type:")
@@ -249,40 +275,51 @@ def print_report(results: dict, cooccurrence_count: int) -> None:
     print("\n" + "=" * 72)
 
 
-def main():
-    # Load gold standard
+def main(argv: list[str] | None = None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Optional path for JSON results (default: do not write).",
+    )
+    args = parser.parse_args(argv)
+
     if not GOLD_FILE.exists():
         print(f"ERROR: Gold file not found: {GOLD_FILE}")
-        sys.exit(1)
+        return 1
     positives, negatives = load_gold(GOLD_FILE)
     print(f"Loaded gold dataset: {len(positives)} positive, {len(negatives)} negative examples")
 
-    # Populate graph
     graph = InMemoryGraphStore()
     graph = populate_graph(EXPERIMENTS_DIR, graph)
     print(f"Graph: {graph.node_count} nodes, {graph.edge_count} edges")
 
-    # Extract semantic and co-occurrence edges
     semantic_edges = extract_semantic_edges(graph)
     cooccurrence_edges = extract_cooccurrence_edges(graph)
-    print(f"Semantic edges: {len(semantic_edges)}, Co-occurrence edges: {len(cooccurrence_edges)}")
+    structural_edges = extract_structural_edges(graph)
+    print(
+        f"Semantic edges: {len(semantic_edges)}, "
+        f"Co-occurrence edges: {len(cooccurrence_edges)}, "
+        f"Structural edges: {len(structural_edges)}"
+    )
 
-    # Evaluate
     results = evaluate(positives, negatives, semantic_edges)
-    print_report(results, len(cooccurrence_edges))
+    print_report(results, len(cooccurrence_edges), len(structural_edges))
 
-    # Write results
-    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    out_path = RESULTS_DIR / f"relation_eval_{ts}.json"
-    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2)
+    if args.output is not None:
+        out_path = args.output
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(out_path, "w", encoding="utf-8") as f:
+            json.dump(results, f, indent=2)
+        print(f"\nResults written to: {out_path}")
+    else:
+        print("\nNo --output provided; results not written to disk.")
 
-    print(f"\nResults written to: {out_path}")
-
-    # Return the results as JSON string for test assertions
-    return json.dumps(results, indent=2)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

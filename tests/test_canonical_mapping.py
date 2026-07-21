@@ -80,6 +80,25 @@ class TestCanonicalMapping:
         # Granular metric (non-pattern) maps to canonical (two hops)
         assert mapping.get("Metric_Exp_0_6_Validation_core_only_accuracy") == "Exp_0_6_Validation_core_only"
 
+    def test_sub_experiment_parent_edges_resolve(self):
+        """Production structural parentage uses sub_experiment, not derived_from."""
+        g = InMemoryGraphStore()
+        g.add_node(Node(id="Exp_0_6_Validation", type="Experiment"))
+        g.add_node(Node(id="Exp_0_6_Validation_core_only", type="Experiment"))
+        g.add_edge(Edge(
+            type="sub_experiment",
+            source="Exp_0_6_Validation_core_only",
+            target="Exp_0_6_Validation",
+        ))
+        g.add_node(Node(id="Metric_run_accuracy", type="Metric"))
+        g.add_edge(Edge(
+            type="sub_experiment",
+            source="Metric_run_accuracy",
+            target="Exp_0_6_Validation_core_only",
+        ))
+        mapping = build_canonical_mapping(g)
+        assert mapping.get("Metric_run_accuracy") == "Exp_0_6_Validation_core_only"
+
     def test_missing_parent_node_excluded(self):
         """Nodes with no derived_from to canonical are not in mapping."""
         g = _graph()

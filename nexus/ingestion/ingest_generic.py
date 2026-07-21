@@ -27,6 +27,7 @@ if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
 from nexus.graph import Node, Edge
+from nexus.graph.provenance import attach_provenance_to_properties
 from nexus.graph.store import InMemoryGraphStore
 from nexus.ingestion.entity_extractor import extract_from_markdown, _is_valid_entity, _COMMON_WORDS
 from nexus.ingestion.relation_extractor import extract_relations
@@ -57,11 +58,12 @@ def _make_node(entity: dict, aliases: list[str] | None = None) -> Node:
     }
     if "properties" in entity:
         props.update(entity["properties"])
+    sources = [entity.get("source", "")]
     return Node(
         id=node_id,
         type=entity.get("type", "Entity"),
-        properties=props,
-        sources=[entity.get("source", "")],
+        properties=attach_provenance_to_properties(props, sources),
+        sources=sources,
         aliases=final_aliases,
     )
 

@@ -5,7 +5,8 @@ Extracts:
 - Experiment nodes with all metrics as properties
 - Metric nodes linked to experiments
 - Key findings as Concept nodes
-- Edges: derived_from, validates, depends_on, related_to
+- Edges: derived_from (conceptual), sub_experiment (structural),
+  validates, depends_on, caused_by, blocked_by, implements, related_to
 """
 
 from __future__ import annotations
@@ -19,8 +20,28 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from nexus.graph import Node, Edge
+from nexus.graph.provenance import attach_provenance_to_properties
 from nexus.graph.store import InMemoryGraphStore
 from nexus.ingestion.entity_extractor import _extract_metrics, _extract_auto_aliases
+
+
+def _make_node(
+    *,
+    node_id: str,
+    node_type: str,
+    properties: dict | None = None,
+    sources: list[str] | None = None,
+    aliases: list[str] | None = None,
+) -> Node:
+    """Create a node with legacy sources plus structured provenance."""
+    src = list(sources or [])
+    return Node(
+        id=node_id,
+        type=node_type,
+        properties=attach_provenance_to_properties(properties, src),
+        sources=src,
+        aliases=list(aliases or []),
+    )
 
 
 EXPERIMENTS_DIR = Path(__file__).parent.parent.parent / "sam-lm" / "experiments"
@@ -246,9 +267,9 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
         for aa in auto_aliases:
             if aa not in exp_aliases:
                 exp_aliases.append(aa)
-        node = Node(
-            id=exp_def["id"],
-            type="Experiment",
+        node = _make_node(
+            node_id=exp_def["id"],
+            node_type="Experiment",
             properties=exp_props,
             sources=[f"sam-lm/experiments/{exp_key}_report.md"],
             aliases=exp_aliases,
@@ -274,9 +295,9 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
         
         # Create a sub-experiment node (a specific run configuration)
         run_id = f"{exp_id}_{run_name}"
-        run_node = Node(
-            id=run_id,
-            type="Experiment",
+        run_node = _make_node(
+            node_id=run_id,
+            node_type="Experiment",
             properties={
                 "title": f"{EXPERIMENT_DEFS.get(exp_key_from_id(exp_id), {}).get('title', exp_id)} — {run_name}",
                 "mode": metrics.get("mode", ""),
@@ -287,10 +308,11 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
         )
         graph.add_node(run_node)
         
-        # Link run to parent experiment
+        # Link run to parent experiment as structural sub-experiment
+        # (not conceptual derived_from — that type is reserved for decision/concept links).
         if graph.has_node(exp_id):
             edge = Edge(
-                type="derived_from",
+                type="sub_experiment",
                 source=run_id,
                 target=exp_id,
                 confidence=1.0,
@@ -316,9 +338,9 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
         for metric_key, (metric_name, unit) in metric_keys.items():
             if metric_key in metrics:
                 metric_id = f"Metric_{run_id}_{metric_key}"
-                metric_node = Node(
-                    id=metric_id,
-                    type="Metric",
+                metric_node = _make_node(
+                    node_id=metric_id,
+                    node_type="Metric",
                     properties={
                         "name": metric_name,
                         "value": metrics[metric_key],
@@ -329,9 +351,9 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
                 )
                 graph.add_node(metric_node)
                 
-                # Link metric to run
+                # Link metric to run as structural membership, not conceptual derivation.
                 edge = Edge(
-                    type="derived_from",
+                    type="sub_experiment",
                     source=metric_id,
                     target=run_id,
                     confidence=1.0,
@@ -407,9 +429,9 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
         for aa in auto_aliases:
             if aa not in concept_aliases:
                 concept_aliases.append(aa)
-        node = Node(
-            id=concept_id,
-            type="Concept",
+        node = _make_node(
+            node_id=concept_id,
+            node_type="Concept",
             properties=concept_props,
             sources=["ANALYSIS_AND_ROADMAP.md"],
             aliases=concept_aliases,
@@ -461,16 +483,16 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
     for aa in auto_aliases:
         if aa not in decision_aliases:
             decision_aliases.append(aa)
-    decision = Node(
-        id="Decision_PivotToNEXUS",
-        type="Decision",
+    decision = _make_node(
+        node_id="Decision_PivotToNEXUS",
+        node_type="Decision",
         properties=decision_props,
         sources=["ANALYSIS_AND_ROADMAP.md"],
         aliases=decision_aliases,
     )
     graph.add_node(decision)
     
-    # Link decision to supporting concepts
+    # Link decision to supporting concepts (conceptual derivation — kept as derived_from)
     for concept_id in ["Concept_SelectorBottleneck", "Concept_PivotToNEXUS", "Concept_ArchitectureWorks"]:
         if graph.has_node(concept_id):
             edge = Edge(
@@ -481,6 +503,43 @@ def populate_graph(experiments_dir: Path, graph: InMemoryGraphStore) -> InMemory
                 evidence="Pivot decision derived from experimental evidence",
             )
             graph.add_edge(edge)
+
+    # Phase 6: Curated concept/decision relations registered in relation_gold.jsonl
+    # that are not implied by the validates/contradicts loops above.
+    curated_relations = [
+        (
+            "Concept_SelectorBottleneck",
+            "Concept_ArchitectureWorks",
+            "blocked_by",
+            0.9,
+            "Selector bottleneck blocks claiming the architecture works end-to-end",
+        ),
+        (
+            "Concept_SelectorBottleneck",
+            "Concept_RetrievalMismatch",
+            "caused_by",
+            0.9,
+            "Selector precision failure is caused by retrieval/selection mismatch",
+        ),
+        (
+            "Decision_PivotToNEXUS",
+            "Concept_PivotToNEXUS",
+            "implements",
+            0.95,
+            "Pivot decision implements the pivot-to-NEXUS concept",
+        ),
+    ]
+    for source, target, edge_type, confidence, evidence in curated_relations:
+        if graph.has_node(source) and graph.has_node(target):
+            graph.add_edge(
+                Edge(
+                    type=edge_type,
+                    source=source,
+                    target=target,
+                    confidence=confidence,
+                    evidence=evidence,
+                )
+            )
     
     return graph
 
