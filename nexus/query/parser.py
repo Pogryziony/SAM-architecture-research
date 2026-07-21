@@ -174,7 +174,11 @@ def spot_entities(
                 continue
 
             node_id = _try_match(chunk_stripped, graph, cutoff)
-            if node_id and node_id not in matched_node_ids:
+            if (
+                node_id
+                and node_id not in matched_node_ids
+                and _match_grounded_in_chunk(chunk_stripped, node_id)
+            ):
                 start = lowered.find(chunk_stripped)
                 if start >= 0:
                     end = start + len(chunk_stripped)
@@ -219,6 +223,48 @@ def _try_match(
     candidates = graph.get_word_index_candidates(chunk)
     node_id = graph.find_entity_fast(chunk, cutoff=cutoff, candidate_ids=candidates or None)
     return node_id
+
+
+def _match_grounded_in_chunk(chunk: str, node_id: str) -> bool:
+    """Reject fuzzy hits whose normalized ID is not grounded in the chunk text.
+
+    Stops long n-grams from binding unrelated hubs (e.g. Concept_OracleMemory
+    from a sentence that literally names Concept_LegacyFlatMemory).
+    """
+    norm_chunk = InMemoryGraphStore._normalize(chunk)
+    norm_id = InMemoryGraphStore._normalize(node_id)
+    if not norm_chunk or not norm_id:
+        return False
+    if norm_id == norm_chunk or norm_id in norm_chunk or norm_chunk in norm_id:
+        return True
+    id_segments = [seg for seg in _split_into_segments(norm_id) if len(seg) >= 4]
+    if not id_segments:
+        return False
+    hits = sum(1 for seg in id_segments if seg in norm_chunk)
+    return hits >= max(1, (len(id_segments) + 1) // 2)
+
+
+def _find_exact_id_mentions(
+    question: str,
+    graph: InMemoryGraphStore,
+) -> set[str]:
+    """Match underscore / CamelCase tokens that exactly equal a node ID or alias."""
+    matched: set[str] = set()
+    name_index: dict[str, str] = getattr(graph, "_name_index", {})
+    alias_index: dict[str, str] = getattr(graph, "_alias_index", {})
+    for raw in question.split():
+        token = raw.strip(".,;:?!\"'()[]{}")
+        if len(token) < 3:
+            continue
+        # ID-like tokens only — avoid promoting every short English word.
+        if "_" not in token and not any(ch.isupper() for ch in token[1:]):
+            continue
+        normalized = InMemoryGraphStore._normalize(token)
+        if normalized in name_index:
+            matched.add(name_index[normalized])
+        elif normalized in alias_index:
+            matched.add(alias_index[normalized])
+    return matched
 
 
 def parse_question(
@@ -345,7 +391,10 @@ def parse_question(
     # ── Track alias-matched entities for ranking boost ──
     # Alias matching is very precise: the question literally contains a phrase
     # mapped to this entity. Give these a strong ranking boost.
+    # Exact node-ID tokens (Concept_X / Decision_Y) get the same boost so
+    # family / oracle questions that name IDs are not crowded out by hubs.
     alias_matched: set[str] = _find_alias_matches(question, graph)
+    alias_matched |= _find_exact_id_mentions(question, graph)
 
     # Ensure alias-matched entities are in the list (they may not be found by
     # fuzzy substring matching if the alias is a multi-word phrase)

@@ -307,3 +307,31 @@ def test_zero_preserves_facts():
     assert detail["gt_numbers"] == sorted(list(_extract_numbers(gt)))
     # Entity overlap should be empty
     assert detail["entity_overlap"] == []
+
+
+def test_qualitative_comparative_markers_are_scorable():
+    """Non-numeric comparative gold should still yield extractable key facts."""
+    gt = (
+        "SAM: trains retriever, selector, AND core together "
+        "(3 interdependent components). NEXUS: graph constructed separately."
+    )
+    pred = (
+        "SAM: trains retriever, selector, AND core together "
+        "(3 interdependent components). NEXUS: graph constructed separately "
+        "from ingestion."
+    )
+    result = compute_fact_score(pred, gt)
+    assert result["fuzzy_accuracy"] is not None
+    assert result["fuzzy_accuracy"] >= 0.99
+
+    gt_ctx = (
+        "NEXUS evidence pack: ~1-2KB structured facts. NEXUS reasoning model "
+        "works with 5-10x less context."
+    )
+    pred_ctx = (
+        "NEXUS evidence pack: ~1-2KB structured facts. NEXUS reasoning model "
+        "works with 5-10x less context, reducing latency."
+    )
+    ctx = compute_fact_score(pred_ctx, gt_ctx)
+    assert ctx["fuzzy_accuracy"] is not None
+    assert ctx["fuzzy_accuracy"] >= 0.99
