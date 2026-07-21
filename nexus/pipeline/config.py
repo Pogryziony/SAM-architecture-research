@@ -86,6 +86,8 @@ class ProductionNEXUSConfig(NEXUSConfig):
                     "max_expanded_edges": self.max_expanded_edges,
                     "max_expanded_nodes": self.max_expanded_nodes,
                     "max_traversal_ms": self.max_traversal_ms,
+                    "path_score_focus": self.path_score_focus,
+                    "max_paths": self.max_paths,
                     "edge_confidence_threshold": self.edge_confidence_threshold,
                     "hallucination_threshold": self.hallucination_threshold,
                     "readiness_answer_threshold": self.readiness_answer_threshold,
@@ -126,6 +128,8 @@ class ProductionNEXUSConfig(NEXUSConfig):
                 "max_expanded_edges": self.max_expanded_edges,
                 "max_expanded_nodes": self.max_expanded_nodes,
                 "max_traversal_ms": self.max_traversal_ms,
+                "path_score_focus": self.path_score_focus,
+                "max_paths": self.max_paths,
                 "edge_confidence_threshold": self.edge_confidence_threshold,
                 "hallucination_threshold": self.hallucination_threshold,
                 "readiness_answer_threshold": self.readiness_answer_threshold,
@@ -314,6 +318,10 @@ def validate_config(config: ProductionNEXUSConfig) -> list[str]:
         errors.append("max_expanded_nodes must be >= 1")
     if getattr(config, "max_traversal_ms", 0.0) < 0.0:
         errors.append("max_traversal_ms must be >= 0")
+    if getattr(config, "path_score_focus", 0) < 0:
+        errors.append("path_score_focus must be >= 0")
+    if getattr(config, "max_paths", 1) < 1:
+        errors.append("max_paths must be >= 1")
     if not 0.0 <= config.readiness_conditional_threshold <= 1.0:
         errors.append("readiness_conditional_threshold must be within [0, 1]")
     if not 0.0 <= config.readiness_answer_threshold <= 1.0:

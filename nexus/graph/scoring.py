@@ -10,6 +10,22 @@ from datetime import datetime, timezone
 from . import Path, EDGE_TYPE_WEIGHTS
 
 
+def focus_query_entities(
+    entity_ids: list[str] | tuple[str, ...],
+    path_score_focus: int,
+) -> set[str]:
+    """Return the entity set used for path scoring/ranking.
+
+    Expansion may still use the full entry list; scoring uses only the leading
+    focus entities so hub fillers cannot dilute coverage scores. A non-positive
+    ``path_score_focus`` means score against every entry entity.
+    """
+    ids = [str(entity_id) for entity_id in entity_ids if entity_id]
+    if path_score_focus and path_score_focus > 0:
+        ids = ids[: int(path_score_focus)]
+    return set(ids)
+
+
 def score_path(
     path: Path,
     query_entities: set[str],
@@ -99,4 +115,4 @@ def _deduplicate_paths(paths: list[Path]) -> list[Path]:
     return keep
 
 
-__all__ = ["score_path", "rank_paths", "EDGE_TYPE_WEIGHTS"]
+__all__ = ["focus_query_entities", "score_path", "rank_paths", "EDGE_TYPE_WEIGHTS"]

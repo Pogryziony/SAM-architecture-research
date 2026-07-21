@@ -38,6 +38,10 @@ class NEXUSConfig:
             Raised from 5->20 to exploit co-occurrence edge density (47:1).
         edge_confidence_threshold: Skip edges below this confidence when
             higher-confidence typed edges exist for the same node pair.
+        path_score_focus: Score/rank paths against the first N entry entities
+            only (expansion still uses the full entry set). Prevents hub
+            fillers from diluting entity-coverage scores. 0 = use all entries.
+        max_paths: Maximum ranked paths kept for evidence/proof audit.
 
     Verification:
         hallucination_threshold: Maximum allowed hallucination rate
@@ -93,6 +97,10 @@ class NEXUSConfig:
     max_expanded_nodes: int = 5_000
     # Optional monotonic wall-clock budget in milliseconds. 0 disables the check.
     max_traversal_ms: float = 0.0
+    # Path ranking focus: score against top-N entries (0 = all entries).
+    path_score_focus: int = 2
+    # Proof/evidence path budget after ranking.
+    max_paths: int = 12
 
     # Verification
     hallucination_threshold: float = 0.2
