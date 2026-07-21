@@ -13,6 +13,7 @@ from benchmarks.build_frozen_oracle_dataset import (
 )
 from benchmarks.run_oracle_vs_predicted import (
     pair_rows,
+    set_recall,
     summarize_rows,
     validate_paired_artifact,
 )
@@ -82,6 +83,11 @@ def test_committed_oracle_v1_matches_rebuild():
     assert committed_manifest["record_count"] >= 188
 
 
+def test_set_recall_and_er_decomposition_fields():
+    assert set_recall(["A", "B"], ["B", "C"]) == 0.5
+    assert set_recall([], ["A"]) == 0.0
+
+
 def test_pair_rows_and_validate_paired_artifact():
     oracle_rows = [{
         "question_id": "q1",
@@ -91,6 +97,8 @@ def test_pair_rows_and_validate_paired_artifact():
         "token_f1": 0.8,
         "gold_path_recall": None,
         "gold_entity_coverage": 1.0,
+        "entry_recall": 1.0,
+        "pool_recall": 1.0,
         "should_abstain": False,
         "predicted_abstain": False,
         "reasoning_action": "answer",
@@ -106,6 +114,8 @@ def test_pair_rows_and_validate_paired_artifact():
         "token_f1": 0.5,
         "gold_path_recall": None,
         "gold_entity_coverage": 0.5,
+        "entry_recall": 0.5,
+        "pool_recall": 0.75,
         "should_abstain": False,
         "predicted_abstain": False,
         "reasoning_action": "answer",
@@ -115,13 +125,33 @@ def test_pair_rows_and_validate_paired_artifact():
     }]
     paired = pair_rows(oracle_rows, predicted_rows)
     assert paired[0]["delta"]["fact_accuracy"] == 0.5
+    assert paired[0]["delta"]["entry_recall"] == 0.5
+    metrics = summarize_rows(predicted_rows)
+    assert metrics["entry_recall_mean"] == 0.5
+    assert metrics["pool_recall_mean"] == 0.75
     artifact = {
-        "schema_version": "nexus-oracle-vs-predicted-v1",
+        "schema_version": "nexus-oracle-vs-predicted-v2",
+        "predicted_resolver": {"name": "entity_ranker_v3"},
         "oracle": {"evaluation_mode": "oracle", "metrics": summarize_rows(oracle_rows)},
-        "predicted": {"evaluation_mode": "predicted", "metrics": summarize_rows(predicted_rows)},
+        "predicted": {"evaluation_mode": "predicted", "metrics": metrics},
         "paired": paired,
         "dataset": {"file_sha256": "abc"},
     }
     assert validate_paired_artifact(artifact) == []
     artifact["predicted"]["evaluation_mode"] = "oracle"
     assert "predicted evaluation_mode mismatch" in validate_paired_artifact(artifact)
+
+
+def test_lexical_predicted_runner_builds_without_torch():
+    from nexus.graph import Node
+    from nexus.graph.store import InMemoryGraphStore
+    from benchmarks.run_oracle_vs_predicted import build_predicted_runner
+
+    graph = InMemoryGraphStore()
+    graph.add_node(Node(id="Exp_Alpha", type="Experiment"))
+    runner, identity = build_predicted_runner(
+        graph, predicted_resolver="lexical", er3_dir="unused"
+    )
+    assert identity["name"] == "lexical"
+    assert identity["entity_ranker_v3_enabled"] is False
+    assert runner.config.pipeline_id.entity_ranker_v3_enabled is False
