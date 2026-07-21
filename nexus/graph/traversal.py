@@ -5,16 +5,40 @@ Implements beam search traversal with:
 - Edge type weighting
 - Path scoring (delegates to scoring.py)
 - Path deduplication and selection
+- Explicit expansion budgets with truncation reporting
 """
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import Optional
 
-from . import Edge, Path, PathStep, EDGE_TYPE_WEIGHTS
+from . import Path, PathStep
 from .store import InMemoryGraphStore
 from .scoring import score_path, rank_paths
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
+
+
+@dataclass
+class TraversalStats:
+    """Deterministic expansion diagnostics for a single traversal call."""
+
+    expanded_edges: int = 0
+    expanded_nodes: int = 0
+    truncated: bool = False
+    truncation_reason: str = ""
+    max_depth_reached: int = 0
+    paths_returned: int = 0
+
+    def to_dict(self) -> dict:
+        return {
+            "expanded_edges": self.expanded_edges,
+            "expanded_nodes": self.expanded_nodes,
+            "truncated": self.truncated,
+            "truncation_reason": self.truncation_reason,
+            "max_depth_reached": self.max_depth_reached,
+            "paths_returned": self.paths_returned,
+        }
 
 
 def beam_search(
@@ -26,46 +50,50 @@ def beam_search(
     edge_types: Optional[set[str]] = None,
     direction: str = "both",
     config: NEXUSConfig = DEFAULT_CONFIG,
+    stats: TraversalStats | None = None,
 ) -> list[Path]:
     """
     Beam search traversal: at each depth, expand all paths, score, keep top beam_width.
 
-    Args:
-        graph: The graph store
-        start_nodes: Entry node IDs
-        query_entities: Set of entity names from the query (for scoring)
-        max_depth: Maximum path length (default from config)
-        beam_width: Number of paths to keep at each depth (default from config)
-        edge_types: Allowed edge types (None = all)
-        direction: Traversal direction ('out', 'in', 'both')
-        config: NEXUSConfig with tunable parameters
-
-    Returns:
-        Ranked list of paths (best first)
+    When expansion budgets from *config* are exhausted, search stops early and
+    ``stats.truncated`` is set. Callers must treat truncation as incomplete search.
     """
     if max_depth is None:
         max_depth = config.max_depth
     if beam_width is None:
         beam_width = config.beam_width
-    # Initialize: one "path" per start node (no steps yet)
+    if stats is None:
+        stats = TraversalStats()
+
+    max_edges = max(1, int(getattr(config, "max_expanded_edges", 10_000)))
+    max_nodes = max(1, int(getattr(config, "max_expanded_nodes", 5_000)))
+
     active_paths: list[tuple[str, list[PathStep], set[str]]] = [
         (node, [], {node}) for node in start_nodes if graph.has_node(node)
     ]
+    seen_nodes: set[str] = {node for node, _, _ in active_paths}
+    stats.expanded_nodes = len(seen_nodes)
 
-    for _ in range(max_depth):
+    for depth in range(max_depth):
+        if stats.truncated:
+            break
         candidates: list[tuple[str, list[PathStep], set[str]]] = []
 
         for current, steps, visited in active_paths:
+            if stats.truncated:
+                break
             edges = graph.get_edges(current, direction)
             for edge in edges:
+                if stats.expanded_edges >= max_edges:
+                    stats.truncated = True
+                    stats.truncation_reason = "max_expanded_edges"
+                    break
                 if edge_types and edge.type not in edge_types:
                     continue
-                
-                # Skip low-confidence edges when we have many options
+
                 if edge.confidence < min(0.3, getattr(config, 'edge_confidence_threshold', 0.3)):
                     continue
 
-                # Determine next node and direction flag
                 if direction == "out":
                     if edge.source != current:
                         continue
@@ -86,17 +114,23 @@ def beam_search(
                     else:
                         continue
 
-                # Cycle protection
                 if next_node in visited:
                     continue
 
+                stats.expanded_edges += 1
+                seen_nodes.add(next_node)
+                stats.expanded_nodes = len(seen_nodes)
+                if stats.expanded_nodes >= max_nodes:
+                    stats.truncated = True
+                    stats.truncation_reason = "max_expanded_nodes"
                 step = PathStep(edge=edge, reversed=reversed_flag)
                 candidates.append((next_node, steps + [step], visited | {next_node}))
+                if stats.truncated:
+                    break
 
         if not candidates:
             break
 
-        # Score all candidates, keep top beam_width
         scored = []
         for next_node, steps, visited in candidates:
             path = Path(steps=list(steps))
@@ -107,8 +141,8 @@ def beam_search(
             (step.edge.type, step.from_node, step.to_node) for step in x[1]
         )))
         active_paths = [(node, steps, visited) for node, steps, visited, _ in scored[:beam_width]]
+        stats.max_depth_reached = depth + 1
 
-    # Return all completed paths, sorted by score
     results = []
     for _, steps, _ in active_paths:
         if steps:
@@ -116,7 +150,9 @@ def beam_search(
             p.score = score_path(p, query_entities)
             results.append(p)
 
-    return rank_paths(results, query_entities)
+    ranked = rank_paths(results, query_entities)
+    stats.paths_returned = len(ranked)
+    return ranked
 
 
 def traverse_with_intent(
@@ -127,18 +163,10 @@ def traverse_with_intent(
     max_depth: int | None = None,
     beam_width: int | None = None,
     config: NEXUSConfig = DEFAULT_CONFIG,
+    stats: TraversalStats | None = None,
 ) -> list[Path]:
     """
     High-level traversal that adapts parameters based on query intent.
-
-    Args:
-        graph: The graph store
-        entry_nodes: Resolved node IDs for entities in query
-        query_entities: Normalized entity name set from query
-        intent: Query intent type
-        max_depth: Maximum traversal depth (default from config)
-        beam_width: Beam width for search (default from config)
-        config: NEXUSConfig with tunable parameters
     """
     if max_depth is None:
         max_depth = config.max_depth
@@ -184,4 +212,5 @@ def traverse_with_intent(
         edge_types=intent_params.get("edge_types"),
         direction=intent_params.get("direction", "both"),
         config=config,
+        stats=stats,
     )
