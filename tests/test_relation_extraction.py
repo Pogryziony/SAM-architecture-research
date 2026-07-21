@@ -27,6 +27,19 @@ def _populated_graph() -> InMemoryGraphStore:
     return graph
 
 
+def _has_metrics_dumps() -> bool:
+    """True when local SAM experiment metrics dumps are present (not always in CI)."""
+    from nexus.ingestion.populate_from_experiments import EXPERIMENTS_DIR, RUN_MAP
+    for pattern in RUN_MAP:
+        path = EXPERIMENTS_DIR / pattern / "metrics.json"
+        if path.exists():
+            return True
+        nested = EXPERIMENTS_DIR / pattern
+        if nested.is_dir() and any(nested.glob("*/metrics.json")):
+            return True
+    return False
+
+
 def _load_gold() -> tuple[list[dict], list[dict]]:
     """Load the gold-standard relation dataset."""
     import sys
@@ -90,6 +103,8 @@ class TestEdgeTypesPresent:
         assert len(edges) > 0, "Expected at least one 'derived_from' edge in the graph"
 
     def test_sub_experiment_present(self, graph):
+        if not _has_metrics_dumps():
+            pytest.skip("SAM metrics dumps not present in this checkout")
         edges = [e for nid in graph._nodes for e in graph.get_outgoing(nid) if e.type == "sub_experiment"]
         assert len(edges) > 0, "Expected at least one 'sub_experiment' structural edge"
 
@@ -335,7 +350,8 @@ class TestEvaluation:
         semantic = mod.extract_semantic_edges(graph)
         structural = mod.extract_structural_edges(graph)
         results = mod.evaluate(gold_positives, gold_negatives, semantic)
-        assert len(structural) > 0
+        if _has_metrics_dumps():
+            assert len(structural) > 0
         assert results["global"]["recall"] >= 0.95
         assert results["global"]["f1"] >= 0.50
         assert results["false_negatives"] == []
