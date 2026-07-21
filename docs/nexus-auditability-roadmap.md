@@ -164,17 +164,16 @@ source resolution.
 - Version every rule and record premises plus rule ID in each inference step.
 - Keep asserted and inferred facts distinct.
 
-**Partial implementation (2026-07-21):** Bounded toy rule engine in
-`nexus/reasoning/rules.py` (versioned Horn rules, max depth/activations,
-premises + rule IDs on inferred facts). Optional `KuzuGraphStore` scaffold in
-`nexus/graph/kuzu_store.py` (`pip install 'nexus-graph[kuzu]'`). AnswerPlan
-copy/edit pilots remain prepared but **not run**; full AnswerPlan training
-stays `FULL_TRAINING_BLOCKED` — status recorded by
-`benchmarks/record_answer_plan_status.py`. Realizer weight training is
-deferred: graph/proof metrics are already saturated under DummyModel.
+**Partial implementation (2026-07-21):** Bounded rule engine plus
+`rule_corpus_v1` (6 Horn rules) with preregistered development F1 gates in
+`EXPERIMENT_RULE_ENGINE_V1.md` (`python benchmarks/eval_rule_engine.py`).
+Frozen rule eval remains sealed. Optional `KuzuGraphStore` is exercised in CI
+via `nexus-graph[kuzu]`. AnswerPlan copy/edit overfit+2048 is **deferred**:
+non-dummy realization is not the binding constraint under the current
+DummyModel paired artifact (`record_answer_plan_status.py`).
 
-Gate: 100% valid rule proofs on the toy set; production F1 remains
-preregistration-gated before any frozen rule corpus run.
+Gate: development F1 ≥ 0.90 on `rule_corpus_v1`; frozen F1 sealed until a
+future prereg publishes the frozen split hash.
 
 ### Stage 5: contradiction policy and calibration
 
@@ -183,6 +182,12 @@ preregistration-gated before any frozen rule corpus run.
 - Add conflict-resolution policies based on explicit source metadata.
 - Calibrate readiness and abstention using risk-coverage curves, Brier score,
   and expected calibration error.
+
+**Partial implementation (2026-07-21):** `nexus/reasoning/conflict_policy.py`
+classifies contradiction/supersession/validity/source-disagreement and blocks
+unconditional answers when conflicts are unresolved. Wired into reasoning
+audit. Prereg: `EXPERIMENT_CONTRADICTION_POLICY_V1.md`. Contradiction F1 /
+calibration curves remain future work.
 
 Gate: contradiction F1 and high-confidence answer accuracy meet preregistered
 thresholds; no unresolved conflict yields an unconditional answer.
@@ -193,6 +198,11 @@ thresholds; no unresolved conflict yields an unconditional answer.
 - Support `as_valid_at` and `as_known_at` queries.
 - Add point-in-time replay tests that prohibit using knowledge learned later.
 
+**Partial implementation (2026-07-21):** `nexus/graph/bitemporal.py` filters
+facts by valid/known time and rejects look-ahead observations
+(`tests/test_bitemporal_replay.py`). Full graph schema migration and oracle
+bi-temporal gold remain open.
+
 Gate: deterministic historical replay and no look-ahead leakage.
 
 ### Stage 7: deterministic realization
@@ -201,6 +211,11 @@ Gate: deterministic historical replay and no look-ahead leakage.
 - Require every generated statement to map to a proof step or explicit
   uncertainty statement.
 - Keep any learned realizer optional and outside the zero-LLM acceptance path.
+
+**Partial implementation (2026-07-21):** `nexus/realizer/deterministic_render.py`
+renders proof steps deterministically and gates unmapped statements
+(`tests/test_deterministic_realization_gates.py`). Learned Realizer training
+remains optional and deferred.
 
 Gate: zero unsupported statements and identical output for identical structured
 input.

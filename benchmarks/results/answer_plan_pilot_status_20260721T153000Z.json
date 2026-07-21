@@ -1,0 +1,30 @@
+{
+  "binding_constraint_non_dummy_realization": false,
+  "ci_mode": false,
+  "copy_edit_pilots": {
+    "reason": "Non-dummy realization is NOT the binding constraint: proof_valid_rate=0.9787, path_recall=0.9688, entry_recall=0.9543 under DummyModel. fact_accuracy_mean=0.0362 is DummyModel surface noise, not evidence that AnswerPlan weights are required. No non-dummy paired baseline exists yet.",
+    "status": "NOT_RUN"
+  },
+  "created_utc": "2026-07-21T13:24:59.669526+00:00",
+  "evidence": {
+    "artifact": "benchmarks/results/oracle_vs_predicted_union_recall_full_20260721T151500Z.json",
+    "entry_recall_mean": 0.9543,
+    "fact_accuracy_mean": 0.0362,
+    "gold_entity_coverage_mean": 0.8103,
+    "gold_path_recall_mean": 0.9688,
+    "model": "DummyModel",
+    "proof_valid_rate": 0.9787
+  },
+  "full_training": {
+    "reason": "Sealed until copy/edit pilots pass and a non-dummy/grounded paired run shows realization is binding.",
+    "status": "FULL_TRAINING_BLOCKED"
+  },
+  "next_action": "Publish a grounded/non-dummy paired oracle_vs_predicted artifact; only then run `python benchmarks/train_answer_plan_edit_transducer.py --stages overfit small` if realization remains the limiter.",
+  "realizer_training_decision": {
+    "reason": "Non-dummy realization is NOT the binding constraint: proof_valid_rate=0.9787, path_recall=0.9688, entry_recall=0.9543 under DummyModel. fact_accuracy_mean=0.0362 is DummyModel surface noise, not evidence that AnswerPlan weights are required. No non-dummy paired baseline exists yet.",
+    "train_now": false
+  },
+  "schema_version": "nexus-answer-plan-status-v1",
+  "source_sha": "e827fdf7dccd9ca24727ad688da816a7e0e952ba",
+  "status": "RECORDED"
+}
