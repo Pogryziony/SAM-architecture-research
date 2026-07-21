@@ -56,8 +56,13 @@ Temporal family PIT cutoffs are fields on the oracle record (`as_known_at` /
 `as_valid_at`); the runner applies them per question. Families cover known-at
 abstain, valid-window abstain, retract abstain, and an active `replaces`
 answer. Comparative qualitative pairs use curated dual `compare_*` facts via
-`l1_qualitative_compare` (not AnswerPlan weights). AnswerPlan stays deferred
+`l1_qualitative_compare` (not AnswerPlan weights), including training,
+debuggability, compute, RAG-outperforms, hardest-for-RAG, and context-size.
+Exact node-ID mentions get alias-rank boosts; family nodes stay on canonical
+`Concept_*` / `Decision_*` IDs for union handoff. AnswerPlan stays deferred
 unless a paired artifact shows oracle fact ≥0.50 and predicted lag ≥0.15.
+Next architecture-validation training ladder:
+`EXPERIMENT_NEXUS_ARCHITECTURE_VALIDATION.md`.
 
 Pure deterministic path-render publish:
 

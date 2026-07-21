@@ -151,6 +151,66 @@ TEMPLATES: tuple[QualitativeCompareTemplate, ...] = (
         left_keys=("compare_sam_memory",),
         right_keys=("compare_nexus_memory",),
     ),
+    QualitativeCompareTemplate(
+        name="sam_vs_nexus_training",
+        question_patterns=(
+            r"compare the training requirements of sam vs nexus",
+            r"training requirements of sam vs nexus",
+            r"training.*(sam|nexus).*(sam|nexus)",
+        ),
+        left_keys=("compare_sam_training",),
+        right_keys=("compare_nexus_training",),
+    ),
+    QualitativeCompareTemplate(
+        name="sam_vs_nexus_debuggability",
+        question_patterns=(
+            r"compare the debuggability of sam vs nexus",
+            r"debuggability of sam vs nexus",
+            r"\bdebuggability\b",
+        ),
+        left_keys=("compare_sam_debuggability",),
+        right_keys=("compare_nexus_debuggability",),
+    ),
+    QualitativeCompareTemplate(
+        name="dense_vs_nexus_compute",
+        question_patterns=(
+            r"compare the compute requirements of dense llms vs nexus",
+            r"compute requirements of dense",
+            r"dense llms vs nexus",
+        ),
+        left_keys=("compare_dense_compute",),
+        right_keys=("compare_nexus_compute",),
+    ),
+    QualitativeCompareTemplate(
+        name="when_rag_outperforms_nexus",
+        question_patterns=(
+            r"when would classic rag outperform nexus",
+            r"when.*rag outperform",
+            r"rag outperform nexus",
+        ),
+        left_keys=("compare_rag_outperforms_when",),
+        right_keys=("compare_nexus_needs_structure",),
+    ),
+    QualitativeCompareTemplate(
+        name="hardest_rag_easiest_nexus",
+        question_patterns=(
+            r"hardest for rag but easiest for nexus",
+            r"type of question is hardest for rag",
+            r"hardest for rag",
+        ),
+        left_keys=("compare_rag_hardest",),
+        right_keys=("compare_nexus_easiest",),
+    ),
+    QualitativeCompareTemplate(
+        name="nexus_vs_rag_context_size",
+        question_patterns=(
+            r"context size advantage of nexus over rag",
+            r"context size advantage",
+            r"context size.*nexus.*rag",
+        ),
+        left_keys=("compare_nexus_context_size",),
+        right_keys=("compare_rag_context_size",),
+    ),
 )
 
 

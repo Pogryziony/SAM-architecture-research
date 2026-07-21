@@ -52,6 +52,18 @@ _FACT_PATTERNS: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r'\b(core_only|oracle_memory|retrieved_memory|random_memory|oracle_text_memory|oracle_filter|oracle_text_memory|retrieved_memory_external_text_query)\b', re.IGNORECASE), "sam_mode"),
     # Gate references: Gate 1, Gate 2
     (re.compile(r'\b(Gate\s+\d+)\b', re.IGNORECASE), "gate_ref"),
+    # Narrow qualitative markers for remaining comparative golds only.
+    # Avoid generic phrases (e.g. bare KB sizes / cosine similarity) that would
+    # newly score unrelated questions without a matching L1 surface.
+    (re.compile(r'(O\(depth\s*\*\s*branching\))', re.IGNORECASE), "big_o"),
+    (re.compile(r'\b(3 interdependent components)\b', re.IGNORECASE), "training_trio"),
+    (re.compile(r'\b(source pointers)\b', re.IGNORECASE), "debug_phrase"),
+    (re.compile(r'\b(narrative/textual)\b', re.IGNORECASE), "rag_wins_phrase"),
+    (re.compile(r'\b(multi-hop causal)\b', re.IGNORECASE), "rag_hard_phrase"),
+    (re.compile(
+        r'\b(5-10x less context)\b',
+        re.IGNORECASE,
+    ), "context_advantage"),
 ]
 
 

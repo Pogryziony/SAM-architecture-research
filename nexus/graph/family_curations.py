@@ -20,7 +20,9 @@ _TEMP_RETRACTED = "2026-01-01T00:00:00+00:00"
 _TEMP_VALID_FROM = "2025-01-01T00:00:00+00:00"
 
 LEGACY_FLAT_MEMORY_ID = "Concept_LegacyFlatMemory"
-TEMP_CLAIM_ID = "Claim_TempPivotDependency"
+# Canonical Concept_* prefix so UnionResolver lexical handoff can select it
+# (Claim_* / Module_* are not in the ER3 canonical ID patterns).
+TEMP_CLAIM_ID = "Concept_TempPivotDependency"
 TEMP_MODULE_ID = "Module_LegacySelector"
 
 
@@ -132,6 +134,59 @@ def apply_oracle_family_curations(graph: InMemoryGraphStore) -> dict[str, int]:
                     "NEXUS: memory is an explicit graph. Knowledge is typed "
                     "nodes + edges + sources. Retrieval is traversal."
                 ),
+                "compare_sam_training": (
+                    "SAM: trains retriever, selector, AND core together "
+                    "(3 interdependent components)."
+                ),
+                "compare_nexus_training": (
+                    "NEXUS: graph constructed separately from ingestion; "
+                    "only the small reasoning model needs training."
+                ),
+                "compare_sam_debuggability": (
+                    "SAM: black-box slot embeddings. Can't explain why slot "
+                    "42 was retrieved — 'it had high cosine similarity'."
+                ),
+                "compare_nexus_debuggability": (
+                    "NEXUS: explicit graph paths with source pointers. Can "
+                    "trace: 'Answer came from path A→B→C, confirmed by source S'."
+                ),
+                "compare_dense_compute": (
+                    "Dense LLMs: all weights streamed per token, scales with "
+                    "parameter count."
+                ),
+                "compare_nexus_compute": (
+                    "NEXUS: small core streamed, graph traversal is "
+                    "O(depth * branching). Knowledge scales independently of "
+                    "compute."
+                ),
+                "compare_rag_outperforms_when": (
+                    "When knowledge is predominantly narrative/textual "
+                    "(stories, tutorials), graph construction is too expensive, "
+                    "queries are exploratory ('Tell me about X'), or the domain "
+                    "has few structured relationships."
+                ),
+                "compare_nexus_needs_structure": (
+                    "NEXUS pays off when relationships are explicit and "
+                    "multi-hop structure matters; otherwise RAG's chunk "
+                    "retrieval is cheaper."
+                ),
+                "compare_rag_hardest": (
+                    "Multi-hop causal questions ('Why does X affect Y through "
+                    "Z?') — RAG must retrieve chunks about X, Y, and Z "
+                    "separately and hope the LLM connects them."
+                ),
+                "compare_nexus_easiest": (
+                    "NEXUS walks the explicit graph path connecting all three."
+                ),
+                "compare_nexus_context_size": (
+                    "NEXUS evidence pack: ~1-2KB structured facts. NEXUS "
+                    "reasoning model works with 5-10x less context, reducing "
+                    "latency and hallucination surface."
+                ),
+                "compare_rag_context_size": (
+                    "RAG: ~5-10KB of raw text chunks (multiple chunks for "
+                    "multi-hop)."
+                ),
             }
         )
         pivot.properties = props
@@ -141,7 +196,11 @@ def apply_oracle_family_curations(graph: InMemoryGraphStore) -> dict[str, int]:
             Node(
                 id=LEGACY_FLAT_MEMORY_ID,
                 type="Concept",
-                aliases=["legacy flat memory", "pre-nexus architecture"],
+                aliases=[
+                    "legacy flat memory",
+                    "pre-nexus architecture",
+                    "Concept_LegacyFlatMemory",
+                ],
                 properties={
                     "description": (
                         "Pre-pivot flat latent-vector memory architecture "
@@ -157,7 +216,11 @@ def apply_oracle_family_curations(graph: InMemoryGraphStore) -> dict[str, int]:
             Node(
                 id=TEMP_CLAIM_ID,
                 type="Concept",
-                aliases=["temporary pivot dependency claim"],
+                aliases=[
+                    "temporary pivot dependency claim",
+                    "Concept_TempPivotDependency",
+                    "Claim_TempPivotDependency",
+                ],
                 properties={
                     "description": (
                         "Temporary claim used for temporal retract family evals."
@@ -172,7 +235,10 @@ def apply_oracle_family_curations(graph: InMemoryGraphStore) -> dict[str, int]:
             Node(
                 id=TEMP_MODULE_ID,
                 type="Concept",
-                aliases=["legacy selector module"],
+                aliases=[
+                    "legacy selector module",
+                    "Module_LegacySelector",
+                ],
                 properties={
                     "description": (
                         "Legacy selector module referenced by a retracted claim."

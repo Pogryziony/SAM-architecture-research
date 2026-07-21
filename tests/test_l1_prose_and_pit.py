@@ -193,6 +193,54 @@ def test_l1_qualitative_compare_phase_prose():
     assert "Phase 5" in result["answer"]
 
 
+def test_l1_qualitative_compare_remaining_gaps():
+    config = ProductionNEXUSConfig.l1_acceptance(max_entry_nodes=4)
+    graph = _graph_with_family_curations()
+    cases = [
+        (
+            "Compare the training requirements of SAM vs NEXUS.",
+            "interdependent",
+            "reasoning model",
+        ),
+        (
+            "Compare the debuggability of SAM vs NEXUS.",
+            "cosine similarity",
+            "source pointers",
+        ),
+        (
+            "Compare the compute requirements of dense LLMs vs NEXUS.",
+            "parameter count",
+            "O(depth",
+        ),
+        (
+            "When would classic RAG outperform NEXUS?",
+            "narrative",
+            "structured",
+        ),
+        (
+            "What type of question is hardest for RAG but easiest for NEXUS?",
+            "Multi-hop causal",
+            "explicit graph path",
+        ),
+        (
+            "What is the context size advantage of NEXUS over RAG?",
+            "1-2KB",
+            "5-10KB",
+        ),
+    ]
+    for question, left_hint, right_hint in cases:
+        result = answer_question(
+            question,
+            graph,
+            model=_NeverGenerate(),
+            config=config,
+            entry_nodes_override=["Decision_PivotToNEXUS"],
+        )
+        assert result["realization"]["strategy"] == "l1_qualitative_compare", question
+        assert left_hint.casefold() in result["answer"].casefold(), question
+        assert right_hint.casefold() in result["answer"].casefold(), question
+
+
 def test_temporal_valid_window_and_retract_families():
     graph = _graph_with_family_curations()
     config = ProductionNEXUSConfig.l1_acceptance(max_entry_nodes=4)
@@ -211,10 +259,10 @@ def test_temporal_valid_window_and_retract_families():
         {
             "id": "family_temporal_003",
             "question": (
-                "As known in mid-2026, does Claim_TempPivotDependency still "
+                "As known in mid-2026, does Concept_TempPivotDependency still "
                 "depend on Module_LegacySelector?"
             ),
-            "gold_entities": ["Claim_TempPivotDependency"],
+            "gold_entities": ["Concept_TempPivotDependency"],
             "as_known_at": "2026-06-01T00:00:00+00:00",
             "as_valid_at": "",
         },
@@ -224,7 +272,7 @@ def test_temporal_valid_window_and_retract_families():
                 "As known after the NEXUS pivot, according to the graph, "
                 "what does Decision_PivotToNEXUS replace?"
             ),
-            "gold_entities": ["Decision_PivotToNEXUS", "Concept_LegacyFlatMemory"],
+            "gold_entities": ["Decision_PivotToNEXUS"],
             "as_known_at": "2026-07-09T00:00:00+00:00",
             "as_valid_at": "2026-07-09T00:00:00+00:00",
         },
