@@ -17,6 +17,7 @@ from typing import Optional
 from . import Path, PathStep
 from .store import InMemoryGraphStore
 from .scoring import score_path, rank_paths
+from .bitemporal import filter_edges_bitemporal
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
 
 
@@ -71,6 +72,8 @@ def beam_search(
     max_edges = max(1, int(getattr(config, "max_expanded_edges", 10_000)))
     max_nodes = max(1, int(getattr(config, "max_expanded_nodes", 5_000)))
     max_ms = float(getattr(config, "max_traversal_ms", 0.0) or 0.0)
+    as_valid_at = str(getattr(config, "as_valid_at", "") or "")
+    as_known_at = str(getattr(config, "as_known_at", "") or "")
     started = time.perf_counter()
 
     def _time_exhausted() -> bool:
@@ -99,6 +102,10 @@ def beam_search(
             if stats.truncated or _time_exhausted():
                 break
             edges = graph.get_edges(current, direction)
+            if as_valid_at or as_known_at:
+                edges = filter_edges_bitemporal(
+                    edges, as_valid_at=as_valid_at, as_known_at=as_known_at,
+                )
             for edge in edges:
                 if _time_exhausted():
                     break

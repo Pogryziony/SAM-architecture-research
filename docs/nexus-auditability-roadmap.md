@@ -170,9 +170,10 @@ source resolution.
 `EXPERIMENT_RULE_ENGINE_V2.md` with published frozen file SHA-256
 (`python benchmarks/eval_rule_engine.py --mode frozen`). Optional
 `KuzuGraphStore` remains CI-exercised via `nexus-graph[kuzu]`. L1 paired
-publish defaults to `deterministic_render`; oracle fact accuracy rose to
-~0.48 under that path. AnswerPlan overfit+2048 stays deferred (binding
-requires high oracle fact and a predicted lag).
+publish defaults to `l1_acceptance` (path render for relations, node-fact
+copy for factual/diagnostic, comparison-plan for comparisons); oracle fact
+accuracy target is ≥0.50. AnswerPlan overfit+2048 stays deferred until
+oracle fact ≥0.50 and predicted lags by ≥0.15.
 
 Gate: development F1 ≥ 0.90; frozen F1 ≥ 0.90 with exact file hash match.
 
@@ -203,7 +204,9 @@ thresholds; no unresolved conflict yields an unconditional answer.
 fields; canonical graph payload schema is `nexus-canonical-graph-v2`.
 Production ingest (`populate_from_experiments`, `ingest_docs`,
 `ingest_generic`) stamps edges via `stable_ingest_stamp()` with a fixed
-epoch. `bitemporal_oracle_v1.jsonl` + `run_bitemporal_replay.py` exercise
+epoch. Traversal `beam_search` applies optional `as_valid_at` /
+`as_known_at` cutoffs from config via `filter_edges_bitemporal`.
+`bitemporal_oracle_v1.jsonl` + `run_bitemporal_replay.py` exercise
 valid/known filters and look-ahead rejection.
 
 Gate: deterministic historical replay and no look-ahead leakage.
@@ -215,12 +218,13 @@ Gate: deterministic historical replay and no look-ahead leakage.
   uncertainty statement.
 - Keep any learned realizer optional and outside the zero-LLM acceptance path.
 
-**Partial implementation (2026-07-21):** `deterministic_render` is the default
-paired-publish L1 backend and is wired into `answer_question`.
-`grounded_v1` expands beyond factual/comparison: pointer/copy for
-factual+diagnostic, deterministic path render for causal/path-bearing
-intents, comparison-plan for comparisons. Learned Realizer training remains
-optional and deferred.
+**Partial implementation (2026-07-21):** `l1_acceptance` is the default
+paired-publish L1 backend: relation/multi-hop path render, margin-tolerant
+node-fact copy (gold-friendly phrasing), edge-catalog answers from
+`EDGE_TYPE_WEIGHTS`, and comparison-plan for comparisons.
+`deterministic_render` remains available for pure proof→statement runs.
+`grounded_v1` keeps pointer/copy + path-render fallback. Learned Realizer
+training remains optional and deferred.
 
 Gate: zero unsupported statements and identical output for identical structured
 input.

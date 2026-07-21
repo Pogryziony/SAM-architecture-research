@@ -88,6 +88,8 @@ class ProductionNEXUSConfig(NEXUSConfig):
                     "max_traversal_ms": self.max_traversal_ms,
                     "path_score_focus": self.path_score_focus,
                     "max_paths": self.max_paths,
+                    "as_valid_at": getattr(self, "as_valid_at", ""),
+                    "as_known_at": getattr(self, "as_known_at", ""),
                     "edge_confidence_threshold": self.edge_confidence_threshold,
                     "hallucination_threshold": self.hallucination_threshold,
                     "readiness_answer_threshold": self.readiness_answer_threshold,
@@ -249,6 +251,33 @@ class ProductionNEXUSConfig(NEXUSConfig):
         return cls(pipeline_id=PipelineIdentity(lexical_fallback=True), **kwargs)
 
     @classmethod
+    def l1_acceptance(cls, **overrides: Any) -> "ProductionNEXUSConfig":
+        """Factory for L1 zero-LLM acceptance scoring.
+
+        Comparison → comparison-plan; relation/path-shaped questions →
+        deterministic proof render; factual/diagnostic node findings →
+        pointer/copy (without letting incidental edges steal NL gold).
+        """
+        from nexus.realizer.comparison_plan import (
+            DEFAULT_CONFIG_PATH,
+            DEFAULT_MODEL_DIR,
+            DEFAULT_WEIGHTS_SHA256,
+        )
+
+        kwargs: dict[str, Any] = {
+            "enable_associative_encoder": False,
+            "enable_embedding_er": False,
+            "enable_normalization": False,
+            "realizer_backend": "l1_acceptance",
+            "realizer_model_dir": DEFAULT_MODEL_DIR,
+            "realizer_config_path": DEFAULT_CONFIG_PATH,
+            "realizer_checkpoint_sha256": DEFAULT_WEIGHTS_SHA256,
+            "require_structured_provenance": True,
+        }
+        kwargs.update(overrides)
+        return cls(pipeline_id=PipelineIdentity(lexical_fallback=True), **kwargs)
+
+    @classmethod
     def with_encoder(
         cls,
         model_dir: str = "models/encoder_v2",
@@ -317,10 +346,15 @@ def validate_config(config: ProductionNEXUSConfig) -> list[str]:
         "abstractive_plan_v3",
         "grounded_v1",
         "deterministic_render",
+        "l1_acceptance",
     }
     if config.realizer_backend not in allowed_realizers:
         errors.append(f"unsupported realizer_backend: {config.realizer_backend}")
-    if config.realizer_backend in {"abstractive_plan_v3", "grounded_v1"}:
+    if config.realizer_backend in {
+        "abstractive_plan_v3",
+        "grounded_v1",
+        "l1_acceptance",
+    }:
         if not config.realizer_model_dir:
             errors.append("comparison Realizer model_dir is empty")
         if not config.realizer_config_path:

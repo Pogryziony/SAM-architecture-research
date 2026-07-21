@@ -20,6 +20,7 @@ _DEFAULT_OUTPUT = (
     / "answer_plan_pilot_status_20260721T160000Z.json"
 )
 _EVIDENCE_CANDIDATES = (
+    "benchmarks/results/oracle_vs_predicted_union_l1_acceptance_full_20260721T180000Z.json",
     "benchmarks/results/oracle_vs_predicted_union_l1_det_full_20260721T163000Z.json",
     "benchmarks/results/oracle_vs_predicted_union_grounded_full_20260721T163000Z.json",
     "benchmarks/results/oracle_vs_predicted_union_grounded_full_20260721T160000Z.json",
@@ -71,7 +72,12 @@ def _is_binding(evidence: dict) -> tuple[bool, str]:
         return False, "Evidence metrics are not numeric."
     backend = str(evidence.get("realizer_backend") or "synth")
     dummy = bool(evidence.get("dummy_model"))
-    groundedish = backend in {"grounded_v1", "pointer_copy", "deterministic_render"} and not dummy
+    groundedish = backend in {
+        "grounded_v1",
+        "pointer_copy",
+        "deterministic_render",
+        "l1_acceptance",
+    } and not dummy
     graph_saturated = (
         proof >= _GRAPH_PROOF_MIN
         and path >= _GRAPH_PATH_MIN

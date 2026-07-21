@@ -51,6 +51,7 @@ _REALIZER_BACKENDS = (
     "pointer_copy",
     "grounded_v1",
     "deterministic_render",
+    "l1_acceptance",
 )
 
 
@@ -68,6 +69,15 @@ def _realizer_overrides(realizer_backend: str) -> dict[str, Any]:
         cfg = ProductionNEXUSConfig.deterministic_render()
         return {
             "realizer_backend": cfg.realizer_backend,
+            "require_structured_provenance": cfg.require_structured_provenance,
+        }
+    if realizer_backend == "l1_acceptance":
+        cfg = ProductionNEXUSConfig.l1_acceptance()
+        return {
+            "realizer_backend": cfg.realizer_backend,
+            "realizer_model_dir": cfg.realizer_model_dir,
+            "realizer_config_path": cfg.realizer_config_path,
+            "realizer_checkpoint_sha256": cfg.realizer_checkpoint_sha256,
             "require_structured_provenance": cfg.require_structured_provenance,
         }
     if realizer_backend == "grounded_v1":
@@ -467,11 +477,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--realizer-backend",
         choices=_REALIZER_BACKENDS,
-        default="deterministic_render",
+        default="l1_acceptance",
         help=(
-            "Realization backend for both arms. Default deterministic_render is the "
-            "L1 acceptance path; use grounded_v1 for hybrid pointer/comparison + "
-            "path-render coverage; CI smoke should pass synth with --dummy-model."
+            "Realization backend for both arms. Default l1_acceptance is the "
+            "L1 hybrid (path render + node-fact copy + comparison); use "
+            "deterministic_render for pure proof render; CI smoke should pass "
+            "synth with --dummy-model."
         ),
     )
     args = parser.parse_args(argv)
