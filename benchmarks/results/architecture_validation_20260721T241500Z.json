@@ -1,0 +1,160 @@
+{
+  "arms": {
+    "llm_only": {
+      "arm": "llm_only_evidence_blind",
+      "metrics": {
+        "abstain_recall": 0.0,
+        "answered": 191,
+        "fact_accuracy_mean": 0.0,
+        "questions": 191
+      }
+    },
+    "nexus": {
+      "arm": "nexus_l1_union",
+      "graph": {
+        "edge_count": 589,
+        "node_count": 2161
+      },
+      "identity": {
+        "config_hash": "aeda8cc7a136e931",
+        "entity_ranker_v3_enabled": true,
+        "max_entry_nodes": 12,
+        "model_dir": "models/encoder/entity_ranker_v3_20260711T081545Z",
+        "name": "union_lexical_er3",
+        "realizer_backend": "l1_acceptance",
+        "union_anchor_k": 8,
+        "union_top_k": 12
+      },
+      "metrics": {
+        "abstain_recall": 1.0,
+        "answered": 180,
+        "entry_recall_mean": 0.9786,
+        "fact_accuracy_mean": 0.7159,
+        "gold_path_recall_mean": 0.9697,
+        "proof_valid_rate": 0.9634,
+        "questions": 191
+      }
+    },
+    "rag": {
+      "arm": "rag_lexical",
+      "metrics": {
+        "abstain_recall": 0.0,
+        "answered": 186,
+        "fact_accuracy_mean": 0.0482,
+        "questions": 191
+      }
+    }
+  },
+  "created_utc": "2026-07-21T21:29:05.675526+00:00",
+  "dataset": "C:/Users/Pogry/Projects/SAM-architecture-research/benchmarks/qa-dataset/oracle_v1.jsonl",
+  "dataset_sha256": "51d5c02dee663a17a2213a5e1d0ff56297ea37b0c6c3b879d986a75725c9c64b",
+  "er3_dir": "models/encoder/entity_ranker_v3_20260711T081545Z",
+  "paired_comparisons": {
+    "nexus_vs_llm_only": {
+      "comparison_type": "PAIRED (both arms scorable)",
+      "llm_only": {
+        "label": "LLM_ONLY",
+        "mean_accuracy": 0.0,
+        "n": 83
+      },
+      "nexus": {
+        "label": "NEXUS",
+        "mean_accuracy": 0.7159,
+        "n": 83
+      },
+      "paired_n": 83,
+      "secondary_unpaired": {
+        "both_none": 108,
+        "label": "SECONDARY -- unpaired stats (excluded from primary comparison)",
+        "llm_only_only_scored": {
+          "mean_accuracy": null,
+          "n": 0
+        },
+        "nexus_only_scored": {
+          "mean_accuracy": null,
+          "n": 0
+        },
+        "total_questions": 191
+      },
+      "sign_test_detail": {
+        "arm_a_wins": 61,
+        "arm_b_wins": 0,
+        "n_discordant": 61,
+        "p_value": 0.0,
+        "test": "two-sided sign test (exact binomial)",
+        "ties": 22
+      },
+      "sign_test_p": 0.0,
+      "win_loss_tie": {
+        "LLM_ONLY_wins": 0,
+        "NEXUS_wins": 61,
+        "ties": 22
+      }
+    },
+    "nexus_vs_rag": {
+      "comparison_type": "PAIRED (both arms scorable)",
+      "nexus": {
+        "label": "NEXUS",
+        "mean_accuracy": 0.7159,
+        "n": 83
+      },
+      "paired_n": 83,
+      "rag": {
+        "label": "RAG",
+        "mean_accuracy": 0.0482,
+        "n": 83
+      },
+      "secondary_unpaired": {
+        "both_none": 108,
+        "label": "SECONDARY -- unpaired stats (excluded from primary comparison)",
+        "nexus_only_scored": {
+          "mean_accuracy": null,
+          "n": 0
+        },
+        "rag_only_scored": {
+          "mean_accuracy": null,
+          "n": 0
+        },
+        "total_questions": 191
+      },
+      "sign_test_detail": {
+        "arm_a_wins": 60,
+        "arm_b_wins": 2,
+        "n_discordant": 62,
+        "p_value": 0.0,
+        "test": "two-sided sign test (exact binomial)",
+        "ties": 21
+      },
+      "sign_test_p": 0.0,
+      "win_loss_tie": {
+        "NEXUS_wins": 60,
+        "RAG_wins": 2,
+        "ties": 21
+      }
+    }
+  },
+  "questions_total": 191,
+  "schema_version": "nexus-architecture-validation-v1",
+  "source_sha": "98a408e45e0a760a295b1db8afb16a777e447aeb",
+  "status": "VALID",
+  "verdict": {
+    "checks": {
+      "answerplan_binding": false,
+      "beats_llm_only_fact": true,
+      "beats_rag_fact": true,
+      "graph_er_saturated": true,
+      "oracle_predicted_lag": 0.016,
+      "surface_competence": true
+    },
+    "decision": "VALIDATED",
+    "next_training": "No AnswerPlan training. If entry < 0.95 from new canonical nodes only, consider bounded ER3 refresh; otherwise keep lexical/L1 hygiene and baseline monitoring.",
+    "summary": "NEXUS L1 meets graph/ER and surface thresholds and beats RAG and LLM-only on fact accuracy for this freeze.",
+    "thresholds": {
+      "answerplan_lag_min": 0.15,
+      "entry_min": 0.9,
+      "fact_min": 0.7,
+      "path_min": 0.9,
+      "proof_min": 0.9
+    }
+  }
+}

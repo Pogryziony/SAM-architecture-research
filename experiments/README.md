@@ -61,8 +61,14 @@ debuggability, compute, RAG-outperforms, hardest-for-RAG, and context-size.
 Exact node-ID mentions get alias-rank boosts; family nodes stay on canonical
 `Concept_*` / `Decision_*` IDs for union handoff. AnswerPlan stays deferred
 unless a paired artifact shows oracle fact ≥0.50 and predicted lag ≥0.15.
-Next architecture-validation training ladder:
-`EXPERIMENT_NEXUS_ARCHITECTURE_VALIDATION.md`.
+Architecture validation (NEXUS vs RAG vs LLM-only on `oracle_v1`):
+
+```bash
+python benchmarks/run_architecture_validation.py --output benchmarks/results/architecture_validation_TIMESTAMP.json
+```
+
+Verdict: `docs/nexus-architecture-validation-verdict.md` (VALIDATED 2026-07-21).
+Training ladder / gates: `EXPERIMENT_NEXUS_ARCHITECTURE_VALIDATION.md`.
 
 Pure deterministic path-render publish:
 
