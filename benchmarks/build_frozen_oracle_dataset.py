@@ -29,6 +29,7 @@ from benchmarks.run_nexus_oracle import (
 
 DEFAULT_QUESTIONS = _project_root / "stack" / "encoder" / "data" / "val.jsonl"
 DEFAULT_RELATIONS = _project_root / "benchmarks" / "qa-dataset" / "relation_gold.jsonl"
+DEFAULT_FAMILIES = _project_root / "benchmarks" / "qa-dataset" / "oracle_families_v1.jsonl"
 DEFAULT_OUTPUT = _project_root / "benchmarks" / "qa-dataset" / "oracle_v1.jsonl"
 DEFAULT_MANIFEST = _project_root / "benchmarks" / "qa-dataset" / "oracle_v1.manifest.json"
 
@@ -37,9 +38,28 @@ def _read_jsonl(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
 
 
+def merge_oracle_records(
+    base_records: list[dict],
+    family_records: list[dict],
+) -> list[dict]:
+    """Merge curated family records into the base oracle contract."""
+    by_id = {str(row["id"]): row for row in base_records}
+    for row in family_records:
+        record_id = str(row["id"])
+        if record_id in by_id:
+            raise ValueError(f"duplicate oracle record id: {record_id}")
+        by_id[record_id] = row
+    records = sorted(by_id.values(), key=lambda item: str(item["id"]))
+    errors = validate_oracle_records(records)
+    if errors:
+        raise ValueError("invalid oracle records after family merge: " + "; ".join(errors))
+    return records
+
+
 def build_frozen_dataset(
     questions_path: Path,
     relations_path: Path,
+    families_path: Path | None = None,
 ) -> tuple[list[dict], dict]:
     """Return (records, manifest) for the frozen oracle contract."""
     if questions_path.name.casefold() == "test.jsonl":
@@ -47,6 +67,14 @@ def build_frozen_dataset(
     question_rows = _read_jsonl(questions_path)
     relation_rows = _read_jsonl(relations_path)
     records = build_oracle_records(question_rows, relation_rows)
+    sources = {
+        str(questions_path.as_posix()): sha256_file(questions_path),
+        str(relations_path.as_posix()): sha256_file(relations_path),
+    }
+    if families_path is not None and families_path.exists():
+        family_rows = _read_jsonl(families_path)
+        records = merge_oracle_records(records, family_rows)
+        sources[str(families_path.as_posix())] = sha256_file(families_path)
     errors = validate_oracle_records(records)
     if errors:
         raise ValueError("invalid oracle records: " + "; ".join(errors))
@@ -56,10 +84,7 @@ def build_frozen_dataset(
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "record_count": len(records),
         "sha256": sha256_json(records),
-        "sources": {
-            str(questions_path.as_posix()): sha256_file(questions_path),
-            str(relations_path.as_posix()): sha256_file(relations_path),
-        },
+        "sources": sources,
         "category_counts": {},
     }
     counts: dict[str, int] = {}
@@ -98,12 +123,15 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--questions", type=Path, default=DEFAULT_QUESTIONS)
     parser.add_argument("--relations", type=Path, default=DEFAULT_RELATIONS)
+    parser.add_argument("--families", type=Path, default=DEFAULT_FAMILIES)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args(argv)
 
-    records, manifest = build_frozen_dataset(args.questions, args.relations)
+    records, manifest = build_frozen_dataset(
+        args.questions, args.relations, families_path=args.families
+    )
     write_frozen_dataset(
         records, manifest, args.output, args.manifest, force=args.force
     )
