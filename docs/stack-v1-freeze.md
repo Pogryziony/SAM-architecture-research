@@ -51,6 +51,9 @@ Architecture allow/deny list: [`training/REJECTED_ARCHITECTURES.json`](../traini
 - Comparison-plan full training was **not** launched (`full_training_launched: false`).
 - AnswerPlan autoregressive pilots remain **blocked**; copy/edit transducer pilots were not part of this freeze.
 - ER3 frozen-split aggregate remains **reporting-only** (do not re-evaluate).
+- Paired oracle vs predicted ER3 runs on `oracle_v1` **reuse** the frozen
+  ER3 checkpoint (`entity_ranker_v3_20260711T081545Z`) without retraining and
+  do not reopen the consumed encoder test split.
 
 ## Related history
 

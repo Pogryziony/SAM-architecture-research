@@ -27,7 +27,8 @@ Frozen oracle dataset + paired oracle/predicted reporting:
 
 ```bash
 python benchmarks/build_frozen_oracle_dataset.py --force
-python benchmarks/run_oracle_vs_predicted.py --output benchmarks/results/oracle_vs_predicted_full_TIMESTAMP.json
+# Default predicted arm = frozen ER3 (no training). Use --predicted-resolver lexical for baseline.
+python benchmarks/run_oracle_vs_predicted.py --predicted-resolver er3 --dummy-model --output benchmarks/results/oracle_vs_predicted_er3_full_TIMESTAMP.json
 ```
 
 Synthetic traversal budget campaign (small/medium/large):
