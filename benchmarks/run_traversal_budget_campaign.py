@@ -11,6 +11,8 @@ import argparse
 import hashlib
 import json
 import math
+import platform
+import subprocess
 import sys
 import time
 from datetime import datetime, timezone
@@ -28,6 +30,8 @@ from nexus.graph.traversal import TraversalStats, beam_search
 from nexus.utils.config import NEXUSConfig
 
 CAMPAIGN_SCHEMA_VERSION = "nexus-traversal-budget-campaign-v1"
+PREREGISTRATION_ID = "traversal-budgets-v1"
+REFERENCE_CPU_LABEL = "github-actions-ubuntu-latest-x86_64"
 
 # NEXUS hard limits from docs/nexus-auditability-roadmap.md (proposed).
 RSS_HARD_LIMIT_MB = 250.0
@@ -171,16 +175,48 @@ def run_size_campaign(size_name: str, spec: dict[str, int]) -> dict[str, Any]:
     }
 
 
+def _reference_identity() -> dict[str, Any]:
+    source_sha = ""
+    try:
+        source_sha = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], text=True, cwd=str(_project_root)
+        ).strip()
+    except Exception:
+        source_sha = ""
+    return {
+        "preregistration_id": PREREGISTRATION_ID,
+        "reference_cpu_label": REFERENCE_CPU_LABEL,
+        "platform": sys.platform,
+        "python_version": platform.python_version(),
+        "cpu_model": platform.processor() or "",
+        "source_sha": source_sha,
+    }
+
+
 def validate_campaign_artifact(artifact: dict[str, Any]) -> list[str]:
     """Publication guards for the Stage 2 synthetic campaign."""
     errors: list[str] = []
     if artifact.get("schema_version") != CAMPAIGN_SCHEMA_VERSION:
         errors.append("invalid schema version")
+    if artifact.get("preregistration_id") != PREREGISTRATION_ID:
+        errors.append("missing or invalid preregistration_id")
+    if artifact.get("reference_cpu_label") != REFERENCE_CPU_LABEL:
+        errors.append("missing or invalid reference_cpu_label")
+    for key in ("platform", "python_version", "cpu_model", "source_sha"):
+        if key not in artifact:
+            errors.append(f"missing identity field: {key}")
     sizes = artifact.get("sizes")
     if not isinstance(sizes, list) or not sizes:
         errors.append("sizes missing")
         return errors
-    expected = set(GRAPH_SPECS)
+    requested = artifact.get("sizes_requested")
+    if requested is None:
+        expected = set(GRAPH_SPECS)
+    else:
+        expected = set(requested)
+        unknown = expected - set(GRAPH_SPECS)
+        if unknown:
+            errors.append(f"unknown sizes requested: {sorted(unknown)}")
     seen = {row.get("size") for row in sizes if isinstance(row, dict)}
     if seen != expected:
         errors.append(f"expected sizes {sorted(expected)}, got {sorted(x for x in seen if x)}")
@@ -209,11 +245,16 @@ def validate_campaign_artifact(artifact: dict[str, Any]) -> list[str]:
     return errors
 
 
-def run_campaign() -> dict[str, Any]:
-    sizes = [run_size_campaign(name, spec) for name, spec in GRAPH_SPECS.items()]
+def run_campaign(sizes_requested: list[str] | None = None) -> dict[str, Any]:
+    requested = list(sizes_requested) if sizes_requested else list(GRAPH_SPECS)
+    for name in requested:
+        if name not in GRAPH_SPECS:
+            raise ValueError(f"unknown size: {name}")
+    sizes = [run_size_campaign(name, GRAPH_SPECS[name]) for name in requested]
     artifact = {
         "schema_version": CAMPAIGN_SCHEMA_VERSION,
         "created_utc": datetime.now(timezone.utc).isoformat(),
+        "sizes_requested": requested,
         "limits": {
             "rss_hard_limit_mb": RSS_HARD_LIMIT_MB,
             "p50_hard_limit_ms": P50_HARD_LIMIT_MS,
@@ -221,6 +262,7 @@ def run_campaign() -> dict[str, Any]:
         },
         "sizes": sizes,
         "errors": [],
+        **_reference_identity(),
     }
     guard = validate_campaign_artifact(artifact)
     if guard:
@@ -234,16 +276,29 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True)
     parser.add_argument("--force", action="store_true")
+    parser.add_argument(
+        "--sizes",
+        nargs="+",
+        choices=tuple(GRAPH_SPECS),
+        default=list(GRAPH_SPECS),
+        help="Subset of graph sizes (CI uses: --sizes small).",
+    )
     args = parser.parse_args(argv)
     output = Path(args.output)
     if output.exists() and not args.force:
         raise FileExistsError(f"refusing to overwrite: {output}")
-    artifact = run_campaign()
+    artifact = run_campaign(list(args.sizes))
     output.parent.mkdir(parents=True, exist_ok=True)
     payload = json.dumps(artifact, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
     output.write_text(payload, encoding="utf-8")
     digest = hashlib.sha256(output.read_bytes()).hexdigest()
-    print(canonical_json({"status": "PASS", "sha256": digest, "output": str(output)}))
+    print(canonical_json({
+        "status": "PASS",
+        "sha256": digest,
+        "output": str(output),
+        "sizes": list(args.sizes),
+        "preregistration_id": PREREGISTRATION_ID,
+    }))
     return 0
 
 

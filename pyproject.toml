@@ -14,6 +14,7 @@ test = ["pytest>=7.0"]
 train = ["torch>=2.3,<3"]
 semantic = ["sentence-transformers>=3,<6"]
 data = ["pyarrow>=18,<20"]
+kuzu = ["kuzu>=0.6,<1"]
 stack = []
 
 [project.scripts]

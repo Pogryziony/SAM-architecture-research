@@ -117,6 +117,18 @@ def score_mode_rows(
     return rows
 
 
+def _max_identical_entry_pack(rows: Sequence[dict[str, Any]]) -> int:
+    from collections import Counter
+
+    packs = [
+        tuple(row.get("selected_entry_nodes") or [])
+        for row in rows
+    ]
+    if not packs:
+        return 0
+    return int(Counter(packs).most_common(1)[0][1])
+
+
 def summarize_rows(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
     fact_values = [float(r["fact_accuracy"]) for r in rows if r["fact_accuracy"] is not None]
     token_values = [float(r["token_f1"]) for r in rows]
@@ -138,6 +150,7 @@ def summarize_rows(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
         "gold_entity_coverage_mean": round(sum(entity_values) / len(entity_values), 4) if entity_values else 0.0,
         "entry_recall_mean": round(sum(entry_values) / len(entry_values), 4) if entry_values else 0.0,
         "pool_recall_mean": round(sum(pool_values) / len(pool_values), 4) if pool_values else 0.0,
+        "max_identical_entry_pack": _max_identical_entry_pack(rows),
         "proof_valid_rate": round(sum(1 for r in rows if r["proof_valid"]) / len(rows), 4) if rows else 0.0,
         "provenance_coverage_mean": round(
             sum(float(r["provenance_coverage"]) for r in rows) / len(rows), 4
@@ -230,6 +243,7 @@ def build_predicted_runner(
     er3_dir: str,
     model: Any | None = None,
     union_top_k: int = 12,
+    union_anchor_k: int = 8,
 ) -> tuple[NEXUSRunner, dict[str, Any]]:
     """Construct the predicted-mode runner and resolver identity metadata."""
     if predicted_resolver == "lexical":
@@ -267,7 +281,10 @@ def build_predicted_runner(
     )
     er3 = ER3Resolver.from_directory(er3_dir, graph)
     resolver = UnionResolver(
-        er3, LexicalResolver(config=config), top_k=int(union_top_k)
+        er3,
+        LexicalResolver(config=config),
+        top_k=int(union_top_k),
+        anchor_k=int(union_anchor_k),
     )
     runner = NEXUSRunner(graph, config, model=model, entity_resolver=resolver)
     identity = {
@@ -277,6 +294,7 @@ def build_predicted_runner(
         "entity_ranker_v3_enabled": True,
         "max_entry_nodes": config.max_entry_nodes,
         "union_top_k": int(union_top_k),
+        "union_anchor_k": int(union_anchor_k),
     }
     return runner, identity
 
@@ -291,6 +309,7 @@ def run_paired_benchmark(
     er3_dir: str = DEFAULT_ER3_DIR,
     model: Any | None = None,
     union_top_k: int = 12,
+    union_anchor_k: int = 8,
 ) -> dict[str, Any]:
     errors = validate_oracle_records(records)
     if errors:
@@ -309,6 +328,7 @@ def run_paired_benchmark(
         er3_dir=er3_dir,
         model=model,
         union_top_k=union_top_k,
+        union_anchor_k=union_anchor_k,
     )
     predicted_pipeline = predicted_runner.run(records, source_sha=source_sha)
     if predicted_pipeline.errors:
@@ -368,6 +388,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--er3-dir", default=DEFAULT_ER3_DIR)
     parser.add_argument("--union-top-k", type=int, default=12)
     parser.add_argument(
+        "--union-anchor-k",
+        type=int,
+        default=8,
+        help="ER3 quality anchors kept before diversifying ungrounded handoff.",
+    )
+    parser.add_argument(
         "--dummy-model",
         action="store_true",
         help="Force DummyModel for deterministic offline publication.",
@@ -399,6 +425,7 @@ def main(argv: list[str] | None = None) -> int:
         er3_dir=args.er3_dir,
         model=model,
         union_top_k=args.union_top_k,
+        union_anchor_k=args.union_anchor_k,
     )
     output = Path(args.output)
     if output.exists() and not args.force:

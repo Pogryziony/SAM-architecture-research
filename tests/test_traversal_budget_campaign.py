@@ -50,6 +50,12 @@ def test_validate_campaign_artifact_accepts_pass_shape():
     ]
     artifact = {
         "schema_version": "nexus-traversal-budget-campaign-v1",
+        "preregistration_id": "traversal-budgets-v1",
+        "reference_cpu_label": "github-actions-ubuntu-latest-x86_64",
+        "platform": "linux",
+        "python_version": "3.12.0",
+        "cpu_model": "test",
+        "source_sha": "abc",
         "sizes": sizes,
         "errors": [],
     }
@@ -65,6 +71,13 @@ def test_run_size_campaign_reports_tight_truncation():
 def test_validate_campaign_artifact_fails_when_tight_does_not_truncate():
     artifact = {
         "schema_version": "nexus-traversal-budget-campaign-v1",
+        "preregistration_id": "traversal-budgets-v1",
+        "reference_cpu_label": "github-actions-ubuntu-latest-x86_64",
+        "platform": "linux",
+        "python_version": "3.12.0",
+        "cpu_model": "test",
+        "source_sha": "abc",
+        "sizes_requested": ["small"],
         "sizes": [
             {
                 "size": "small",
@@ -76,18 +89,20 @@ def test_validate_campaign_artifact_fails_when_tight_does_not_truncate():
                 "tight_budgets": {"truncated_runs": 0},
                 "peak_rss_mb": 10.0,
             },
+        ],
+        "errors": [],
+    }
+    errors = validate_campaign_artifact(artifact)
+    assert any("tight budgets must truncate" in error for error in errors)
+
+
+def test_validate_requires_preregistration_identity():
+    artifact = {
+        "schema_version": "nexus-traversal-budget-campaign-v1",
+        "sizes_requested": ["small"],
+        "sizes": [
             {
-                "size": "medium",
-                "default_budgets": {
-                    "truncated_runs": 0,
-                    "latency_p50_ms": 1.0,
-                    "latency_p95_ms": 2.0,
-                },
-                "tight_budgets": {"truncated_runs": 1},
-                "peak_rss_mb": 10.0,
-            },
-            {
-                "size": "large",
+                "size": "small",
                 "default_budgets": {
                     "truncated_runs": 0,
                     "latency_p50_ms": 1.0,
@@ -100,4 +115,4 @@ def test_validate_campaign_artifact_fails_when_tight_does_not_truncate():
         "errors": [],
     }
     errors = validate_campaign_artifact(artifact)
-    assert any("tight budgets must truncate" in error for error in errors)
+    assert any("preregistration_id" in error for error in errors)

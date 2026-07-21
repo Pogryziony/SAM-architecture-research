@@ -316,6 +316,7 @@ class UnionResolver:
         top_k: int = 12,
         er3_pool_bonus: float = 1.0,
         max_ungrounded_fillers: int | None = None,
+        anchor_k: int = 8,
     ):
         self.er3 = er3
         self.lexical = lexical or LexicalResolver()
@@ -327,6 +328,9 @@ class UnionResolver:
         self.max_ungrounded_fillers = (
             None if max_ungrounded_fillers is None else max(0, int(max_ungrounded_fillers))
         )
+        # Ungrounded handoff: keep this many ER3 quality anchors, diversify the
+        # remaining slots from a wider window (anti hub-pack collisions).
+        self.anchor_k = max(1, min(int(anchor_k), self.top_k))
 
     def resolve(self, question: str, graph: InMemoryGraphStore) -> ResolutionResult:
         from stack.encoder.canonical_mapping import _is_canonical_id
@@ -396,39 +400,27 @@ class UnionResolver:
             if mention_score(entity_id, question, graph) > 0.0
             or entity_id in lexical_selected
         ]
-        fillers = [entity_id for entity_id in ranked if entity_id not in set(grounded)]
+        by_neural = sorted(
+            handoff_ids,
+            key=lambda entity_id: (
+                -er3_score.get(entity_id, 0.0),
+                er3_rank.get(entity_id, 10_000_000),
+                entity_id,
+            ),
+        )
 
         selected: list[str] = []
         if not grounded:
-            # Ungrounded handoff: keep a few ER3 quality anchors, then diversify
-            # the remaining slots from a wider window so questions do not share
-            # one static hub 12-pack.
-            by_neural = sorted(
-                handoff_ids,
-                key=lambda entity_id: (
-                    -er3_score.get(entity_id, 0.0),
-                    er3_rank.get(entity_id, 10_000_000),
-                    entity_id,
-                ),
-            )
-            # Keep enough ER3 anchors for entry_recall, diversify the tail.
-            anchor_k = min(5, self.top_k)
-            window = by_neural[: max(self.top_k * 3, 30)]
-            anchors = window[:anchor_k]
-            rest = sorted(
-                window[anchor_k:],
+            # Preserve ER3 top-k membership for entry_recall, then diversify only
+            # the presentation order so identical hub packs do not collide.
+            chosen = by_neural[: self.top_k]
+            selected = sorted(
+                chosen,
                 key=lambda entity_id: (
                     -_soft_question_overlap(entity_id, question, graph),
                     _diversity_tiebreak(question, entity_id),
                 ),
             )
-            selected = list(anchors)
-            for entity_id in rest:
-                if entity_id in selected:
-                    continue
-                selected.append(entity_id)
-                if len(selected) >= self.top_k:
-                    break
         else:
             for entity_id in grounded:
                 if entity_id not in selected:
@@ -439,22 +431,25 @@ class UnionResolver:
             if self.max_ungrounded_fillers is not None:
                 filler_budget = self.max_ungrounded_fillers
             fillers_added = 0
-            diversified_fillers = sorted(
-                fillers,
-                key=lambda entity_id: (
-                    -_soft_question_overlap(entity_id, question, graph),
-                    -er3_score.get(entity_id, 0.0),
-                    _diversity_tiebreak(question, entity_id),
-                ),
-            )
+            # Fillers keep ER3 rank order (membership), not soft-overlap swaps.
+            neural_fillers = [
+                entity_id for entity_id in by_neural if entity_id not in set(selected)
+            ]
             if len(selected) < self.top_k and filler_budget > 0:
-                for entity_id in diversified_fillers:
-                    if entity_id in selected:
-                        continue
+                for entity_id in neural_fillers:
                     selected.append(entity_id)
                     fillers_added += 1
                     if len(selected) >= self.top_k or fillers_added >= filler_budget:
                         break
+            # Diversify order of the final pack without changing membership.
+            selected = sorted(
+                selected,
+                key=lambda entity_id: (
+                    0 if entity_id in grounded else 1,
+                    -_soft_question_overlap(entity_id, question, graph),
+                    _diversity_tiebreak(question, entity_id),
+                ),
+            )
 
         if not selected:
             selected = list(er3_result.selected_entity_ids[: self.top_k])

@@ -426,21 +426,24 @@ def answer_question(
         config=config,
         stats=traversal_stats,
     )
-    paths = select_proof_paths(paths, query_entities, max_paths)
-    if paths:
-        # Prefer focus entities, then any still-uncovered entry nodes. Only real
-        # incident edges are added — never synthetic identity proofs.
+    # Reserve proof slots so hub-heavy beams cannot crowd out incident edges
+    # needed for entry-entity coverage.
+    reserve = min(4, max(0, max_paths // 3))
+    paths = select_proof_paths(paths, query_entities, max(1, max_paths - reserve))
+    if paths or parsed.entity_ids:
         cover_targets = set(query_entities) | set(parsed.entity_ids)
         covered = set()
         for path in paths:
             covered |= set(path.nodes) & cover_targets
-        missing = [eid for eid in parsed.entity_ids if eid in (cover_targets - covered)]
-        if missing and len(paths) < max_paths:
+        missing = [eid for eid in parsed.entity_ids if eid not in covered]
+        if missing:
             extra = incident_paths_for_entities(
-                graph, missing, max_paths=max_paths - len(paths)
+                graph, missing, max_paths=max(reserve, max_paths - len(paths))
             )
             if extra:
-                paths = list(paths) + extra
+                paths = select_proof_paths(
+                    list(paths) + list(extra), cover_targets, max_paths
+                )
     timing["traverse_time"] = round(time.perf_counter() - t0, 6)
     result["traversal_stats"] = traversal_stats.to_dict()
     result["path_count"] = len(paths)

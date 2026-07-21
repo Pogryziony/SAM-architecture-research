@@ -1,0 +1,156 @@
+{
+  "cpu_model": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+  "created_utc": "2026-07-21T13:11:01.341526+00:00",
+  "errors": [],
+  "limits": {
+    "p50_hard_limit_ms": 250.0,
+    "p95_hard_limit_ms": 450.0,
+    "rss_hard_limit_mb": 250.0
+  },
+  "platform": "win32",
+  "preregistration_id": "traversal-budgets-v1",
+  "python_version": "3.12.10",
+  "reference_cpu_label": "github-actions-ubuntu-latest-x86_64",
+  "schema_version": "nexus-traversal-budget-campaign-v1",
+  "sizes": [
+    {
+      "default_budgets": {
+        "last_stats": {
+          "elapsed_ms": 0.226,
+          "expanded_edges": 30,
+          "expanded_nodes": 9,
+          "max_depth_reached": 4,
+          "paths": 16,
+          "paths_returned": 16,
+          "truncated": false,
+          "truncation_reason": ""
+        },
+        "latency_max_ms": 0.545,
+        "latency_p50_ms": 0.453,
+        "latency_p95_ms": 0.545,
+        "samples": 9,
+        "truncated_runs": 0,
+        "truncation_reasons": {}
+      },
+      "edges": 97,
+      "nodes": 50,
+      "peak_rss_mb": 23.855,
+      "size": "small",
+      "tight_budgets": {
+        "last_stats": {
+          "elapsed_ms": 0.045,
+          "expanded_edges": 8,
+          "expanded_nodes": 5,
+          "max_depth_reached": 3,
+          "paths": 2,
+          "paths_returned": 2,
+          "truncated": true,
+          "truncation_reason": "max_expanded_edges"
+        },
+        "latency_max_ms": 0.083,
+        "latency_p50_ms": 0.068,
+        "latency_p95_ms": 0.083,
+        "samples": 6,
+        "truncated_runs": 6,
+        "truncation_reasons": {
+          "max_expanded_edges": 6
+        }
+      }
+    },
+    {
+      "default_budgets": {
+        "last_stats": {
+          "elapsed_ms": 0.746,
+          "expanded_edges": 114,
+          "expanded_nodes": 12,
+          "max_depth_reached": 4,
+          "paths": 25,
+          "paths_returned": 25,
+          "truncated": false,
+          "truncation_reason": ""
+        },
+        "latency_max_ms": 1.606,
+        "latency_p50_ms": 1.234,
+        "latency_p95_ms": 1.606,
+        "samples": 9,
+        "truncated_runs": 0,
+        "truncation_reasons": {}
+      },
+      "edges": 1494,
+      "nodes": 500,
+      "peak_rss_mb": 26.191,
+      "size": "medium",
+      "tight_budgets": {
+        "last_stats": {
+          "elapsed_ms": 0.041,
+          "expanded_edges": 8,
+          "expanded_nodes": 5,
+          "max_depth_reached": 2,
+          "paths": 5,
+          "paths_returned": 5,
+          "truncated": true,
+          "truncation_reason": "max_expanded_edges"
+        },
+        "latency_max_ms": 0.093,
+        "latency_p50_ms": 0.089,
+        "latency_p95_ms": 0.093,
+        "samples": 6,
+        "truncated_runs": 6,
+        "truncation_reasons": {
+          "max_expanded_edges": 6
+        }
+      }
+    },
+    {
+      "default_budgets": {
+        "last_stats": {
+          "elapsed_ms": 0.766,
+          "expanded_edges": 114,
+          "expanded_nodes": 12,
+          "max_depth_reached": 4,
+          "paths": 25,
+          "paths_returned": 25,
+          "truncated": false,
+          "truncation_reason": ""
+        },
+        "latency_max_ms": 1.383,
+        "latency_p50_ms": 1.245,
+        "latency_p95_ms": 1.383,
+        "samples": 9,
+        "truncated_runs": 0,
+        "truncation_reasons": {}
+      },
+      "edges": 14994,
+      "nodes": 5000,
+      "peak_rss_mb": 48.117,
+      "size": "large",
+      "tight_budgets": {
+        "last_stats": {
+          "elapsed_ms": 0.042,
+          "expanded_edges": 8,
+          "expanded_nodes": 5,
+          "max_depth_reached": 2,
+          "paths": 5,
+          "paths_returned": 5,
+          "truncated": true,
+          "truncation_reason": "max_expanded_edges"
+        },
+        "latency_max_ms": 0.093,
+        "latency_p50_ms": 0.09,
+        "latency_p95_ms": 0.093,
+        "samples": 6,
+        "truncated_runs": 6,
+        "truncation_reasons": {
+          "max_expanded_edges": 6
+        }
+      }
+    }
+  ],
+  "sizes_requested": [
+    "small",
+    "medium",
+    "large"
+  ],
+  "source_sha": "c0ed0d3568d98e5860c7166833d6e6d6dea48590",
+  "status": "PASS"
+}
