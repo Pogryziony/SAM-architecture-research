@@ -29,5 +29,7 @@ unconditional `answer` (at most `conditional_answer` or `abstain`).
 | Unconditional answer leaks on unresolved conflicts | 0 |
 | Calibration | report Brier + ECE on readiness scores (diagnostic) |
 
-Frozen contradiction F1 remains sealed until a future prereg publishes a
-held-out gold hash. Development gold may evolve under these thresholds.
+Frozen contradiction F1 is opened under **`EXPERIMENT_CONTRADICTION_POLICY_V2.md`**
+(`contradiction-policy-v2`) with a published LF-normalized gold SHA-256.
+Development gold may still evolve under V1 thresholds; do not retune against
+the frozen file.

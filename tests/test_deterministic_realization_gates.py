@@ -20,7 +20,7 @@ def test_identical_structured_input_yields_identical_output():
     a = render_from_proof_steps(steps)
     b = render_from_proof_steps(steps)
     assert a == b
-    assert a["answer"] == "Exp_A validates Concept_B."
+    assert a["answer"] == "Yes. Exp_A validates Concept_B."
     assert validate_statement_proof_coverage(a) == []
 
 

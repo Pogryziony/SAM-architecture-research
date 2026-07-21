@@ -1,0 +1,67 @@
+{
+  "created_utc": "2026-07-21T14:02:24.431026+00:00",
+  "errors": [],
+  "fail_count": 0,
+  "n_records": 5,
+  "pass_count": 5,
+  "preregistration_id": "bitemporal-replay-v1",
+  "rows": [
+    {
+      "errors": [],
+      "id": "bt_known_before_001",
+      "kept_edge_count": 0,
+      "kept_fact_count": 0,
+      "lookahead_error_count": 1,
+      "path_ok": true,
+      "predicted_abstain": true,
+      "should_abstain": true,
+      "status": "PASS"
+    },
+    {
+      "errors": [],
+      "id": "bt_known_after_001",
+      "kept_edge_count": 1,
+      "kept_fact_count": 1,
+      "lookahead_error_count": 0,
+      "path_ok": true,
+      "predicted_abstain": false,
+      "should_abstain": false,
+      "status": "PASS"
+    },
+    {
+      "errors": [],
+      "id": "bt_valid_window_001",
+      "kept_edge_count": 0,
+      "kept_fact_count": 0,
+      "lookahead_error_count": 0,
+      "path_ok": true,
+      "predicted_abstain": true,
+      "should_abstain": true,
+      "status": "PASS"
+    },
+    {
+      "errors": [],
+      "id": "bt_retracted_001",
+      "kept_edge_count": 0,
+      "kept_fact_count": 0,
+      "lookahead_error_count": 0,
+      "path_ok": true,
+      "predicted_abstain": true,
+      "should_abstain": true,
+      "status": "PASS"
+    },
+    {
+      "errors": [],
+      "id": "bt_active_001",
+      "kept_edge_count": 1,
+      "kept_fact_count": 1,
+      "lookahead_error_count": 0,
+      "path_ok": true,
+      "predicted_abstain": false,
+      "should_abstain": false,
+      "status": "PASS"
+    }
+  ],
+  "schema_version": "nexus-bitemporal-replay-v1",
+  "status": "PASS"
+}

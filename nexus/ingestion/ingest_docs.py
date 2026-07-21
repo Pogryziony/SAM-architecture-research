@@ -20,6 +20,7 @@ if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
 from nexus.graph import Node, Edge
+from nexus.graph.bitemporal import stable_ingest_stamp
 from nexus.graph.provenance import attach_provenance_to_properties
 from nexus.graph.store import InMemoryGraphStore
 from nexus.ingestion.entity_extractor import extract_from_markdown, _is_valid_entity, _extract_auto_aliases
@@ -361,6 +362,7 @@ def ingest_directory(
                 target=target_id,
                 confidence=rel["confidence"],
                 evidence=rel.get("evidence", f"Extracted from {rel_path}"),
+                **stable_ingest_stamp(),
             )
 
             try:
@@ -390,6 +392,7 @@ def ingest_directory(
                             target=tgt,
                             confidence=0.3,
                             evidence=f"Co-occurs in {rel_path}",
+                            **stable_ingest_stamp(),
                         )
                         graph.add_edge(co_edge)
                         edges_added += 1

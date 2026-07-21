@@ -174,15 +174,45 @@ def _proof_step_dicts_from_paths(paths: list[Any]) -> list[dict[str, Any]]:
     return steps
 
 
+_POINTER_COPY_INTENTS = frozenset({"factual_lookup", "diagnostic"})
+_PATH_RENDER_INTENTS = frozenset({
+    "causal_explanation",
+    "dependency_chain",
+    "impact_analysis",
+    "diagnostic",
+    "factual_lookup",
+})
+
+
 def _deterministic_render_result(
     paths: list[Any],
     config: NEXUSConfig,
+    *,
+    intent: str = "",
+    require_paths: bool = False,
 ) -> dict[str, Any] | None:
-    """Stage 7 zero-LLM L1 realization from proof steps when configured."""
-    if getattr(config, "realizer_backend", "") != DETERMINISTIC_RENDER_BACKEND:
+    """Stage 7 zero-LLM L1 realization from proof steps when configured.
+
+    ``deterministic_render`` always uses this path. ``grounded_v1`` uses it as
+    a non-comparison fallback so relation / multi-hop / causal intents do not
+    fall through to an LLM.
+    """
+    backend = getattr(config, "realizer_backend", "")
+    if backend == DETERMINISTIC_RENDER_BACKEND:
+        pass
+    elif backend == HYBRID_BACKEND_NAME:
+        if intent == "comparison":
+            return None
+        if intent and intent not in _PATH_RENDER_INTENTS and intent != "":
+            # Unknown intents still get path render when proof steps exist.
+            pass
+    else:
         return None
     proof_steps = _proof_step_dicts_from_paths(paths)
     if not proof_steps:
+        if require_paths or backend == HYBRID_BACKEND_NAME:
+            # Under grounded_v1, empty paths mean "try next realizer", not abstain.
+            return None
         return {
             "answer": "Insufficient evidence to answer. No proof steps available for deterministic render.",
             "raw_answer": "Insufficient evidence to answer. No proof steps available for deterministic render.",
@@ -198,6 +228,8 @@ def _deterministic_render_result(
     render = render_from_proof_steps(proof_steps)
     coverage_errors = validate_statement_proof_coverage(render)
     if coverage_errors or not render.get("answer"):
+        if backend == HYBRID_BACKEND_NAME:
+            return None
         return {
             "answer": "Insufficient evidence to answer. Deterministic render coverage failed.",
             "raw_answer": "Insufficient evidence to answer. Deterministic render coverage failed.",
@@ -226,16 +258,23 @@ def _pointer_copy_result(
     config: NEXUSConfig,
     intent: str,
 ):
-    """Return Pointer/Copy v3 output for configured factual queries."""
-    if (
-        config.realizer_backend not in {"pointer_copy", HYBRID_BACKEND_NAME}
-        or intent != "factual_lookup"
-    ):
+    """Return Pointer/Copy v3 output for configured factual/diagnostic queries."""
+    if config.realizer_backend not in {"pointer_copy", HYBRID_BACKEND_NAME}:
         return None
-    return realize_pointer_copy({
+    if intent not in _POINTER_COPY_INTENTS:
+        return None
+    result = realize_pointer_copy({
         "question": question,
         "evidence_pack": evidence_pack,
     })
+    # Under grounded_v1, empty extractive candidates must fall through to
+    # deterministic path render instead of hard-stopping on insufficiency.
+    if (
+        config.realizer_backend == HYBRID_BACKEND_NAME
+        and getattr(result, "strategy", "") == "insufficient_evidence"
+    ):
+        return None
+    return result
 
 
 def _comparison_plan_result(
@@ -534,23 +573,27 @@ def answer_question(
             audit_paths = incident_paths_for_entities(
                 graph, parsed.entity_ids, max_paths=max_paths
             )
-            deterministic = _deterministic_render_result(audit_paths, config)
-            comparison = None if deterministic is not None else _comparison_plan_result(
+            comparison = _comparison_plan_result(
                 question, direct_pack, config, parsed.intent,
                 comparison_label_selector,
             )
-            pointer = None if deterministic is not None else _pointer_copy_result(
+            pointer = None if comparison is not None else _pointer_copy_result(
                 question, direct_pack, config, parsed.intent,
             )
-            if deterministic is not None:
-                answer_direct = deterministic["answer"]
-                realization = deterministic["realization"]
-            elif comparison is not None:
+            deterministic = None
+            if comparison is None and pointer is None:
+                deterministic = _deterministic_render_result(
+                    audit_paths, config, intent=parsed.intent,
+                )
+            if comparison is not None:
                 answer_direct = comparison.answer
                 realization = comparison.to_dict()
             elif pointer is not None:
                 answer_direct = pointer.answer
                 realization = pointer.to_dict()
+            elif deterministic is not None:
+                answer_direct = deterministic["answer"]
+                realization = deterministic["realization"]
             else:
                 answer_direct = _tier3_generate_answer(
                     question,
@@ -615,23 +658,12 @@ def answer_question(
     timing["evidence_time"] = round(time.perf_counter() - t0, 6)
     result["evidence_pack"] = evidence_pack
 
-    # Stage 7: deterministic proof→statement render is the zero-LLM L1 path.
-    # It runs before pointer/comparison/synth so acceptance never touches an LLM.
+    # Zero-LLM realization order:
+    #   comparison (grounded_v1 / abstractive) →
+    #   pointer/copy (factual + diagnostic) →
+    #   deterministic path render (L1 / grounded non-comparison fallback) →
+    #   synth/LLM
     t0 = time.perf_counter()
-    deterministic = _deterministic_render_result(paths, config)
-    if deterministic is not None:
-        timing["realize_time"] = round(time.perf_counter() - t0, 6)
-        result["answer"] = deterministic["answer"]
-        result["raw_answer"] = deterministic["raw_answer"]
-        result["realization"] = deterministic["realization"]
-        result["cascade_level"] = 1
-        result["verification"] = verifier.verify(deterministic["answer"], evidence_pack)
-        result["timing"] = timing
-        return _attach_reasoning_audit(result, graph, paths, config, max_paths)
-
-    # Pointer/Copy v3 is the complete factual realization path.  It copies
-    # evidence before any prompt or generative model call, preventing altered
-    # identifiers and numeric values.
     comparison = _comparison_plan_result(
         question, evidence_pack, config, parsed.intent,
         comparison_label_selector,
@@ -656,6 +688,19 @@ def answer_question(
         result["realization"] = pointer.to_dict()
         result["cascade_level"] = 1 if pointer.strategy == "pointer_copy" else 0
         result["verification"] = verifier.verify(pointer.answer, evidence_pack)
+        result["timing"] = timing
+        return _attach_reasoning_audit(result, graph, paths, config, max_paths)
+
+    deterministic = _deterministic_render_result(
+        paths, config, intent=parsed.intent,
+    )
+    if deterministic is not None:
+        timing["realize_time"] = round(time.perf_counter() - t0, 6)
+        result["answer"] = deterministic["answer"]
+        result["raw_answer"] = deterministic["raw_answer"]
+        result["realization"] = deterministic["realization"]
+        result["cascade_level"] = 1
+        result["verification"] = verifier.verify(deterministic["answer"], evidence_pack)
         result["timing"] = timing
         return _attach_reasoning_audit(result, graph, paths, config, max_paths)
 

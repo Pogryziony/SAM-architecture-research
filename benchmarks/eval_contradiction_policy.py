@@ -1,12 +1,13 @@
 """Stage 5 contradiction F1 + readiness calibration campaign.
 
-Prereg: EXPERIMENT_CONTRADICTION_POLICY_V1.md (thresholds opened for development
-gold ``contradiction_gold_v1.jsonl``).
+Development: EXPERIMENT_CONTRADICTION_POLICY_V1.md
+Frozen: EXPERIMENT_CONTRADICTION_POLICY_V2.md (published gold SHA)
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from collections import defaultdict
@@ -24,9 +25,17 @@ from nexus.reasoning.conflict_policy import (
     classify_graph_conflicts,
 )
 
-PREREGISTRATION_ID = "contradiction-policy-v1"
+PREREGISTRATION_ID_DEV = "contradiction-policy-v1"
+PREREGISTRATION_ID_FROZEN = "contradiction-policy-v2"
 DEFAULT_GOLD = (
     _project_root / "benchmarks" / "qa-dataset" / "contradiction_gold_v1.jsonl"
+)
+DEFAULT_FROZEN_GOLD = (
+    _project_root / "benchmarks" / "qa-dataset" / "contradiction_gold_v1_frozen.jsonl"
+)
+# Published in EXPERIMENT_CONTRADICTION_POLICY_V2.md — LF-normalized bytes.
+FROZEN_FILE_SHA256 = (
+    "2cee684a620402fa58bbbd7006edbeb36fd65c813475fba9ea6f795e86cce3d5"
 )
 CLASS_F1_MIN = 0.90
 POLICY_ACCURACY_MIN = 0.90
@@ -35,6 +44,11 @@ UNCONDITIONAL_LEAK_MAX = 0
 
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
+
+
+def sha256_file(path: Path) -> str:
+    data = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(data).hexdigest()
 
 
 def _predict_class(record: dict[str, Any]) -> str:
@@ -159,13 +173,11 @@ def _brier_ece(records: list[dict[str, Any]], *, bins: int = 5) -> dict[str, Any
     probs = []
     outcomes = []
     for item in scored:
-        # Map readiness to P(answer) = readiness; outcome 1 if not abstain.
         p = max(0.0, min(1.0, float(item["readiness_score"])))
         y = 0.0 if bool(item["should_abstain"]) else 1.0
         probs.append(p)
         outcomes.append(y)
     brier = sum((p - y) ** 2 for p, y in zip(probs, outcomes)) / len(probs)
-    # Expected calibration error over equal-width bins.
     bucket_totals: dict[int, list[tuple[float, float]]] = defaultdict(list)
     for p, y in zip(probs, outcomes):
         idx = min(bins - 1, int(p * bins))
@@ -182,7 +194,12 @@ def _brier_ece(records: list[dict[str, Any]], *, bins: int = 5) -> dict[str, Any
     }
 
 
-def evaluate(records: list[dict[str, Any]]) -> dict[str, Any]:
+def evaluate(
+    records: list[dict[str, Any]],
+    *,
+    preregistration_id: str = PREREGISTRATION_ID_DEV,
+    frozen_file_sha256: str | None = None,
+) -> dict[str, Any]:
     rows = [_apply_record(record) for record in records]
     class_metrics = _macro_f1(rows)
     policy_correct = sum(
@@ -207,9 +224,9 @@ def evaluate(records: list[dict[str, Any]]) -> dict[str, Any]:
         errors.append(
             f"unconditional_leaks {unconditional_leaks} > {UNCONDITIONAL_LEAK_MAX}"
         )
-    return {
+    report = {
         "status": "PASS" if not errors else "FAIL",
-        "preregistration_id": PREREGISTRATION_ID,
+        "preregistration_id": preregistration_id,
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "n_records": len(records),
         "classification": class_metrics,
@@ -221,27 +238,51 @@ def evaluate(records: list[dict[str, Any]]) -> dict[str, Any]:
         "errors": errors,
         "rows": rows,
     }
+    if frozen_file_sha256 is not None:
+        report["frozen_file_sha256"] = frozen_file_sha256
+    return report
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--gold", type=Path, default=DEFAULT_GOLD)
+    parser.add_argument("--mode", choices=("development", "frozen"), default="development")
+    parser.add_argument("--gold", type=Path, default=None)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
-    records = _read_jsonl(args.gold)
-    report = evaluate(records)
+    if args.mode == "frozen":
+        gold_path = args.gold or DEFAULT_FROZEN_GOLD
+        digest = sha256_file(gold_path)
+        if digest != FROZEN_FILE_SHA256:
+            raise RuntimeError(
+                f"frozen contradiction gold sha256 mismatch: got {digest}, "
+                f"expected {FROZEN_FILE_SHA256}"
+            )
+        report = evaluate(
+            _read_jsonl(gold_path),
+            preregistration_id=PREREGISTRATION_ID_FROZEN,
+            frozen_file_sha256=digest,
+        )
+    else:
+        gold_path = args.gold or DEFAULT_GOLD
+        report = evaluate(
+            _read_jsonl(gold_path),
+            preregistration_id=PREREGISTRATION_ID_DEV,
+        )
     text = json.dumps(report, indent=2, sort_keys=True) + "\n"
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(text, encoding="utf-8")
     summary = {
         "status": report["status"],
+        "mode": args.mode,
         "macro_f1": report["classification"]["macro_f1"],
         "policy_accuracy": report["policy"]["accuracy"],
         "brier": report["calibration"].get("brier"),
         "ece": report["calibration"].get("ece"),
         "errors": report["errors"],
     }
+    if "frozen_file_sha256" in report:
+        summary["frozen_file_sha256"] = report["frozen_file_sha256"]
     print(json.dumps(summary, sort_keys=True))
     return 0 if report["status"] == "PASS" else 1
 

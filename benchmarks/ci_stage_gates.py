@@ -38,6 +38,7 @@ def gate_traversal_units() -> None:
         "tests/test_bitemporal_oracle.py",
         "tests/test_deterministic_realization_gates.py",
         "tests/test_deterministic_answer_path.py",
+        "tests/test_ingest_bitemporal_stamps.py",
         "tests/test_union_resolver.py",
         "-q", "--tb=short",
     ])
@@ -60,6 +61,12 @@ def gate_contradiction() -> None:
     _run([
         sys.executable,
         "benchmarks/eval_contradiction_policy.py",
+        "--mode", "development",
+    ])
+    _run([
+        sys.executable,
+        "benchmarks/eval_contradiction_policy.py",
+        "--mode", "frozen",
     ])
 
 
@@ -100,6 +107,7 @@ def gate_oracle_smoke() -> None:
             "--predicted-resolver", "lexical",
             "--limit", "8",
             "--dummy-model",
+            "--realizer-backend", "synth",
             "--output", str(output),
         ])
         artifact = json.loads(output.read_text(encoding="utf-8"))

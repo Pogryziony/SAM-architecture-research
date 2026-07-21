@@ -1,0 +1,162 @@
+{
+  "calibration": {
+    "brier": 0.292,
+    "ece": 0.404,
+    "n": 5
+  },
+  "classification": {
+    "macro_f1": 1.0,
+    "per_class": {
+      "contradiction": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 3.0
+      },
+      "none": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 5.0
+      },
+      "source_disagreement": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 1.0
+      },
+      "supersession": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 2.0
+      },
+      "validity_mismatch": {
+        "f1": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "support": 1.0
+      }
+    }
+  },
+  "created_utc": "2026-07-21T14:02:24.338526+00:00",
+  "errors": [],
+  "frozen_file_sha256": "2cee684a620402fa58bbbd7006edbeb36fd65c813475fba9ea6f795e86cce3d5",
+  "n_records": 12,
+  "policy": {
+    "accuracy": 1.0,
+    "unconditional_leaks": 0
+  },
+  "preregistration_id": "contradiction-policy-v2",
+  "rows": [
+    {
+      "allow_unconditional_answer": false,
+      "expected_recommendation": "conditional_answer",
+      "gold_class": "contradiction",
+      "id": "conflict_contradict_001",
+      "pred_class": "contradiction",
+      "pred_recommendation": "conditional_answer",
+      "should_allow_unconditional_answer": false
+    },
+    {
+      "allow_unconditional_answer": false,
+      "expected_recommendation": "conditional_answer",
+      "gold_class": "supersession",
+      "id": "conflict_supersession_001",
+      "pred_class": "supersession",
+      "pred_recommendation": "conditional_answer",
+      "should_allow_unconditional_answer": false
+    },
+    {
+      "allow_unconditional_answer": true,
+      "expected_recommendation": "answer",
+      "gold_class": "supersession",
+      "id": "conflict_supersession_resolved_001",
+      "pred_class": "supersession",
+      "pred_recommendation": "answer",
+      "should_allow_unconditional_answer": true
+    },
+    {
+      "allow_unconditional_answer": false,
+      "expected_recommendation": "conditional_answer",
+      "gold_class": "validity_mismatch",
+      "id": "conflict_validity_001",
+      "pred_class": "validity_mismatch",
+      "pred_recommendation": "conditional_answer",
+      "should_allow_unconditional_answer": false
+    },
+    {
+      "allow_unconditional_answer": false,
+      "expected_recommendation": "conditional_answer",
+      "gold_class": "source_disagreement",
+      "id": "conflict_source_001",
+      "pred_class": "source_disagreement",
+      "pred_recommendation": "conditional_answer",
+      "should_allow_unconditional_answer": false
+    },
+    {
+      "allow_unconditional_answer": true,
+      "expected_recommendation": "answer",
+      "gold_class": "none",
+      "id": "conflict_none_001",
+      "pred_class": "none",
+      "pred_recommendation": "answer",
+      "should_allow_unconditional_answer": true
+    },
+    {
+      "allow_unconditional_answer": false,
+      "expected_recommendation": "abstain",
+      "gold_class": "contradiction",
+      "id": "conflict_abstain_base_001",
+      "pred_class": "contradiction",
+      "pred_recommendation": "abstain",
+      "should_allow_unconditional_answer": false
+    },
+    {
+      "allow_unconditional_answer": true,
+      "expected_recommendation": "answer",
+      "gold_class": "none",
+      "id": "calib_ready_answer_001",
+      "pred_class": "none",
+      "pred_recommendation": "answer",
+      "should_allow_unconditional_answer": true
+    },
+    {
+      "allow_unconditional_answer": false,
+      "expected_recommendation": "abstain",
+      "gold_class": "none",
+      "id": "calib_ready_abstain_001",
+      "pred_class": "none",
+      "pred_recommendation": "abstain",
+      "should_allow_unconditional_answer": false
+    },
+    {
+      "allow_unconditional_answer": false,
+      "expected_recommendation": "conditional_answer",
+      "gold_class": "contradiction",
+      "id": "calib_ready_conditional_001",
+      "pred_class": "contradiction",
+      "pred_recommendation": "conditional_answer",
+      "should_allow_unconditional_answer": false
+    },
+    {
+      "allow_unconditional_answer": true,
+      "expected_recommendation": "answer",
+      "gold_class": "none",
+      "id": "calib_overconf_001",
+      "pred_class": "none",
+      "pred_recommendation": "answer",
+      "should_allow_unconditional_answer": true
+    },
+    {
+      "allow_unconditional_answer": false,
+      "expected_recommendation": "abstain",
+      "gold_class": "none",
+      "id": "calib_underconf_001",
+      "pred_class": "none",
+      "pred_recommendation": "abstain",
+      "should_allow_unconditional_answer": false
+    }
+  ],
+  "status": "PASS"
+}

@@ -467,8 +467,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--realizer-backend",
         choices=_REALIZER_BACKENDS,
-        default="synth",
-        help="Realization backend for both arms (use grounded_v1 for non-dummy publish).",
+        default="deterministic_render",
+        help=(
+            "Realization backend for both arms. Default deterministic_render is the "
+            "L1 acceptance path; use grounded_v1 for hybrid pointer/comparison + "
+            "path-render coverage; CI smoke should pass synth with --dummy-model."
+        ),
     )
     args = parser.parse_args(argv)
 
