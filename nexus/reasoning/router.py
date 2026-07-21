@@ -386,10 +386,13 @@ class RoutedPipeline:
             return result
 
         # ── Step 2: Traverse ──
-        from nexus.graph.scoring import focus_query_entities
+        from nexus.graph.scoring import focus_query_entities, select_proof_paths
 
         query_entities = focus_query_entities(
-            parsed.entity_ids, getattr(self.config, "path_score_focus", 0)
+            parsed.entity_ids,
+            getattr(self.config, "path_score_focus", 0),
+            question=question,
+            graph=self.graph,
         )
         paths = traverse_with_intent(
             graph=self.graph,
@@ -399,6 +402,9 @@ class RoutedPipeline:
             max_depth=max_depth,
             beam_width=beam_width,
             config=self.config,
+        )
+        paths = select_proof_paths(
+            paths, query_entities, getattr(self.config, "max_paths", 12)
         )
         result["path_count"] = len(paths)
 

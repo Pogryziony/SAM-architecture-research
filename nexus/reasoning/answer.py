@@ -16,7 +16,11 @@ from typing import Any
 
 from nexus.graph.store import InMemoryGraphStore
 from nexus.graph import EDGE_TYPES
-from nexus.graph.scoring import focus_query_entities
+from nexus.graph.scoring import (
+    focus_query_entities,
+    incident_paths_for_entities,
+    select_proof_paths,
+)
 from nexus.graph.traversal import TraversalStats, traverse_with_intent
 from nexus.query.parser import parse_question
 from nexus.reasoning.evidence_builder import (
@@ -403,10 +407,13 @@ def answer_question(
 
     # ── Step 2: Traverse ──
     t0 = time.perf_counter()
-    # Expand from the full entry set, but score/rank against the leading focus
+    # Expand from the full entry set, but score/rank against mention-aware focus
     # entities so hub fillers cannot bury gold edges via diluted coverage.
     query_entities = focus_query_entities(
-        parsed.entity_ids, getattr(config, "path_score_focus", 0)
+        parsed.entity_ids,
+        getattr(config, "path_score_focus", 0),
+        question=question,
+        graph=graph,
     )
     traversal_stats = TraversalStats()
     paths = traverse_with_intent(
@@ -419,6 +426,21 @@ def answer_question(
         config=config,
         stats=traversal_stats,
     )
+    paths = select_proof_paths(paths, query_entities, max_paths)
+    if paths:
+        # Prefer focus entities, then any still-uncovered entry nodes. Only real
+        # incident edges are added — never synthetic identity proofs.
+        cover_targets = set(query_entities) | set(parsed.entity_ids)
+        covered = set()
+        for path in paths:
+            covered |= set(path.nodes) & cover_targets
+        missing = [eid for eid in parsed.entity_ids if eid in (cover_targets - covered)]
+        if missing and len(paths) < max_paths:
+            extra = incident_paths_for_entities(
+                graph, missing, max_paths=max_paths - len(paths)
+            )
+            if extra:
+                paths = list(paths) + extra
     timing["traverse_time"] = round(time.perf_counter() - t0, 6)
     result["traversal_stats"] = traversal_stats.to_dict()
     result["path_count"] = len(paths)
@@ -458,7 +480,12 @@ def answer_question(
             result["cascade_level"] = 3
             result["verification"] = verifier.verify(answer_direct, direct_pack)
             result["timing"] = timing
-            return _attach_reasoning_audit(result, graph, [], config, max_paths)
+            # Attach real incident edges so proof coverage is not left empty
+            # when zero-hop evidence answers from resolved entities.
+            audit_paths = incident_paths_for_entities(
+                graph, parsed.entity_ids, max_paths=max_paths
+            )
+            return _attach_reasoning_audit(result, graph, audit_paths, config, max_paths)
 
     # Edge case: no paths found
     if not paths:

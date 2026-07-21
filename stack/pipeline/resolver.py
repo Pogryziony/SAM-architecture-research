@@ -10,6 +10,7 @@ before traversal handoff (no retraining).
 """
 from __future__ import annotations
 
+import hashlib
 import re
 import time
 from typing import Callable
@@ -277,6 +278,26 @@ def mention_score(entity_id: str, question: str, graph: InMemoryGraphStore) -> f
     return score
 
 
+def _soft_question_overlap(entity_id: str, question: str, graph: InMemoryGraphStore) -> float:
+    """Weaker overlap used only to diversify near-tied ER3 hub fillers."""
+    q_tokens = _question_tokens(question)
+    if not q_tokens:
+        return 0.0
+    node = graph.get_node(entity_id)
+    chunks = [str(entity_id)]
+    if node is not None:
+        chunks.extend(str(alias) for alias in node.aliases)
+        props = node.properties or {}
+        for key in ("name", "title", "display_name", "description", "key_finding"):
+            chunks.append(str(props.get(key, "")))
+    entity_tokens = _question_tokens(" ".join(chunks))
+    return float(len(q_tokens & entity_tokens))
+
+
+def _diversity_tiebreak(question: str, entity_id: str) -> str:
+    return hashlib.sha256(f"{question}\0{entity_id}".encode("utf-8")).hexdigest()
+
+
 class UnionResolver:
     """Question-gated re-rank of the ER3 pool, with lexical mention boosts.
 
@@ -355,13 +376,18 @@ class UnionResolver:
             if entity_id in er3_rank or entity_id in lexical_selected
         ]
 
-        def sort_key(entity_id: str) -> tuple[float, int, str]:
+        def sort_key(entity_id: str) -> tuple[float, float, str]:
             mention = mention_score(entity_id, question, graph)
             lexical_bonus = 50.0 if entity_id in lexical_selected else 0.0
             neural = er3_score.get(entity_id, 0.0) * self.er3_pool_bonus
-            rank = er3_rank.get(entity_id, 10_000_000)
+            soft = _soft_question_overlap(entity_id, question, graph)
             # Ascending sort: more negative primary key first ⇒ higher score first.
-            return (-(mention + lexical_bonus + neural), rank, entity_id)
+            # Soft overlap + question-hash break static hub ties across questions.
+            return (
+                -(mention + lexical_bonus + neural),
+                -soft,
+                _diversity_tiebreak(question, entity_id),
+            )
 
         ranked = sorted(handoff_ids, key=sort_key)
         grounded = [
@@ -373,23 +399,62 @@ class UnionResolver:
         fillers = [entity_id for entity_id in ranked if entity_id not in set(grounded)]
 
         selected: list[str] = []
-        for entity_id in grounded:
-            if entity_id not in selected:
-                selected.append(entity_id)
-            if len(selected) >= self.top_k:
-                break
-        filler_budget = self.top_k
-        if grounded and self.max_ungrounded_fillers is not None:
-            filler_budget = self.max_ungrounded_fillers
-        fillers_added = 0
-        if len(selected) < self.top_k and filler_budget > 0:
-            for entity_id in fillers:
+        if not grounded:
+            # Ungrounded handoff: keep a few ER3 quality anchors, then diversify
+            # the remaining slots from a wider window so questions do not share
+            # one static hub 12-pack.
+            by_neural = sorted(
+                handoff_ids,
+                key=lambda entity_id: (
+                    -er3_score.get(entity_id, 0.0),
+                    er3_rank.get(entity_id, 10_000_000),
+                    entity_id,
+                ),
+            )
+            # Keep enough ER3 anchors for entry_recall, diversify the tail.
+            anchor_k = min(5, self.top_k)
+            window = by_neural[: max(self.top_k * 3, 30)]
+            anchors = window[:anchor_k]
+            rest = sorted(
+                window[anchor_k:],
+                key=lambda entity_id: (
+                    -_soft_question_overlap(entity_id, question, graph),
+                    _diversity_tiebreak(question, entity_id),
+                ),
+            )
+            selected = list(anchors)
+            for entity_id in rest:
                 if entity_id in selected:
                     continue
                 selected.append(entity_id)
-                fillers_added += 1
-                if len(selected) >= self.top_k or fillers_added >= filler_budget:
+                if len(selected) >= self.top_k:
                     break
+        else:
+            for entity_id in grounded:
+                if entity_id not in selected:
+                    selected.append(entity_id)
+                if len(selected) >= self.top_k:
+                    break
+            filler_budget = self.top_k
+            if self.max_ungrounded_fillers is not None:
+                filler_budget = self.max_ungrounded_fillers
+            fillers_added = 0
+            diversified_fillers = sorted(
+                fillers,
+                key=lambda entity_id: (
+                    -_soft_question_overlap(entity_id, question, graph),
+                    -er3_score.get(entity_id, 0.0),
+                    _diversity_tiebreak(question, entity_id),
+                ),
+            )
+            if len(selected) < self.top_k and filler_budget > 0:
+                for entity_id in diversified_fillers:
+                    if entity_id in selected:
+                        continue
+                    selected.append(entity_id)
+                    fillers_added += 1
+                    if len(selected) >= self.top_k or fillers_added >= filler_budget:
+                        break
 
         if not selected:
             selected = list(er3_result.selected_entity_ids[: self.top_k])
