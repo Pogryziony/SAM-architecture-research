@@ -28,15 +28,22 @@ Frozen oracle dataset + paired oracle/predicted reporting:
 ```bash
 python benchmarks/build_frozen_oracle_dataset.py --force
 # Default predicted arm = lexical∪ER3 union handoff (no training).
-# Path ranking uses mention-aware path_score_focus, max_paths=12, and
-# diversified ungrounded handoff. Use er3|lexical for historical baselines.
-python benchmarks/run_oracle_vs_predicted.py --predicted-resolver union --dummy-model --output benchmarks/results/oracle_vs_predicted_union_cov_full_TIMESTAMP.json
+# Preserves ER3 top-k membership; diversifies pack order; mention-aware focus.
+python benchmarks/run_oracle_vs_predicted.py --predicted-resolver union --dummy-model --output benchmarks/results/oracle_vs_predicted_union_recall_full_TIMESTAMP.json
 ```
 
-Synthetic traversal budget campaign (small/medium/large):
+Synthetic traversal budget campaign (small/medium/large; prereg `EXPERIMENT_TRAVERSAL_BUDGETS_V1.md`):
 
 ```bash
 python benchmarks/run_traversal_budget_campaign.py --output benchmarks/results/traversal_budget_campaign_TIMESTAMP.json
+# CI small gate:
+python benchmarks/ci_stage_gates.py --gate traversal
+```
+
+AnswerPlan / Realizer training status (no full training by default):
+
+```bash
+python benchmarks/record_answer_plan_status.py --force
 ```
 
 Canonical graph rebuild (deterministic content hash):

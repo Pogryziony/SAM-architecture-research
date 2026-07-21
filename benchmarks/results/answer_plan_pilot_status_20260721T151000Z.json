@@ -1,0 +1,20 @@
+{
+  "ci_mode": false,
+  "copy_edit_pilots": {
+    "reason": "Overfit-64 / 2048 copy-edit pilots are prepared in benchmarks/train_answer_plan_edit_transducer.py but are not required while graph/proof gates are saturated under DummyModel.",
+    "status": "NOT_RUN"
+  },
+  "created_utc": "2026-07-21T13:11:01.266029+00:00",
+  "full_training": {
+    "reason": "benchmarks/train_answer_plan_pilots.py and check_answer_plan_full_training_readiness.py keep autoregressive full training sealed until copy/edit pilots and generation gates pass.",
+    "status": "FULL_TRAINING_BLOCKED"
+  },
+  "next_action": "Run copy/edit overfit+2048 pilots only after entry_recall recovery and when surface realization (non-dummy) is the binding constraint.",
+  "realizer_training_decision": {
+    "reason": "Paired union_cov artifact shows proof_valid_rate≈0.98 and gold_path_recall≈0.97; low fact_accuracy under DummyModel is not evidence that new Realizer weights are required.",
+    "train_now": false
+  },
+  "schema_version": "nexus-answer-plan-status-v1",
+  "source_sha": "c0ed0d3568d98e5860c7166833d6e6d6dea48590",
+  "status": "RECORDED"
+}

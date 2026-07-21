@@ -107,9 +107,8 @@ def test_union_falls_back_to_er3_when_no_mentions():
     hubs = [f"Exp_Hub_{index}" for index in range(8)]
     er3 = _StubResolver(selected=hubs[:5], pool=hubs)
     lexical = _StubResolver(selected=[])
-    resolver = UnionResolver(er3, lexical, top_k=5)
+    # Ungrounded handoff preserves ER3 top-k membership; order may diversify.
+    resolver = UnionResolver(er3, lexical, top_k=5, anchor_k=5)
     result = resolver.resolve("What is the architecture direction?", graph)
-    # Ungrounded handoff keeps ER3 quality anchors then diversifies the rest.
-    assert result.selected_entity_ids[:5] == hubs[:5]
+    assert set(result.selected_entity_ids) == set(hubs[:5])
     assert len(result.selected_entity_ids) == 5
-    assert set(result.selected_entity_ids).issubset(set(hubs))

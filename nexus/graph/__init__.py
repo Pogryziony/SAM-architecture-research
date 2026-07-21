@@ -7,7 +7,8 @@ The graph store is the central knowledge representation:
 
 Storage backends:
   - InMemoryGraphStore: dict-based, for prototyping (Phase 1-2)
-  - KuzuGraphStore: embedded graph DB, for production (Phase 4+)
+  - KuzuGraphStore: optional embedded graph DB scaffold (Stage 4+;
+    requires ``pip install 'nexus-graph[kuzu]'``)
 """
 
 from __future__ import annotations

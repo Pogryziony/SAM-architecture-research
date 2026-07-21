@@ -103,14 +103,14 @@ contradiction/no-answer/temporal). Build with
 `UnionResolver` (lexical∪frozen ER3 with question-gated handoff; no new
 training) and reports ER decomposition (`pool_recall`, `entry_recall`, proof
 `gold_entity_coverage`, path recall). Current full union+coverage artifact:
-`benchmarks/results/oracle_vs_predicted_union_cov_full_*.json`
-(`predicted.entry_recall_mean≈0.91`, `pool_recall_mean=1.0`,
-`gold_path_recall_mean≈0.97`, `gold_entity_coverage_mean≈0.70`). Mentions
-drive path-score focus; proof selection fills missing entry coverage with
-real incident edges; ungrounded Union handoff keeps ER3 anchors then
-diversifies the tail (largest identical entry pack ≪ previous 63-way hub
-clique). Pre-coverage union/focus paired artifacts remain historical
-baselines. Further family expansion and bi-temporal gold remain open.
+`benchmarks/results/oracle_vs_predicted_union_recall_full_*.json`
+(`entry_recall_mean≈0.95`, `pool_recall_mean=1.0`,
+`gold_path_recall_mean≈0.97`, `gold_entity_coverage_mean≈0.81`,
+`max_identical_entry_pack=1`). Mentions drive path-score focus; proof
+selection reserves slots for real incident edges; ungrounded Union handoff
+preserves ER3 top-k membership and diversifies pack **order** only.
+Pre-coverage / lower-recall paired artifacts remain historical baselines.
+Further family expansion and bi-temporal gold remain open.
 
 Gate: 100% valid records, deterministic rerun, and complete provenance for the
 benchmark artifact.
@@ -131,7 +131,10 @@ path selection, and incident-edge audit fill so large ER handoffs stay
 expandable while proofs cover grounded entries. Synthetic campaign
 `python benchmarks/run_traversal_budget_campaign.py --output ...` measures
 small/medium/large graphs against NEXUS hard p50/p95/RSS limits and requires
-tight-budget truncation. Reference-CPU preregistration remains open.
+tight-budget truncation. Reference-CPU preregistration is
+`EXPERIMENT_TRAVERSAL_BUDGETS_V1.md` (`preregistration_id=traversal-budgets-v1`);
+campaign artifacts must emit platform/CPU/python/source identity. CI runs
+`--sizes small` via `benchmarks/ci_stage_gates.py`.
 
 Gate: no unbounded traversal; p95 and RSS remain inside the assigned NEXUS
 budget on small, medium, and large synthetic graphs.
@@ -161,8 +164,17 @@ source resolution.
 - Version every rule and record premises plus rule ID in each inference step.
 - Keep asserted and inferred facts distinct.
 
-Gate: 100% valid rule proofs and target F1 fixed in preregistration before the
-frozen run.
+**Partial implementation (2026-07-21):** Bounded toy rule engine in
+`nexus/reasoning/rules.py` (versioned Horn rules, max depth/activations,
+premises + rule IDs on inferred facts). Optional `KuzuGraphStore` scaffold in
+`nexus/graph/kuzu_store.py` (`pip install 'nexus-graph[kuzu]'`). AnswerPlan
+copy/edit pilots remain prepared but **not run**; full AnswerPlan training
+stays `FULL_TRAINING_BLOCKED` — status recorded by
+`benchmarks/record_answer_plan_status.py`. Realizer weight training is
+deferred: graph/proof metrics are already saturated under DummyModel.
+
+Gate: 100% valid rule proofs on the toy set; production F1 remains
+preregistration-gated before any frozen rule corpus run.
 
 ### Stage 5: contradiction policy and calibration
 
