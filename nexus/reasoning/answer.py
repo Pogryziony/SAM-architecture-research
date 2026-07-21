@@ -37,7 +37,13 @@ from nexus.realizer.pointer_copy import realize_pointer_copy
 from nexus.realizer.comparison_plan import (
     BACKEND_NAME, HYBRID_BACKEND_NAME, realize_comparison_plan,
 )
+from nexus.realizer.deterministic_render import (
+    render_from_proof_steps,
+    validate_statement_proof_coverage,
+)
 from nexus.utils.config import NEXUSConfig, DEFAULT_CONFIG
+
+DETERMINISTIC_RENDER_BACKEND = "deterministic_render"
 
 # ── Insufficiency detection patterns ────────────────────────────────
 _INSUFFICIENCY_PATTERNS = [
@@ -142,6 +148,76 @@ def _tier3_generate_answer(
             return post_edit_direct["answer"]
         else:
             return model.generate(prompt_direct)
+
+
+def _proof_step_dicts_from_paths(paths: list[Any]) -> list[dict[str, Any]]:
+    """Project traversal paths into deterministic-render proof step dicts."""
+    steps: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+    for path in paths:
+        for step in getattr(path, "steps", []) or []:
+            source = str(getattr(step, "from_node", "") or "")
+            relation = str(getattr(getattr(step, "edge", None), "type", "") or "")
+            target = str(getattr(step, "to_node", "") or "")
+            key = (source, relation, target)
+            if not (source and relation and target) or key in seen:
+                continue
+            seen.add(key)
+            steps.append(
+                {
+                    "step_id": f"{source}|{relation}|{target}",
+                    "from_node": source,
+                    "relation": relation,
+                    "to_node": target,
+                }
+            )
+    return steps
+
+
+def _deterministic_render_result(
+    paths: list[Any],
+    config: NEXUSConfig,
+) -> dict[str, Any] | None:
+    """Stage 7 zero-LLM L1 realization from proof steps when configured."""
+    if getattr(config, "realizer_backend", "") != DETERMINISTIC_RENDER_BACKEND:
+        return None
+    proof_steps = _proof_step_dicts_from_paths(paths)
+    if not proof_steps:
+        return {
+            "answer": "Insufficient evidence to answer. No proof steps available for deterministic render.",
+            "raw_answer": "Insufficient evidence to answer. No proof steps available for deterministic render.",
+            "realization": {
+                "backend": DETERMINISTIC_RENDER_BACKEND,
+                "strategy": DETERMINISTIC_RENDER_BACKEND,
+                "statements": [],
+                "statement_proof_map": [],
+                "coverage_errors": ["no_proof_steps"],
+            },
+            "abstain": True,
+        }
+    render = render_from_proof_steps(proof_steps)
+    coverage_errors = validate_statement_proof_coverage(render)
+    if coverage_errors or not render.get("answer"):
+        return {
+            "answer": "Insufficient evidence to answer. Deterministic render coverage failed.",
+            "raw_answer": "Insufficient evidence to answer. Deterministic render coverage failed.",
+            "realization": {
+                **render,
+                "strategy": DETERMINISTIC_RENDER_BACKEND,
+                "coverage_errors": coverage_errors,
+            },
+            "abstain": True,
+        }
+    return {
+        "answer": render["answer"],
+        "raw_answer": render["answer"],
+        "realization": {
+            **render,
+            "strategy": DETERMINISTIC_RENDER_BACKEND,
+            "coverage_errors": [],
+        },
+        "abstain": False,
+    }
 
 
 def _pointer_copy_result(
@@ -455,39 +531,42 @@ def answer_question(
     if not paths and parsed.entity_ids:
         direct_pack = build_zero_hop_pack(graph, parsed.entity_ids, question=question)
         if direct_pack:
-            comparison = _comparison_plan_result(
+            audit_paths = incident_paths_for_entities(
+                graph, parsed.entity_ids, max_paths=max_paths
+            )
+            deterministic = _deterministic_render_result(audit_paths, config)
+            comparison = None if deterministic is not None else _comparison_plan_result(
                 question, direct_pack, config, parsed.intent,
                 comparison_label_selector,
             )
-            pointer = _pointer_copy_result(
+            pointer = None if deterministic is not None else _pointer_copy_result(
                 question, direct_pack, config, parsed.intent,
             )
-            answer_direct = (
-                comparison.answer if comparison is not None
-                else pointer.answer if pointer is not None
-                else _tier3_generate_answer(
+            if deterministic is not None:
+                answer_direct = deterministic["answer"]
+                realization = deterministic["realization"]
+            elif comparison is not None:
+                answer_direct = comparison.answer
+                realization = comparison.to_dict()
+            elif pointer is not None:
+                answer_direct = pointer.answer
+                realization = pointer.to_dict()
+            else:
+                answer_direct = _tier3_generate_answer(
                     question,
                     direct_pack,
                     model if model is not None else get_available_model(),
                     verifier,
                     config,
                 )
-            )
+                realization = None
             result["answer"] = answer_direct
             result["raw_answer"] = answer_direct
             result["evidence_pack"] = direct_pack
-            result["realization"] = (
-                comparison.to_dict() if comparison is not None
-                else pointer.to_dict() if pointer is not None else None
-            )
+            result["realization"] = realization
             result["cascade_level"] = 3
             result["verification"] = verifier.verify(answer_direct, direct_pack)
             result["timing"] = timing
-            # Attach real incident edges so proof coverage is not left empty
-            # when zero-hop evidence answers from resolved entities.
-            audit_paths = incident_paths_for_entities(
-                graph, parsed.entity_ids, max_paths=max_paths
-            )
             return _attach_reasoning_audit(result, graph, audit_paths, config, max_paths)
 
     # Edge case: no paths found
@@ -536,10 +615,23 @@ def answer_question(
     timing["evidence_time"] = round(time.perf_counter() - t0, 6)
     result["evidence_pack"] = evidence_pack
 
+    # Stage 7: deterministic proof→statement render is the zero-LLM L1 path.
+    # It runs before pointer/comparison/synth so acceptance never touches an LLM.
+    t0 = time.perf_counter()
+    deterministic = _deterministic_render_result(paths, config)
+    if deterministic is not None:
+        timing["realize_time"] = round(time.perf_counter() - t0, 6)
+        result["answer"] = deterministic["answer"]
+        result["raw_answer"] = deterministic["raw_answer"]
+        result["realization"] = deterministic["realization"]
+        result["cascade_level"] = 1
+        result["verification"] = verifier.verify(deterministic["answer"], evidence_pack)
+        result["timing"] = timing
+        return _attach_reasoning_audit(result, graph, paths, config, max_paths)
+
     # Pointer/Copy v3 is the complete factual realization path.  It copies
     # evidence before any prompt or generative model call, preventing altered
     # identifiers and numeric values.
-    t0 = time.perf_counter()
     comparison = _comparison_plan_result(
         question, evidence_pack, config, parsed.intent,
         comparison_label_selector,

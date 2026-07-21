@@ -1,0 +1,19 @@
+{
+  "corpus_id": "rule_corpus_v1_frozen",
+  "errors": [],
+  "frozen_file_sha256": "58c36ca889b9e0d44ac476dac92de30ad7ed60715ddcaf2e24e0a6c480d8f03b",
+  "inferred_count": 33,
+  "metrics": {
+    "f1": 1.0,
+    "fn": 0.0,
+    "fp": 0.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 33.0
+  },
+  "mode": "frozen",
+  "preregistration_id": "rule-engine-v2",
+  "rule_count": 15,
+  "status": "PASS",
+  "truncated": false
+}

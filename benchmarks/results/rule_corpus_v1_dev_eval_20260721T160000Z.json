@@ -1,0 +1,18 @@
+{
+  "corpus_id": "rule_corpus_v1",
+  "errors": [],
+  "inferred_count": 29,
+  "metrics": {
+    "f1": 1.0,
+    "fn": 0.0,
+    "fp": 0.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "tp": 29.0
+  },
+  "mode": "development",
+  "preregistration_id": "rule-engine-v1",
+  "rule_count": 15,
+  "status": "PASS",
+  "truncated": false
+}

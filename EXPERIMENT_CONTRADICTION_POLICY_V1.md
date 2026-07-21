@@ -1,8 +1,10 @@
 # EXPERIMENT: Contradiction Policy V1
 
 **Pre-registered**: 2026-07-21  
-**Status**: ACTIVE — partial Stage 5 scaffold  
-**Preregistration ID**: `contradiction-policy-v1`
+**Status**: ACTIVE — development F1 / calibration campaign opened  
+**Preregistration ID**: `contradiction-policy-v1`  
+**Gold**: `benchmarks/qa-dataset/contradiction_gold_v1.jsonl`  
+**Eval**: `python benchmarks/eval_contradiction_policy.py`
 
 ## Policy classes
 
@@ -13,12 +15,19 @@
 | `validity_mismatch` | Bi-temporal validity windows do not overlap for a claim |
 | `source_disagreement` | Distinct sources assert incompatible relations |
 
-## Gate (partial)
+## Gate
 
 Any **unresolved** conflict ⇒ readiness recommendation must not be
 unconditional `answer` (at most `conditional_answer` or `abstain`).
 
-## Frozen contradiction F1
+## Development campaign thresholds
 
-Sealed until a future prereg publishes gold conflict labels and thresholds.
-Development unit tests only in this version.
+| Metric | Threshold |
+|---|---:|
+| Conflict-class macro F1 | ≥ 0.90 |
+| Policy recommendation accuracy | ≥ 0.90 |
+| Unconditional answer leaks on unresolved conflicts | 0 |
+| Calibration | report Brier + ECE on readiness scores (diagnostic) |
+
+Frozen contradiction F1 remains sealed until a future prereg publishes a
+held-out gold hash. Development gold may evolve under these thresholds.

@@ -231,6 +231,19 @@ class ProductionNEXUSConfig(NEXUSConfig):
         return cls(pipeline_id=PipelineIdentity(lexical_fallback=True), **kwargs)
 
     @classmethod
+    def deterministic_render(cls, **overrides: Any) -> "ProductionNEXUSConfig":
+        """Factory for zero-LLM Stage 7 proof→statement realization."""
+        kwargs: dict[str, Any] = {
+            "enable_associative_encoder": False,
+            "enable_embedding_er": False,
+            "enable_normalization": False,
+            "realizer_backend": "deterministic_render",
+            "require_structured_provenance": True,
+        }
+        kwargs.update(overrides)
+        return cls(pipeline_id=PipelineIdentity(lexical_fallback=True), **kwargs)
+
+    @classmethod
     def with_encoder(
         cls,
         model_dir: str = "models/encoder_v2",
@@ -294,7 +307,11 @@ def validate_config(config: ProductionNEXUSConfig) -> list[str]:
                 )
 
     allowed_realizers = {
-        "synth", "pointer_copy", "abstractive_plan_v3", "grounded_v1",
+        "synth",
+        "pointer_copy",
+        "abstractive_plan_v3",
+        "grounded_v1",
+        "deterministic_render",
     }
     if config.realizer_backend not in allowed_realizers:
         errors.append(f"unsupported realizer_backend: {config.realizer_backend}")

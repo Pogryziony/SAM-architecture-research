@@ -164,16 +164,17 @@ source resolution.
 - Version every rule and record premises plus rule ID in each inference step.
 - Keep asserted and inferred facts distinct.
 
-**Partial implementation (2026-07-21):** Bounded rule engine plus
-`rule_corpus_v1` (6 Horn rules) with preregistered development F1 gates in
-`EXPERIMENT_RULE_ENGINE_V1.md` (`python benchmarks/eval_rule_engine.py`).
-Frozen rule eval remains sealed. Optional `KuzuGraphStore` is exercised in CI
-via `nexus-graph[kuzu]`. AnswerPlan copy/edit overfit+2048 is **deferred**:
-non-dummy realization is not the binding constraint under the current
-DummyModel paired artifact (`record_answer_plan_status.py`).
+**Partial implementation (2026-07-21):** Bounded rule engine plus grown
+`rule_corpus_v1` (15 Horn rules). Development gates remain in
+`EXPERIMENT_RULE_ENGINE_V1.md`; frozen eval opened under
+`EXPERIMENT_RULE_ENGINE_V2.md` with published frozen file SHA-256
+(`python benchmarks/eval_rule_engine.py --mode frozen`). Optional
+`KuzuGraphStore` remains CI-exercised via `nexus-graph[kuzu]`. A grounded
+paired artifact (`grounded_v1` + SynthesizingModel) is published; AnswerPlan
+overfit+2048 stays deferred because oracle and predicted fact accuracy are
+both low (shared surface/realizer coverage gap, not ER-path realization).
 
-Gate: development F1 ≥ 0.90 on `rule_corpus_v1`; frozen F1 sealed until a
-future prereg publishes the frozen split hash.
+Gate: development F1 ≥ 0.90; frozen F1 ≥ 0.90 with exact file hash match.
 
 ### Stage 5: contradiction policy and calibration
 
@@ -183,11 +184,11 @@ future prereg publishes the frozen split hash.
 - Calibrate readiness and abstention using risk-coverage curves, Brier score,
   and expected calibration error.
 
-**Partial implementation (2026-07-21):** `nexus/reasoning/conflict_policy.py`
-classifies contradiction/supersession/validity/source-disagreement and blocks
-unconditional answers when conflicts are unresolved. Wired into reasoning
-audit. Prereg: `EXPERIMENT_CONTRADICTION_POLICY_V1.md`. Contradiction F1 /
-calibration curves remain future work.
+**Partial implementation (2026-07-21):** Conflict policy wired into audit
+(including `replaces` supersession). Development campaign
+`benchmarks/eval_contradiction_policy.py` reports class macro-F1, policy
+accuracy, Brier, and ECE against `contradiction_gold_v1.jsonl`. Frozen
+contradiction gold remains sealed.
 
 Gate: contradiction F1 and high-confidence answer accuracy meet preregistered
 thresholds; no unresolved conflict yields an unconditional answer.
@@ -198,10 +199,11 @@ thresholds; no unresolved conflict yields an unconditional answer.
 - Support `as_valid_at` and `as_known_at` queries.
 - Add point-in-time replay tests that prohibit using knowledge learned later.
 
-**Partial implementation (2026-07-21):** `nexus/graph/bitemporal.py` filters
-facts by valid/known time and rejects look-ahead observations
-(`tests/test_bitemporal_replay.py`). Full graph schema migration and oracle
-bi-temporal gold remain open.
+**Partial implementation (2026-07-21):** `Edge` carries first-class bi-temporal
+fields; canonical graph payload schema is `nexus-canonical-graph-v2`.
+`bitemporal_oracle_v1.jsonl` + `run_bitemporal_replay.py` exercise
+valid/known filters and look-ahead rejection. Broader ingest stamping across
+all production edges remains incremental.
 
 Gate: deterministic historical replay and no look-ahead leakage.
 
@@ -212,10 +214,11 @@ Gate: deterministic historical replay and no look-ahead leakage.
   uncertainty statement.
 - Keep any learned realizer optional and outside the zero-LLM acceptance path.
 
-**Partial implementation (2026-07-21):** `nexus/realizer/deterministic_render.py`
-renders proof steps deterministically and gates unmapped statements
-(`tests/test_deterministic_realization_gates.py`). Learned Realizer training
-remains optional and deferred.
+**Partial implementation (2026-07-21):** `deterministic_render` is an allowed
+`realizer_backend` and is wired into `answer_question` before pointer /
+comparison / LLM paths (`ProductionNEXUSConfig.deterministic_render()`).
+Coverage failures abstain. Learned Realizer training remains optional and
+deferred.
 
 Gate: zero unsupported statements and identical output for identical structured
 input.

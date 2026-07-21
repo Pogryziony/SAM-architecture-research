@@ -39,13 +39,23 @@ class Node:
 
 @dataclass
 class Edge:
-    """A directed, typed edge between two nodes."""
+    """A directed, typed edge between two nodes.
+
+    Bi-temporal fields (Stage 6):
+      - ``valid_from`` / ``valid_to``: when the fact holds in the world
+      - ``observed_at`` / ``retracted_at``: when the system learned / withdrew it
+    Empty strings mean "unspecified" and do not filter point-in-time queries.
+    """
     type: str  # supported relation vocabulary is defined by EDGE_TYPES below
     source: str  # source node ID
     target: str  # target node ID
     confidence: float = 1.0  # [0.0, 1.0]
     evidence: str = ""  # Source reference
     created_at: str = ""
+    valid_from: str = ""
+    valid_to: str = ""
+    observed_at: str = ""
+    retracted_at: str = ""
 
     def __post_init__(self):
         if not isinstance(self.confidence, (int, float)) or isinstance(self.confidence, bool):
@@ -63,6 +73,18 @@ class Edge:
 
     def __hash__(self):
         return hash((self.type, self.source, self.target))
+
+    def bitemporal_stamp(self) -> dict[str, str]:
+        """Return bi-temporal fields as a mapping for filter helpers."""
+        return {
+            "valid_from": self.valid_from,
+            "valid_to": self.valid_to,
+            "observed_at": self.observed_at,
+            "retracted_at": self.retracted_at,
+            "source": self.source,
+            "relation": self.type,
+            "target": self.target,
+        }
 
 
 @dataclass
