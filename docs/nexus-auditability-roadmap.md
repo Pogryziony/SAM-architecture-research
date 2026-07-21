@@ -95,10 +95,11 @@ split or retroactively applied to historical artifacts.
   diagnostics.
 
 **Partial implementation (2026-07-21):** Frozen contract `oracle_v1` lives in
-`benchmarks/qa-dataset/oracle_v1.jsonl` (+ manifest). Build with
-`python benchmarks/build_frozen_oracle_dataset.py`. Paired reporting scaffold:
-`python benchmarks/run_oracle_vs_predicted.py --output ...`. Broader hop /
-temporal coverage and full publication runs remain open.
+`benchmarks/qa-dataset/oracle_v1.jsonl` (+ manifest; 182 records after gold
+expansion). Build with `python benchmarks/build_frozen_oracle_dataset.py`.
+Paired reporting: `python benchmarks/run_oracle_vs_predicted.py --output ...`
+(smoke artifact under `benchmarks/results/oracle_vs_predicted_smoke_*.json`).
+Broader hop / temporal coverage and full-dataset publication remain open.
 
 Gate: 100% valid records, deterministic rerun, and complete provenance for the
 benchmark artifact.
@@ -111,8 +112,10 @@ benchmark artifact.
   as a complete search.
 
 **Partial implementation (2026-07-21):** `NEXUSConfig.max_expanded_edges` /
-`max_expanded_nodes` and `TraversalStats` in `nexus/graph/traversal.py` report
-truncation. Optional wall-clock budget and readiness coupling remain open.
+`max_expanded_nodes` / `max_traversal_ms` and `TraversalStats` report
+truncation. Answer pipeline attaches `traversal_stats` to results; truncated
+search forces `conditional_answer` in the reasoning audit (never unconditional
+`answer`). Synthetic RSS/p95 campaign remains open.
 
 Gate: no unbounded traversal; p95 and RSS remain inside the assigned NEXUS
 budget on small, medium, and large synthetic graphs.
@@ -125,11 +128,12 @@ budget on small, medium, and large synthetic graphs.
   reliability.
 - Prevent unconditional answers when required provenance is incomplete.
 
-**Partial implementation (2026-07-21):** `nexus/graph/provenance.py` provides
-`SourceRecord`, free-form adapters, and `attach_provenance_to_properties`.
-Experiment populate + doc/generic ingestion now attach
-`properties["provenance"]` while keeping legacy `Node.sources` strings.
-Unconditional-answer provenance gates are not yet enforced.
+**Partial implementation (2026-07-21):** `SourceRecord` adapters + ingestion
+`properties["provenance"]` attach. Audit computes
+`structured_provenance_coverage`; `require_structured_provenance=True`
+(default on `ProductionNEXUSConfig.grounded()`) blocks unconditional answers
+when only free-form sources are present. Free-form coverage still gates the
+library default path.
 
 Gate: 100% provenance coverage for accepted benchmark answers and reproducible
 source resolution.

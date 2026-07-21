@@ -5,16 +5,16 @@
     "factual": 78,
     "multi-hop": 8,
     "negative_relation": 3,
-    "relation": 27
+    "relation": 29
   },
-  "created_utc": "2026-07-21T10:24:34.714026+00:00",
+  "created_utc": "2026-07-21T10:42:43.056026+00:00",
   "dataset_id": "oracle_v1",
-  "file_sha256": "85e72e6733f13a87e797c67095e19671e9c7f8d4915064dd0cc7c8cc58d2e24e",
-  "record_count": 180,
+  "file_sha256": "149eca35aa209ca8b351e98646748425e8321a5f286f6ca9d110d6c73ff64939",
+  "record_count": 182,
   "schema_version": "nexus-oracle-v1",
-  "sha256": "6629f06c0cc72aad74eb0d20c30fe04b9e2b957b040acbb46a8c5c7827acac43",
+  "sha256": "3814de50d12fbf1a1f460880ff6ba0565556170ddffe2b39e3c6ac606374fe48",
   "sources": {
-    "C:/Users/Pogry/Projects/SAM-architecture-research/benchmarks/qa-dataset/relation_gold.jsonl": "cf79e2b5e89673531596a5ddad71db407927e7a914a85fac1c0f28f88d556b8f",
+    "C:/Users/Pogry/Projects/SAM-architecture-research/benchmarks/qa-dataset/relation_gold.jsonl": "c1ace6694c3bebc29a50d8a66f6a4090e2ce84d166782abb9b53e8abf86e46a4",
     "C:/Users/Pogry/Projects/SAM-architecture-research/stack/encoder/data/val.jsonl": "f95e212502c7c5ad5a615a3e1921e62ef7e1e961a229f44be63e3f829fdacd09"
   }
 }

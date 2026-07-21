@@ -96,6 +96,89 @@ def test_missing_provenance_cannot_produce_unconditional_answer():
     assert audit.recommended_action == "conditional_answer"
 
 
+def test_traversal_truncation_cannot_produce_unconditional_answer():
+    graph, path = _auditable_graph()
+    pack = build_evidence_pack("What does A depend on?", [path], graph)
+    audit = build_reasoning_audit(
+        [path],
+        graph,
+        pack,
+        _verified(),
+        "A depends on B.",
+        traversal_truncated=True,
+        traversal_stats={"truncated": True, "truncation_reason": "max_traversal_ms"},
+    )
+    assert audit.recommended_action == "conditional_answer"
+    assert audit.traversal_truncated is True
+    assert audit.traversal_stats["truncation_reason"] == "max_traversal_ms"
+
+
+def test_require_structured_provenance_blocks_freeform_only_unconditional_answer():
+    graph, path = _auditable_graph()
+    pack = build_evidence_pack("What does A depend on?", [path], graph)
+    freeform_ok = build_reasoning_audit(
+        [path], graph, pack, _verified(), "A depends on B."
+    )
+    assert freeform_ok.recommended_action == "answer"
+
+    strict = build_reasoning_audit(
+        [path],
+        graph,
+        pack,
+        _verified(),
+        "A depends on B.",
+        require_structured_provenance=True,
+    )
+    assert strict.structured_provenance_coverage == 0.0
+    assert strict.recommended_action == "conditional_answer"
+
+
+def test_structured_provenance_allows_unconditional_when_required():
+    from nexus.graph.provenance import attach_provenance_to_properties
+
+    graph = InMemoryGraphStore()
+    graph.add_node(Node(
+        id="A",
+        type="Entity",
+        sources=["facts/a.md"],
+        properties=attach_provenance_to_properties({}, ["facts/a.md"]),
+    ))
+    graph.add_node(Node(
+        id="B",
+        type="Entity",
+        sources=["facts/b.md"],
+        properties=attach_provenance_to_properties({}, ["facts/b.md"]),
+    ))
+    edge = Edge(
+        type="depends_on",
+        source="A",
+        target="B",
+        confidence=0.9,
+        evidence="decisions/dependency.md",
+    )
+    graph.add_edge(edge)
+    path = Path(steps=[PathStep(edge=edge)], score=0.85)
+    pack = build_evidence_pack("What does A depend on?", [path], graph)
+    audit = build_reasoning_audit(
+        [path],
+        graph,
+        pack,
+        _verified(),
+        "A depends on B.",
+        require_structured_provenance=True,
+    )
+    assert audit.structured_provenance_coverage == 1.0
+    assert audit.recommended_action == "answer"
+
+
+def test_grounded_profile_requires_structured_provenance():
+    grounded = ProductionNEXUSConfig.grounded()
+    lexical = ProductionNEXUSConfig.lexical_only()
+    assert grounded.require_structured_provenance is True
+    assert lexical.require_structured_provenance is False
+    assert grounded.config_hash != lexical.config_hash
+
+
 def test_path_edge_missing_from_store_invalidates_proof():
     graph = InMemoryGraphStore()
     graph.add_node(Node(id="A", type="Entity"))

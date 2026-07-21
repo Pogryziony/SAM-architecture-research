@@ -22,7 +22,7 @@ runner = NEXUSRunner(graph=graph, config=config)
 | `lexical_only()` | synth | Pure lexical baseline |
 | `pointer_copy()` | pointer_copy | Extractive factual answers only |
 | `comparison_plan()` | abstractive_plan_v3 | Comparison questions only |
-| `grounded()` | grounded_v1 | **Recommended** factual + comparison routing |
+| `grounded()` | grounded_v1 | **Recommended** factual + comparison routing; also sets `require_structured_provenance=True` |
 
 ## Library / experiment default
 

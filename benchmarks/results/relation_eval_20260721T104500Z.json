@@ -1,0 +1,71 @@
+{
+  "global": {
+    "gold_count": 29,
+    "predicted_count": 29,
+    "tp": 29,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+  },
+  "per_type": {
+    "blocked_by": {
+      "gold_count": 1,
+      "predicted_count": 1,
+      "tp": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "caused_by": {
+      "gold_count": 1,
+      "predicted_count": 1,
+      "tp": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "contradicts": {
+      "gold_count": 1,
+      "predicted_count": 1,
+      "tp": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "depends_on": {
+      "gold_count": 12,
+      "predicted_count": 12,
+      "tp": 12,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "derived_from": {
+      "gold_count": 3,
+      "predicted_count": 3,
+      "tp": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "implements": {
+      "gold_count": 1,
+      "predicted_count": 1,
+      "tp": 1,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "validates": {
+      "gold_count": 10,
+      "predicted_count": 10,
+      "tp": 10,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    }
+  },
+  "false_positives": [],
+  "false_negatives": [],
+  "negative_examples_hit": []
+}

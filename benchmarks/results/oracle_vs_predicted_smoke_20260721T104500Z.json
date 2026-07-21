@@ -1,0 +1,363 @@
+{
+  "config_hash": "ea7a0bc58599b486",
+  "created_utc": "2026-07-21T10:42:53.047026+00:00",
+  "dataset": {
+    "file_sha256": "149eca35aa209ca8b351e98646748425e8321a5f286f6ca9d110d6c73ff64939",
+    "record_count": 8,
+    "schema_version": "nexus-oracle-v1",
+    "sources": {
+      "C:/Users/Pogry/Projects/SAM-architecture-research/benchmarks/qa-dataset/oracle_v1.jsonl": "149eca35aa209ca8b351e98646748425e8321a5f286f6ca9d110d6c73ff64939"
+    }
+  },
+  "errors": [],
+  "oracle": {
+    "evaluation_mode": "oracle",
+    "metrics": {
+      "abstention_f1": 0.0,
+      "abstention_precision": 0.0,
+      "abstention_recall": 0.0,
+      "fact_accuracy_mean": 0.5,
+      "gold_entity_coverage_mean": 0.6146,
+      "gold_path_recall_mean": null,
+      "latency_p50_ms": 34.196,
+      "latency_p95_ms": 67.837,
+      "proof_valid_rate": 1.0,
+      "provenance_coverage_mean": 1.0,
+      "token_f1_mean": 0.1088
+    }
+  },
+  "oracle_schema_version": "nexus-oracle-v1",
+  "paired": [
+    {
+      "category": "diagnostic",
+      "delta": {
+        "fact_accuracy": null,
+        "gold_entity_coverage": 0.0,
+        "token_f1": -0.1849
+      },
+      "oracle": {
+        "answer": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified. External text query bypasses hidden-state projection. Tested topK sweep. all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.",
+        "category": "diagnostic",
+        "fact_accuracy": null,
+        "gold_entity_coverage": 0.5,
+        "gold_path_recall": null,
+        "latency_ms": 67.837,
+        "predicted_abstain": true,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q377",
+        "reasoning_action": "abstain",
+        "should_abstain": false,
+        "token_f1": 0.2712
+      },
+      "predicted": {
+        "answer": "Dual encoder query projection mismatch prevents SAM from using retrieved memory. Learned selector precision is the critical bottleneck (50% precision, 96.6% recall). Pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning).",
+        "category": "diagnostic",
+        "fact_accuracy": null,
+        "gold_entity_coverage": 0.5,
+        "gold_path_recall": null,
+        "latency_ms": 64.107,
+        "predicted_abstain": false,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q377",
+        "reasoning_action": "conditional_answer",
+        "should_abstain": false,
+        "token_f1": 0.4561
+      },
+      "question_id": "answer_q377"
+    },
+    {
+      "category": "factual",
+      "delta": {
+        "fact_accuracy": 0.0,
+        "gold_entity_coverage": 1.0,
+        "token_f1": -0.0092
+      },
+      "oracle": {
+        "answer": "the RequiredSet experiment all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.",
+        "category": "factual",
+        "fact_accuracy": 0.0,
+        "gold_entity_coverage": 1.0,
+        "gold_path_recall": null,
+        "latency_ms": 17.931,
+        "predicted_abstain": true,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q378",
+        "reasoning_action": "abstain",
+        "should_abstain": false,
+        "token_f1": 0.0741
+      },
+      "predicted": {
+        "answer": "Iterative Querying ore fixing the basic path - Compare to GPT, DeepSeek, or production LLMs (premature and misleading) - Claim readiness for any practical application - Publish results as \"validated architecture\" before realistic retrieval works ## Timeline notes No fixed timeline, and ayers) before fixing the basic path - Compare to GPT, DeepSeek, or production LLMs (premature and misleading) - Claim readiness for any practical application - Publish results as \"validated architecture\" before realistic retrieval works ## Timeline notes No fixed timeline.",
+        "category": "factual",
+        "fact_accuracy": 0.0,
+        "gold_entity_coverage": 0.0,
+        "gold_path_recall": null,
+        "latency_ms": 19.195,
+        "predicted_abstain": false,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q378",
+        "reasoning_action": "answer",
+        "should_abstain": false,
+        "token_f1": 0.0833
+      },
+      "question_id": "answer_q378"
+    },
+    {
+      "category": "diagnostic",
+      "delta": {
+        "fact_accuracy": 1.0,
+        "gold_entity_coverage": 0.25,
+        "token_f1": 0.0064
+      },
+      "oracle": {
+        "answer": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified. External text query bypasses hidden-state projection. Tested topK sweep. Tested weighted, threshold, softmax-mass, score-gap selection.",
+        "category": "diagnostic",
+        "fact_accuracy": 1.0,
+        "gold_entity_coverage": 0.25,
+        "gold_path_recall": null,
+        "latency_ms": 12.949,
+        "predicted_abstain": false,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q379",
+        "reasoning_action": "answer",
+        "should_abstain": false,
+        "token_f1": 0.1951
+      },
+      "predicted": {
+        "answer": "The SAM architecture itself (memory injection, gated integration, value readout) is validated by oracle results. Condition If SAM improves single-hop factual recall but does **not** improve two-hop and three-hop reasoning relative to the dense baseline, SAM is not validated as a general base architecture. Failure Condition If SAM improves single-hop factual recall but does **not** improve two-hop and three-hop reasoning relative to the dense baseline, SAM is not validated as a general base architecture.",
+        "category": "diagnostic",
+        "fact_accuracy": 0.0,
+        "gold_entity_coverage": 0.0,
+        "gold_path_recall": null,
+        "latency_ms": 10.613,
+        "predicted_abstain": false,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q379",
+        "reasoning_action": "answer",
+        "should_abstain": false,
+        "token_f1": 0.1887
+      },
+      "question_id": "answer_q379"
+    },
+    {
+      "category": "multi-hop",
+      "delta": {
+        "fact_accuracy": 0.0,
+        "gold_entity_coverage": 1.0,
+        "token_f1": -0.1034
+      },
+      "oracle": {
+        "answer": "the RequiredSet experiment all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.",
+        "category": "multi-hop",
+        "fact_accuracy": 0.0,
+        "gold_entity_coverage": 1.0,
+        "gold_path_recall": null,
+        "latency_ms": 33.514,
+        "predicted_abstain": true,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q380",
+        "reasoning_action": "abstain",
+        "should_abstain": false,
+        "token_f1": 0.0
+      },
+      "predicted": {
+        "answer": "Hot-slot ratio · dead-slot ratio · streamed MB/token · random-read bytes/token. ### 6.3 Categories --- ## 7. Experiment 0 Results (POC Validation) ### 7.1 Summary The SAM proof-of-concept (sam-lm/) was implemented and experimentally validated through six experiments (0.0–0.6). Key findings: **SAM architecture VALIDATED.** The core CAN use memory for dramatic accuracy gains. | Experiment | Key Finding.",
+        "category": "multi-hop",
+        "fact_accuracy": 0.0,
+        "gold_entity_coverage": 0.0,
+        "gold_path_recall": null,
+        "latency_ms": 29.163,
+        "predicted_abstain": false,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q380",
+        "reasoning_action": "answer",
+        "should_abstain": false,
+        "token_f1": 0.1034
+      },
+      "question_id": "answer_q380"
+    },
+    {
+      "category": "diagnostic",
+      "delta": {
+        "fact_accuracy": null,
+        "gold_entity_coverage": 0.25,
+        "token_f1": -0.0527
+      },
+      "oracle": {
+        "answer": "the RequiredSet experiment all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.",
+        "category": "diagnostic",
+        "fact_accuracy": null,
+        "gold_entity_coverage": 0.25,
+        "gold_path_recall": null,
+        "latency_ms": 34.196,
+        "predicted_abstain": true,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q381",
+        "reasoning_action": "abstain",
+        "should_abstain": false,
+        "token_f1": 0.1212
+      },
+      "predicted": {
+        "answer": "Does the selector's ~50% precision cause systematic failures beyond what distractor count alone would predict. - Will the padding-bug fix change previous non-oracle baseline results. - Is latent-vector averaging sufficient, or do we need a slot-wise memory reader. ## Next steps See the **[Roadmap](roadmap.md)** for curr. Does the selector's ~50% precision cause systematic failures beyond what distractor count alone would predict. - Will the padding-bug fix change previous non-oracle baseline results. - Is latent-vector averaging sufficient, or do we need a slot-wise memory reader. ## Next steps See the **[Roadmap](roadmap.md)** for current and planned experiments. The immediate.",
+        "category": "diagnostic",
+        "fact_accuracy": null,
+        "gold_entity_coverage": 0.0,
+        "gold_path_recall": null,
+        "latency_ms": 31.95,
+        "predicted_abstain": false,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q381",
+        "reasoning_action": "answer",
+        "should_abstain": false,
+        "token_f1": 0.1739
+      },
+      "question_id": "answer_q381"
+    },
+    {
+      "category": "diagnostic",
+      "delta": {
+        "fact_accuracy": 1.0,
+        "gold_entity_coverage": 0.25,
+        "token_f1": -0.0806
+      },
+      "oracle": {
+        "answer": "Oracle memory: 99.87%. Retrieved memory = core_only (68.74%). Query projection mismatch identified. External text query bypasses hidden-state projection. Tested topK sweep. Tested weighted, threshold, softmax-mass, score-gap selection.",
+        "category": "diagnostic",
+        "fact_accuracy": 1.0,
+        "gold_entity_coverage": 0.25,
+        "gold_path_recall": null,
+        "latency_ms": 48.118,
+        "predicted_abstain": false,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q382",
+        "reasoning_action": "answer",
+        "should_abstain": false,
+        "token_f1": 0.1633
+      },
+      "predicted": {
+        "answer": "Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture. Pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning).",
+        "category": "diagnostic",
+        "fact_accuracy": 0.0,
+        "gold_entity_coverage": 0.0,
+        "gold_path_recall": null,
+        "latency_ms": 49.917,
+        "predicted_abstain": false,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q382",
+        "reasoning_action": "answer",
+        "should_abstain": false,
+        "token_f1": 0.2439
+      },
+      "question_id": "answer_q382"
+    },
+    {
+      "category": "factual",
+      "delta": {
+        "fact_accuracy": null,
+        "gold_entity_coverage": 1.0,
+        "token_f1": 0.0
+      },
+      "oracle": {
+        "answer": "the RequiredSet experiment all_required@64 = 27%. Dual encoder misses intermediate chain slots. Not a ranking problem.",
+        "category": "factual",
+        "fact_accuracy": null,
+        "gold_entity_coverage": 1.0,
+        "gold_path_recall": null,
+        "latency_ms": 38.508,
+        "predicted_abstain": true,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q383",
+        "reasoning_action": "abstain",
+        "should_abstain": false,
+        "token_f1": 0.0
+      },
+      "predicted": {
+        "answer": "S vague for similarity | Traverse blocked_by, contradicts edges | | Ambiguous entities (\"Migration\" — concept or test?) | All chunks mentioning \"migration\" mixed together | Type-disambiguated nodes; clearer results | ### 3.",
+        "category": "factual",
+        "fact_accuracy": null,
+        "gold_entity_coverage": 0.0,
+        "gold_path_recall": null,
+        "latency_ms": 35.597,
+        "predicted_abstain": true,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q383",
+        "reasoning_action": "abstain",
+        "should_abstain": false,
+        "token_f1": 0.0
+      },
+      "question_id": "answer_q383"
+    },
+    {
+      "category": "diagnostic",
+      "delta": {
+        "fact_accuracy": null,
+        "gold_entity_coverage": 0.6667,
+        "token_f1": 0.0104
+      },
+      "oracle": {
+        "answer": "Oracle-filter: 100%. Learned selector: recall 96.6%, precision 50%. Selector is bottleneck. SAM tolerates +8 random distractors (91.6%). 3-hop collapses at +16 (39%). Gate NOT the bottleneck.",
+        "category": "diagnostic",
+        "fact_accuracy": null,
+        "gold_entity_coverage": 0.6667,
+        "gold_path_recall": null,
+        "latency_ms": 34.879,
+        "predicted_abstain": false,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q384",
+        "reasoning_action": "conditional_answer",
+        "should_abstain": false,
+        "token_f1": 0.0455
+      },
+      "predicted": {
+        "answer": "raph provides the **skeleton** (what relates to what, why). RAG provides the **flesh** (detailed explanations, examples, nuances). ## Experimental Validation Plan To validate that NEXUS beats RAG for domain-specific QA, we will: 1. **Create a QA dataset** of 200-500 questions about the SAM/NEXUS project itself 2. raph provides the **skeleton** (what relates to what, why). RAG provides the **flesh** (detailed explanations, examples, nuances). ## Experimental Validation Plan To validate that NEXUS beats RAG for domain-specific QA, we will: 1. **Create a QA dataset** of 200-500 questions about the SAM/NEXUS project itself 2. raph provides the **skeleton** (what relates to what, why). RAG provides the **flesh** (detailed explanations, examples, nuances). ## Experimental Validation Plan To validate that NEXUS beats RAG for domain-specific QA, we will: 1. **Create a QA dataset** of 200-500 questions about the SAM/NEXUS project itself 2.",
+        "category": "diagnostic",
+        "fact_accuracy": null,
+        "gold_entity_coverage": 0.0,
+        "gold_path_recall": null,
+        "latency_ms": 33.275,
+        "predicted_abstain": false,
+        "proof_valid": true,
+        "provenance_coverage": 1.0,
+        "question_id": "answer_q384",
+        "reasoning_action": "answer",
+        "should_abstain": false,
+        "token_f1": 0.0351
+      },
+      "question_id": "answer_q384"
+    }
+  ],
+  "predicted": {
+    "evaluation_mode": "predicted",
+    "metrics": {
+      "abstention_f1": 0.0,
+      "abstention_precision": 0.0,
+      "abstention_recall": 0.0,
+      "fact_accuracy_mean": 0.0,
+      "gold_entity_coverage_mean": 0.0625,
+      "gold_path_recall_mean": null,
+      "latency_p50_ms": 31.95,
+      "latency_p95_ms": 64.107,
+      "proof_valid_rate": 1.0,
+      "provenance_coverage_mean": 1.0,
+      "token_f1_mean": 0.1605
+    }
+  },
+  "questions_total": 8,
+  "schema_version": "nexus-oracle-vs-predicted-v1",
+  "source_sha": "381a1934f94da37d33971c6eabdf225523b12f3d"
+}

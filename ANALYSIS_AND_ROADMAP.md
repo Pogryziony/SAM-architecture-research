@@ -266,7 +266,7 @@ Moving from retrieval-centric metrics to graph-centric metrics:
 | Metric | What it measures | Current (SAM) | Target (NEXUS) |
 |--------|-----------------|---------------|----------------|
 | **Entity resolution accuracy** | Correctly identified entities in query | N/A | >90% |
-| **Relation extraction accuracy** | Correctly typed relations between entities | **96.4% F1** (2026-07-21; structural `sub_experiment` excluded) | >85% |
+| **Relation extraction accuracy** | Correctly typed relations between entities | **100% F1** (2026-07-21; structural `sub_experiment` excluded) | >85% |
 | **Path accuracy** | Retrieved paths contain the correct reasoning chain | N/A | >80% |
 | **Path relevance@K** | Top-K paths are actually useful for answering | N/A (all_required@32 = 100% analogue) | >90% |
 | **Evidence precision** | Evidence pack contains only relevant facts | 50% (selector precision analogue) | >85% |

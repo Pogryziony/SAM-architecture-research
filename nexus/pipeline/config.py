@@ -85,10 +85,12 @@ class ProductionNEXUSConfig(NEXUSConfig):
                     "beam_width": self.beam_width,
                     "max_expanded_edges": self.max_expanded_edges,
                     "max_expanded_nodes": self.max_expanded_nodes,
+                    "max_traversal_ms": self.max_traversal_ms,
                     "edge_confidence_threshold": self.edge_confidence_threshold,
                     "hallucination_threshold": self.hallucination_threshold,
                     "readiness_answer_threshold": self.readiness_answer_threshold,
                     "readiness_conditional_threshold": self.readiness_conditional_threshold,
+                    "require_structured_provenance": self.require_structured_provenance,
                     "fuzzy_cutoff": self.fuzzy_cutoff,
                     "enable_associative_encoder": self.enable_associative_encoder,
                     "enable_embedding_er": self.enable_embedding_er,
@@ -123,10 +125,12 @@ class ProductionNEXUSConfig(NEXUSConfig):
                 "beam_width": self.beam_width,
                 "max_expanded_edges": self.max_expanded_edges,
                 "max_expanded_nodes": self.max_expanded_nodes,
+                "max_traversal_ms": self.max_traversal_ms,
                 "edge_confidence_threshold": self.edge_confidence_threshold,
                 "hallucination_threshold": self.hallucination_threshold,
                 "readiness_answer_threshold": self.readiness_answer_threshold,
                 "readiness_conditional_threshold": self.readiness_conditional_threshold,
+                "require_structured_provenance": self.require_structured_provenance,
                 "fuzzy_cutoff": self.fuzzy_cutoff,
                 "enable_associative_encoder": self.enable_associative_encoder,
                 "enable_embedding_er": self.enable_embedding_er,
@@ -217,6 +221,7 @@ class ProductionNEXUSConfig(NEXUSConfig):
             "realizer_model_dir": DEFAULT_MODEL_DIR,
             "realizer_config_path": DEFAULT_CONFIG_PATH,
             "realizer_checkpoint_sha256": DEFAULT_WEIGHTS_SHA256,
+            "require_structured_provenance": True,
         }
         kwargs.update(overrides)
         return cls(pipeline_id=PipelineIdentity(lexical_fallback=True), **kwargs)
@@ -307,6 +312,8 @@ def validate_config(config: ProductionNEXUSConfig) -> list[str]:
         errors.append("max_expanded_edges must be >= 1")
     if getattr(config, "max_expanded_nodes", 1) < 1:
         errors.append("max_expanded_nodes must be >= 1")
+    if getattr(config, "max_traversal_ms", 0.0) < 0.0:
+        errors.append("max_traversal_ms must be >= 0")
     if not 0.0 <= config.readiness_conditional_threshold <= 1.0:
         errors.append("readiness_conditional_threshold must be within [0, 1]")
     if not 0.0 <= config.readiness_answer_threshold <= 1.0:
