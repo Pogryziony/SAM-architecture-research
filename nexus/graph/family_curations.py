@@ -190,6 +190,48 @@ def apply_oracle_family_curations(graph: InMemoryGraphStore) -> dict[str, int]:
             }
         )
         pivot.properties = props
+        # Question-grounded aliases so union ER can recover Decision gold on
+        # verifier / distractor diagnostics without ER3 retraining.
+        _ensure_aliases(
+            graph,
+            pivot,
+            [
+                "rule-based verifier",
+                "rule based verifier",
+                "3-hop reasoning",
+                "1-hop accuracy",
+                "+16 distractors",
+                "+8 and +16 distractors",
+                "sam gate",
+                "retrieval failure",
+            ],
+        )
+
+    # Phase-transition questions gold Exp_0_Diagnosis + Exp_0_13B; attach
+    # multi-word aliases that appear in those prompts.
+    _ensure_aliases_by_id(
+        graph,
+        "Exp_0_Diagnosis",
+        [
+            "pipeline setup",
+            "phase 1",
+            "core validation",
+            "phase 2",
+            "retrieval revolution",
+            "phase 3",
+        ],
+    )
+    _ensure_aliases_by_id(
+        graph,
+        "Exp_0_13B_RealisticDistractors",
+        [
+            "selection & noise",
+            "selection and noise",
+            "phase 4",
+            "nexus pivot",
+            "phase 5",
+        ],
+    )
 
     if not graph.has_node(LEGACY_FLAT_MEMORY_ID):
         graph.add_node(
@@ -316,3 +358,34 @@ def _has_edge(
         if edge.type == relation and edge.target == target:
             return True
     return False
+
+
+def _ensure_aliases(
+    graph: InMemoryGraphStore,
+    node: Node,
+    aliases: list[str],
+) -> None:
+    """Append missing aliases and re-index via add_node (idempotent)."""
+    existing = list(node.aliases or [])
+    lowered = {a.casefold() for a in existing}
+    changed = False
+    for alias in aliases:
+        if alias.casefold() in lowered:
+            continue
+        existing.append(alias)
+        lowered.add(alias.casefold())
+        changed = True
+    if changed:
+        node.aliases = existing
+        graph.add_node(node)
+
+
+def _ensure_aliases_by_id(
+    graph: InMemoryGraphStore,
+    node_id: str,
+    aliases: list[str],
+) -> None:
+    node = graph.get_node(node_id)
+    if node is None:
+        return
+    _ensure_aliases(graph, node, aliases)

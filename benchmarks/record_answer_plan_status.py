@@ -20,6 +20,7 @@ _DEFAULT_OUTPUT = (
     / "answer_plan_pilot_status_20260721T160000Z.json"
 )
 _EVIDENCE_CANDIDATES = (
+    "benchmarks/results/oracle_vs_predicted_union_l1_acceptance_full_20260721T241500Z.json",
     "benchmarks/results/oracle_vs_predicted_union_l1_acceptance_full_20260721T234500Z.json",
     "benchmarks/results/oracle_vs_predicted_union_l1_acceptance_full_20260721T220000Z.json",
     "benchmarks/results/oracle_vs_predicted_union_l1_acceptance_full_20260721T200000Z.json",

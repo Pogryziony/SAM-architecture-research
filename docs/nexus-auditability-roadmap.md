@@ -238,7 +238,11 @@ Per-record `as_known_at` / `as_valid_at` cutoffs flow through
 `NEXUSRunner` into traversal + incident enrichment; temporal family questions
 abstain when no edges survive PIT. `deterministic_render` remains available
 for pure proof→statement runs. AnswerPlan training stays sealed unless oracle
-fact ≥0.50 and predicted lags by ≥0.15.
+fact ≥0.50 and predicted lags by ≥0.15. Architecture validation campaign
+(`benchmarks/run_architecture_validation.py`) on frozen `oracle_v1` decided
+**VALIDATED** (2026-07-21): entry/path/proof saturated, predicted fact ≥0.70,
+and NEXUS L1 beats RAG and LLM-only baselines without AnswerPlan training
+(see `docs/nexus-architecture-validation-verdict.md`).
 
 Gate: zero unsupported statements and identical output for identical structured
 input.
