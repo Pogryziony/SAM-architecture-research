@@ -16,6 +16,14 @@ from nexus.pipeline.runner import NEXUSRunner
 def _rss_mb() -> float | None:
     """Best-effort peak/current RSS in MB. Returns None if unavailable."""
     try:
+        from nexus.evaluation.process_resources import process_tree_rss_mb
+
+        tree = process_tree_rss_mb()
+        if tree is not None:
+            return tree
+    except Exception:
+        pass
+    try:
         import psutil  # type: ignore
 
         return psutil.Process().memory_info().rss / (1024 * 1024)

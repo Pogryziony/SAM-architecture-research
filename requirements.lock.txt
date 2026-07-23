@@ -1,0 +1,6 @@
+# Locked runtime + test dependencies for clean-checkout reproduction.
+# Generate/refresh: pip freeze > requirements.lock.txt after `pip install -e ".[test,semantic]"`
+# in a clean venv. Optional torch/kuzu/sentence-transformers are not in the base lock.
+PyYAML==6.0.2
+pytest==8.3.5
+psutil==7.0.0

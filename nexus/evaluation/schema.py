@@ -112,11 +112,14 @@ def empty_metric_applicability() -> dict[str, dict[str, Any]]:
     """Default metric slots; every metric declares applicability and value."""
     names = (
         "grounded_correct",
+        "proxy_key_fact_correct",
         "answer_correctness",
         "unsupported_material_claim",
         "citation_correctness",
         "citation_completeness",
         "retrieval_recall",
+        "retrieval_recall_at_k",
+        "retrieval_mrr",
         "evidence_precision",
         "path_validity",
         "entry_recall",

@@ -15,6 +15,7 @@ from nexus.evaluation.export import (
 from nexus.evaluation.metrics import (
     MetricValue,
     compute_grounded_correct,
+    compute_proxy_key_fact_correct,
     summarize_metrics,
 )
 from nexus.evaluation.schema import (
@@ -47,6 +48,7 @@ __all__ = [
     "classify_terminal_outcome",
     "compare_paired_artifacts",
     "compute_grounded_correct",
+    "compute_proxy_key_fact_correct",
     "empty_metric_applicability",
     "mcnemar_exact",
     "normalize_terminal_outcome",

@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from nexus.evaluation.adjudication import build_blinded_packet, route_dataset
+from nexus.evaluation.agreement import cohen_kappa
+from nexus.evaluation.packet_evidence import build_permitted_evidence_map
 
 
 DIMENSIONS = (
@@ -29,11 +31,43 @@ def export_dual_packets(
     *,
     seed_a: int = 11,
     seed_b: int = 29,
+    require_evidence: bool = True,
 ) -> dict[str, Any]:
     """Write two independently randomized blinded packets for annotators A/B."""
     out_dir.mkdir(parents=True, exist_ok=True)
-    packet_a = build_blinded_packet(questions, system_answers, seed=seed_a)
-    packet_b = build_blinded_packet(questions, system_answers, seed=seed_b)
+    evidence_map = build_permitted_evidence_map(questions, system_answers)
+    if require_evidence:
+        human_qids = {
+            str(q.get("id") or q.get("question_id") or "")
+            for q in questions
+            if not route_dataset([q])["routes"][0]["automated"]
+        }
+        for qid in human_qids:
+            ev = evidence_map.get(qid) or []
+            usable = [
+                x
+                for x in ev
+                if x.startswith(
+                    ("citation:", "retrieved:", "prompt_evidence=", "structured_evidence=")
+                )
+            ]
+            if not usable:
+                raise ValueError(
+                    f"human packet item for {qid} lacks structured evidence/citations; "
+                    "refusing empty-evidence export"
+                )
+    packet_a = build_blinded_packet(
+        questions,
+        system_answers,
+        seed=seed_a,
+        permitted_evidence_by_qid=evidence_map,
+    )
+    packet_b = build_blinded_packet(
+        questions,
+        system_answers,
+        seed=seed_b,
+        permitted_evidence_by_qid=evidence_map,
+    )
     path_a = out_dir / "annotator_A_packet.json"
     path_b = out_dir / "annotator_B_packet.json"
     for path, packet, label in (
@@ -100,6 +134,8 @@ def agreement_on_dimension(
     dimension: str,
 ) -> dict[str, Any]:
     pairs = []
+    labels_a = []
+    labels_b = []
     for item_id, sa in a_scores.items():
         if item_id not in b_scores:
             continue
@@ -108,14 +144,17 @@ def agreement_on_dimension(
         if va is None or vb is None:
             continue
         pairs.append((float(va), float(vb)))
+        labels_a.append(va)
+        labels_b.append(vb)
     if not pairs:
-        return {"n": 0, "agreement_rate": None, "status": "NOT_RUN"}
+        return {"n": 0, "agreement_rate": None, "cohen_kappa": None, "status": "NOT_RUN"}
     agree = sum(1 for x, y in pairs if abs(x - y) < 1e-9)
+    kappa = cohen_kappa(labels_a, labels_b)
     return {
         "n": len(pairs),
         "agreement_rate": round(agree / len(pairs), 6),
+        "cohen_kappa": kappa.get("kappa"),
         "status": "COMPUTED",
-        "note": "Simple exact-agreement; Cohen kappa optional later",
     }
 
 

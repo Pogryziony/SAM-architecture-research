@@ -7,8 +7,6 @@ must not be reported as LLM or modern RAG results.
 
 from __future__ import annotations
 
-import hashlib
-import json
 import os
 from datetime import datetime, timezone
 from typing import Any, Mapping, Sequence
@@ -22,6 +20,7 @@ from nexus.baselines.interface import (
 )
 from nexus.baselines.registry import get_arm
 from nexus.evaluation.aggregate import aggregate_question_records
+from nexus.evaluation.dataset_identity import hash_dataset
 from nexus.evaluation.schema import (
     RESULT_SCHEMA_VERSION,
     TerminalOutcome,
@@ -33,13 +32,7 @@ from nexus.pipeline.config import CONFIG_IDENTITY_SCHEMA
 
 
 def _dataset_hash(questions: Sequence[Mapping[str, Any]]) -> str:
-    payload = json.dumps(
-        [{"id": q.get("id"), "question": q.get("question")} for q in questions],
-        sort_keys=True,
-        ensure_ascii=False,
-        separators=(",", ":"),
-    )
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    return hash_dataset(questions)
 
 
 def llm_decoding_defaults() -> dict[str, Any]:

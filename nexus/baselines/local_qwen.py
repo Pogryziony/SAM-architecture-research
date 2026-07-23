@@ -14,7 +14,11 @@ from typing import Any, Mapping
 
 DEFAULT_HOST = "http://127.0.0.1:11434"
 REQUIRED_MODEL_NAME = "qwen3.6:latest"
-REQUIRED_DIGEST_PREFIX = "07d35212591fc27746f0a317c975a6d68754fb38e9053d82e25f06057af28522"
+# Full digest is required; prefix constant retained for error messages only.
+REQUIRED_DIGEST = (
+    "07d35212591fc27746f0a317c975a6d68754fb38e9053d82e25f06057af28522"
+)
+REQUIRED_DIGEST_PREFIX = REQUIRED_DIGEST  # backward-compatible alias
 
 # Frozen Phase-4 decoding (preregistered). Do not retune per question.
 FROZEN_DECODING: dict[str, Any] = {
@@ -118,7 +122,7 @@ def discover_local_qwen(
     *,
     host: str = DEFAULT_HOST,
     required_model: str = REQUIRED_MODEL_NAME,
-    required_digest: str = REQUIRED_DIGEST_PREFIX,
+    required_digest: str = REQUIRED_DIGEST,
 ) -> LocalQwenIdentity:
     """Discover and validate the installed Qwen 3.6 model. Fail closed on mismatch."""
     try:
@@ -136,11 +140,10 @@ def discover_local_qwen(
         digest = str(m.get("digest") or "")
         if "qwen3.6" in name.casefold() or "qwen3_6" in name.casefold():
             candidates.append({"name": name, "digest": digest, "details": m.get("details")})
-        if name == required_model and digest.startswith(required_digest[:16]):
+        if name == required_model and digest == required_digest:
             match = m
             break
         if name == required_model:
-            # digest mismatch is still a candidate to report
             match = m
 
     if match is None:
@@ -150,10 +153,10 @@ def discover_local_qwen(
         )
 
     digest = str(match.get("digest") or "")
-    if not digest.startswith(required_digest[:16]):
+    if digest != required_digest:
         raise LocalQwenUnavailableError(
-            f"Digest mismatch for {required_model}: got {digest[:24]}..., "
-            f"expected prefix {required_digest[:24]}..."
+            f"Full digest mismatch for {required_model}: got {digest}, "
+            f"expected {required_digest}"
         )
 
     details = match.get("details") or {}
@@ -199,12 +202,17 @@ class LocalQwenGeneration:
     eval_count: int | None = None
     eval_duration_ns: int | None = None
     total_duration_ns: int | None = None
+    # Non-streaming Ollama: this is prompt_eval_duration, NOT true streamed TTFT.
     time_to_first_token_ms: float | None = None
+    prompt_eval_duration_ms: float | None = None
+    ttft_metric: str = "prompt_eval_duration_ms_nonstream_proxy"
     tokens_per_second: float | None = None
     error: str = ""
     timed_out: bool = False
     prompt: str = ""
     system_prompt: str = ""
+    prompt_sha256: str = ""
+    retries_used: int = 0
 
 
 class LocalQwenAdapter:
@@ -255,34 +263,69 @@ class LocalQwenAdapter:
             "options": options,
         }
         timeout = float(dec.get("timeout_s", 180.0))
+        retry_max = int(dec.get("retry_max", 0))
+        if retry_max < 0:
+            raise ValueError("retry_max must be >= 0")
         t0 = time.perf_counter()
-        try:
-            data = _http_json(
-                f"{self.identity.host}/api/generate",
-                payload=payload,
-                timeout=timeout,
-            )
-        except urllib.error.URLError as exc:
-            msg = str(exc)
-            timed_out = "timed out" in msg.casefold() or "timeout" in msg.casefold()
+        data = None
+        last_exc: Exception | None = None
+        retries_used = 0
+        for attempt in range(retry_max + 1):
+            try:
+                data = _http_json(
+                    f"{self.identity.host}/api/generate",
+                    payload=payload,
+                    timeout=timeout,
+                )
+                retries_used = attempt
+                break
+            except urllib.error.URLError as exc:
+                last_exc = exc
+                retries_used = attempt
+                if attempt >= retry_max:
+                    msg = str(exc)
+                    timed_out = (
+                        "timed out" in msg.casefold() or "timeout" in msg.casefold()
+                    )
+                    return LocalQwenGeneration(
+                        raw_response="",
+                        parsed_answer="",
+                        latency_ms=round((time.perf_counter() - t0) * 1000, 3),
+                        error=f"URLError: {exc}",
+                        timed_out=timed_out,
+                        prompt=user_prompt,
+                        system_prompt=sys_p,
+                        prompt_sha256=hashlib.sha256(
+                            (sys_p + "\n\n" + user_prompt).encode("utf-8")
+                        ).hexdigest(),
+                        retries_used=retries_used,
+                    )
+            except Exception as exc:
+                last_exc = exc
+                retries_used = attempt
+                if attempt >= retry_max:
+                    return LocalQwenGeneration(
+                        raw_response="",
+                        parsed_answer="",
+                        latency_ms=round((time.perf_counter() - t0) * 1000, 3),
+                        error=f"{type(exc).__name__}: {exc}",
+                        timed_out=False,
+                        prompt=user_prompt,
+                        system_prompt=sys_p,
+                        prompt_sha256=hashlib.sha256(
+                            (sys_p + "\n\n" + user_prompt).encode("utf-8")
+                        ).hexdigest(),
+                        retries_used=retries_used,
+                    )
+        if data is None:
             return LocalQwenGeneration(
                 raw_response="",
                 parsed_answer="",
                 latency_ms=round((time.perf_counter() - t0) * 1000, 3),
-                error=f"URLError: {exc}",
-                timed_out=timed_out,
+                error=f"generate_failed: {last_exc}",
                 prompt=user_prompt,
                 system_prompt=sys_p,
-            )
-        except Exception as exc:
-            return LocalQwenGeneration(
-                raw_response="",
-                parsed_answer="",
-                latency_ms=round((time.perf_counter() - t0) * 1000, 3),
-                error=f"{type(exc).__name__}: {exc}",
-                timed_out=False,
-                prompt=user_prompt,
-                system_prompt=sys_p,
+                retries_used=retries_used,
             )
 
         raw = str(data.get("response") or "")
@@ -292,10 +335,10 @@ class LocalQwenAdapter:
         tps = None
         if eval_count and eval_duration:
             tps = float(eval_count) / (float(eval_duration) / 1e9)
-        # Non-streaming: approximate TTFT as prompt_eval duration when present.
-        ttft = None
+        # Honest labeling: non-stream generate cannot measure true TTFT.
+        prompt_eval_ms = None
         if data.get("prompt_eval_duration"):
-            ttft = float(data["prompt_eval_duration"]) / 1e6
+            prompt_eval_ms = round(float(data["prompt_eval_duration"]) / 1e6, 3)
 
         return LocalQwenGeneration(
             raw_response=raw,
@@ -306,10 +349,16 @@ class LocalQwenAdapter:
             eval_count=eval_count,
             eval_duration_ns=eval_duration,
             total_duration_ns=data.get("total_duration"),
-            time_to_first_token_ms=None if ttft is None else round(ttft, 3),
+            time_to_first_token_ms=prompt_eval_ms,
+            prompt_eval_duration_ms=prompt_eval_ms,
+            ttft_metric="prompt_eval_duration_ms_nonstream_proxy",
             tokens_per_second=None if tps is None else round(tps, 4),
             prompt=user_prompt,
             system_prompt=sys_p,
+            prompt_sha256=hashlib.sha256(
+                (sys_p + "\n\n" + user_prompt).encode("utf-8")
+            ).hexdigest(),
+            retries_used=retries_used,
         )
 
     def health_check(self) -> dict[str, Any]:
