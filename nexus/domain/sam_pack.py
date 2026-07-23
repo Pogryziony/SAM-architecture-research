@@ -12,9 +12,8 @@ from nexus.utils.config import NEXUSConfig
 class SamDomainPack(DomainPack):
     """Curated SAM/NEXUS research corpus domain.
 
-    Ownership: repository ingestion under ``nexus/ingestion`` and
-    ``benchmarks/run_benchmark.build_benchmark_graph``. Version identity is
-    ``sam-v1`` and must be recorded on evaluation artifacts.
+    Ownership: ``nexus.ingestion.canonical_graph`` and evaluation datasets under
+    ``benchmarks/qa-dataset``. Version identity is ``sam-v1``.
     """
 
     @property
@@ -30,17 +29,28 @@ class SamDomainPack(DomainPack):
         )
 
     def build_graph(self) -> InMemoryGraphStore:
-        from benchmarks.run_benchmark import build_benchmark_graph
+        from nexus.ingestion.canonical_graph import build_canonical_sam_graph
 
-        graph, _provenance = build_benchmark_graph(NEXUSConfig())
+        graph, _provenance = build_canonical_sam_graph(NEXUSConfig())
         return graph
 
     def entity_aliases(self) -> dict[str, list[str]]:
         graph = self.build_graph()
         aliases: dict[str, list[str]] = {}
-        for node_id, node in graph._nodes.items():  # noqa: SLF001 — pack adapter
-            if node.aliases:
-                aliases[node_id] = list(node.aliases)
+        # Public enumeration via get_all_nodes when available; else safe fallback.
+        nodes = getattr(graph, "get_all_nodes", None)
+        if callable(nodes):
+            iterable = nodes()
+        else:
+            iterable = [
+                graph.get_node(nid)
+                for nid in sorted(graph._nodes.keys())  # noqa: SLF001
+            ]
+        for node in iterable:
+            if node is None:
+                continue
+            if getattr(node, "aliases", None):
+                aliases[node.id] = list(node.aliases)
         return aliases
 
     def evaluation_tasks(self) -> list[dict[str, Any]]:

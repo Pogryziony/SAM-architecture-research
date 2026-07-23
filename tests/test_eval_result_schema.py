@@ -107,18 +107,19 @@ def test_grounded_correct_includes_abstain_questions():
     assert ok.denominator == 1.0
 
 
-def test_grounded_correct_fail_closed_without_adjudication():
+def test_grounded_correct_not_primary_without_adjudication():
     bad = compute_grounded_correct(
         answer="Something.",
         gold_answer="Gold.",
         should_abstain=False,
-        answer_correct=None,
+        answer_correct=True,
         material_claims_supported=None,
         citations_entail=None,
         temporal_ok=None,
     )
-    assert bad.value == 0.0
-    assert "fail_closed" in bad.reason
+    assert bad.applicable is False
+    assert bad.value is None
+    assert "not_primary" in bad.reason
 
 
 def test_summarize_metrics_exposes_numerator_denominator():

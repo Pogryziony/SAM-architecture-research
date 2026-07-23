@@ -13,7 +13,10 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Mapping, Sequence
 
-from nexus.evaluation.metrics import compute_grounded_correct
+from nexus.evaluation.metrics import (
+    compute_grounded_correct,
+    compute_proxy_key_fact_correct,
+)
 
 
 AUTO_ROUTES = frozenset(
@@ -212,6 +215,9 @@ def apply_automated_scores(
                     answer_correct = (
                         gold.casefold() in answer.casefold() if gold else None
                     )
+            # Automated routes emit exploratory proxy only; primary grounded
+            # correctness still requires human dimensions when citations/support
+            # are not adjudicated.
             grounded = compute_grounded_correct(
                 answer=answer,
                 gold_answer=gold,
@@ -221,17 +227,26 @@ def apply_automated_scores(
                 citations_entail=None,
                 temporal_ok=None,
             )
-            status = "SCORED_AUTOMATED"
+            proxy = compute_proxy_key_fact_correct(
+                answer=answer,
+                gold_answer=gold,
+                should_abstain=should_abstain,
+                answer_correct=answer_correct,
+            )
+            status = "SCORED_AUTOMATED_PROXY"
+        else:
+            proxy = None
         rows.append(
             {
                 "question_id": qid,
                 "route": asdict(route),
                 "status": status,
                 "grounded_correct": None if grounded is None else grounded.to_dict(),
+                "proxy_key_fact_correct": None if proxy is None else proxy.to_dict(),
                 "llm_judge_diagnostic_only": None,
             }
         )
-    completed = sum(1 for r in rows if r["status"] == "SCORED_AUTOMATED")
+    completed = sum(1 for r in rows if r["status"] == "SCORED_AUTOMATED_PROXY")
     pending = sum(1 for r in rows if r["status"] == "PENDING_ADJUDICATION")
     return {
         "schema_version": "nexus-adjudication-scores-v1",
@@ -250,9 +265,10 @@ def apply_automated_scores(
         "superiority_eligible": False,
         "reason_not_eligible": (
             "PENDING_ADJUDICATION remains for human-dependent questions; "
-            "do not issue superiority verdicts"
+            "do not issue superiority verdicts. Automated rows expose "
+            "proxy_key_fact_correct only — not primary grounded_correct."
             if pending
-            else "automated-only subset; full-oracle superiority still requires complete protocol"
+            else "automated proxy subset only; full-oracle superiority still requires complete protocol"
         ),
     }
 

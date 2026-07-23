@@ -1,0 +1,6 @@
+{
+  "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+  "revision": "c9745ed1d9f207416be6d2e6f8de32d1f16199bf",
+  "files": {},
+  "note": "File digests populated when models/dense/all-MiniLM-L6-v2 snapshot is present; identity always includes revision."
+}

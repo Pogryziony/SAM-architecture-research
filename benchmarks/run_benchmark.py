@@ -308,75 +308,10 @@ def compute_key_fact_score(
 
 
 def build_benchmark_graph(config: NEXUSConfig = DEFAULT_CONFIG) -> tuple[InMemoryGraphStore, dict[str, Any]]:
-    """Build the benchmark knowledge graph deterministically.
-    
-    Runs BOTH populate_from_experiments AND ingest_docs in a fixed,
-    deterministic order to ensure reproducible benchmark results.
-    
-    Returns:
-        (graph, provenance_dict) where provenance_dict contains:
-            - node_count, edge_count
-            - build_command: the exact Python command to reproduce
-            - timestamp: ISO 8601 timestamp
-    """
-    from nexus.ingestion.populate_from_experiments import populate_graph, EXPERIMENTS_DIR
-    from nexus.ingestion.ingest_docs import ingest_directory
-    
-    graph = InMemoryGraphStore()
-    
-    # Step 1: Populate from experiments (structure + metrics)
-    if EXPERIMENTS_DIR.exists():
-        graph = populate_graph(EXPERIMENTS_DIR, graph)
-    
-    # Step 2: Ingest documents for additional entity/relation extraction
-    docs_dir = _project_root / "docs"
-    if docs_dir.exists():
-        ingest_directory(docs_dir, graph, config=config)
-    sam_docs_dir = _project_root / "sam-lm" / "docs"
-    if sam_docs_dir.exists():
-        ingest_directory(sam_docs_dir, graph, config=config)
-    sam_exp_dir = _project_root / "sam-lm" / "experiments"
-    if sam_exp_dir.exists():
-        ingest_directory(sam_exp_dir, graph, config=config)
+    """Thin wrapper — canonical construction lives in nexus.ingestion.canonical_graph."""
+    from nexus.ingestion.canonical_graph import build_canonical_sam_graph
 
-    # Step 3: Oracle-family dual compare facts + bi-temporal family edges.
-    from nexus.graph.family_curations import apply_oracle_family_curations
-
-    family_curation_stats = apply_oracle_family_curations(graph)
-
-    edge_type_counts: dict[str, int] = {}
-    for node_id in graph._nodes:
-        for edge in graph.get_outgoing(node_id):
-            edge_type_counts[edge.type] = edge_type_counts.get(edge.type, 0) + 1
-
-    provenance = {
-        "node_count": graph.node_count,
-        "edge_count": graph.edge_count,
-        "edge_type_counts": edge_type_counts,
-        "family_curations": family_curation_stats,
-        "effective_config": {
-            "enable_cooccurrence_edges": config.enable_cooccurrence_edges,
-            "enable_embedding_er": config.enable_embedding_er,
-            "enable_associative_encoder": config.enable_associative_encoder,
-            "enable_normalization": config.enable_normalization,
-        },
-        "build_command": "python benchmarks/run_benchmark.py --limit 30 --output benchmarks/results/TIMESTAMPED_FILE.json",
-        "build_steps": [
-            "1. populate_from_experiments(EXPERIMENTS_DIR, graph)",
-            "2. ingest_directory('docs/', graph)",
-            "3. ingest_directory('sam-lm/docs/', graph)",
-            "4. ingest_directory('sam-lm/experiments/', graph)",
-            "5. apply_oracle_family_curations(graph)",
-        ],
-        "fixes_applied": [
-            "P0: entity filter, relations constrained 10K->116 edges, entity ranking",
-            "P1: key_findings surfaced as evidence in evidence_builder", 
-            "P2: double-gate with corpus metric (honest hallucination measurement)",
-        ],
-        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-    }
-    
-    return graph, provenance
+    return build_canonical_sam_graph(config)
 
 
 # ---- Pipeline runners ----

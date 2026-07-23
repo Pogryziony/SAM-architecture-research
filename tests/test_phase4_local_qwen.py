@@ -129,11 +129,23 @@ def test_dual_packet_export(tmp_path: Path):
     ]
     manifest = export_dual_packets(
         questions,
-        {"nexus": {"q1": {"final_answer": "n"}}, "qwen": {"q1": {"final_answer": "q"}}},
+        {
+            "nexus": {
+                "q1": {
+                    "final_answer": "n",
+                    "citations": ["doc:1"],
+                    "structured_evidence": {"k": "v"},
+                }
+            },
+            "qwen": {"q1": {"final_answer": "q", "retrieved_documents": ["doc:2"]}},
+        },
         tmp_path,
+        require_evidence=True,
     )
     assert Path(manifest["annotator_A_packet"]).exists()
     assert Path(manifest["annotator_B_packet"]).exists()
+    packet = Path(manifest["annotator_A_packet"]).read_text(encoding="utf-8")
+    assert "citation:" in packet or "structured_evidence=" in packet
 
 
 def test_pending_adjudication_still_blocks_compare():

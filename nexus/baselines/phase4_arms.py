@@ -23,20 +23,22 @@ from nexus.baselines.rag_corpus import (
 )
 from nexus.baselines.retrieval import BM25Index, mrr, recall_at_k
 from nexus.evaluation.aggregate import aggregate_question_records
-from nexus.evaluation.metrics import compute_grounded_correct
+from nexus.evaluation.dataset_identity import hash_dataset
+from nexus.evaluation.metrics import compute_proxy_key_fact_correct
+from nexus.evaluation.relevance import relevant_chunks_for
 from nexus.evaluation.schema import RESULT_SCHEMA_VERSION, TerminalOutcome, build_question_record
 from nexus.evaluation.validate import assert_valid_result_artifact
 from nexus.pipeline.config import CONFIG_IDENTITY_SCHEMA, ProductionNEXUSConfig
 
 
 def _dataset_hash(questions: Sequence[Mapping[str, Any]]) -> str:
-    payload = json.dumps(
-        [{"id": q.get("id"), "question": q.get("question")} for q in questions],
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=False,
-    )
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    """Full canonical dataset identity (gold/rubric fields included)."""
+    return hash_dataset(questions)
+
+
+def _prompt_sha256(system_prompt: str, user_prompt: str) -> str:
+    blob = (system_prompt + "\n\n" + user_prompt).encode("utf-8")
+    return hashlib.sha256(blob).hexdigest()
 
 
 def _terminal_from_answer(answer: str, *, error: str = "", timed_out: bool = False) -> TerminalOutcome:
@@ -53,6 +55,7 @@ def _score_row(
     q: Mapping[str, Any],
     answer: str,
 ) -> dict[str, Any]:
+    """Exploratory proxy scoring only — never primary grounded_correct."""
     should_abstain = bool(q.get("should_abstain", False))
     gold = str(q.get("gold_answer") or "")
     answer_correct = None
@@ -63,23 +66,28 @@ def _score_row(
         answer_correct = fuzzy >= 0.5
     except Exception:
         answer_correct = bool(gold) and gold.casefold() in answer.casefold()
-    grounded = compute_grounded_correct(
+    proxy = compute_proxy_key_fact_correct(
         answer=answer,
         gold_answer=gold,
         should_abstain=should_abstain,
         answer_correct=answer_correct,
-        material_claims_supported=None,
-        citations_entail=None,
-        temporal_ok=None,
     )
     return {
-        "grounded_correct": grounded.to_dict(),
-        "fact_fuzzy_proxy": {
-            "applicable": True,
-            "value": 1.0 if answer_correct else 0.0,
-            "numerator": 1.0 if answer_correct else 0.0,
+        "grounded_correct": {
+            "name": "grounded_correct",
+            "applicable": False,
+            "value": None,
+            "numerator": None,
             "denominator": 1.0,
-            "reason": "key_fact_proxy_exploratory",
+            "reason": "pending_adjudication",
+        },
+        "proxy_key_fact_correct": proxy.to_dict(),
+        "fact_fuzzy_accuracy": {
+            "applicable": answer_correct is not None,
+            "value": None if answer_correct is None else (1.0 if answer_correct else 0.0),
+            "numerator": None if answer_correct is None else (1.0 if answer_correct else 0.0),
+            "denominator": 1.0,
+            "reason": "exploratory_key_fact_fuzzy_not_grounded_correct",
         },
     }
 
@@ -102,6 +110,7 @@ def build_eval_artifact(
     qwen_identity: Mapping[str, Any] | None,
     arm_metadata: Mapping[str, Any],
     status: str,
+    arm_decoding_overrides: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     ds_hash = _dataset_hash(questions)
     artifact = {
@@ -110,6 +119,7 @@ def build_eval_artifact(
         "source_commit": source_commit,
         "dataset_id": "oracle_v1",
         "dataset_sha256": ds_hash,
+        "dataset_hash_schema": "nexus-canonical-dataset-v1",
         "system_id": system_id,
         "profile": profile,
         "config_hash": config_hash,
@@ -120,11 +130,15 @@ def build_eval_artifact(
         "aggregates": aggregate_question_records(rows),
         "status": status,
         "local_qwen_identity": dict(qwen_identity or {}),
+        "arm_decoding_overrides": dict(arm_decoding_overrides or {}),
         "arm_metadata": dict(arm_metadata),
         "adjudication_status": "PENDING_ADJUDICATION",
         "claim_eligibility": {
             "full_primary_superiority": False,
-            "reason": "human adjudication incomplete for 71-question subset",
+            "reason": (
+                "human adjudication incomplete; proxy_key_fact_correct is "
+                "exploratory only and must not be quoted as grounded_correct"
+            ),
             "exploratory_auto_subset_ok": True,
         },
     }
@@ -154,6 +168,7 @@ def run_closed_book_qwen(
         metrics = _empty_metrics()
         if outcome in {TerminalOutcome.ANSWERED, TerminalOutcome.ABSTAINED}:
             metrics.update(_score_row(q, gen.parsed_answer))
+        prompt_hash = _prompt_sha256(FROZEN_SYSTEM_PROMPT, user)
         rows.append(
             build_question_record(
                 question_id=qid,
@@ -185,7 +200,9 @@ def run_closed_book_qwen(
                     "raw_response": gen.raw_response,
                     "prompt": gen.prompt,
                     "system_prompt": gen.system_prompt,
-                    "time_to_first_token_ms": gen.time_to_first_token_ms,
+                    "prompt_sha256": prompt_hash,
+                    "prompt_eval_duration_ms": gen.time_to_first_token_ms,
+                    "ttft_metric": "prompt_eval_duration_ms_nonstream_proxy",
                     "load_duration_ns": gen.load_duration_ns,
                     "error": gen.error,
                     "arm": "qwen_3_6_closed_book_internal",
@@ -229,6 +246,7 @@ def run_rag_answer_arm(
     comparison_mode: str = "controlled",
     source_commit: str = "UNKNOWN",
     extra_meta: Mapping[str, Any] | None = None,
+    relevance_table: Mapping[str, Any] | None = None,
     on_progress: Callable[[int, int, str], None] | None = None,
 ) -> dict[str, Any]:
     identity = adapter.identity.to_dict()
@@ -240,9 +258,13 @@ def run_rag_answer_arm(
             {
                 "arm": arm_id,
                 "qwen": identity["identity_hash"],
+                "qwen_digest": identity.get("digest"),
                 "corpus": corpus.get("corpus_sha256"),
                 "chunks": corpus.get("chunks_sha256"),
                 "extra": dict(extra_meta or {}),
+                "system_prompt_sha256": hashlib.sha256(
+                    FROZEN_SYSTEM_PROMPT.encode("utf-8")
+                ).hexdigest(),
             },
             sort_keys=True,
             separators=(",", ":"),
@@ -267,16 +289,24 @@ def run_rag_answer_arm(
         metrics = _empty_metrics()
         if outcome in {TerminalOutcome.ANSWERED, TerminalOutcome.ABSTAINED}:
             metrics.update(_score_row(q, gen.parsed_answer))
-        relevant = [str(x) for x in (q.get("gold_entities") or [])]
-        # retrieval metrics use chunk/source overlap with gold entity strings heuristically
         retrieved_ids = [str(h["doc_id"]) for h in hits]
-        # map chunk -> source path tokens for weak coverage
-        r_at_k = recall_at_k(retrieved_ids, relevant, len(hits) or 5)
-        rr = mrr(retrieved_ids, relevant)
+        if relevance_table is not None:
+            relevant = relevant_chunks_for(relevance_table, qid)
+            relevance_reason = "gold_entity_fact_to_chunk_relevance_v1"
+        else:
+            relevant = [str(x) for x in (q.get("relevant_chunk_ids") or [])]
+            relevance_reason = (
+                "explicit_relevant_chunk_ids"
+                if relevant
+                else "missing_relevance_table_metrics_not_comparable"
+            )
+        r_at_k = recall_at_k(retrieved_ids, relevant, len(hits) or 5) if relevant else None
+        rr = mrr(retrieved_ids, relevant) if relevant else None
         retrieval_rows.append(
             {
                 "question_id": qid,
                 "retrieved": hits,
+                "relevant_chunk_ids": relevant,
                 "recall_at_k": r_at_k,
                 "mrr": rr,
                 "retrieval_latency_ms": ret_ms,
@@ -287,7 +317,14 @@ def run_rag_answer_arm(
             "value": r_at_k,
             "numerator": None if r_at_k is None else r_at_k,
             "denominator": 1.0 if r_at_k is not None else None,
-            "reason": "gold_entities_as_proxy_relevant_ids",
+            "reason": relevance_reason,
+        }
+        metrics["retrieval_mrr"] = {
+            "applicable": rr is not None,
+            "value": rr,
+            "numerator": None if rr is None else rr,
+            "denominator": 1.0 if rr is not None else None,
+            "reason": relevance_reason,
         }
         rows.append(
             build_question_record(
@@ -322,9 +359,11 @@ def run_rag_answer_arm(
                     "raw_response": gen.raw_response,
                     "prompt": gen.prompt,
                     "system_prompt": FROZEN_SYSTEM_PROMPT,
+                    "prompt_sha256": _prompt_sha256(FROZEN_SYSTEM_PROMPT, user),
                     "retrieval_latency_ms": ret_ms,
                     "generation_latency_ms": gen.latency_ms,
-                    "time_to_first_token_ms": gen.time_to_first_token_ms,
+                    "prompt_eval_duration_ms": gen.time_to_first_token_ms,
+                    "ttft_metric": "prompt_eval_duration_ms_nonstream_proxy",
                     "error": gen.error,
                     "evidence_chars": len(evidence),
                     "arm": arm_id,
@@ -358,6 +397,7 @@ def run_rag_answer_arm(
             "corpus_sha256": corpus.get("corpus_sha256"),
             "chunks_sha256": corpus.get("chunks_sha256"),
             "retrieval_sidecar": retrieval_rows,
+            "relevance_table_sha256": (relevance_table or {}).get("corpus_sha256"),
             **dict(extra_meta or {}),
         },
         status="VALID",
@@ -382,18 +422,23 @@ def make_dense_retriever(
     corpus: Mapping[str, Any],
     *,
     top_k: int = 5,
-    model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
+    model_name: str | None = None,
 ):
     import numpy as np
-    from sentence_transformers import SentenceTransformer
+
+    from nexus.baselines.dense_embedder import load_sentence_transformer
 
     docs = documents_from_corpus(corpus)
-    model = SentenceTransformer(model_name)
+    model, embed_ident = load_sentence_transformer()
+    if model_name and model_name != embed_ident["model_id"]:
+        raise ValueError(
+            f"dense model_name {model_name!r} disagrees with pin "
+            f"{embed_ident['model_id']!r}"
+        )
     texts = [d.text for d in docs]
     emb = model.encode(texts, normalize_embeddings=True, show_progress_bar=False)
     emb = np.asarray(emb, dtype=np.float32)
     dim = int(emb.shape[1]) if emb.ndim == 2 else 0
-    model_hash = hashlib.sha256(model_name.encode("utf-8")).hexdigest()[:16]
 
     def _retrieve(question: str) -> list[dict[str, Any]]:
         q = model.encode([question], normalize_embeddings=True, show_progress_bar=False)
@@ -417,8 +462,10 @@ def make_dense_retriever(
     meta = {
         "retrieval_method": "dense",
         "top_k": top_k,
-        "embedding_model": model_name,
-        "embedding_model_hash_label": model_hash,
+        "embedding_model": embed_ident["model_id"],
+        "embedding_revision": embed_ident["revision"],
+        "embedding_identity_sha256": embed_ident["identity_sha256"],
+        "embedding_files_sha256": embed_ident.get("files_sha256") or {},
         "vector_dim": dim,
         "similarity": "cosine_via_normalized_dot",
         "pooling": "sentence-transformers-default",

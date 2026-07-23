@@ -99,27 +99,17 @@ def compute_grounded_correct(
         temporal_ok,
     ]
     if any(c is None for c in checks):
-        # Fail closed when adjudication is incomplete for answered questions.
-        if answer_correct is True and all(
-            c is not False for c in checks[1:]
-        ):
-            # Allow a correctness-only proxy when other fields are absent,
-            # but mark the reason so aggregates remain honest.
-            return MetricValue(
-                name="grounded_correct",
-                applicable=True,
-                value=1.0,
-                numerator=1.0,
-                denominator=1.0,
-                reason="proxy_answer_correct_only",
-            )
+        # Primary grounded_correct is not applicable without full adjudication.
+        # Callers that need an exploratory proxy must use
+        # ``compute_proxy_key_fact_correct`` — never treat that proxy as
+        # primary grounded correctness.
         return MetricValue(
             name="grounded_correct",
-            applicable=True,
-            value=0.0,
-            numerator=0.0,
+            applicable=False,
+            value=None,
+            numerator=None,
             denominator=1.0,
-            reason="incomplete_adjudication_fail_closed",
+            reason="incomplete_adjudication_not_primary",
         )
 
     ok = all(bool(c) for c in checks)
@@ -130,6 +120,54 @@ def compute_grounded_correct(
         numerator=1.0 if ok else 0.0,
         denominator=1.0,
         reason="full_grounded_criteria",
+    )
+
+
+def compute_proxy_key_fact_correct(
+    *,
+    answer: str,
+    gold_answer: str,
+    should_abstain: bool,
+    answer_correct: bool | None,
+) -> MetricValue:
+    """Exploratory key-fact proxy — MUST NOT be reported as grounded_correct."""
+    predicted_abstain = _is_abstain_text(answer)
+    if should_abstain:
+        ok = predicted_abstain
+        return MetricValue(
+            name="proxy_key_fact_correct",
+            applicable=True,
+            value=1.0 if ok else 0.0,
+            numerator=1.0 if ok else 0.0,
+            denominator=1.0,
+            reason="proxy_abstain_required",
+        )
+    if predicted_abstain:
+        return MetricValue(
+            name="proxy_key_fact_correct",
+            applicable=True,
+            value=0.0,
+            numerator=0.0,
+            denominator=1.0,
+            reason="proxy_incorrect_abstention",
+        )
+    if answer_correct is None:
+        return MetricValue(
+            name="proxy_key_fact_correct",
+            applicable=False,
+            value=None,
+            numerator=None,
+            denominator=1.0,
+            reason="proxy_unscored",
+        )
+    ok = bool(answer_correct)
+    return MetricValue(
+        name="proxy_key_fact_correct",
+        applicable=True,
+        value=1.0 if ok else 0.0,
+        numerator=1.0 if ok else 0.0,
+        denominator=1.0,
+        reason="proxy_key_fact_only_not_grounded_correct",
     )
 
 

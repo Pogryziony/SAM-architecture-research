@@ -102,7 +102,7 @@ jobs:
         run: |
           rm -f benchmarks/results/_ci_eval_mini_grounded.json
           rm -f benchmarks/results/_ci_baseline_closed_book_not_run.json
-          git diff --exit-code -- benchmarks/results/*.json models/ || true
+          git diff --exit-code -- benchmarks/results/*.json models/
 
   performance-opt-in:
     runs-on: ubuntu-latest

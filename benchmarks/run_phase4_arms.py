@@ -214,19 +214,34 @@ def main(argv: list[str] | None = None) -> int:
             return 0
 
         # Fits: same corpus for every question
-        context_hash = __import__("hashlib").sha256(full.encode("utf-8")).hexdigest()
-        from nexus.baselines.local_qwen import FROZEN_EVIDENCE_USER_TEMPLATE
-        from nexus.baselines.phase4_arms import build_eval_artifact, _score_row, _terminal_from_answer, _empty_metrics, _dataset_hash
+        import hashlib as _hashlib
+
+        from nexus.baselines.local_qwen import (
+            FROZEN_EVIDENCE_USER_TEMPLATE,
+            FROZEN_SYSTEM_PROMPT,
+        )
+        from nexus.baselines.phase4_arms import (
+            build_eval_artifact,
+            _score_row,
+            _terminal_from_answer,
+            _empty_metrics,
+            _dataset_hash,
+            _prompt_sha256,
+        )
         from nexus.evaluation.schema import build_question_record
         from datetime import datetime, timezone
+
+        # Exact prefix bytes fed to the model (deterministic truncation).
+        evidence_prefix = full[:120000]
+        context_hash = _hashlib.sha256(full.encode("utf-8")).hexdigest()
+        prefix_hash = _hashlib.sha256(evidence_prefix.encode("utf-8")).hexdigest()
 
         rows = []
         executed = datetime.now(timezone.utc).isoformat()
         identity = adapter.identity.to_dict()
         for i, q in enumerate(questions):
             _progress(i + 1, len(questions), str(q["id"]))
-            # Bound evidence to a preregistered char budget still shared across questions
-            evidence = full[:120000]
+            evidence = evidence_prefix
             user = FROZEN_EVIDENCE_USER_TEMPLATE.format(
                 question=str(q["question"]), evidence=evidence
             )
@@ -273,11 +288,15 @@ def main(argv: list[str] | None = None) -> int:
                     comparison_mode="system_level",
                     execution_environment={
                         "context_sha256": context_hash,
+                        "long_context_prefix_sha256": prefix_hash,
+                        "prompt_sha256": _prompt_sha256(FROZEN_SYSTEM_PROMPT, user),
                         "context_chars": len(evidence),
                         "estimated_tokens": est_tokens,
                         "deterministic_truncation_chars": 120000,
                         "raw_response": gen.raw_response,
                         "error": gen.error,
+                        "prompt_eval_duration_ms": gen.time_to_first_token_ms,
+                        "ttft_metric": "prompt_eval_duration_ms_nonstream_proxy",
                     },
                     failure_category=(
                         "timed_out"
@@ -298,8 +317,14 @@ def main(argv: list[str] | None = None) -> int:
             qwen_identity=identity,
             arm_metadata={
                 "context_sha256": context_hash,
+                "long_context_prefix_sha256": prefix_hash,
                 "estimated_tokens": est_tokens,
                 "deterministic_truncation_chars": 120000,
+            },
+            arm_decoding_overrides={
+                "num_ctx": min(131072, adapter.identity.context_length),
+                "timeout_s": 300.0,
+                "num_predict": 256,
             },
             status="VALID",
         )
@@ -310,6 +335,12 @@ def main(argv: list[str] | None = None) -> int:
     if not args.corpus.exists():
         raise SystemExit(f"corpus missing: {args.corpus}")
     corpus = json.loads(args.corpus.read_text(encoding="utf-8"))
+    from pathlib import Path as _Path
+
+    from nexus.evaluation.relevance import load_or_build_relevance
+
+    relevance_path = _Path("benchmarks/results/oracle_v1_retrieval_relevance_v1.json")
+    relevance_table = load_or_build_relevance(relevance_path, questions, corpus)
 
     if args.arm == "bm25_rag":
         retrieve, meta = make_bm25_retriever(corpus, top_k=args.top_k)
@@ -322,6 +353,7 @@ def main(argv: list[str] | None = None) -> int:
             comparison_mode="controlled",
             source_commit=commit,
             extra_meta=meta,
+            relevance_table=relevance_table,
             on_progress=_progress,
         )
         _write(args.output, art)
@@ -339,6 +371,7 @@ def main(argv: list[str] | None = None) -> int:
             comparison_mode="controlled",
             source_commit=commit,
             extra_meta=meta,
+            relevance_table=relevance_table,
             on_progress=_progress,
         )
         _write(args.output, art)
@@ -356,6 +389,7 @@ def main(argv: list[str] | None = None) -> int:
             comparison_mode="controlled",
             source_commit=commit,
             extra_meta=meta,
+            relevance_table=relevance_table,
             on_progress=_progress,
         )
         _write(args.output, art)
@@ -375,6 +409,7 @@ def main(argv: list[str] | None = None) -> int:
             comparison_mode="controlled",
             source_commit=commit,
             extra_meta=meta,
+            relevance_table=relevance_table,
             on_progress=_progress,
         )
         _write(args.output, art)

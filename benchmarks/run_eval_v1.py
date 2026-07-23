@@ -11,7 +11,7 @@ from typing import Any
 from nexus.baselines.adapters import run_baseline_eval
 from nexus.domain import load_domain_pack
 from nexus.evaluation import regenerate_aggregates, validate_result_artifact
-from nexus.evaluation.export import dataset_sha256_bytes
+from nexus.evaluation.dataset_identity import hash_dataset
 from nexus.pipeline.config import ProductionNEXUSConfig
 from nexus.pipeline.runner import NEXUSRunner
 from nexus.reasoning.model_interface import DummyModel, SynthesizingModel
@@ -75,10 +75,9 @@ def main(argv: list[str] | None = None) -> int:
 
     questions = _load_questions(args.dataset, args.domain, args.limit)
     dataset_id = args.dataset_id or (
-        args.dataset.name if args.dataset else f"{args.domain}-tasks"
+        args.dataset.stem if args.dataset else f"{args.domain}-tasks"
     )
-    raw = json.dumps(questions, sort_keys=True, ensure_ascii=False).encode("utf-8")
-    ds_hash = dataset_sha256_bytes(raw)
+    ds_hash = hash_dataset(questions)
     source = _git_head()
 
     if args.arm == "nexus":

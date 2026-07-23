@@ -1,0 +1,36 @@
+{
+  "build_module": "nexus.ingestion.canonical_graph.build_canonical_sam_graph",
+  "build_steps": [
+    "populate_from_experiments",
+    "ingest_directory(docs)",
+    "ingest_directory(sam-lm/docs)",
+    "ingest_directory(sam-lm/experiments)",
+    "apply_oracle_family_curations"
+  ],
+  "edge_count": 596,
+  "edge_type_counts": {
+    "blocked_by": 1,
+    "caused_by": 1,
+    "contradicts": 1,
+    "depends_on": 233,
+    "derived_from": 3,
+    "implements": 1,
+    "replaces": 1,
+    "sub_experiment": 345,
+    "validates": 10
+  },
+  "effective_config": {
+    "enable_associative_encoder": false,
+    "enable_cooccurrence_edges": false,
+    "enable_embedding_er": false,
+    "enable_normalization": false
+  },
+  "family_curations": {
+    "edges_added": 3,
+    "nodes_added": 3
+  },
+  "graph_snapshot_id": "78d1a15f0e7f32aa",
+  "node_count": 2386,
+  "schema_version": "nexus-graph-snapshot-v1",
+  "timestamp": "2026-07-23T07:19:24.990696+00:00"
+}

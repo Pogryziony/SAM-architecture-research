@@ -7,6 +7,7 @@ from typing import Any, Mapping, Sequence
 from nexus.evaluation.adjudication import artifact_has_pending_adjudication
 from nexus.evaluation.aggregate import assert_homogeneous_identity
 from nexus.evaluation.schema import RESULT_SCHEMA_VERSION, normalize_terminal_outcome
+from nexus.evaluation.multiple_comparison import holm_adjust
 from nexus.evaluation.stats import mcnemar_exact, paired_bootstrap_ci, paired_effect_size
 from nexus.evaluation.validate import ValidationError, validate_result_artifact
 
@@ -58,6 +59,7 @@ def compare_paired_artifacts(
     n_bootstrap: int = 2000,
     seed: int = 0,
     allow_placeholders: bool = False,
+    family_size: int = 1,
 ) -> dict[str, Any]:
     """Paired comparison; fail closed on identity / coverage mismatches.
 
@@ -158,9 +160,15 @@ def compare_paired_artifacts(
     effect = paired_effect_size(left_scores, right_scores)
     mcnemar = mcnemar_exact(left_bin, right_bin)
 
-    # Holm correction placeholder for single primary metric (identity)
     p = float(mcnemar["p_value"])
-    holm_adjusted = min(1.0, p)  # single test
+    if family_size < 1:
+        raise ValidationError("family_size must be >= 1")
+    # Single-comparison convenience: treat this p as one member of a family
+    # of size ``family_size``. For multi-arm families, prefer
+    # ``apply_holm_to_comparisons`` over repeated single calls.
+    holm_adjusted = holm_adjust([p] + [1.0] * (family_size - 1))[0] if family_size > 1 else min(1.0, p)
+    if family_size == 1:
+        holm_adjusted = min(1.0, p)
 
     return {
         "schema_version": "nexus-paired-comparison-v1",
@@ -181,8 +189,13 @@ def compare_paired_artifacts(
         "mcnemar": mcnemar,
         "multiple_comparison": {
             "method": "holm",
-            "n_tests": 1,
+            "n_tests": family_size,
+            "raw_p_value": p,
             "adjusted_p_value": holm_adjusted,
+            "note": (
+                "For a full test family, collect comparisons then call "
+                "apply_holm_to_comparisons so all raw p-values enter Holm together"
+            ),
         },
         "superiority_verdict": (
             "LEFT_BETTER"
