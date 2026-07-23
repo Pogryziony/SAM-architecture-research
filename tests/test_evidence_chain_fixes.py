@@ -161,6 +161,8 @@ def test_dense_identity_tracks_revision_resolved():
 
 def test_dense_identity_fail_closed_raises():
     """Verify fail_closed=True raises when revision unavailable."""
+    pytest.importorskip("sentence_transformers", reason="sentence_transformers not installed")
+
     from nexus.baselines.dense_embedder import (
         DenseModelIdentityError,
         load_sentence_transformer,
