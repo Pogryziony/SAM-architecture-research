@@ -2,7 +2,7 @@
 
 **Document role:** canonical current-state attestation for this repository.  
 **Supersedes for status claims:** informal “validated architecture” wording in older docs.  
-**Analyzed HEAD:** `6a13f8e260b192e58ca6a3a6815ec3ff1029d89e`  
+**Analyzed HEAD:** `3e951b9c77b80bf96c014df39bb8df66f5094f8e`  
 **Generated (UTC):** 2026-07-23 via `benchmarks/sync_current_state.py`  
 **Evidence manifest:** `00e73f1f60d75ef401cb2911f252eb48438343839e3416608856dd2f7051e8fb`
 

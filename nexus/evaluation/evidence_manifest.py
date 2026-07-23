@@ -36,6 +36,16 @@ def file_sha256(path: Path) -> str:
     return h.hexdigest()
 
 
+def _normalize_path_for_manifest(p: Path, root: Path) -> str:
+    """Convert path to forward-slash relative path for manifest."""
+    if p.is_relative_to(root):
+        rel = str(p.relative_to(root))
+    else:
+        rel = str(p)
+    # Always use forward slashes for cross-platform consistency
+    return rel.replace("\\", "/")
+
+
 def build_evidence_manifest(
     *,
     root: Path,
@@ -54,11 +64,11 @@ def build_evidence_manifest(
     arts = []
     for p in artifact_paths:
         if not p.exists():
-            arts.append({"path": str(p), "missing": True})
+            arts.append({"path": _normalize_path_for_manifest(p, root), "missing": True})
             continue
         arts.append(
             {
-                "path": str(p.relative_to(root)) if p.is_relative_to(root) else str(p),
+                "path": _normalize_path_for_manifest(p, root),
                 "sha256": file_sha256(p),
                 "bytes": p.stat().st_size,
             }
@@ -68,7 +78,7 @@ def build_evidence_manifest(
         if p.exists():
             stats.append(
                 {
-                    "path": str(p.relative_to(root)) if p.is_relative_to(root) else str(p),
+                    "path": _normalize_path_for_manifest(p, root),
                     "sha256": file_sha256(p),
                 }
             )
@@ -92,14 +102,68 @@ def build_evidence_manifest(
             }
         ),
     }
-    blob = json.dumps(manifest, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    # Normalize paths before hashing for cross-platform consistency
+    normalized = normalize_manifest_paths(manifest)
+    blob = json.dumps(normalized, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     manifest["manifest_sha256"] = hashlib.sha256(blob.encode("utf-8")).hexdigest()
     return manifest
 
 
+def normalize_manifest_paths(manifest: dict[str, Any]) -> dict[str, Any]:
+    """Convert Windows backslash paths to forward slashes for cross-platform hash stability."""
+    result = dict(manifest)
+    if "artifacts" in result:
+        result["artifacts"] = [
+            {**a, "path": a.get("path", "").replace("\\", "/")}
+            for a in result["artifacts"]
+        ]
+    if "statistics" in result:
+        result["statistics"] = [
+            {**s, "path": s.get("path", "").replace("\\", "/")}
+            for s in result["statistics"]
+        ]
+    return result
+
+
 def write_evidence_manifest(path: Path, manifest: Mapping[str, Any]) -> None:
+    """Write manifest with explicit LF line endings for hash stability."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(manifest, indent=2, sort_keys=True, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
+    # Normalize paths and ensure consistent LF line endings
+    normalized = normalize_manifest_paths(dict(manifest))
+    content = json.dumps(normalized, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+    # Ensure LF-only line endings for cross-platform hash consistency
+    content = content.replace("\r\n", "\n").replace("\r", "\n")
+    path.write_bytes(content.encode("utf-8"))
+
+
+def verify_manifest_hashes(manifest_path: Path, root: Path) -> list[str]:
+    """Verify all artifact hashes in a manifest match the files on disk.
+
+    Returns a list of error messages (empty if all hashes match).
+    """
+    errors: list[str] = []
+    if not manifest_path.exists():
+        return [f"manifest not found: {manifest_path}"]
+
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+
+    for art in manifest.get("artifacts", []):
+        art_path_str = art.get("path", "")
+        if not art_path_str or art.get("missing"):
+            continue
+        # Normalize path separators
+        art_path_str = art_path_str.replace("\\", "/")
+        art_path = root / art_path_str
+        if not art_path.exists():
+            errors.append(f"artifact missing: {art_path_str}")
+            continue
+        expected_hash = art.get("sha256")
+        if expected_hash:
+            actual_hash = file_sha256(art_path)
+            if actual_hash != expected_hash:
+                errors.append(
+                    f"hash mismatch for {art_path_str}: "
+                    f"expected {expected_hash[:16]}..., got {actual_hash[:16]}..."
+                )
+
+    return errors

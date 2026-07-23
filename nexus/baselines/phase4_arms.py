@@ -98,6 +98,18 @@ def _empty_metrics() -> dict[str, Any]:
     return empty_metric_applicability()
 
 
+def _snapshot_resources() -> dict[str, Any]:
+    """Capture current process-tree and LLM server resources."""
+    try:
+        from nexus.evaluation.process_resources import snapshot_llm_server_resources
+        return snapshot_llm_server_resources()
+    except Exception as exc:
+        return {
+            "schema_version": "nexus-llm-server-resources-v1",
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+
+
 def build_eval_artifact(
     *,
     system_id: str,
@@ -111,8 +123,23 @@ def build_eval_artifact(
     arm_metadata: Mapping[str, Any],
     status: str,
     arm_decoding_overrides: Mapping[str, Any] | None = None,
+    dense_identity: Mapping[str, Any] | None = None,
+    resource_snapshots: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     ds_hash = _dataset_hash(questions)
+
+    # Collect resource snapshot if not provided
+    resources = dict(resource_snapshots or {})
+    if not resources:
+        resources = {
+            "end_of_run": _snapshot_resources(),
+        }
+
+    # Compute throughput metrics from rows
+    latencies = [r.get("latency_ms") for r in rows if r.get("latency_ms")]
+    total_latency_ms = sum(latencies) if latencies else 0
+    throughput_qps = len(rows) / (total_latency_ms / 1000) if total_latency_ms > 0 else None
+
     artifact = {
         "schema_version": RESULT_SCHEMA_VERSION,
         "created_utc": datetime.now(timezone.utc).isoformat(),
@@ -130,6 +157,7 @@ def build_eval_artifact(
         "aggregates": aggregate_question_records(rows),
         "status": status,
         "local_qwen_identity": dict(qwen_identity or {}),
+        "dense_embedder_identity": dict(dense_identity or {}),
         "arm_decoding_overrides": dict(arm_decoding_overrides or {}),
         "arm_metadata": dict(arm_metadata),
         "adjudication_status": "PENDING_ADJUDICATION",
@@ -140,6 +168,11 @@ def build_eval_artifact(
                 "exploratory only and must not be quoted as grounded_correct"
             ),
             "exploratory_auto_subset_ok": True,
+        },
+        "resource_usage": {
+            **resources,
+            "throughput_questions_per_second": throughput_qps,
+            "total_latency_ms": total_latency_ms,
         },
     }
     assert_valid_result_artifact(artifact)
@@ -423,13 +456,14 @@ def make_dense_retriever(
     *,
     top_k: int = 5,
     model_name: str | None = None,
+    fail_closed: bool = True,
 ):
     import numpy as np
 
     from nexus.baselines.dense_embedder import load_sentence_transformer
 
     docs = documents_from_corpus(corpus)
-    model, embed_ident = load_sentence_transformer()
+    model, embed_ident = load_sentence_transformer(fail_closed=fail_closed)
     if model_name and model_name != embed_ident["model_id"]:
         raise ValueError(
             f"dense model_name {model_name!r} disagrees with pin "
@@ -463,15 +497,20 @@ def make_dense_retriever(
         "retrieval_method": "dense",
         "top_k": top_k,
         "embedding_model": embed_ident["model_id"],
-        "embedding_revision": embed_ident["revision"],
+        "embedding_revision_pinned": embed_ident.get("revision_pinned") or embed_ident.get("revision"),
+        "embedding_revision_resolved": embed_ident.get("revision_resolved") or embed_ident.get("revision"),
+        "embedding_load_mode": embed_ident.get("load_mode", "unknown"),
         "embedding_identity_sha256": embed_ident["identity_sha256"],
         "embedding_files_sha256": embed_ident.get("files_sha256") or {},
+        "embedding_identity_degraded": embed_ident.get("identity_degraded", False),
+        "embedding_load_warnings": embed_ident.get("load_warnings", []),
         "vector_dim": dim,
         "similarity": "cosine_via_normalized_dot",
         "pooling": "sentence-transformers-default",
         "normalize": True,
     }
-    return _retrieve, meta
+    # Return full identity for artifact inclusion
+    return _retrieve, meta, embed_ident
 
 
 def make_hybrid_retriever(
@@ -481,10 +520,11 @@ def make_hybrid_retriever(
     candidate_k: int = 20,
     rrf_k: int = 60,
     model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
+    fail_closed: bool = True,
 ):
     bm25_fn, bm25_meta = make_bm25_retriever(corpus, top_k=candidate_k)
-    dense_fn, dense_meta = make_dense_retriever(
-        corpus, top_k=candidate_k, model_name=model_name
+    dense_fn, dense_meta, dense_ident = make_dense_retriever(
+        corpus, top_k=candidate_k, model_name=model_name, fail_closed=fail_closed
     )
     docs = {d.doc_id: d for d in documents_from_corpus(corpus)}
 
@@ -533,7 +573,7 @@ def make_hybrid_retriever(
         "bm25": bm25_meta,
         "dense": dense_meta,
     }
-    return _retrieve, meta
+    return _retrieve, meta, dense_ident
 
 
 def make_hybrid_qwen_rerank_retriever(
@@ -542,10 +582,11 @@ def make_hybrid_qwen_rerank_retriever(
     *,
     top_k: int = 5,
     candidate_k: int = 12,
+    fail_closed: bool = True,
 ):
     """Hybrid candidates + Qwen listwise rerank (LLM reranker, not cross-encoder)."""
-    hybrid_fn, hybrid_meta = make_hybrid_retriever(
-        corpus, top_k=candidate_k, candidate_k=max(candidate_k, 20)
+    hybrid_fn, hybrid_meta, dense_ident = make_hybrid_retriever(
+        corpus, top_k=candidate_k, candidate_k=max(candidate_k, 20), fail_closed=fail_closed
     )
 
     def _retrieve(question: str) -> list[dict[str, Any]]:
@@ -608,7 +649,7 @@ def make_hybrid_qwen_rerank_retriever(
         "top_k": top_k,
         "candidate_k": candidate_k,
     }
-    return _retrieve, meta
+    return _retrieve, meta, dense_ident
 
 
 def run_nexus_graph_evidence_qwen(

@@ -81,12 +81,32 @@ def embedder_identity(root: Path | None = None) -> dict[str, Any]:
     }
 
 
-def load_sentence_transformer(root: Path | None = None):
+class DenseModelIdentityError(RuntimeError):
+    """Raised when dense model identity cannot be verified."""
+
+
+def load_sentence_transformer(
+    root: Path | None = None,
+    *,
+    fail_closed: bool = True,
+):
     """Load the pinned SentenceTransformer; prefer local snapshot when present.
 
     When ``HF_HUB_OFFLINE=1`` and the exact revision snapshot is absent from
     cache, fall back to the locally cached model id and record
     ``revision_resolved`` honestly (not silently pretending the pin loaded).
+
+    Args:
+        root: Project root for finding local snapshots.
+        fail_closed: If True (default), raise DenseModelIdentityError when
+            fallback to unpinned cache is required. Set to False only for
+            exploratory/diagnostic runs where identity degradation is acceptable.
+
+    Returns:
+        (model, identity_dict) tuple.
+
+    Raises:
+        DenseModelIdentityError: When fail_closed=True and pinned revision unavailable.
     """
     from sentence_transformers import SentenceTransformer
 
@@ -94,6 +114,8 @@ def load_sentence_transformer(root: Path | None = None):
     local = ident.get("offline_snapshot") or ""
     revision_resolved = ident["revision"]
     load_mode = "pinned_revision"
+    load_warnings: list[str] = []
+
     if local and Path(local).is_dir():
         model = SentenceTransformer(local)
         load_mode = "local_snapshot"
@@ -101,6 +123,10 @@ def load_sentence_transformer(root: Path | None = None):
         files = hash_local_snapshot(Path(local))
         if files:
             ident["files_sha256"] = files
+        # Try to verify the local snapshot matches pinned revision
+        expected_files = ident.get("files_sha256") or {}
+        if not expected_files:
+            load_warnings.append("local snapshot loaded but no file hashes to verify")
     else:
         try:
             model = SentenceTransformer(
@@ -108,16 +134,29 @@ def load_sentence_transformer(root: Path | None = None):
                 revision=ident["revision"],
             )
         except (OSError, ValueError) as exc:
+            if fail_closed:
+                raise DenseModelIdentityError(
+                    f"pinned revision {ident['revision'][:12]}... unavailable "
+                    f"({type(exc).__name__}); refusing to use unpinned fallback "
+                    "for primary artifacts. Set fail_closed=False only for "
+                    "exploratory runs."
+                ) from exc
             # Offline / missing revision snapshot: use cached default weights.
             model = SentenceTransformer(ident["model_id"])
             revision_resolved = "cache_default_unpinned"
             load_mode = "offline_cache_fallback"
-            ident["load_warning"] = (
+            load_warnings.append(
                 f"pinned revision unavailable offline ({type(exc).__name__}); "
                 "loaded cached model id without revision pin"
             )
+
     ident["revision_resolved"] = revision_resolved
+    ident["revision_pinned"] = ident["revision"]
     ident["load_mode"] = load_mode
+    ident["load_warnings"] = load_warnings
+    ident["fail_closed"] = fail_closed
+    ident["identity_degraded"] = load_mode == "offline_cache_fallback"
+
     # Recompute identity over what was actually loaded.
     blob = json.dumps(
         {

@@ -106,36 +106,115 @@ class LocalQwenUnavailableError(RuntimeError):
     """Raised when the required local Qwen 3.6 identity cannot be validated."""
 
 
-def _http_json(url: str, payload: dict[str, Any] | None = None, timeout: float = 30.0) -> Any:
-    data = None if payload is None else json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        url,
-        data=data,
-        headers={"Content-Type": "application/json"} if data else {},
-        method="GET" if data is None else "POST",
-    )
-    # Explicit socket timeout; also wrap in a future wall-clock bound so a
-    # stuck Ollama worker cannot hang the evaluation process indefinitely.
-    from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+def _http_json_subprocess(url: str, payload: dict[str, Any] | None = None, timeout: float = 30.0) -> Any:
+    """Execute HTTP request in a killable subprocess for true timeout isolation.
 
-    def _do() -> Any:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+    Unlike ThreadPoolExecutor, a subprocess can be terminated via SIGKILL/TerminateProcess
+    if it hangs, ensuring the parent process never gets stuck waiting for Ollama.
+    """
+    import subprocess
+    import sys
+    import tempfile
+    import os
 
-    # Slightly above urllib timeout so socket timeout usually wins first.
-    wall = float(timeout) + 15.0
-    pool = ThreadPoolExecutor(max_workers=1)
+    # Build a minimal Python script to execute the HTTP call
+    script = '''
+import json
+import sys
+import urllib.request
+
+url = sys.argv[1]
+payload_json = sys.argv[2] if len(sys.argv) > 2 else ""
+timeout = float(sys.argv[3]) if len(sys.argv) > 3 else 30.0
+
+payload = json.loads(payload_json) if payload_json else None
+data = None if payload is None else json.dumps(payload).encode("utf-8")
+req = urllib.request.Request(
+    url,
+    data=data,
+    headers={"Content-Type": "application/json"} if data else {},
+    method="GET" if data is None else "POST",
+)
+try:
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        result = json.loads(resp.read().decode("utf-8"))
+        print(json.dumps({"ok": True, "data": result}))
+except Exception as exc:
+    print(json.dumps({"ok": False, "error": f"{type(exc).__name__}: {exc}"}))
+'''
+
+    payload_str = json.dumps(payload) if payload else ""
+    wall_timeout = float(timeout) + 15.0
+
     try:
-        fut = pool.submit(_do)
+        proc = subprocess.Popen(
+            [sys.executable, "-c", script, url, payload_str, str(timeout)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
         try:
-            return fut.result(timeout=wall)
-        except FuturesTimeout as exc:
+            stdout, stderr = proc.communicate(timeout=wall_timeout)
+        except subprocess.TimeoutExpired:
+            # Kill the process tree to ensure clean termination
+            _kill_process_tree(proc.pid)
+            proc.kill()
+            proc.wait()
             raise TimeoutError(
-                f"Ollama request exceeded wall-clock timeout {wall:.0f}s"
-            ) from exc
-    finally:
-        # Do not join a stuck worker thread; abandon it so eval can continue.
-        pool.shutdown(wait=False, cancel_futures=True)
+                f"Ollama subprocess exceeded wall-clock timeout {wall_timeout:.0f}s; process killed"
+            )
+
+        if proc.returncode != 0:
+            raise RuntimeError(f"subprocess failed: {stderr}")
+
+        result = json.loads(stdout.strip())
+        if not result.get("ok"):
+            error_msg = result.get("error", "unknown error")
+            if "timed out" in error_msg.lower() or "timeout" in error_msg.lower():
+                raise TimeoutError(error_msg)
+            raise RuntimeError(error_msg)
+        return result["data"]
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"invalid JSON from subprocess: {exc}") from exc
+
+
+def _kill_process_tree(pid: int) -> None:
+    """Kill a process and all its children."""
+    try:
+        import psutil
+        parent = psutil.Process(pid)
+        children = parent.children(recursive=True)
+        for child in children:
+            try:
+                child.kill()
+            except psutil.NoSuchProcess:
+                pass
+        try:
+            parent.kill()
+        except psutil.NoSuchProcess:
+            pass
+    except ImportError:
+        # psutil not available; fall back to basic kill
+        import os
+        import signal
+        try:
+            if hasattr(os, 'killpg'):
+                os.killpg(os.getpgid(pid), signal.SIGKILL)
+            else:
+                os.kill(pid, signal.SIGTERM)
+        except (ProcessLookupError, PermissionError):
+            pass
+    except Exception:
+        pass
+
+
+def _http_json(url: str, payload: dict[str, Any] | None = None, timeout: float = 30.0) -> Any:
+    """HTTP request with subprocess-based timeout isolation.
+
+    Uses a subprocess for the actual HTTP call, ensuring that stuck Ollama
+    workers can be killed without hanging the parent process.
+    """
+    return _http_json_subprocess(url, payload, timeout)
 
 
 def discover_local_qwen(

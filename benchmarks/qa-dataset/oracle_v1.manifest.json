@@ -20,8 +20,8 @@
   "schema_version": "nexus-oracle-v1",
   "sha256": "ca96877de86990e7757c18efe3576ec660b454d6984866cbebc5939ead1a63d5",
   "sources": {
-    "C:/Users/Pogry/Projects/SAM-architecture-research/benchmarks/qa-dataset/oracle_families_v1.jsonl": "281f1e9f2e79a803c36a629ee45ffa4d6aa6eab07424701ad0d349d96c47e376",
-    "C:/Users/Pogry/Projects/SAM-architecture-research/benchmarks/qa-dataset/relation_gold.jsonl": "c1ace6694c3bebc29a50d8a66f6a4090e2ce84d166782abb9b53e8abf86e46a4",
-    "C:/Users/Pogry/Projects/SAM-architecture-research/stack/encoder/data/val.jsonl": "f95e212502c7c5ad5a615a3e1921e62ef7e1e961a229f44be63e3f829fdacd09"
+    "benchmarks/qa-dataset/oracle_families_v1.jsonl": "281f1e9f2e79a803c36a629ee45ffa4d6aa6eab07424701ad0d349d96c47e376",
+    "benchmarks/qa-dataset/relation_gold.jsonl": "c1ace6694c3bebc29a50d8a66f6a4090e2ce84d166782abb9b53e8abf86e46a4",
+    "stack/encoder/data/val.jsonl": "f95e212502c7c5ad5a615a3e1921e62ef7e1e961a229f44be63e3f829fdacd09"
   }
 }
