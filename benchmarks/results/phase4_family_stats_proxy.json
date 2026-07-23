@@ -1,0 +1,291 @@
+{
+  "claim_eligibility": {
+    "full_primary_superiority": false,
+    "reason": "exploratory proxy metric only; adjudication incomplete"
+  },
+  "controlled_family": {
+    "arms": [
+      "phase4_bm25_rag_qwen_oracle_v1.json",
+      "phase4_dense_rag_qwen_oracle_v1.json",
+      "phase4_hybrid_rag_qwen_oracle_v1.json",
+      "phase4_hybrid_rerank_rag_qwen_oracle_v1.json"
+    ],
+    "comparison_mode": "controlled",
+    "comparisons": [
+      {
+        "bootstrap": {
+          "alpha": 0.05,
+          "ci_high": 0.183246,
+          "ci_low": 0.04712,
+          "mean_diff": 0.115183,
+          "n": 191,
+          "n_bootstrap": 2000,
+          "seed": 0
+        },
+        "comparison_label": "phase4_bm25_rag_qwen_oracle_v1.json",
+        "dataset_id": "oracle_v1",
+        "dataset_sha256": "ca96877de86990e7757c18efe3576ec660b454d6984866cbebc5939ead1a63d5",
+        "effect_size": {
+          "cohens_dz": 0.235463,
+          "mean_diff": 0.115183,
+          "n": 191
+        },
+        "error_timeout_policy": "FAILED/TIMED_OUT/INVALID_INPUT count as incorrect (0) when the primary metric slot is absent; NOT_RUN forbids comparison",
+        "excluded_question_ids": [],
+        "left_system": "nexus_graph_evidence_qwen_3_6_internal",
+        "mcnemar": {
+          "b": 35,
+          "c": 13,
+          "n_discordant": 48,
+          "p_value": 0.002088
+        },
+        "metric_name": "proxy_key_fact_correct",
+        "multiple_comparison": {
+          "adjusted_p_value": 0.008352,
+          "family_size": 4,
+          "method": "holm",
+          "n_tests": 4,
+          "note": "For a full test family, collect comparisons then call apply_holm_to_comparisons so all raw p-values enter Holm together",
+          "raw_p_value": 0.002088
+        },
+        "paired_n": 191,
+        "questions_total": 191,
+        "reference": "phase4_nexus_graph_evidence_qwen_oracle_v1.json",
+        "resource_pareto": {
+          "left_latency_p50_ms": 2070.285,
+          "left_peak_rss_mb_max": null,
+          "note": "Pareto points are descriptive; dominance claims require both quality CI and resource deltas under the same comparison mode",
+          "right_latency_p50_ms": 2388.209,
+          "right_peak_rss_mb_max": null
+        },
+        "right_system": "bm25_rag_qwen_3_6_internal",
+        "schema_version": "nexus-paired-comparison-v1",
+        "superiority_verdict": "LEFT_BETTER"
+      },
+      {
+        "bootstrap": {
+          "alpha": 0.05,
+          "ci_high": 0.172775,
+          "ci_low": 0.036649,
+          "mean_diff": 0.104712,
+          "n": 191,
+          "n_bootstrap": 2000,
+          "seed": 0
+        },
+        "comparison_label": "phase4_dense_rag_qwen_oracle_v1.json",
+        "dataset_id": "oracle_v1",
+        "dataset_sha256": "ca96877de86990e7757c18efe3576ec660b454d6984866cbebc5939ead1a63d5",
+        "effect_size": {
+          "cohens_dz": 0.217827,
+          "mean_diff": 0.104712,
+          "n": 191
+        },
+        "error_timeout_policy": "FAILED/TIMED_OUT/INVALID_INPUT count as incorrect (0) when the primary metric slot is absent; NOT_RUN forbids comparison",
+        "excluded_question_ids": [],
+        "left_system": "nexus_graph_evidence_qwen_3_6_internal",
+        "mcnemar": {
+          "b": 33,
+          "c": 13,
+          "n_discordant": 46,
+          "p_value": 0.004534
+        },
+        "metric_name": "proxy_key_fact_correct",
+        "multiple_comparison": {
+          "adjusted_p_value": 0.013602,
+          "family_size": 4,
+          "method": "holm",
+          "n_tests": 4,
+          "note": "For a full test family, collect comparisons then call apply_holm_to_comparisons so all raw p-values enter Holm together",
+          "raw_p_value": 0.004534
+        },
+        "paired_n": 191,
+        "questions_total": 191,
+        "reference": "phase4_nexus_graph_evidence_qwen_oracle_v1.json",
+        "resource_pareto": {
+          "left_latency_p50_ms": 2070.285,
+          "left_peak_rss_mb_max": null,
+          "note": "Pareto points are descriptive; dominance claims require both quality CI and resource deltas under the same comparison mode",
+          "right_latency_p50_ms": 2115.35,
+          "right_peak_rss_mb_max": null
+        },
+        "right_system": "dense_rag_qwen_3_6_internal",
+        "schema_version": "nexus-paired-comparison-v1",
+        "superiority_verdict": "LEFT_BETTER"
+      },
+      {
+        "bootstrap": {
+          "alpha": 0.05,
+          "ci_high": 0.167539,
+          "ci_low": 0.031414,
+          "mean_diff": 0.099476,
+          "n": 191,
+          "n_bootstrap": 2000,
+          "seed": 0
+        },
+        "comparison_label": "phase4_hybrid_rag_qwen_oracle_v1.json",
+        "dataset_id": "oracle_v1",
+        "dataset_sha256": "ca96877de86990e7757c18efe3576ec660b454d6984866cbebc5939ead1a63d5",
+        "effect_size": {
+          "cohens_dz": 0.208837,
+          "mean_diff": 0.099476,
+          "n": 191
+        },
+        "error_timeout_policy": "FAILED/TIMED_OUT/INVALID_INPUT count as incorrect (0) when the primary metric slot is absent; NOT_RUN forbids comparison",
+        "excluded_question_ids": [],
+        "left_system": "nexus_graph_evidence_qwen_3_6_internal",
+        "mcnemar": {
+          "b": 32,
+          "c": 13,
+          "n_discordant": 45,
+          "p_value": 0.006609
+        },
+        "metric_name": "proxy_key_fact_correct",
+        "multiple_comparison": {
+          "adjusted_p_value": 0.013602,
+          "family_size": 4,
+          "method": "holm",
+          "n_tests": 4,
+          "note": "For a full test family, collect comparisons then call apply_holm_to_comparisons so all raw p-values enter Holm together",
+          "raw_p_value": 0.006609
+        },
+        "paired_n": 191,
+        "questions_total": 191,
+        "reference": "phase4_nexus_graph_evidence_qwen_oracle_v1.json",
+        "resource_pareto": {
+          "left_latency_p50_ms": 2070.285,
+          "left_peak_rss_mb_max": null,
+          "note": "Pareto points are descriptive; dominance claims require both quality CI and resource deltas under the same comparison mode",
+          "right_latency_p50_ms": 2363.603,
+          "right_peak_rss_mb_max": null
+        },
+        "right_system": "hybrid_rag_qwen_3_6_internal",
+        "schema_version": "nexus-paired-comparison-v1",
+        "superiority_verdict": "LEFT_BETTER"
+      },
+      {
+        "bootstrap": {
+          "alpha": 0.05,
+          "ci_high": 0.146597,
+          "ci_low": 0.010471,
+          "mean_diff": 0.078534,
+          "n": 191,
+          "n_bootstrap": 2000,
+          "seed": 0
+        },
+        "comparison_label": "phase4_hybrid_rerank_rag_qwen_oracle_v1.json",
+        "dataset_id": "oracle_v1",
+        "dataset_sha256": "ca96877de86990e7757c18efe3576ec660b454d6984866cbebc5939ead1a63d5",
+        "effect_size": {
+          "cohens_dz": 0.163527,
+          "mean_diff": 0.078534,
+          "n": 191
+        },
+        "error_timeout_policy": "FAILED/TIMED_OUT/INVALID_INPUT count as incorrect (0) when the primary metric slot is absent; NOT_RUN forbids comparison",
+        "excluded_question_ids": [],
+        "left_system": "nexus_graph_evidence_qwen_3_6_internal",
+        "mcnemar": {
+          "b": 30,
+          "c": 15,
+          "n_discordant": 45,
+          "p_value": 0.035698
+        },
+        "metric_name": "proxy_key_fact_correct",
+        "multiple_comparison": {
+          "adjusted_p_value": 0.035698,
+          "family_size": 4,
+          "method": "holm",
+          "n_tests": 4,
+          "note": "For a full test family, collect comparisons then call apply_holm_to_comparisons so all raw p-values enter Holm together",
+          "raw_p_value": 0.035698
+        },
+        "paired_n": 191,
+        "questions_total": 191,
+        "reference": "phase4_nexus_graph_evidence_qwen_oracle_v1.json",
+        "resource_pareto": {
+          "left_latency_p50_ms": 2070.285,
+          "left_peak_rss_mb_max": null,
+          "note": "Pareto points are descriptive; dominance claims require both quality CI and resource deltas under the same comparison mode",
+          "right_latency_p50_ms": 6407.067,
+          "right_peak_rss_mb_max": null
+        },
+        "right_system": "hybrid_rerank_rag_qwen_3_6_internal",
+        "schema_version": "nexus-paired-comparison-v1",
+        "superiority_verdict": "LEFT_BETTER"
+      }
+    ],
+    "design": "all vs reference",
+    "holm_applied": true,
+    "n_runnable": 4,
+    "reference": "phase4_nexus_graph_evidence_qwen_oracle_v1.json"
+  },
+  "created_utc": "2026-07-23T15:37:36.908697+00:00",
+  "dataset_sha256": "ca96877de86990e7757c18efe3576ec660b454d6984866cbebc5939ead1a63d5",
+  "metric_name": "proxy_key_fact_correct",
+  "note": "system_level and controlled families are separate comparison universes; Holm correction applied within each family independently",
+  "schema_version": "nexus-phase4-family-stats-v2",
+  "system_level_family": {
+    "arms": [
+      "phase4_qwen_closed_book_oracle_v1.json",
+      "phase4_qwen_long_context_oracle_v1.json"
+    ],
+    "comparison_mode": "system_level",
+    "comparisons": [
+      {
+        "bootstrap": {
+          "alpha": 0.05,
+          "ci_high": 0.062827,
+          "ci_low": 0.010471,
+          "mean_diff": 0.036649,
+          "n": 191,
+          "n_bootstrap": 2000,
+          "seed": 0
+        },
+        "comparison_label": "phase4_qwen_closed_book_oracle_v1.json vs phase4_qwen_long_context_oracle_v1.json",
+        "dataset_id": "oracle_v1",
+        "dataset_sha256": "ca96877de86990e7757c18efe3576ec660b454d6984866cbebc5939ead1a63d5",
+        "effect_size": {
+          "cohens_dz": 0.194536,
+          "mean_diff": 0.036649,
+          "n": 191
+        },
+        "error_timeout_policy": "FAILED/TIMED_OUT/INVALID_INPUT count as incorrect (0) when the primary metric slot is absent; NOT_RUN forbids comparison",
+        "excluded_question_ids": [],
+        "left_system": "qwen_3_6_closed_book_internal",
+        "mcnemar": {
+          "b": 7,
+          "c": 0,
+          "n_discordant": 7,
+          "p_value": 0.015625
+        },
+        "metric_name": "proxy_key_fact_correct",
+        "multiple_comparison": {
+          "adjusted_p_value": 0.015625,
+          "family_size": 1,
+          "method": "holm",
+          "n_tests": 1,
+          "note": "For a full test family, collect comparisons then call apply_holm_to_comparisons so all raw p-values enter Holm together",
+          "raw_p_value": 0.015625
+        },
+        "pair": [
+          "phase4_qwen_closed_book_oracle_v1.json",
+          "phase4_qwen_long_context_oracle_v1.json"
+        ],
+        "paired_n": 191,
+        "questions_total": 191,
+        "resource_pareto": {
+          "left_latency_p50_ms": 984.622,
+          "left_peak_rss_mb_max": null,
+          "note": "Pareto points are descriptive; dominance claims require both quality CI and resource deltas under the same comparison mode",
+          "right_latency_p50_ms": 8.044,
+          "right_peak_rss_mb_max": null
+        },
+        "right_system": "qwen_3_6_long_context_internal",
+        "schema_version": "nexus-paired-comparison-v1",
+        "superiority_verdict": "LEFT_BETTER"
+      }
+    ],
+    "design": "pairwise within family",
+    "holm_applied": true,
+    "n_runnable": 1
+  }
+}

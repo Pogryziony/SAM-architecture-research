@@ -107,6 +107,34 @@ def test_subprocess_timeout_kills_process():
     assert "timeout" in err_str or "timed out" in err_str
 
 
+def test_subprocess_timeout_leaves_no_zombie_workers():
+    """Wall-clock kill path must terminate the worker (no lingering children)."""
+    import subprocess as sp
+
+    from nexus.baselines.local_qwen import _kill_process_tree
+
+    psutil = pytest.importorskip("psutil")
+
+    # Hang past communicate timeout; exercise kill tree.
+    proc = sp.Popen(
+        [sys.executable, "-c", "import time; time.sleep(120)"],
+        stdout=sp.PIPE,
+        stderr=sp.PIPE,
+        text=True,
+    )
+    pid = proc.pid
+    try:
+        proc.communicate(timeout=0.5)
+        pytest.fail("child should have hung past timeout")
+    except sp.TimeoutExpired:
+        _kill_process_tree(pid)
+        proc.kill()
+        proc.wait(timeout=5)
+
+    time.sleep(0.5)
+    assert not psutil.pid_exists(pid), f"zombie worker still alive: pid={pid}"
+
+
 def test_subprocess_timeout_returns_quickly():
     """Verify we don't block forever waiting for the subprocess."""
     from nexus.baselines.local_qwen import _http_json_subprocess

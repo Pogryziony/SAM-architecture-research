@@ -85,6 +85,30 @@ class DenseModelIdentityError(RuntimeError):
     """Raised when dense model identity cannot be verified."""
 
 
+def _hf_hub_snapshot(model_id: str, revision: str) -> Path | None:
+    """Return the local HF hub snapshot dir for ``model_id``@``revision`` if present."""
+    hub = Path.home() / ".cache" / "huggingface" / "hub"
+    slug = "models--" + model_id.replace("/", "--")
+    pinned = hub / slug / "snapshots" / revision
+    if pinned.is_dir():
+        return pinned
+    return None
+
+
+def _any_hf_hub_snapshot(model_id: str) -> Path | None:
+    """Return any cached snapshot for ``model_id`` (prefer newest mtime)."""
+    hub = Path.home() / ".cache" / "huggingface" / "hub"
+    slug = "models--" + model_id.replace("/", "--")
+    snaps = hub / slug / "snapshots"
+    if not snaps.is_dir():
+        return None
+    dirs = [p for p in snaps.iterdir() if p.is_dir()]
+    if not dirs:
+        return None
+    dirs.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    return dirs[0]
+
+
 def load_sentence_transformer(
     root: Path | None = None,
     *,
@@ -101,6 +125,8 @@ def load_sentence_transformer(
         fail_closed: If True (default), raise DenseModelIdentityError when
             fallback to unpinned cache is required. Set to False only for
             exploratory/diagnostic runs where identity degradation is acceptable.
+            When a different HF cache snapshot is used, identity is marked
+            degraded but load still succeeds so fields stay truthful.
 
     Returns:
         (model, identity_dict) tuple.
@@ -115,47 +141,83 @@ def load_sentence_transformer(
     revision_resolved = ident["revision"]
     load_mode = "pinned_revision"
     load_warnings: list[str] = []
+    identity_degraded = False
 
     if local and Path(local).is_dir():
         model = SentenceTransformer(local)
         load_mode = "local_snapshot"
-        # Hash whatever is on disk for identity.
         files = hash_local_snapshot(Path(local))
         if files:
             ident["files_sha256"] = files
-        # Try to verify the local snapshot matches pinned revision
-        expected_files = ident.get("files_sha256") or {}
-        if not expected_files:
-            load_warnings.append("local snapshot loaded but no file hashes to verify")
-    else:
-        try:
-            model = SentenceTransformer(
-                ident["model_id"],
-                revision=ident["revision"],
-            )
-        except (OSError, ValueError) as exc:
-            if fail_closed:
-                raise DenseModelIdentityError(
-                    f"pinned revision {ident['revision'][:12]}... unavailable "
-                    f"({type(exc).__name__}); refusing to use unpinned fallback "
-                    "for primary artifacts. Set fail_closed=False only for "
-                    "exploratory runs."
-                ) from exc
-            # Offline / missing revision snapshot: use cached default weights.
-            model = SentenceTransformer(ident["model_id"])
-            revision_resolved = "cache_default_unpinned"
-            load_mode = "offline_cache_fallback"
+        pin_files = dict(load_pin_manifest(root).get("files") or {})
+        if pin_files and files == pin_files:
+            revision_resolved = ident["revision"]
+        else:
+            # Do not claim the pin when local bytes are unverified / different.
+            revision_resolved = f"local_snapshot:{hashlib.sha256(json.dumps(files, sort_keys=True).encode()).hexdigest()[:12]}"
+            identity_degraded = True
             load_warnings.append(
-                f"pinned revision unavailable offline ({type(exc).__name__}); "
-                "loaded cached model id without revision pin"
+                "local snapshot loaded without matching pin file hashes; "
+                "revision_resolved is a content fingerprint, not the pin"
             )
+    else:
+        pinned_snap = _hf_hub_snapshot(ident["model_id"], ident["revision"])
+        if pinned_snap is not None:
+            model = SentenceTransformer(str(pinned_snap))
+            load_mode = "hf_hub_pinned_snapshot"
+            revision_resolved = ident["revision"]
+            files = hash_local_snapshot(pinned_snap)
+            if files:
+                ident["files_sha256"] = files
+        else:
+            try:
+                model = SentenceTransformer(
+                    ident["model_id"],
+                    revision=ident["revision"],
+                )
+                load_mode = "pinned_revision"
+                revision_resolved = ident["revision"]
+            except (OSError, ValueError, RuntimeError) as exc:
+                alt = _any_hf_hub_snapshot(ident["model_id"])
+                if alt is not None:
+                    model = SentenceTransformer(str(alt))
+                    load_mode = "hf_hub_unpinned_snapshot"
+                    revision_resolved = alt.name
+                    identity_degraded = True
+                    load_warnings.append(
+                        f"pinned revision {ident['revision'][:12]}... unavailable "
+                        f"({type(exc).__name__}); loaded HF cache snapshot {alt.name}"
+                    )
+                    files = hash_local_snapshot(alt)
+                    if files:
+                        ident["files_sha256"] = files
+                elif fail_closed:
+                    raise DenseModelIdentityError(
+                        f"pinned revision {ident['revision'][:12]}... unavailable "
+                        f"({type(exc).__name__}); refusing to use unpinned fallback "
+                        "for primary artifacts. Set fail_closed=False only for "
+                        "exploratory runs."
+                    ) from exc
+                else:
+                    # Offline / missing revision snapshot: use cached default weights.
+                    model = SentenceTransformer(ident["model_id"])
+                    revision_resolved = "cache_default_unpinned"
+                    load_mode = "offline_cache_fallback"
+                    identity_degraded = True
+                    load_warnings.append(
+                        f"pinned revision unavailable offline ({type(exc).__name__}); "
+                        "loaded cached model id without revision pin"
+                    )
 
     ident["revision_resolved"] = revision_resolved
     ident["revision_pinned"] = ident["revision"]
     ident["load_mode"] = load_mode
     ident["load_warnings"] = load_warnings
     ident["fail_closed"] = fail_closed
-    ident["identity_degraded"] = load_mode == "offline_cache_fallback"
+    ident["identity_degraded"] = identity_degraded or load_mode in {
+        "offline_cache_fallback",
+        "hf_hub_unpinned_snapshot",
+    }
 
     # Recompute identity over what was actually loaded.
     blob = json.dumps(

@@ -35,19 +35,12 @@ def test_evidence_manifest_artifact_hashes_valid():
     errors = verify_manifest_hashes(manifest_path, ROOT)
 
     if errors:
-        # Check if this is a known development scenario
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        checkout = manifest.get("checkout", {})
-        if checkout.get("working_tree_dirty"):
-            pytest.skip(
-                "Manifest was created with dirty working tree; "
-                "regenerate after committing: python benchmarks/regenerate_evidence_identity.py"
-            )
-
+        # Dirty-tree checkout metadata must NOT suppress hash failures — that
+        # loophole left stale sha256 values green in CI after PR #53.
         pytest.fail(
-            f"Evidence manifest hash validation failed:\n" +
-            "\n".join(f"  - {e}" for e in errors) +
-            "\n\nRegenerate with: python benchmarks/regenerate_evidence_identity.py"
+            "Evidence manifest hash validation failed:\n"
+            + "\n".join(f"  - {e}" for e in errors)
+            + "\n\nRegenerate with: python benchmarks/regenerate_evidence_identity.py"
         )
 
 
