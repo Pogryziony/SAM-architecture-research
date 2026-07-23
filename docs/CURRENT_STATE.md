@@ -2,9 +2,9 @@
 
 **Document role:** canonical current-state attestation for this repository.  
 **Supersedes for status claims:** informal “validated architecture” wording in older docs.  
-**Analyzed HEAD:** `adff97ca12b21468b2781a37fc211daf2ef162f7`  
+**Analyzed HEAD:** `6a13f8e260b192e58ca6a3a6815ec3ff1029d89e`  
 **Generated (UTC):** 2026-07-23 via `benchmarks/sync_current_state.py`  
-**Evidence manifest:** `418d3de240361961c42de301f36891b073858771635f4862654715151a093804`
+**Evidence manifest:** `00e73f1f60d75ef401cb2911f252eb48438343839e3416608856dd2f7051e8fb`
 
 > If this file and another document disagree on *current* status, **this file wins**.
 > Regenerate with: `python benchmarks/sync_current_state.py`
@@ -55,18 +55,18 @@
 
 | Arm | Status | Artifact |
 |-----|--------|----------|
-| Qwen closed-book | VALID @ `518103188e79` ds=`fb86a9671fb7` | `phase4_qwen_closed_book_oracle_v1.json` |
-| Qwen long-context | VALID @ `518103188e79` ds=`fb86a9671fb7` | `phase4_qwen_long_context_oracle_v1.json` |
-| BM25 RAG+Qwen | VALID @ `518103188e79` ds=`fb86a9671fb7` | `phase4_bm25_rag_qwen_oracle_v1.json` |
-| Dense RAG+Qwen | VALID @ `518103188e79` ds=`fb86a9671fb7` | `phase4_dense_rag_qwen_oracle_v1.json` |
-| Hybrid RAG+Qwen | VALID @ `518103188e79` ds=`fb86a9671fb7` | `phase4_hybrid_rag_qwen_oracle_v1.json` |
-| Hybrid+rerank RAG+Qwen | VALID @ `518103188e79` ds=`fb86a9671fb7` | `phase4_hybrid_rerank_rag_qwen_oracle_v1.json` |
-| NEXUS graph-evidence+Qwen | VALID @ `518103188e79` ds=`fb86a9671fb7` | `phase4_nexus_graph_evidence_qwen_oracle_v1.json` |
-| NEXUS grounded (evidence repair) | VALID @ `adff97ca12b2` ds=`568f9ce45444` | `eval_oracle_v1_grounded_evidence_repair.json` |
+| Qwen closed-book | VALID @ `b4d7e9e0314b` ds=`ca96877de869` | `phase4_qwen_closed_book_oracle_v1.json` |
+| Qwen long-context | VALID @ `b4d7e9e0314b` ds=`ca96877de869` | `phase4_qwen_long_context_oracle_v1.json` |
+| BM25 RAG+Qwen | VALID @ `6a13f8e260b1` ds=`ca96877de869` | `phase4_bm25_rag_qwen_oracle_v1.json` |
+| Dense RAG+Qwen | VALID @ `6a13f8e260b1` ds=`ca96877de869` | `phase4_dense_rag_qwen_oracle_v1.json` |
+| Hybrid RAG+Qwen | VALID @ `6a13f8e260b1` ds=`ca96877de869` | `phase4_hybrid_rag_qwen_oracle_v1.json` |
+| Hybrid+rerank RAG+Qwen | VALID @ `6a13f8e260b1` ds=`ca96877de869` | `phase4_hybrid_rerank_rag_qwen_oracle_v1.json` |
+| NEXUS graph-evidence+Qwen | VALID @ `6a13f8e260b1` ds=`ca96877de869` | `phase4_nexus_graph_evidence_qwen_oracle_v1.json` |
+| NEXUS grounded (evidence repair) | VALID @ `6a13f8e260b1` ds=`ca96877de869` | `eval_oracle_v1_grounded_evidence_repair.json` |
 | Human adjudication | PENDING | `phase4_adjudication_export/` |
 | Sealed external | BLOCKED | `evaluator_handoff/` |
 
-NEXUS grounded source_commit in latest repair artifact: `adff97ca12b21468b2781a37fc211daf2ef162f7`
+NEXUS grounded source_commit in latest repair artifact: `6a13f8e260b192e58ca6a3a6815ec3ff1029d89e`
 
 ---
 

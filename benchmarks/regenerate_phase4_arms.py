@@ -29,14 +29,17 @@ def main() -> int:
     parser.add_argument("--promote", action="store_true", help="Replace canonical filenames")
     args = parser.parse_args()
 
-    # Health first
+    # Health first (skip if a fresh health artifact already exists unless forcing)
     health = RESULTS / "phase4_qwen_health_repair.json"
-    if health.exists():
-        health.unlink()
-    subprocess.check_call(
-        [sys.executable, str(RUNNER), "--arm", "health", "--output", str(health)],
-        cwd=ROOT,
-    )
+    if health.exists() and not args.only:
+        print("skip existing", health)
+    else:
+        if health.exists():
+            health.unlink()
+        subprocess.check_call(
+            [sys.executable, str(RUNNER), "--arm", "health", "--output", str(health)],
+            cwd=ROOT,
+        )
 
     selected = ARMS
     if args.only:

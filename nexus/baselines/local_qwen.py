@@ -114,8 +114,28 @@ def _http_json(url: str, payload: dict[str, Any] | None = None, timeout: float =
         headers={"Content-Type": "application/json"} if data else {},
         method="GET" if data is None else "POST",
     )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+    # Explicit socket timeout; also wrap in a future wall-clock bound so a
+    # stuck Ollama worker cannot hang the evaluation process indefinitely.
+    from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+
+    def _do() -> Any:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+
+    # Slightly above urllib timeout so socket timeout usually wins first.
+    wall = float(timeout) + 15.0
+    pool = ThreadPoolExecutor(max_workers=1)
+    try:
+        fut = pool.submit(_do)
+        try:
+            return fut.result(timeout=wall)
+        except FuturesTimeout as exc:
+            raise TimeoutError(
+                f"Ollama request exceeded wall-clock timeout {wall:.0f}s"
+            ) from exc
+    finally:
+        # Do not join a stuck worker thread; abandon it so eval can continue.
+        pool.shutdown(wait=False, cancel_futures=True)
 
 
 def discover_local_qwen(
@@ -279,19 +299,21 @@ class LocalQwenAdapter:
                 )
                 retries_used = attempt
                 break
-            except urllib.error.URLError as exc:
+            except (urllib.error.URLError, TimeoutError, OSError) as exc:
                 last_exc = exc
                 retries_used = attempt
                 if attempt >= retry_max:
                     msg = str(exc)
                     timed_out = (
-                        "timed out" in msg.casefold() or "timeout" in msg.casefold()
+                        isinstance(exc, TimeoutError)
+                        or "timed out" in msg.casefold()
+                        or "timeout" in msg.casefold()
                     )
                     return LocalQwenGeneration(
                         raw_response="",
                         parsed_answer="",
                         latency_ms=round((time.perf_counter() - t0) * 1000, 3),
-                        error=f"URLError: {exc}",
+                        error=f"{type(exc).__name__}: {exc}",
                         timed_out=timed_out,
                         prompt=user_prompt,
                         system_prompt=sys_p,
@@ -304,12 +326,14 @@ class LocalQwenAdapter:
                 last_exc = exc
                 retries_used = attempt
                 if attempt >= retry_max:
+                    msg = str(exc)
+                    timed_out = "timed out" in msg.casefold() or "timeout" in msg.casefold()
                     return LocalQwenGeneration(
                         raw_response="",
                         parsed_answer="",
                         latency_ms=round((time.perf_counter() - t0) * 1000, 3),
                         error=f"{type(exc).__name__}: {exc}",
-                        timed_out=False,
+                        timed_out=timed_out,
                         prompt=user_prompt,
                         system_prompt=sys_p,
                         prompt_sha256=hashlib.sha256(

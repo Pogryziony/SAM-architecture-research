@@ -75,6 +75,9 @@ def build_frozen_dataset(
         family_rows = _read_jsonl(families_path)
         records = merge_oracle_records(records, family_rows)
         sources[str(families_path.as_posix())] = sha256_file(families_path)
+    # Canonical domain identity for SAM oracle (must match domain-pack tasks).
+    for row in records:
+        row.setdefault("domain", "sam")
     errors = validate_oracle_records(records)
     if errors:
         raise ValueError("invalid oracle records: " + "; ".join(errors))
