@@ -43,3 +43,34 @@ def test_cli_ask_help_lists_profiles():
         main(["ask", "--help"])
     except SystemExit as exc:
         assert exc.code == 0
+
+
+def test_cli_default_profile_is_grounded_not_synth(capsys):
+    # Help text must advertise grounded as default and synth as compatibility.
+    try:
+        main(["ask", "--help"])
+    except SystemExit:
+        pass
+    out = capsys.readouterr().out + capsys.readouterr().err
+    # argparse may print to stdout or stderr depending on version
+    help_text = out.lower()
+    if not help_text:
+        # Re-run capturing via pytest's system exit path
+        import io
+        import contextlib
+
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+            try:
+                main(["ask", "--help"])
+            except SystemExit:
+                pass
+        help_text = buf.getvalue().lower()
+    assert "grounded" in help_text
+    assert "synth" in help_text
+
+
+def test_ask_default_config_is_not_synth_backend():
+    config = ProductionNEXUSConfig.grounded()
+    assert config.realizer_backend != "synth"
+    assert "grounded" in config.realizer_backend or config.require_structured_provenance

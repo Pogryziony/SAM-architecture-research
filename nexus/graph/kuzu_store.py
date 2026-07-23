@@ -1,4 +1,10 @@
-"""Optional Kuzu-backed graph store (Stage 4+ production path scaffold).
+"""Optional Kuzu-backed graph store — EXPERIMENTAL scaffold.
+
+Status: **experimental / not authoritative**. Traversal currently relies on
+Python-side edge mirrors (``self._edges``) rather than Kuzu adjacency indexes
+for ``get_outgoing`` / ``get_incoming``. Do not treat this backend as
+production-parity with ``InMemoryGraphStore`` until backend-parity tests pass
+for mutation, provenance, bi-temporal fields, and indexed traversal.
 
 Implements the subset of InMemoryGraphStore used by traversal/tests:
 add_node, add_edge, get_node, has_node, get_outgoing, get_incoming,
@@ -14,7 +20,13 @@ from nexus.graph import Edge, Node
 
 
 class KuzuGraphStore:
-    """Embedded Kuzu adapter with an in-process schema for Node/Edge."""
+    """EXPERIMENTAL embedded Kuzu adapter with an in-process schema.
+
+    Python mirrors remain authoritative for reads in this scaffold.
+    """
+
+    EXPERIMENTAL = True
+    AUTHORITATIVE_BACKEND = False
 
     def __init__(self, database_path: str | Path | None = None):
         try:

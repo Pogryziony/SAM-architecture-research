@@ -1,0 +1,9 @@
+{
+  "annotator_A_packet": "benchmarks\\results\\phase4_adjudication_export\\annotator_A_packet.json",
+  "annotator_B_packet": "benchmarks\\results\\phase4_adjudication_export\\annotator_B_packet.json",
+  "created_utc": "2026-07-22T21:40:36.318197+00:00",
+  "item_count_A": 142,
+  "item_count_B": 142,
+  "schema_version": "nexus-adjudication-dual-export-v1",
+  "status": "PENDING_HUMAN_RESPONSES"
+}

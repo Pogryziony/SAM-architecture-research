@@ -1,8 +1,12 @@
 """Stable public API surface for NEXUS.
 
 Prefer this module (and ``ProductionNEXUSConfig`` factories) over reaching into
-internal packages. The library default Realizer remains ``synth``; production
-QA should use ``ProductionNEXUSConfig.grounded()``.
+internal packages.
+
+Public CLI / ``ask()`` default to the safe ``grounded`` production profile.
+The low-level ``NEXUSConfig.realizer_backend`` library default remains
+``synth`` only for historical Stage 2 reproduction — never use it as an
+implicit production path.
 """
 
 from __future__ import annotations
@@ -87,9 +91,20 @@ def main(argv: list[str] | None = None) -> int:
     ask_parser.add_argument("question", help="Natural-language question")
     ask_parser.add_argument(
         "--profile",
-        choices=("grounded", "pointer_copy", "comparison_plan", "lexical", "synth"),
+        choices=(
+            "grounded",
+            "l1_acceptance",
+            "pointer_copy",
+            "comparison_plan",
+            "deterministic_render",
+            "lexical",
+            "synth",
+        ),
         default="grounded",
-        help="Production profile (default: grounded). 'synth' is the library default.",
+        help=(
+            "Named runtime profile (default: grounded — recommended safe QA). "
+            "'synth' is a historical Stage-2 compatibility mode, not production."
+        ),
     )
     ask_parser.add_argument(
         "--json",
@@ -112,8 +127,10 @@ def main(argv: list[str] | None = None) -> int:
 
     factories = {
         "grounded": ProductionNEXUSConfig.grounded,
+        "l1_acceptance": ProductionNEXUSConfig.l1_acceptance,
         "pointer_copy": ProductionNEXUSConfig.pointer_copy,
         "comparison_plan": ProductionNEXUSConfig.comparison_plan,
+        "deterministic_render": ProductionNEXUSConfig.deterministic_render,
         "lexical": ProductionNEXUSConfig.lexical_only,
         "synth": lambda: ProductionNEXUSConfig.lexical_only(realizer_backend="synth"),
     }
@@ -133,6 +150,9 @@ def main(argv: list[str] | None = None) -> int:
             "verifier_passed": result.verifier_passed,
             "reasoning_action": result.reasoning_action,
             "config_profile": args.profile,
+            "realizer_backend": config.realizer_backend,
+            "config_hash": config.config_hash,
+            "identity_schema": config.identity_schema,
         }
         print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
     else:

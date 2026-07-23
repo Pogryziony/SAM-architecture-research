@@ -12,10 +12,11 @@ re-run registered gates or invent new metrics.
 
 ## Authoritative status chain
 
-1. [`README.md`](../README.md) — project status table  
-2. [`STACK_RESULTS.md`](../STACK_RESULTS.md) — stage gate verdicts  
-3. Hashed artifacts under `benchmarks/results/` (immutable)  
-4. This attestation — freeze interpretation and production profile guidance
+1. [`CURRENT_STATE.md`](CURRENT_STATE.md) — **canonical current-state source of truth**  
+2. [`README.md`](../README.md) — project status table (must match CURRENT_STATE)  
+3. [`STACK_RESULTS.md`](../STACK_RESULTS.md) — stage gate verdicts  
+4. Hashed artifacts under `benchmarks/results/` (immutable)  
+5. This attestation — freeze interpretation and production profile guidance
 
 Historical 200-question Phase 4 FAIL numbers in
 [`ANALYSIS_AND_ROADMAP.md`](../ANALYSIS_AND_ROADMAP.md) (2026-07-09) remain

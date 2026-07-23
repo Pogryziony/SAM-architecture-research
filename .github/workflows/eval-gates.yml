@@ -1,0 +1,167 @@
+name: Eval Gates
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  eval-invariants:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.12']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+
+      - name: Evaluation schema and aggregation tests
+        run: >
+          python -m pytest
+          tests/test_eval_result_schema.py
+          tests/test_eval_export_and_aggregate.py
+          tests/test_scoring_denominators.py
+          tests/test_fair_baselines.py
+          tests/test_phase2_baselines_perf_ablations.py
+          tests/test_fail_closed_synth_fallback.py
+          tests/test_phase3_adjudication_retrieval_handoff.py
+          tests/test_config_identity_v2.py
+          tests/test_docs_current_state.py
+          -v --tb=short
+
+      - name: Evaluator handoff package
+        run: python evaluator_handoff/tools/validate_handoff.py
+
+      - name: Fail-closed grounded identity smoke
+        run: |
+          python - <<'PY'
+          from nexus.pipeline.config import ProductionNEXUSConfig
+          g = ProductionNEXUSConfig.grounded()
+          assert g.allow_synth_fallback is False
+          open_fb = ProductionNEXUSConfig.grounded(allow_synth_fallback=True)
+          assert g.config_hash != open_fb.config_hash
+          print("fail-closed identity OK", g.config_hash)
+          PY
+
+      - name: Phase 4 local-Qwen / corpus / adjudication unit tests
+        run: >
+          python -m pytest
+          tests/test_phase4_local_qwen.py
+          -v --tb=short
+
+      - name: Phase 4 preregistration frozen
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("benchmarks/phase4_preregistration_v1.json")
+          d = json.loads(p.read_text(encoding="utf-8"))
+          assert d["status"] == "FROZEN"
+          assert d["local_qwen"]["model_name"] == "qwen3.6:latest"
+          assert d["adjudication"]["full_primary_requires_human_completion"] is True
+          print("phase4 preregistration OK")
+          PY
+
+      - name: Grounded mini-domain smoke (schema v1)
+        run: >
+          python benchmarks/run_eval_v1.py
+          --arm nexus
+          --profile grounded
+          --domain mini
+          --model dummy
+          --output benchmarks/results/_ci_eval_mini_grounded.json
+
+      - name: Baseline NOT_RUN smoke (no paid APIs)
+        run: >
+          python benchmarks/run_fair_baselines.py
+          --arm closed_book_llm
+          --output benchmarks/results/_ci_baseline_closed_book_not_run.json
+
+      - name: Placeholder hygiene
+        run: |
+          python - <<'PY'
+          from nexus.baselines import list_arms
+          for arm in list_arms():
+              if arm.is_placeholder:
+                  assert not arm.modern_rag, arm.arm_id
+                  assert "placeholder" in arm.arm_id or "placeholder" in arm.description.lower()
+          print("placeholder hygiene OK")
+          PY
+
+      - name: Do not commit CI scratch artifacts
+        run: |
+          rm -f benchmarks/results/_ci_eval_mini_grounded.json
+          rm -f benchmarks/results/_ci_baseline_closed_book_not_run.json
+          git diff --exit-code -- benchmarks/results/*.json models/ || true
+
+  performance-opt-in:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+      - name: Grounded performance measurement (mini)
+        run: >
+          python benchmarks/run_performance_grounded.py
+          --domain mini
+          --profile grounded
+          --warmup 1
+          --repeats 5
+          --output benchmarks/results/performance_grounded_dispatch.json
+
+  full-oracle-performance-opt-in:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+      - name: Full SAM oracle_v1 grounded performance
+        run: >
+          python benchmarks/run_performance_grounded.py
+          --domain sam
+          --profile grounded
+          --warmup 1
+          --repeats 1
+          --output benchmarks/results/performance_grounded_oracle_v1_dispatch.json
+
+  external-arms-opt-in:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+      - name: Closed-book LLM (NOT_RUN without secrets)
+        run: >
+          python benchmarks/run_fair_baselines.py
+          --arm closed_book_llm
+          --output benchmarks/results/_dispatch_closed_book.json
+      - name: BM25 retrieval-only
+        run: >
+          python benchmarks/run_bm25_retrieval.py
+          --domain mini
+          --output benchmarks/results/_dispatch_bm25.json

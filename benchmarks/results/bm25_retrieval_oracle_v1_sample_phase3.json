@@ -1,0 +1,3759 @@
+{
+  "aggregates": {
+    "mrr_mean": 0.089,
+    "mrr_n": 50,
+    "questions_total": 50,
+    "recall_at_k_mean": 0.043333,
+    "recall_at_k_n": 50
+  },
+  "answer_generation_status": "NOT_RUN",
+  "chunking": {
+    "max_chars": 2000,
+    "strategy": "graph_node_property_concat_v1"
+  },
+  "comparison_mode": "controlled",
+  "corpus_id": "7342b0c27a8b2060",
+  "created_utc": "2026-07-22T19:48:46.949197+00:00",
+  "dataset_id": "oracle_v1",
+  "dataset_sha256": "8594569ef2d1d2d31b420b35e52330566a0cab564079846d606a23ebbf53f013",
+  "embedding_model": null,
+  "family": "rag_retrieval",
+  "fusion_method": null,
+  "index_id": "926c30b64d55172a",
+  "modern_rag": false,
+  "note": "Do not compare retrieval-only scores against NEXUS answer correctness. Final-answer RAG remains NOT_RUN.",
+  "per_question": [
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 2.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "How does the concept 'retrieval projection mismatch' relate to the NEXUS architecture pivot?",
+      "question_id": "answer_q377",
+      "relevant_doc_ids": [
+        "Concept_RetrievalMismatch",
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "query_projection_mismatch_the",
+          "rank": 1,
+          "score": 25.079214,
+          "source": "sam-lm\\experiments\\experiment_0_6_final_report.md",
+          "text": "query_projection_mismatch_the | query_projection_mismatch\n\nthe"
+        },
+        {
+          "doc_id": "**does_not_prove_the_full_retrieval",
+          "rank": 2,
+          "score": 18.357192,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "**does_not_prove_the_full_retrieval | -_**does_not_prove_the_full_retrieval"
+        },
+        {
+          "doc_id": "architecture_how",
+          "rank": 3,
+          "score": 18.270946,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "architecture_how | architecture\n\nhow"
+        },
+        {
+          "doc_id": "Concept_PivotToNEXUS",
+          "rank": 4,
+          "score": 16.723583,
+          "source": "ANALYSIS_AND_ROADMAP.md",
+          "text": "Concept_PivotToNEXUS | pivot to nexus architecture pivot nexus pivot flat latent latent vector vector memory selection quality quality pivot | Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture"
+        },
+        {
+          "doc_id": "aware_retrieval_the",
+          "rank": 5,
+          "score": 15.371914,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "aware_retrieval_the | aware_retrieval\n\nthe"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "query_projection_mismatch_the",
+        "**does_not_prove_the_full_retrieval",
+        "architecture_how",
+        "Concept_PivotToNEXUS",
+        "aware_retrieval_the"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 4.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the concept that architecture is validated?",
+      "question_id": "answer_q378",
+      "relevant_doc_ids": [
+        "Concept_ArchitectureWorks",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Architecture_Validated",
+          "rank": 1,
+          "score": 16.903214,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "Architecture_Validated | architecture_validated."
+        },
+        {
+          "doc_id": "Sam_Architecture_Validated",
+          "rank": 2,
+          "score": 15.137826,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "Sam_Architecture_Validated | sam_architecture_validated."
+        },
+        {
+          "doc_id": "Selectivity_Is_The_Critical_Factor",
+          "rank": 3,
+          "score": 14.108447,
+          "source": "sam-lm\\experiments\\experiment_0_9_report.md",
+          "text": "Selectivity_Is_The_Critical_Factor | selectivity_is_the_critical_factor"
+        },
+        {
+          "doc_id": "Three_Hop_Is_The_Hardest",
+          "rank": 4,
+          "score": 14.108447,
+          "source": "sam-lm\\experiments\\experiment_0_6_report.md",
+          "text": "Three_Hop_Is_The_Hardest | three-hop_is_the_hardest"
+        },
+        {
+          "doc_id": "Sam_Is_The_New_Bottleneck",
+          "rank": 5,
+          "score": 14.108447,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Sam_Is_The_New_Bottleneck | sam_is_the_new_bottleneck"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Architecture_Validated",
+        "Sam_Architecture_Validated",
+        "Selectivity_Is_The_Critical_Factor",
+        "Three_Hop_Is_The_Hardest",
+        "Sam_Is_The_New_Bottleneck"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 4.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "Why is it important that architecture is validated?",
+      "question_id": "answer_q379",
+      "relevant_doc_ids": [
+        "Concept_ArchitectureWorks",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Architecture_Validated",
+          "rank": 1,
+          "score": 16.903214,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "Architecture_Validated | architecture_validated."
+        },
+        {
+          "doc_id": "Sam_Architecture_Validated",
+          "rank": 2,
+          "score": 15.137826,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "Sam_Architecture_Validated | sam_architecture_validated."
+        },
+        {
+          "doc_id": "Gate_Is",
+          "rank": 3,
+          "score": 12.835365,
+          "source": "sam-lm\\docs\\glossary.md",
+          "text": "Gate_Is | gate_is"
+        },
+        {
+          "doc_id": "Retrieval_Is_Solved",
+          "rank": 4,
+          "score": 11.494827,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Retrieval_Is_Solved | retrieval_is_solved"
+        },
+        {
+          "doc_id": "Hallucination_Is_Unacceptable",
+          "rank": 5,
+          "score": 11.494827,
+          "source": "docs\\rag-vs-graph-nexus.md",
+          "text": "Hallucination_Is_Unacceptable | hallucination_is_unacceptable"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Architecture_Validated",
+        "Sam_Architecture_Validated",
+        "Gate_Is",
+        "Retrieval_Is_Solved",
+        "Hallucination_Is_Unacceptable"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.25
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 4.0,
+          "k": 5,
+          "numerator": 1.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.25
+        }
+      },
+      "question": "Which experiments provide evidence for the concept that architecture is validated?",
+      "question_id": "answer_q380",
+      "relevant_doc_ids": [
+        "Concept_ArchitectureWorks",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Architecture_Validated",
+          "rank": 1,
+          "score": 16.903214,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "Architecture_Validated | architecture_validated."
+        },
+        {
+          "doc_id": "Sam_Architecture_Validated",
+          "rank": 2,
+          "score": 15.137826,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "Sam_Architecture_Validated | sam_architecture_validated."
+        },
+        {
+          "doc_id": "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+          "rank": 3,
+          "score": 11.91803,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix"
+        },
+        {
+          "doc_id": "Concept_ArchitectureWorks",
+          "rank": 4,
+          "score": 11.833107,
+          "source": "ANALYSIS_AND_ROADMAP.md",
+          "text": "Concept_ArchitectureWorks | architecture validated architecture works core memory architecture sam architecture works architecture confirmed oracle memory memory oracle oracle filter core memory memory architecture | Oracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid"
+        },
+        {
+          "doc_id": "the_hybrid_approach_for",
+          "rank": 5,
+          "score": 11.430554,
+          "source": "docs\\rag-vs-graph-nexus.md",
+          "text": "the_hybrid_approach_for | the_hybrid_approach\n\nfor"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Architecture_Validated",
+        "Sam_Architecture_Validated",
+        "bottleneck_is_the_*core's_reasoning*,_which_memory_cannot_fix",
+        "Concept_ArchitectureWorks",
+        "the_hybrid_approach_for"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 4.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "If the concept 'architecture is validated' were false, how would the research arc change?",
+      "question_id": "answer_q381",
+      "relevant_doc_ids": [
+        "Concept_ArchitectureWorks",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "architecture_how",
+          "rank": 1,
+          "score": 18.270946,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "architecture_how | architecture\n\nhow"
+        },
+        {
+          "doc_id": "Architecture_Validated",
+          "rank": 2,
+          "score": 16.903214,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "Architecture_Validated | architecture_validated."
+        },
+        {
+          "doc_id": "Sam_Architecture_Validated",
+          "rank": 3,
+          "score": 15.137826,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "Sam_Architecture_Validated | sam_architecture_validated."
+        },
+        {
+          "doc_id": "Selectivity_Is_The_Critical_Factor",
+          "rank": 4,
+          "score": 13.953929,
+          "source": "sam-lm\\experiments\\experiment_0_9_report.md",
+          "text": "Selectivity_Is_The_Critical_Factor | selectivity_is_the_critical_factor"
+        },
+        {
+          "doc_id": "Three_Hop_Is_The_Hardest",
+          "rank": 5,
+          "score": 13.953929,
+          "source": "sam-lm\\experiments\\experiment_0_6_report.md",
+          "text": "Three_Hop_Is_The_Hardest | three-hop_is_the_hardest"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "architecture_how",
+        "Architecture_Validated",
+        "Sam_Architecture_Validated",
+        "Selectivity_Is_The_Critical_Factor",
+        "Three_Hop_Is_The_Hardest"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.2
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 4.0,
+          "k": 5,
+          "numerator": 1.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.25
+        }
+      },
+      "question": "How does the concept 'architecture is validated' relate to the NEXUS architecture pivot?",
+      "question_id": "answer_q382",
+      "relevant_doc_ids": [
+        "Concept_ArchitectureWorks",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory",
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "architecture_how",
+          "rank": 1,
+          "score": 26.462038,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "architecture_how | architecture\n\nhow"
+        },
+        {
+          "doc_id": "Architecture_Validated",
+          "rank": 2,
+          "score": 25.094307,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "Architecture_Validated | architecture_validated."
+        },
+        {
+          "doc_id": "Sam_Architecture_Validated",
+          "rank": 3,
+          "score": 22.473433,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "Sam_Architecture_Validated | sam_architecture_validated."
+        },
+        {
+          "doc_id": "Concept_PivotToNEXUS",
+          "rank": 4,
+          "score": 19.767462,
+          "source": "ANALYSIS_AND_ROADMAP.md",
+          "text": "Concept_PivotToNEXUS | pivot to nexus architecture pivot nexus pivot flat latent latent vector vector memory selection quality quality pivot | Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture"
+        },
+        {
+          "doc_id": "Concept_ArchitectureWorks",
+          "rank": 5,
+          "score": 19.237071,
+          "source": "ANALYSIS_AND_ROADMAP.md",
+          "text": "Concept_ArchitectureWorks | architecture validated architecture works core memory architecture sam architecture works architecture confirmed oracle memory memory oracle oracle filter core memory memory architecture | Oracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "architecture_how",
+        "Architecture_Validated",
+        "Sam_Architecture_Validated",
+        "Concept_PivotToNEXUS",
+        "Concept_ArchitectureWorks"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 1.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 3.0,
+          "k": 5,
+          "numerator": 1.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.3333333333333333
+        }
+      },
+      "question": "What is the concept that pivot from SAM to NEXUS?",
+      "question_id": "answer_q383",
+      "relevant_doc_ids": [
+        "Concept_PivotToNEXUS",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Concept_PivotToNEXUS",
+          "rank": 1,
+          "score": 13.679704,
+          "source": "ANALYSIS_AND_ROADMAP.md",
+          "text": "Concept_PivotToNEXUS | pivot to nexus architecture pivot nexus pivot flat latent latent vector vector memory selection quality quality pivot | Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture"
+        },
+        {
+          "doc_id": "Sam_Is_The_New_Bottleneck",
+          "rank": 2,
+          "score": 12.803875,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Sam_Is_The_New_Bottleneck | sam_is_the_new_bottleneck"
+        },
+        {
+          "doc_id": "Decision_PivotToNEXUS",
+          "rank": 3,
+          "score": 12.175126,
+          "source": "ANALYSIS_AND_ROADMAP.md",
+          "text": "Decision_PivotToNEXUS | nexus system nexus approach graph reasoning nexus decision what is nexus pivot to graph nexus pivot decision nexus vs rag nexus architecture nexus and rag difference between nexus nexus pipeline nexus query parser nexus ingestion nexus verifier nexus compute nexus distinguishes nexus phase sam latent latent vector vector associative associative memory memory nexus rule-based verifier rule based verifier 3-hop reasoning 1-hop accuracy +16 distractors +8 and +16 distractors sam gate retrieval failure | Pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning)"
+        },
+        {
+          "doc_id": "Concept_LegacyFlatMemory",
+          "rank": 4,
+          "score": 10.730619,
+          "source": "",
+          "text": "Concept_LegacyFlatMemory | legacy flat memory pre-nexus architecture Concept_LegacyFlatMemory | Pre-pivot flat latent-vector memory architecture superseded by NEXUS."
+        },
+        {
+          "doc_id": "roadmap_what",
+          "rank": 5,
+          "score": 10.485532,
+          "source": "sam-lm\\docs\\roadmap.md",
+          "text": "roadmap_what | roadmap\n\nwhat"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Concept_PivotToNEXUS",
+        "Sam_Is_The_New_Bottleneck",
+        "Decision_PivotToNEXUS",
+        "Concept_LegacyFlatMemory",
+        "roadmap_what"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 1.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 3.0,
+          "k": 5,
+          "numerator": 1.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.3333333333333333
+        }
+      },
+      "question": "Why is it important that pivot from SAM to NEXUS?",
+      "question_id": "answer_q384",
+      "relevant_doc_ids": [
+        "Concept_PivotToNEXUS",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Concept_PivotToNEXUS",
+          "rank": 1,
+          "score": 11.899697,
+          "source": "ANALYSIS_AND_ROADMAP.md",
+          "text": "Concept_PivotToNEXUS | pivot to nexus architecture pivot nexus pivot flat latent latent vector vector memory selection quality quality pivot | Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture"
+        },
+        {
+          "doc_id": "Decision_PivotToNEXUS",
+          "rank": 2,
+          "score": 11.244493,
+          "source": "ANALYSIS_AND_ROADMAP.md",
+          "text": "Decision_PivotToNEXUS | nexus system nexus approach graph reasoning nexus decision what is nexus pivot to graph nexus pivot decision nexus vs rag nexus architecture nexus and rag difference between nexus nexus pipeline nexus query parser nexus ingestion nexus verifier nexus compute nexus distinguishes nexus phase sam latent latent vector vector associative associative memory memory nexus rule-based verifier rule based verifier 3-hop reasoning 1-hop accuracy +16 distractors +8 and +16 distractors sam gate retrieval failure | Pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning)"
+        },
+        {
+          "doc_id": "Hop_Is_First_To_Degrade",
+          "rank": 3,
+          "score": 9.977326,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "Hop_Is_First_To_Degrade | 3-hop_is_first_to_degrade"
+        },
+        {
+          "doc_id": "End_To_End_Sam",
+          "rank": 4,
+          "score": 9.964641,
+          "source": "sam-lm\\experiments\\experiment_0_6_final_report.md",
+          "text": "End_To_End_Sam | end-to-end_sam"
+        },
+        {
+          "doc_id": "Retriever_To_Sam_Integration",
+          "rank": 5,
+          "score": 9.964641,
+          "source": "sam-lm\\experiments\\experiment_0_6_final_report.md",
+          "text": "Retriever_To_Sam_Integration | retriever-to-sam_integration"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Concept_PivotToNEXUS",
+        "Decision_PivotToNEXUS",
+        "Hop_Is_First_To_Degrade",
+        "End_To_End_Sam",
+        "Retriever_To_Sam_Integration"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.5
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 3.0,
+          "k": 5,
+          "numerator": 1.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.3333333333333333
+        }
+      },
+      "question": "Which experiments provide evidence for the concept that pivot from SAM to NEXUS?",
+      "question_id": "answer_q385",
+      "relevant_doc_ids": [
+        "Concept_PivotToNEXUS",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "populate_from_experiments",
+          "rank": 1,
+          "score": 13.932683,
+          "source": "docs\\nexus-auditability-roadmap.md",
+          "text": "populate_from_experiments"
+        },
+        {
+          "doc_id": "Concept_PivotToNEXUS",
+          "rank": 2,
+          "score": 13.679704,
+          "source": "ANALYSIS_AND_ROADMAP.md",
+          "text": "Concept_PivotToNEXUS | pivot to nexus architecture pivot nexus pivot flat latent latent vector vector memory selection quality quality pivot | Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture"
+        },
+        {
+          "doc_id": "the_hybrid_approach_for",
+          "rank": 3,
+          "score": 11.430554,
+          "source": "docs\\rag-vs-graph-nexus.md",
+          "text": "the_hybrid_approach_for | the_hybrid_approach\n\nfor"
+        },
+        {
+          "doc_id": "Concept_LegacyFlatMemory",
+          "rank": 4,
+          "score": 10.730619,
+          "source": "",
+          "text": "Concept_LegacyFlatMemory | legacy flat memory pre-nexus architecture Concept_LegacyFlatMemory | Pre-pivot flat latent-vector memory architecture superseded by NEXUS."
+        },
+        {
+          "doc_id": "Decision_PivotToNEXUS",
+          "rank": 5,
+          "score": 10.674897,
+          "source": "ANALYSIS_AND_ROADMAP.md",
+          "text": "Decision_PivotToNEXUS | nexus system nexus approach graph reasoning nexus decision what is nexus pivot to graph nexus pivot decision nexus vs rag nexus architecture nexus and rag difference between nexus nexus pipeline nexus query parser nexus ingestion nexus verifier nexus compute nexus distinguishes nexus phase sam latent latent vector vector associative associative memory memory nexus rule-based verifier rule based verifier 3-hop reasoning 1-hop accuracy +16 distractors +8 and +16 distractors sam gate retrieval failure | Pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning)"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "populate_from_experiments",
+        "Concept_PivotToNEXUS",
+        "the_hybrid_approach_for",
+        "Concept_LegacyFlatMemory",
+        "Decision_PivotToNEXUS"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.5
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 3.0,
+          "k": 5,
+          "numerator": 1.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.3333333333333333
+        }
+      },
+      "question": "If the concept 'pivot from SAM to NEXUS' were false, how would the research arc change?",
+      "question_id": "answer_q386",
+      "relevant_doc_ids": [
+        "Concept_PivotToNEXUS",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Alignment_With_The_Nexus_Vision",
+          "rank": 1,
+          "score": 13.981741,
+          "source": "docs\\realizer-corpus-v2.md",
+          "text": "Alignment_With_The_Nexus_Vision | alignment_with_the_nexus_vision"
+        },
+        {
+          "doc_id": "Concept_PivotToNEXUS",
+          "rank": 2,
+          "score": 13.679704,
+          "source": "ANALYSIS_AND_ROADMAP.md",
+          "text": "Concept_PivotToNEXUS | pivot to nexus architecture pivot nexus pivot flat latent latent vector vector memory selection quality quality pivot | Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture"
+        },
+        {
+          "doc_id": "wo_status_change_[concept]",
+          "rank": 3,
+          "score": 13.428694,
+          "source": "docs\\graph-reasoning.md",
+          "text": "wo_status_change_[concept]"
+        },
+        {
+          "doc_id": "Sam_Is_The_New_Bottleneck",
+          "rank": 4,
+          "score": 12.649358,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Sam_Is_The_New_Bottleneck | sam_is_the_new_bottleneck"
+        },
+        {
+          "doc_id": "summary_the",
+          "rank": 5,
+          "score": 12.418211,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "summary_the | summary\n\nthe"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Alignment_With_The_Nexus_Vision",
+        "Concept_PivotToNEXUS",
+        "wo_status_change_[concept]",
+        "Sam_Is_The_New_Bottleneck",
+        "summary_the"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 1.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 3.0,
+          "k": 5,
+          "numerator": 1.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.3333333333333333
+        }
+      },
+      "question": "How does the concept 'pivot from SAM to NEXUS' relate to the NEXUS architecture pivot?",
+      "question_id": "answer_q387",
+      "relevant_doc_ids": [
+        "Concept_PivotToNEXUS",
+        "Exp_0_12_Selection",
+        "Exp_0_13A_NoisyMemory"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Concept_PivotToNEXUS",
+          "rank": 1,
+          "score": 28.62328,
+          "source": "ANALYSIS_AND_ROADMAP.md",
+          "text": "Concept_PivotToNEXUS | pivot to nexus architecture pivot nexus pivot flat latent latent vector vector memory selection quality quality pivot | Flat latent-vector memory can't solve selection quality -> pivot to graph-first architecture"
+        },
+        {
+          "doc_id": "Concept_LegacyFlatMemory",
+          "rank": 2,
+          "score": 21.337292,
+          "source": "",
+          "text": "Concept_LegacyFlatMemory | legacy flat memory pre-nexus architecture Concept_LegacyFlatMemory | Pre-pivot flat latent-vector memory architecture superseded by NEXUS."
+        },
+        {
+          "doc_id": "Decision_PivotToNEXUS",
+          "rank": 3,
+          "score": 20.237393,
+          "source": "ANALYSIS_AND_ROADMAP.md",
+          "text": "Decision_PivotToNEXUS | nexus system nexus approach graph reasoning nexus decision what is nexus pivot to graph nexus pivot decision nexus vs rag nexus architecture nexus and rag difference between nexus nexus pipeline nexus query parser nexus ingestion nexus verifier nexus compute nexus distinguishes nexus phase sam latent latent vector vector associative associative memory memory nexus rule-based verifier rule based verifier 3-hop reasoning 1-hop accuracy +16 distractors +8 and +16 distractors sam gate retrieval failure | Pivot from SAM (latent-vector associative memory) to NEXUS (graph-first reasoning)"
+        },
+        {
+          "doc_id": "Alignment_With_The_Nexus_Vision",
+          "rank": 4,
+          "score": 18.763874,
+          "source": "docs\\realizer-corpus-v2.md",
+          "text": "Alignment_With_The_Nexus_Vision | alignment_with_the_nexus_vision"
+        },
+        {
+          "doc_id": "architecture_how",
+          "rank": 5,
+          "score": 18.270946,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "architecture_how | architecture\n\nhow"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Concept_PivotToNEXUS",
+        "Concept_LegacyFlatMemory",
+        "Decision_PivotToNEXUS",
+        "Alignment_With_The_Nexus_Vision",
+        "architecture_how"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is product-key memory (PKM)?",
+      "question_id": "answer_q389",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Pkm_(product_Key_Memory)",
+          "rank": 1,
+          "score": 21.751683,
+          "source": "sam-lm\\docs\\glossary.md",
+          "text": "Pkm_(product_Key_Memory) | pkm_(product-key_memory)"
+        },
+        {
+          "doc_id": "Product_Key_Memory",
+          "rank": 2,
+          "score": 17.809424,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Product_Key_Memory | product-key_memory"
+        },
+        {
+          "doc_id": "key_memory_product",
+          "rank": 3,
+          "score": 17.809424,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "key_memory_product | key_memory\n\nproduct"
+        },
+        {
+          "doc_id": "Product_Key_Memory_Validated",
+          "rank": 4,
+          "score": 16.125283,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "Product_Key_Memory_Validated | product-key_memory_validated"
+        },
+        {
+          "doc_id": "Product_Key_Associative_Memory",
+          "rank": 5,
+          "score": 16.125283,
+          "source": "sam-lm\\docs\\experiment-0.md",
+          "text": "Product_Key_Associative_Memory | product-key_associative_memory"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Pkm_(product_Key_Memory)",
+        "Product_Key_Memory",
+        "key_memory_product",
+        "Product_Key_Memory_Validated",
+        "Product_Key_Associative_Memory"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "How does the SAM gate work?",
+      "question_id": "answer_q390",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "**does_not_prove_the_full_retrieval",
+          "rank": 1,
+          "score": 10.886604,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "**does_not_prove_the_full_retrieval | -_**does_not_prove_the_full_retrieval"
+        },
+        {
+          "doc_id": "architecture_how",
+          "rank": 2,
+          "score": 10.079853,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "architecture_how | architecture\n\nhow"
+        },
+        {
+          "doc_id": "One_Distractor_Does_Not_Collapse_Sam",
+          "rank": 3,
+          "score": 9.828007,
+          "source": "sam-lm\\docs\\current-status.md",
+          "text": "One_Distractor_Does_Not_Collapse_Sam | one_distractor_does_not_collapse_sam"
+        },
+        {
+          "doc_id": "question_does",
+          "rank": 4,
+          "score": 9.755925,
+          "source": "docs\\nexus-architecture-validation-verdict.md",
+          "text": "question_does | question\n\ndoes"
+        },
+        {
+          "doc_id": "Sam_Does_Not_Collapse_With_One_Distractor",
+          "rank": 5,
+          "score": 9.104017,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "Sam_Does_Not_Collapse_With_One_Distractor | sam_does_not_collapse_with_one_distractor"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "**does_not_prove_the_full_retrieval",
+        "architecture_how",
+        "One_Distractor_Does_Not_Collapse_Sam",
+        "question_does",
+        "Sam_Does_Not_Collapse_With_One_Distractor"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the SAM memory integration formula?",
+      "question_id": "answer_q391",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Sam_Is_The_New_Bottleneck",
+          "rank": 1,
+          "score": 12.803875,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Sam_Is_The_New_Bottleneck | sam_is_the_new_bottleneck"
+        },
+        {
+          "doc_id": "Through_The_Same_Memory_Integration_Code",
+          "rank": 2,
+          "score": 12.714221,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Through_The_Same_Memory_Integration_Code | through_the_same_memory_integration_code"
+        },
+        {
+          "doc_id": "Memory_Integration",
+          "rank": 3,
+          "score": 12.436097,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Memory_Integration | memory_integration"
+        },
+        {
+          "doc_id": "\"the_Latent_Memory_Path_Is_Fragile\"",
+          "rank": 4,
+          "score": 11.426269,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "\"the_Latent_Memory_Path_Is_Fragile\" | \"the_latent_memory_path_is_fragile\""
+        },
+        {
+          "doc_id": "Investigate_Memory_Integration",
+          "rank": 5,
+          "score": 11.137259,
+          "source": "sam-lm\\docs\\experiment-0.md",
+          "text": "Investigate_Memory_Integration | investigate_memory_integration"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Sam_Is_The_New_Bottleneck",
+        "Through_The_Same_Memory_Integration_Code",
+        "Memory_Integration",
+        "\"the_Latent_Memory_Path_Is_Fragile\"",
+        "Investigate_Memory_Integration"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What aggregation modes did SAM test?",
+      "question_id": "answer_q392",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Aggregation_Modes_Tested",
+          "rank": 1,
+          "score": 14.207567,
+          "source": "sam-lm\\experiments\\experiment_0_9_report.md",
+          "text": "Aggregation_Modes_Tested | aggregation_modes_tested:"
+        },
+        {
+          "doc_id": "roadmap_what",
+          "rank": 2,
+          "score": 10.485532,
+          "source": "sam-lm\\docs\\roadmap.md",
+          "text": "roadmap_what | roadmap\n\nwhat"
+        },
+        {
+          "doc_id": "current_status_what",
+          "rank": 3,
+          "score": 9.390413,
+          "source": "sam-lm\\docs\\current-status.md",
+          "text": "current_status_what | current_status\n\nwhat"
+        },
+        {
+          "doc_id": "Test",
+          "rank": 4,
+          "score": 8.928821,
+          "source": "docs\\realizer-answer-plan-v1.md",
+          "text": "Test | test:"
+        },
+        {
+          "doc_id": "Modes_Run",
+          "rank": 5,
+          "score": 8.87368,
+          "source": "sam-lm\\experiments\\experiment_0_7_report.md",
+          "text": "Modes_Run | modes_run:"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Aggregation_Modes_Tested",
+        "roadmap_what",
+        "current_status_what",
+        "Test",
+        "Modes_Run"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the SAM core transformer architecture?",
+      "question_id": "answer_q393",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Sam_Architecture",
+          "rank": 1,
+          "score": 12.847782,
+          "source": "sam-lm\\experiments\\experiment_0_7_report.md",
+          "text": "Sam_Architecture | sam_architecture:"
+        },
+        {
+          "doc_id": "Sam_Is_The_New_Bottleneck",
+          "rank": 2,
+          "score": 12.803875,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Sam_Is_The_New_Bottleneck | sam_is_the_new_bottleneck"
+        },
+        {
+          "doc_id": "Concept_ArchitectureWorks",
+          "rank": 3,
+          "score": 12.38155,
+          "source": "ANALYSIS_AND_ROADMAP.md",
+          "text": "Concept_ArchitectureWorks | architecture validated architecture works core memory architecture sam architecture works architecture confirmed oracle memory memory oracle oracle filter core memory memory architecture | Oracle memory = 99.87-100%, oracle filter = 100% — the core+memory architecture IS valid"
+        },
+        {
+          "doc_id": "Sam_Architecture_Validated",
+          "rank": 4,
+          "score": 11.505947,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "Sam_Architecture_Validated | sam_architecture_validated."
+        },
+        {
+          "doc_id": "roadmap_what",
+          "rank": 5,
+          "score": 10.485532,
+          "source": "sam-lm\\docs\\roadmap.md",
+          "text": "roadmap_what | roadmap\n\nwhat"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Sam_Architecture",
+        "Sam_Is_The_New_Bottleneck",
+        "Concept_ArchitectureWorks",
+        "Sam_Architecture_Validated",
+        "roadmap_what"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the difference between oracle_memory and oracle_text_memory?",
+      "question_id": "answer_q394",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Oracle_Text_Memory",
+          "rank": 1,
+          "score": 20.661355,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Oracle_Text_Memory | oracle_text_memory"
+        },
+        {
+          "doc_id": "Oracle_Text_Memory_Works",
+          "rank": 2,
+          "score": 18.707523,
+          "source": "sam-lm\\experiments\\experiment_0_7_report.md",
+          "text": "Oracle_Text_Memory_Works | oracle_text_memory_works"
+        },
+        {
+          "doc_id": "Sam_Oracle_Text_Memory",
+          "rank": 3,
+          "score": 18.707523,
+          "source": "sam-lm\\experiments\\experiment_0_6_final_report.md",
+          "text": "Sam_Oracle_Text_Memory | sam_oracle_text_memory"
+        },
+        {
+          "doc_id": "oracle_text_memory",
+          "rank": 4,
+          "score": 18.640321,
+          "source": "sam-lm\\experiments\\experiment_0_2_report.md",
+          "text": "oracle_text_memory"
+        },
+        {
+          "doc_id": "Oracle_Memory_Path_Is_Valid",
+          "rank": 5,
+          "score": 17.543655,
+          "source": "sam-lm\\experiments\\experiment_0_8_report.md",
+          "text": "Oracle_Memory_Path_Is_Valid | oracle_memory_path_is_valid"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Oracle_Text_Memory",
+        "Oracle_Text_Memory_Works",
+        "Sam_Oracle_Text_Memory",
+        "oracle_text_memory",
+        "Oracle_Memory_Path_Is_Valid"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the random_memory mode in SAM?",
+      "question_id": "answer_q395",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Sam_Is_The_New_Bottleneck",
+          "rank": 1,
+          "score": 12.803875,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Sam_Is_The_New_Bottleneck | sam_is_the_new_bottleneck"
+        },
+        {
+          "doc_id": "Random_Memory",
+          "rank": 2,
+          "score": 11.684895,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Random_Memory | random_memory"
+        },
+        {
+          "doc_id": "\"the_Latent_Memory_Path_Is_Fragile\"",
+          "rank": 3,
+          "score": 11.426269,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "\"the_Latent_Memory_Path_Is_Fragile\" | \"the_latent_memory_path_is_fragile\""
+        },
+        {
+          "doc_id": "Model.memory_Mode",
+          "rank": 4,
+          "score": 10.7621,
+          "source": "sam-lm\\experiments\\experiment_0_6_final_report.md",
+          "text": "Model.memory_Mode | model.memory_mode"
+        },
+        {
+          "doc_id": "memory_mode",
+          "rank": 5,
+          "score": 10.719418,
+          "source": "sam-lm\\experiments\\experiment_0_6_final_report.md",
+          "text": "memory_mode"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Sam_Is_The_New_Bottleneck",
+        "Random_Memory",
+        "\"the_Latent_Memory_Path_Is_Fragile\"",
+        "Model.memory_Mode",
+        "memory_mode"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the retrieved_memory_external_text_query mode?",
+      "question_id": "answer_q396",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Retrieved_Memory_External_Text_Query",
+          "rank": 1,
+          "score": 20.986571,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Retrieved_Memory_External_Text_Query | retrieved_memory_external_text_query"
+        },
+        {
+          "doc_id": "retrieved_memory_external_text_query",
+          "rank": 2,
+          "score": 19.25924,
+          "source": "sam-lm\\docs\\experiments.md",
+          "text": "retrieved_memory_external_text_query"
+        },
+        {
+          "doc_id": "Retrieved_Memory",
+          "rank": 3,
+          "score": 18.736379,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Retrieved_Memory | retrieved_memory retrieved_memory_external_text_query"
+        },
+        {
+          "doc_id": "External_Text_Query",
+          "rank": 4,
+          "score": 16.448432,
+          "source": "sam-lm\\docs\\experiment-0.md",
+          "text": "External_Text_Query | external_text_query"
+        },
+        {
+          "doc_id": "Sam_External_Text_Query",
+          "rank": 5,
+          "score": 14.892993,
+          "source": "sam-lm\\experiments\\experiment_0_7_report.md",
+          "text": "Sam_External_Text_Query | sam_external_text_query"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Retrieved_Memory_External_Text_Query",
+        "retrieved_memory_external_text_query",
+        "Retrieved_Memory",
+        "External_Text_Query",
+        "Sam_External_Text_Query"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the dual encoder retriever architecture?",
+      "question_id": "answer_q397",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "dual_encoder_recall_the",
+          "rank": 1,
+          "score": 17.1115,
+          "source": "sam-lm\\experiments\\experiment_0_6_final_report.md",
+          "text": "dual_encoder_recall_the | dual_encoder_recall\n\nthe"
+        },
+        {
+          "doc_id": "Dual_Encoder",
+          "rank": 2,
+          "score": 14.893515,
+          "source": "sam-lm\\docs\\current-status.md",
+          "text": "Dual_Encoder | dual_encoder"
+        },
+        {
+          "doc_id": "Train_Dual_Encoder()",
+          "rank": 3,
+          "score": 13.338021,
+          "source": "sam-lm\\experiments\\experiment_0_5_report.md",
+          "text": "Train_Dual_Encoder() | train_dual_encoder()"
+        },
+        {
+          "doc_id": "Dual_Encoder_(dense)",
+          "rank": 4,
+          "score": 13.338021,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "Dual_Encoder_(dense) | dual_encoder_(dense)"
+        },
+        {
+          "doc_id": "Dual_Encoder_Works",
+          "rank": 5,
+          "score": 13.338021,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "Dual_Encoder_Works | dual_encoder_works"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "dual_encoder_recall_the",
+        "Dual_Encoder",
+        "Train_Dual_Encoder()",
+        "Dual_Encoder_(dense)",
+        "Dual_Encoder_Works"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the chain-set BCE retriever?",
+      "question_id": "answer_q398",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Chain_Set_Bce",
+          "rank": 1,
+          "score": 18.353771,
+          "source": "sam-lm\\experiments\\experiment_0_11_report.md",
+          "text": "Chain_Set_Bce | chain_set_bce"
+        },
+        {
+          "doc_id": "Chain_Set_Bce_Retriever_(experiment_0.11)",
+          "rank": 2,
+          "score": 17.67164,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Chain_Set_Bce_Retriever_(experiment_0.11) | chain-set_bce_retriever_(experiment_0.11)"
+        },
+        {
+          "doc_id": "Chain_Set_Retriever",
+          "rank": 3,
+          "score": 17.615303,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "Chain_Set_Retriever | chain-set_retriever:"
+        },
+        {
+          "doc_id": "Chain_Set_Bce_Retriever_Results_(3800_Test_Examples)",
+          "rank": 4,
+          "score": 16.459159,
+          "source": "sam-lm\\experiments\\experiment_0_11_report.md",
+          "text": "Chain_Set_Bce_Retriever_Results_(3800_Test_Examples) | chain-set_bce_retriever_results_(3800_test_examples)"
+        },
+        {
+          "doc_id": "Chain_Set_Bce_Retriever_—_Retrieval_Solved_At_K=32",
+          "rank": 5,
+          "score": 15.402377,
+          "source": "sam-lm\\docs\\experiment-0.md",
+          "text": "Chain_Set_Bce_Retriever_—_Retrieval_Solved_At_K=32 | chain-set_bce_retriever_—_retrieval_solved_at_k=32:"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Chain_Set_Bce",
+        "Chain_Set_Bce_Retriever_(experiment_0.11)",
+        "Chain_Set_Retriever",
+        "Chain_Set_Bce_Retriever_Results_(3800_Test_Examples)",
+        "Chain_Set_Bce_Retriever_—_Retrieval_Solved_At_K=32"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the slot graph expander?",
+      "question_id": "answer_q399",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "slot_graph_expander",
+          "rank": 1,
+          "score": 20.058339,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "slot_graph_expander"
+        },
+        {
+          "doc_id": "Slot_Graph_Expander_(experiment_0.11)",
+          "rank": 2,
+          "score": 16.928904,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Slot_Graph_Expander_(experiment_0.11) | slot_graph_expander_(experiment_0.11)"
+        },
+        {
+          "doc_id": "roadmap_what",
+          "rank": 3,
+          "score": 10.485532,
+          "source": "sam-lm\\docs\\roadmap.md",
+          "text": "roadmap_what | roadmap\n\nwhat"
+        },
+        {
+          "doc_id": "Graph_Construction_Cost_Is_Prohibitive",
+          "rank": 4,
+          "score": 10.351364,
+          "source": "docs\\rag-vs-graph-nexus.md",
+          "text": "Graph_Construction_Cost_Is_Prohibitive | graph_construction_cost_is_prohibitive"
+        },
+        {
+          "doc_id": "current_status_what",
+          "rank": 5,
+          "score": 9.390413,
+          "source": "sam-lm\\docs\\current-status.md",
+          "text": "current_status_what | current_status\n\nwhat"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "slot_graph_expander",
+        "Slot_Graph_Expander_(experiment_0.11)",
+        "roadmap_what",
+        "Graph_Construction_Cost_Is_Prohibitive",
+        "current_status_what"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What are the memory integration modes beyond the basic gate?",
+      "question_id": "answer_q400",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Memory_Integration_Modes_(gate_Stress)",
+          "rank": 1,
+          "score": 19.850322,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Memory_Integration_Modes_(gate_Stress) | memory_integration_modes_(gate_stress)"
+        },
+        {
+          "doc_id": "Through_The_Same_Memory_Integration_Code",
+          "rank": 2,
+          "score": 16.94823,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Through_The_Same_Memory_Integration_Code | through_the_same_memory_integration_code"
+        },
+        {
+          "doc_id": "Memory_Modes",
+          "rank": 3,
+          "score": 13.003333,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Memory_Modes | memory_modes"
+        },
+        {
+          "doc_id": "Memory_Integration",
+          "rank": 4,
+          "score": 12.436097,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Memory_Integration | memory_integration"
+        },
+        {
+          "doc_id": "summary_the",
+          "rank": 5,
+          "score": 12.418211,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "summary_the | summary\n\nthe"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Memory_Integration_Modes_(gate_Stress)",
+        "Through_The_Same_Memory_Integration_Code",
+        "Memory_Modes",
+        "Memory_Integration",
+        "summary_the"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the Slot Selector architecture?",
+      "question_id": "answer_q401",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Slot_Selector",
+          "rank": 1,
+          "score": 12.942946,
+          "source": "sam-lm\\docs\\index.md",
+          "text": "Slot_Selector | slot_selector"
+        },
+        {
+          "doc_id": "Slot_Selector_(sam/model/slot_Selector.py)",
+          "rank": 2,
+          "score": 11.614295,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Slot_Selector_(sam/model/slot_Selector.py) | slot_selector_(sam/model/slot_selector.py)"
+        },
+        {
+          "doc_id": "slot_selector",
+          "rank": 3,
+          "score": 11.545203,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "slot_selector"
+        },
+        {
+          "doc_id": "roadmap_what",
+          "rank": 4,
+          "score": 10.485532,
+          "source": "sam-lm\\docs\\roadmap.md",
+          "text": "roadmap_what | roadmap\n\nwhat"
+        },
+        {
+          "doc_id": "slot_selector.py",
+          "rank": 5,
+          "score": 10.457357,
+          "source": "sam-lm\\docs\\repository-map.md",
+          "text": "slot_selector.py"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Slot_Selector",
+        "Slot_Selector_(sam/model/slot_Selector.py)",
+        "slot_selector",
+        "roadmap_what",
+        "slot_selector.py"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the padding bug and why was it critical?",
+      "question_id": "answer_q402",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Critical_Padding_Bug_Is_Fixed",
+          "rank": 1,
+          "score": 24.872691,
+          "source": "sam-lm\\docs\\current-status.md",
+          "text": "Critical_Padding_Bug_Is_Fixed | critical_padding_bug_is_fixed"
+        },
+        {
+          "doc_id": "Padding_Bug",
+          "rank": 2,
+          "score": 18.283363,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "Padding_Bug | padding_bug"
+        },
+        {
+          "doc_id": "Selectivity_Is_The_Critical_Factor",
+          "rank": 3,
+          "score": 15.927889,
+          "source": "sam-lm\\experiments\\experiment_0_9_report.md",
+          "text": "Selectivity_Is_The_Critical_Factor | selectivity_is_the_critical_factor"
+        },
+        {
+          "doc_id": "Bug_1_(critical)",
+          "rank": 4,
+          "score": 14.930322,
+          "source": "sam-lm\\experiments\\experiment_0_6_final_report.md",
+          "text": "Bug_1_(critical) | bug_1_(critical):"
+        },
+        {
+          "doc_id": "Padding_Bug_From_Old_Code",
+          "rank": 5,
+          "score": 13.544607,
+          "source": "sam-lm\\docs\\troubleshooting.md",
+          "text": "Padding_Bug_From_Old_Code | padding_bug_from_old_code"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Critical_Padding_Bug_Is_Fixed",
+        "Padding_Bug",
+        "Selectivity_Is_The_Critical_Factor",
+        "Bug_1_(critical)",
+        "Padding_Bug_From_Old_Code"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "How does the controlled noisy memory path work?",
+      "question_id": "answer_q404",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "controlled_noisy_memory_path",
+          "rank": 1,
+          "score": 21.50458,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "controlled_noisy_memory_path"
+        },
+        {
+          "doc_id": "Controlled_Noisy_Memory_Path_(0.13a/0.13b)",
+          "rank": 2,
+          "score": 17.134437,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Controlled_Noisy_Memory_Path_(0.13a/0.13b) | controlled_noisy_memory_path_(0.13a/0.13b)"
+        },
+        {
+          "doc_id": "Controlled_Noisy_Memory_(0.13a)",
+          "rank": 3,
+          "score": 15.978367,
+          "source": "sam-lm\\docs\\getting-started.md",
+          "text": "Controlled_Noisy_Memory_(0.13a) | controlled_noisy_memory_(0.13a)"
+        },
+        {
+          "doc_id": "controlled_noisy_memory_tolerance",
+          "rank": 4,
+          "score": 15.925911,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "controlled_noisy_memory_tolerance"
+        },
+        {
+          "doc_id": "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance",
+          "rank": 5,
+          "score": 13.624242,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance | experiment_0.13a_—_controlled_noisy_memory_tolerance"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "controlled_noisy_memory_path",
+        "Controlled_Noisy_Memory_Path_(0.13a/0.13b)",
+        "Controlled_Noisy_Memory_(0.13a)",
+        "controlled_noisy_memory_tolerance",
+        "Experiment_0.13a_—_Controlled_Noisy_Memory_Tolerance"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the forced-gate experiment?",
+      "question_id": "answer_q405",
+      "relevant_doc_ids": [
+        "Exp_0_6_Validation"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Forced_Gate",
+          "rank": 1,
+          "score": 14.359118,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Forced_Gate | forced_gate"
+        },
+        {
+          "doc_id": "Forced_Gate_1",
+          "rank": 2,
+          "score": 12.859438,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "Forced_Gate_1 | forced_gate_1"
+        },
+        {
+          "doc_id": "Gate_Suppression_Is_Not_The_Bottleneck",
+          "rank": 3,
+          "score": 12.350784,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "Gate_Suppression_Is_Not_The_Bottleneck | gate_suppression_is_not_the_bottleneck"
+        },
+        {
+          "doc_id": "Gate_Is",
+          "rank": 4,
+          "score": 11.903121,
+          "source": "sam-lm\\docs\\glossary.md",
+          "text": "Gate_Is | gate_is"
+        },
+        {
+          "doc_id": "forced_gate_scalar",
+          "rank": 5,
+          "score": 11.601565,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "forced_gate_scalar"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Forced_Gate",
+        "Forced_Gate_1",
+        "Gate_Suppression_Is_Not_The_Bottleneck",
+        "Gate_Is",
+        "forced_gate_scalar"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What does NEXUS stand for and what does each word mean?",
+      "question_id": "answer_q406",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "roadmap_what",
+          "rank": 1,
+          "score": 20.971064,
+          "source": "sam-lm\\docs\\roadmap.md",
+          "text": "roadmap_what | roadmap\n\nwhat"
+        },
+        {
+          "doc_id": "question_does",
+          "rank": 2,
+          "score": 19.511851,
+          "source": "docs\\nexus-architecture-validation-verdict.md",
+          "text": "question_does | question\n\ndoes"
+        },
+        {
+          "doc_id": "current_status_what",
+          "rank": 3,
+          "score": 18.780826,
+          "source": "sam-lm\\docs\\current-status.md",
+          "text": "current_status_what | current_status\n\nwhat"
+        },
+        {
+          "doc_id": "fact_matching)_does_not_optimize_for_complete_chain_retrieval",
+          "rank": 4,
+          "score": 15.084884,
+          "source": "sam-lm\\experiments\\experiment_0_10_report.md",
+          "text": "fact_matching)_does_not_optimize_for_complete_chain_retrieval | fact_matching)_does_not_optimize_for_complete_chain_retrieval."
+        },
+        {
+          "doc_id": "**does_not_prove_the_full_retrieval",
+          "rank": 5,
+          "score": 13.305192,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "**does_not_prove_the_full_retrieval | -_**does_not_prove_the_full_retrieval"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "roadmap_what",
+        "question_does",
+        "current_status_what",
+        "fact_matching)_does_not_optimize_for_complete_chain_retrieval",
+        "**does_not_prove_the_full_retrieval"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What are the 8 steps of the NEXUS reasoning pipeline?",
+      "question_id": "answer_q407",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "The_Reasoning_Pipeline",
+          "rank": 1,
+          "score": 25.255842,
+          "source": "docs\\graph-reasoning.md",
+          "text": "The_Reasoning_Pipeline | the_reasoning_pipeline"
+        },
+        {
+          "doc_id": "reasoning_model_the",
+          "rank": 2,
+          "score": 17.585134,
+          "source": "docs\\graph-reasoning.md",
+          "text": "reasoning_model_the | reasoning_model\n\nthe"
+        },
+        {
+          "doc_id": "Graph_Reasoning_—_Traversal_As_The_Reasoning_Engine",
+          "rank": 3,
+          "score": 14.321,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Graph_Reasoning_—_Traversal_As_The_Reasoning_Engine | graph_reasoning_—_traversal_as_the_reasoning_engine"
+        },
+        {
+          "doc_id": "Alignment_With_The_Nexus_Vision",
+          "rank": 4,
+          "score": 13.981741,
+          "source": "docs\\realizer-corpus-v2.md",
+          "text": "Alignment_With_The_Nexus_Vision | alignment_with_the_nexus_vision"
+        },
+        {
+          "doc_id": "summary_the",
+          "rank": 5,
+          "score": 12.418211,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "summary_the | summary\n\nthe"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "The_Reasoning_Pipeline",
+        "reasoning_model_the",
+        "Graph_Reasoning_—_Traversal_As_The_Reasoning_Engine",
+        "Alignment_With_The_Nexus_Vision",
+        "summary_the"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What are the 11 node types in the NEXUS graph?",
+      "question_id": "answer_q408",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Node_Types",
+          "rank": 1,
+          "score": 19.538755,
+          "source": "docs\\graph-memory.md",
+          "text": "Node_Types | node_types"
+        },
+        {
+          "doc_id": "The_Core_Difference_(in_One_Sentence)",
+          "rank": 2,
+          "score": 14.053548,
+          "source": "docs\\rag-vs-graph-nexus.md",
+          "text": "The_Core_Difference_(in_One_Sentence) | the_core_difference_(in_one_sentence)"
+        },
+        {
+          "doc_id": "Alignment_With_The_Nexus_Vision",
+          "rank": 3,
+          "score": 13.981741,
+          "source": "docs\\realizer-corpus-v2.md",
+          "text": "Alignment_With_The_Nexus_Vision | alignment_with_the_nexus_vision"
+        },
+        {
+          "doc_id": "Graph_Reasoning_—_Traversal_As_The_Reasoning_Engine",
+          "rank": 4,
+          "score": 12.616631,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Graph_Reasoning_—_Traversal_As_The_Reasoning_Engine | graph_reasoning_—_traversal_as_the_reasoning_engine"
+        },
+        {
+          "doc_id": "summary_the",
+          "rank": 5,
+          "score": 12.418211,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": "summary_the | summary\n\nthe"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Node_Types",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Alignment_With_The_Nexus_Vision",
+        "Graph_Reasoning_—_Traversal_As_The_Reasoning_Engine",
+        "summary_the"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What are the 10 edge types in the NEXUS graph?",
+      "question_id": "answer_q409",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Edge_Types_(relationships)",
+          "rank": 1,
+          "score": 17.192632,
+          "source": "docs\\graph-memory.md",
+          "text": "Edge_Types_(relationships) | edge_types_(relationships)"
+        },
+        {
+          "doc_id": "edge_types",
+          "rank": 2,
+          "score": 17.124448,
+          "source": "docs\\graph-memory.md",
+          "text": "edge_types"
+        },
+        {
+          "doc_id": "The_Core_Difference_(in_One_Sentence)",
+          "rank": 3,
+          "score": 14.053548,
+          "source": "docs\\rag-vs-graph-nexus.md",
+          "text": "The_Core_Difference_(in_One_Sentence) | the_core_difference_(in_one_sentence)"
+        },
+        {
+          "doc_id": "Alignment_With_The_Nexus_Vision",
+          "rank": 4,
+          "score": 13.981741,
+          "source": "docs\\realizer-corpus-v2.md",
+          "text": "Alignment_With_The_Nexus_Vision | alignment_with_the_nexus_vision"
+        },
+        {
+          "doc_id": "Graph_Reasoning_—_Traversal_As_The_Reasoning_Engine",
+          "rank": 5,
+          "score": 12.616631,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Graph_Reasoning_—_Traversal_As_The_Reasoning_Engine | graph_reasoning_—_traversal_as_the_reasoning_engine"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Edge_Types_(relationships)",
+        "edge_types",
+        "The_Core_Difference_(in_One_Sentence)",
+        "Alignment_With_The_Nexus_Vision",
+        "Graph_Reasoning_—_Traversal_As_The_Reasoning_Engine"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What are the edge type weights for traversal and why?",
+      "question_id": "answer_q410",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Edge_Type_Weights_(default)",
+          "rank": 1,
+          "score": 21.951948,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Edge_Type_Weights_(default) | edge_type_weights_(default)"
+        },
+        {
+          "doc_id": "edge_type_weights",
+          "rank": 2,
+          "score": 21.873091,
+          "source": "docs\\graph-reasoning.md",
+          "text": "edge_type_weights"
+        },
+        {
+          "doc_id": "edge_type",
+          "rank": 3,
+          "score": 15.686663,
+          "source": "docs\\graph-reasoning.md",
+          "text": "edge_type"
+        },
+        {
+          "doc_id": "the_hybrid_approach_for",
+          "rank": 4,
+          "score": 11.430554,
+          "source": "docs\\rag-vs-graph-nexus.md",
+          "text": "the_hybrid_approach_for | the_hybrid_approach\n\nfor"
+        },
+        {
+          "doc_id": "Algorithm:_Beam_Search_With_Edge_Type_Filtering",
+          "rank": 5,
+          "score": 11.108424,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Algorithm:_Beam_Search_With_Edge_Type_Filtering | algorithm:_beam_search_with_edge-type_filtering"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Edge_Type_Weights_(default)",
+        "edge_type_weights",
+        "edge_type",
+        "the_hybrid_approach_for",
+        "Algorithm:_Beam_Search_With_Edge_Type_Filtering"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "How does beam search traversal work in NEXUS?",
+      "question_id": "answer_q411",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "beam_search",
+          "rank": 1,
+          "score": 19.675317,
+          "source": "docs\\graph-reasoning.md",
+          "text": "beam_search"
+        },
+        {
+          "doc_id": "Algorithm:_Beam_Search_With_Edge_Type_Filtering",
+          "rank": 2,
+          "score": 13.932967,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Algorithm:_Beam_Search_With_Edge_Type_Filtering | algorithm:_beam_search_with_edge-type_filtering"
+        },
+        {
+          "doc_id": "architecture_how",
+          "rank": 3,
+          "score": 10.079853,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "architecture_how | architecture\n\nhow"
+        },
+        {
+          "doc_id": "question_does",
+          "rank": 4,
+          "score": 9.755925,
+          "source": "docs\\nexus-architecture-validation-verdict.md",
+          "text": "question_does | question\n\ndoes"
+        },
+        {
+          "doc_id": "reasoning_engine_how",
+          "rank": 5,
+          "score": 9.027104,
+          "source": "docs\\graph-reasoning.md",
+          "text": "reasoning_engine_how | reasoning_engine\n\nhow"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "beam_search",
+        "Algorithm:_Beam_Search_With_Edge_Type_Filtering",
+        "architecture_how",
+        "question_does",
+        "reasoning_engine_how"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What factors go into path scoring?",
+      "question_id": "answer_q412",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "path_scoring_each",
+          "rank": 1,
+          "score": 16.156577,
+          "source": "docs\\graph-reasoning.md",
+          "text": "path_scoring_each | path_scoring\n\neach"
+        },
+        {
+          "doc_id": "Step_4:_Path_Scoring",
+          "rank": 2,
+          "score": 14.628738,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Step_4:_Path_Scoring | step_4:_path_scoring"
+        },
+        {
+          "doc_id": "roadmap_what",
+          "rank": 3,
+          "score": 10.485532,
+          "source": "sam-lm\\docs\\roadmap.md",
+          "text": "roadmap_what | roadmap\n\nwhat"
+        },
+        {
+          "doc_id": "current_status_what",
+          "rank": 4,
+          "score": 9.390413,
+          "source": "sam-lm\\docs\\current-status.md",
+          "text": "current_status_what | current_status\n\nwhat"
+        },
+        {
+          "doc_id": "go_for_realizer_training",
+          "rank": 5,
+          "score": 8.752259,
+          "source": "docs\\nexus-realizer-pretraining-status.md",
+          "text": "go_for_realizer_training"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "path_scoring_each",
+        "Step_4:_Path_Scoring",
+        "roadmap_what",
+        "current_status_what",
+        "go_for_realizer_training"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "How does the length penalty work?",
+      "question_id": "answer_q413",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "**does_not_prove_the_full_retrieval",
+          "rank": 1,
+          "score": 10.886604,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "**does_not_prove_the_full_retrieval | -_**does_not_prove_the_full_retrieval"
+        },
+        {
+          "doc_id": "architecture_how",
+          "rank": 2,
+          "score": 10.079853,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "architecture_how | architecture\n\nhow"
+        },
+        {
+          "doc_id": "question_does",
+          "rank": 3,
+          "score": 9.755925,
+          "source": "docs\\nexus-architecture-validation-verdict.md",
+          "text": "question_does | question\n\ndoes"
+        },
+        {
+          "doc_id": "reasoning_engine_how",
+          "rank": 4,
+          "score": 9.027104,
+          "source": "docs\\graph-reasoning.md",
+          "text": "reasoning_engine_how | reasoning_engine\n\nhow"
+        },
+        {
+          "doc_id": "knowledge_store_how",
+          "rank": 5,
+          "score": 9.027104,
+          "source": "docs\\graph-memory.md",
+          "text": "knowledge_store_how | knowledge_store\n\nhow"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "**does_not_prove_the_full_retrieval",
+        "architecture_how",
+        "question_does",
+        "reasoning_engine_how",
+        "knowledge_store_how"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "How does the recency bonus work?",
+      "question_id": "answer_q414",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "**does_not_prove_the_full_retrieval",
+          "rank": 1,
+          "score": 10.886604,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "**does_not_prove_the_full_retrieval | -_**does_not_prove_the_full_retrieval"
+        },
+        {
+          "doc_id": "architecture_how",
+          "rank": 2,
+          "score": 10.079853,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "architecture_how | architecture\n\nhow"
+        },
+        {
+          "doc_id": "question_does",
+          "rank": 3,
+          "score": 9.755925,
+          "source": "docs\\nexus-architecture-validation-verdict.md",
+          "text": "question_does | question\n\ndoes"
+        },
+        {
+          "doc_id": "reasoning_engine_how",
+          "rank": 4,
+          "score": 9.027104,
+          "source": "docs\\graph-reasoning.md",
+          "text": "reasoning_engine_how | reasoning_engine\n\nhow"
+        },
+        {
+          "doc_id": "knowledge_store_how",
+          "rank": 5,
+          "score": 9.027104,
+          "source": "docs\\graph-memory.md",
+          "text": "knowledge_store_how | knowledge_store\n\nhow"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "**does_not_prove_the_full_retrieval",
+        "architecture_how",
+        "question_does",
+        "reasoning_engine_how",
+        "knowledge_store_how"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the evidence pack?",
+      "question_id": "answer_q415",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Evidence_Pack_Design_Principles",
+          "rank": 1,
+          "score": 14.898184,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Evidence_Pack_Design_Principles | evidence_pack_design_principles"
+        },
+        {
+          "doc_id": "roadmap_what",
+          "rank": 2,
+          "score": 10.485532,
+          "source": "sam-lm\\docs\\roadmap.md",
+          "text": "roadmap_what | roadmap\n\nwhat"
+        },
+        {
+          "doc_id": "current_status_what",
+          "rank": 3,
+          "score": 9.390413,
+          "source": "sam-lm\\docs\\current-status.md",
+          "text": "current_status_what | current_status\n\nwhat"
+        },
+        {
+          "doc_id": "Selectivity_Is_The_Critical_Factor",
+          "rank": 4,
+          "score": 9.354125,
+          "source": "sam-lm\\experiments\\experiment_0_9_report.md",
+          "text": "Selectivity_Is_The_Critical_Factor | selectivity_is_the_critical_factor"
+        },
+        {
+          "doc_id": "Three_Hop_Is_The_Hardest",
+          "rank": 5,
+          "score": 9.354125,
+          "source": "sam-lm\\experiments\\experiment_0_6_report.md",
+          "text": "Three_Hop_Is_The_Hardest | three-hop_is_the_hardest"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Evidence_Pack_Design_Principles",
+        "roadmap_what",
+        "current_status_what",
+        "Selectivity_Is_The_Critical_Factor",
+        "Three_Hop_Is_The_Hardest"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "How does the rule-based verifier work?",
+      "question_id": "answer_q416",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Verifier_Is_Rule_Based",
+          "rank": 1,
+          "score": 23.42525,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Verifier_Is_Rule_Based | verifier_is_rule-based"
+        },
+        {
+          "doc_id": "Rule_Based",
+          "rank": 2,
+          "score": 19.133076,
+          "source": "docs\\graph-memory.md",
+          "text": "Rule_Based | rule-based"
+        },
+        {
+          "doc_id": "**does_not_prove_the_full_retrieval",
+          "rank": 3,
+          "score": 10.886604,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "**does_not_prove_the_full_retrieval | -_**does_not_prove_the_full_retrieval"
+        },
+        {
+          "doc_id": "Rule",
+          "rank": 4,
+          "score": 10.248402,
+          "source": "docs\\human-eval-rubric-v1.md",
+          "text": "Rule | rule:"
+        },
+        {
+          "doc_id": "architecture_how",
+          "rank": 5,
+          "score": 10.079853,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "architecture_how | architecture\n\nhow"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Verifier_Is_Rule_Based",
+        "Rule_Based",
+        "**does_not_prove_the_full_retrieval",
+        "Rule",
+        "architecture_how"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "Why is the verifier rule-based and not LLM-based?",
+      "question_id": "answer_q417",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Verifier_Is_Rule_Based",
+          "rank": 1,
+          "score": 36.802621,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Verifier_Is_Rule_Based | verifier_is_rule-based"
+        },
+        {
+          "doc_id": "Rule_Based",
+          "rank": 2,
+          "score": 29.21293,
+          "source": "docs\\graph-memory.md",
+          "text": "Rule_Based | rule-based"
+        },
+        {
+          "doc_id": "Llm_Based",
+          "rank": 3,
+          "score": 28.46615,
+          "source": "docs\\graph-memory.md",
+          "text": "Llm_Based | llm-based"
+        },
+        {
+          "doc_id": "Gate_Suppression_Is_Not_The_Bottleneck",
+          "rank": 4,
+          "score": 13.307374,
+          "source": "sam-lm\\docs\\experiment-0-13a-noisy-memory.md",
+          "text": "Gate_Suppression_Is_Not_The_Bottleneck | gate_suppression_is_not_the_bottleneck"
+        },
+        {
+          "doc_id": "Small_Llm_Is_Sufficient",
+          "rank": 5,
+          "score": 11.939365,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Small_Llm_Is_Sufficient | small_llm_is_sufficient"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Verifier_Is_Rule_Based",
+        "Rule_Based",
+        "Llm_Based",
+        "Gate_Suppression_Is_Not_The_Bottleneck",
+        "Small_Llm_Is_Sufficient"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What are the six query intent types?",
+      "question_id": "answer_q418",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Intent_Classification",
+          "rank": 1,
+          "score": 11.028675,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Intent_Classification | intent_classification"
+        },
+        {
+          "doc_id": "roadmap_what",
+          "rank": 2,
+          "score": 10.485532,
+          "source": "sam-lm\\docs\\roadmap.md",
+          "text": "roadmap_what | roadmap\n\nwhat"
+        },
+        {
+          "doc_id": "Node_Types",
+          "rank": 3,
+          "score": 10.485532,
+          "source": "docs\\graph-memory.md",
+          "text": "Node_Types | node_types"
+        },
+        {
+          "doc_id": "query_projection_mismatch_the",
+          "rank": 4,
+          "score": 9.785443,
+          "source": "sam-lm\\experiments\\experiment_0_6_final_report.md",
+          "text": "query_projection_mismatch_the | query_projection_mismatch\n\nthe"
+        },
+        {
+          "doc_id": "current_status_what",
+          "rank": 5,
+          "score": 9.390413,
+          "source": "sam-lm\\docs\\current-status.md",
+          "text": "current_status_what | current_status\n\nwhat"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Intent_Classification",
+        "roadmap_what",
+        "Node_Types",
+        "query_projection_mismatch_the",
+        "current_status_what"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "How does entity disambiguation work?",
+      "question_id": "answer_q419",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Contextual_Disambiguation",
+          "rank": 1,
+          "score": 11.028675,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Contextual_Disambiguation | contextual_disambiguation"
+        },
+        {
+          "doc_id": "Type_Disambiguation",
+          "rank": 2,
+          "score": 11.028675,
+          "source": "docs\\graph-memory.md",
+          "text": "Type_Disambiguation | type_disambiguation"
+        },
+        {
+          "doc_id": "architecture_how",
+          "rank": 3,
+          "score": 10.079853,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "architecture_how | architecture\n\nhow"
+        },
+        {
+          "doc_id": "question_does",
+          "rank": 4,
+          "score": 9.755925,
+          "source": "docs\\nexus-architecture-validation-verdict.md",
+          "text": "question_does | question\n\ndoes"
+        },
+        {
+          "doc_id": "Entity",
+          "rank": 5,
+          "score": 9.543668,
+          "source": "docs\\graph-memory.md",
+          "text": "Entity | entity"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Contextual_Disambiguation",
+        "Type_Disambiguation",
+        "architecture_how",
+        "question_does",
+        "Entity"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the target compute model for NEXUS?",
+      "question_id": "answer_q420",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": ">2×_The_Compute_Budget",
+          "rank": 1,
+          "score": 12.375777,
+          "source": "sam-lm\\docs\\SAM-architecture-and-implementation-plan.md",
+          "text": ">2×_The_Compute_Budget | >2×_the_compute_budget"
+        },
+        {
+          "doc_id": "reasoning_model_the",
+          "rank": 2,
+          "score": 12.024514,
+          "source": "docs\\graph-reasoning.md",
+          "text": "reasoning_model_the | reasoning_model\n\nthe"
+        },
+        {
+          "doc_id": "Efficiency_Target",
+          "rank": 3,
+          "score": 11.853264,
+          "source": "sam-lm\\docs\\thesis.md",
+          "text": "Efficiency_Target | efficiency_target"
+        },
+        {
+          "doc_id": "the_hybrid_approach_for",
+          "rank": 4,
+          "score": 11.430554,
+          "source": "docs\\rag-vs-graph-nexus.md",
+          "text": "the_hybrid_approach_for | the_hybrid_approach\n\nfor"
+        },
+        {
+          "doc_id": "nexus_llm_model",
+          "rank": 5,
+          "score": 11.047165,
+          "source": "docs\\EVIDENCE_REPORT_PHASE2.md",
+          "text": "nexus_llm_model"
+        }
+      ],
+      "retrieved_doc_ids": [
+        ">2×_The_Compute_Budget",
+        "reasoning_model_the",
+        "Efficiency_Target",
+        "the_hybrid_approach_for",
+        "nexus_llm_model"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "How does NEXUS handle incremental knowledge updates?",
+      "question_id": "answer_q421",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "knowledge_store_how",
+          "rank": 1,
+          "score": 16.577272,
+          "source": "docs\\graph-memory.md",
+          "text": "knowledge_store_how | knowledge_store\n\nhow"
+        },
+        {
+          "doc_id": "Knowledge_Updates_Require_Retraining",
+          "rank": 2,
+          "score": 15.779021,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "Knowledge_Updates_Require_Retraining | knowledge_updates_require_retraining"
+        },
+        {
+          "doc_id": "Graph_Memory_—_Nexus_Knowledge_Store",
+          "rank": 3,
+          "score": 11.027712,
+          "source": "docs\\graph-memory.md",
+          "text": "Graph_Memory_—_Nexus_Knowledge_Store | graph_memory_—_nexus_knowledge_store"
+        },
+        {
+          "doc_id": "architecture_how",
+          "rank": 4,
+          "score": 10.079853,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "architecture_how | architecture\n\nhow"
+        },
+        {
+          "doc_id": "question_does",
+          "rank": 5,
+          "score": 9.755925,
+          "source": "docs\\nexus-architecture-validation-verdict.md",
+          "text": "question_does | question\n\ndoes"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "knowledge_store_how",
+        "Knowledge_Updates_Require_Retraining",
+        "Graph_Memory_—_Nexus_Knowledge_Store",
+        "architecture_how",
+        "question_does"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the confidence score on NEXUS edges?",
+      "question_id": "answer_q422",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "the_problem_is_distractor_quality,_train_on_hard_negatives",
+          "rank": 1,
+          "score": 10.542206,
+          "source": "sam-lm\\docs\\experiments.md",
+          "text": "the_problem_is_distractor_quality,_train_on_hard_negatives"
+        },
+        {
+          "doc_id": "roadmap_what",
+          "rank": 2,
+          "score": 10.485532,
+          "source": "sam-lm\\docs\\roadmap.md",
+          "text": "roadmap_what | roadmap\n\nwhat"
+        },
+        {
+          "doc_id": "Confidence_Weighted",
+          "rank": 3,
+          "score": 10.485532,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Confidence_Weighted | confidence-weighted"
+        },
+        {
+          "doc_id": "Confidence_Scores",
+          "rank": 4,
+          "score": 10.485532,
+          "source": "docs\\graph-memory.md",
+          "text": "Confidence_Scores | confidence_scores"
+        },
+        {
+          "doc_id": "current_status_what",
+          "rank": 5,
+          "score": 9.390413,
+          "source": "sam-lm\\docs\\current-status.md",
+          "text": "current_status_what | current_status\n\nwhat"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "the_problem_is_distractor_quality,_train_on_hard_negatives",
+        "roadmap_what",
+        "Confidence_Weighted",
+        "Confidence_Scores",
+        "current_status_what"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "How does NEXUS handle path deduplication?",
+      "question_id": "answer_q423",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "architecture_how",
+          "rank": 1,
+          "score": 10.079853,
+          "source": "sam-lm\\docs\\architecture.md",
+          "text": "architecture_how | architecture\n\nhow"
+        },
+        {
+          "doc_id": "question_does",
+          "rank": 2,
+          "score": 9.755925,
+          "source": "docs\\nexus-architecture-validation-verdict.md",
+          "text": "question_does | question\n\ndoes"
+        },
+        {
+          "doc_id": "reasoning_engine_how",
+          "rank": 3,
+          "score": 9.027104,
+          "source": "docs\\graph-reasoning.md",
+          "text": "reasoning_engine_how | reasoning_engine\n\nhow"
+        },
+        {
+          "doc_id": "knowledge_store_how",
+          "rank": 4,
+          "score": 9.027104,
+          "source": "docs\\graph-memory.md",
+          "text": "knowledge_store_how | knowledge_store\n\nhow"
+        },
+        {
+          "doc_id": "Path",
+          "rank": 5,
+          "score": 8.552661,
+          "source": "sam-lm\\experiments\\experiment_0_12_report.md",
+          "text": "Path | path:"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "architecture_how",
+        "question_does",
+        "reasoning_engine_how",
+        "knowledge_store_how",
+        "Path"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the knowledge record format for a NEXUS node?",
+      "question_id": "answer_q424",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Knowledge_Record_Format",
+          "rank": 1,
+          "score": 28.042294,
+          "source": "docs\\graph-memory.md",
+          "text": "Knowledge_Record_Format | knowledge_record_format"
+        },
+        {
+          "doc_id": "the_hybrid_approach_for",
+          "rank": 2,
+          "score": 11.430554,
+          "source": "docs\\rag-vs-graph-nexus.md",
+          "text": "the_hybrid_approach_for | the_hybrid_approach\n\nfor"
+        },
+        {
+          "doc_id": "Memory_Format",
+          "rank": 3,
+          "score": 11.028675,
+          "source": "sam-lm\\docs\\thesis.md",
+          "text": "Memory_Format | memory_format"
+        },
+        {
+          "doc_id": "Graph_Memory_—_Nexus_Knowledge_Store",
+          "rank": 4,
+          "score": 11.027712,
+          "source": "docs\\graph-memory.md",
+          "text": "Graph_Memory_—_Nexus_Knowledge_Store | graph_memory_—_nexus_knowledge_store"
+        },
+        {
+          "doc_id": "Knowledge_Is_Predominantly_Textual/narrative",
+          "rank": 5,
+          "score": 10.9999,
+          "source": "docs\\rag-vs-graph-nexus.md",
+          "text": "Knowledge_Is_Predominantly_Textual/narrative | knowledge_is_predominantly_textual/narrative"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Knowledge_Record_Format",
+        "the_hybrid_approach_for",
+        "Memory_Format",
+        "Graph_Memory_—_Nexus_Knowledge_Store",
+        "Knowledge_Is_Predominantly_Textual/narrative"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What are the 7 ingestion sources for NEXUS?",
+      "question_id": "answer_q425",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "ingestion_sources",
+          "rank": 1,
+          "score": 18.828961,
+          "source": "docs\\graph-memory.md",
+          "text": "ingestion_sources"
+        },
+        {
+          "doc_id": "Step_1:_Ingestion_Sources",
+          "rank": 2,
+          "score": 17.116291,
+          "source": "docs\\graph-memory.md",
+          "text": "Step_1:_Ingestion_Sources | step_1:_ingestion_sources"
+        },
+        {
+          "doc_id": "the_hybrid_approach_for",
+          "rank": 3,
+          "score": 11.430554,
+          "source": "docs\\rag-vs-graph-nexus.md",
+          "text": "the_hybrid_approach_for | the_hybrid_approach\n\nfor"
+        },
+        {
+          "doc_id": "roadmap_what",
+          "rank": 4,
+          "score": 10.485532,
+          "source": "sam-lm\\docs\\roadmap.md",
+          "text": "roadmap_what | roadmap\n\nwhat"
+        },
+        {
+          "doc_id": "Frozen_Ingestion",
+          "rank": 5,
+          "score": 10.079853,
+          "source": "docs\\external-evaluation-protocol.md",
+          "text": "Frozen_Ingestion | frozen_ingestion"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "ingestion_sources",
+        "Step_1:_Ingestion_Sources",
+        "the_hybrid_approach_for",
+        "roadmap_what",
+        "Frozen_Ingestion"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What are the 4 entity extraction strategies?",
+      "question_id": "answer_q426",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "entity_extraction",
+          "rank": 1,
+          "score": 16.511528,
+          "source": "docs\\graph-memory.md",
+          "text": "entity_extraction"
+        },
+        {
+          "doc_id": "Step_2:_Entity_Extraction",
+          "rank": 2,
+          "score": 15.009649,
+          "source": "docs\\graph-memory.md",
+          "text": "Step_2:_Entity_Extraction | step_2:_entity_extraction"
+        },
+        {
+          "doc_id": "roadmap_what",
+          "rank": 3,
+          "score": 10.485532,
+          "source": "sam-lm\\docs\\roadmap.md",
+          "text": "roadmap_what | roadmap\n\nwhat"
+        },
+        {
+          "doc_id": "Entity",
+          "rank": 4,
+          "score": 9.543668,
+          "source": "docs\\graph-memory.md",
+          "text": "Entity | entity"
+        },
+        {
+          "doc_id": "current_status_what",
+          "rank": 5,
+          "score": 9.390413,
+          "source": "sam-lm\\docs\\current-status.md",
+          "text": "current_status_what | current_status\n\nwhat"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "entity_extraction",
+        "Step_2:_Entity_Extraction",
+        "roadmap_what",
+        "Entity",
+        "current_status_what"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What are the 4 relation extraction strategies?",
+      "question_id": "answer_q427",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "relation_extraction",
+          "rank": 1,
+          "score": 18.344474,
+          "source": "docs\\graph-memory.md",
+          "text": "relation_extraction"
+        },
+        {
+          "doc_id": "Step_3:_Relation_Extraction",
+          "rank": 2,
+          "score": 16.675872,
+          "source": "docs\\graph-memory.md",
+          "text": "Step_3:_Relation_Extraction | step_3:_relation_extraction"
+        },
+        {
+          "doc_id": "roadmap_what",
+          "rank": 3,
+          "score": 10.485532,
+          "source": "sam-lm\\docs\\roadmap.md",
+          "text": "roadmap_what | roadmap\n\nwhat"
+        },
+        {
+          "doc_id": "current_status_what",
+          "rank": 4,
+          "score": 9.390413,
+          "source": "sam-lm\\docs\\current-status.md",
+          "text": "current_status_what | current_status\n\nwhat"
+        },
+        {
+          "doc_id": "Queries_Are_Exploratory",
+          "rank": 5,
+          "score": 9.390413,
+          "source": "docs\\rag-vs-graph-nexus.md",
+          "text": "Queries_Are_Exploratory | queries_are_exploratory"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "relation_extraction",
+        "Step_3:_Relation_Extraction",
+        "roadmap_what",
+        "current_status_what",
+        "Queries_Are_Exploratory"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 1.0,
+          "k": 5,
+          "numerator": 0.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 0.0
+        }
+      },
+      "question": "What is the deduplication and normalization strategy?",
+      "question_id": "answer_q428",
+      "relevant_doc_ids": [
+        "Decision_PivotToNEXUS"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "Strategy",
+          "rank": 1,
+          "score": 11.8698,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Strategy | strategy:"
+        },
+        {
+          "doc_id": "Name_Normalization",
+          "rank": 2,
+          "score": 11.853264,
+          "source": "docs\\graph-memory.md",
+          "text": "Name_Normalization | name_normalization"
+        },
+        {
+          "doc_id": "roadmap_what",
+          "rank": 3,
+          "score": 10.485532,
+          "source": "sam-lm\\docs\\roadmap.md",
+          "text": "roadmap_what | roadmap\n\nwhat"
+        },
+        {
+          "doc_id": "Direction_Strategy",
+          "rank": 4,
+          "score": 10.485532,
+          "source": "docs\\graph-reasoning.md",
+          "text": "Direction_Strategy | direction_strategy"
+        },
+        {
+          "doc_id": "Merge_Strategy",
+          "rank": 5,
+          "score": 10.485532,
+          "source": "docs\\graph-memory.md",
+          "text": "Merge_Strategy | merge_strategy"
+        }
+      ],
+      "retrieved_doc_ids": [
+        "Strategy",
+        "Name_Normalization",
+        "roadmap_what",
+        "Direction_Strategy",
+        "Merge_Strategy"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    }
+  ],
+  "reranker": null,
+  "schema_version": "nexus-retrieval-eval-v1",
+  "source_commit": "518103188e797d1aded310ff56134045264f6968",
+  "status": "OK_RETRIEVAL_ONLY",
+  "system_id": "bm25_retrieval_only",
+  "top_k": 5
+}

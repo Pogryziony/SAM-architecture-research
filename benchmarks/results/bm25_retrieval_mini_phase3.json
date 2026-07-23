@@ -1,0 +1,207 @@
+{
+  "aggregates": {
+    "mrr_mean": 1.0,
+    "mrr_n": 2,
+    "questions_total": 3,
+    "recall_at_k_mean": 1.0,
+    "recall_at_k_n": 2
+  },
+  "answer_generation_status": "NOT_RUN",
+  "chunking": {
+    "max_chars": 2000,
+    "strategy": "graph_node_property_concat_v1"
+  },
+  "comparison_mode": "controlled",
+  "corpus_id": "dec5c557301bfe3f",
+  "created_utc": "2026-07-22T19:47:05.570198+00:00",
+  "dataset_id": "mini-tasks",
+  "dataset_sha256": "9c6c9c1fe9f28fde242a67615c085ea9ada754174c655f585b00104c9651474d",
+  "embedding_model": null,
+  "family": "rag_retrieval",
+  "fusion_method": null,
+  "index_id": "cabfa09d2daa0ae5",
+  "modern_rag": false,
+  "note": "Do not compare retrieval-only scores against NEXUS answer correctness. Final-answer RAG remains NOT_RUN.",
+  "per_question": [
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 1.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 2.0,
+          "k": 5,
+          "numerator": 2.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 1.0
+        }
+      },
+      "question": "What is the capital of Poland?",
+      "question_id": "mini_q1",
+      "relevant_doc_ids": [
+        "City_Warsaw",
+        "Country_Poland"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "City_Warsaw",
+          "rank": 1,
+          "score": 3.346451,
+          "source": "mini://cities/warsaw",
+          "text": "City_Warsaw | Warsaw Warszawa | Warsaw is the capital of Poland."
+        },
+        {
+          "doc_id": "Country_Poland",
+          "rank": 2,
+          "score": 0.366955,
+          "source": "mini://countries/poland",
+          "text": "Country_Poland | Poland Polska | Poland is a country in Europe."
+        },
+        {
+          "doc_id": "City_Krakow",
+          "rank": 3,
+          "score": 0.246865,
+          "source": "mini://cities/krakow",
+          "text": "City_Krakow | Krakow Cracow Kraków | Krakow is a major city in Poland."
+        }
+      ],
+      "retrieved_doc_ids": [
+        "City_Warsaw",
+        "Country_Poland",
+        "City_Krakow"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": true,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 1.0
+        },
+        "recall_at_k": {
+          "applicable": true,
+          "denominator": 2.0,
+          "k": 5,
+          "numerator": 2.0,
+          "reason": "gold_entities_as_relevant_docs",
+          "value": 1.0
+        }
+      },
+      "question": "Is Krakow related to Poland?",
+      "question_id": "mini_q2",
+      "relevant_doc_ids": [
+        "City_Krakow",
+        "Country_Poland"
+      ],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "City_Krakow",
+          "rank": 1,
+          "score": 1.810506,
+          "source": "mini://cities/krakow",
+          "text": "City_Krakow | Krakow Cracow Kraków | Krakow is a major city in Poland."
+        },
+        {
+          "doc_id": "Country_Poland",
+          "rank": 2,
+          "score": 0.366955,
+          "source": "mini://countries/poland",
+          "text": "Country_Poland | Poland Polska | Poland is a country in Europe."
+        },
+        {
+          "doc_id": "City_Warsaw",
+          "rank": 3,
+          "score": 0.278454,
+          "source": "mini://cities/warsaw",
+          "text": "City_Warsaw | Warsaw Warszawa | Warsaw is the capital of Poland."
+        }
+      ],
+      "retrieved_doc_ids": [
+        "City_Krakow",
+        "Country_Poland",
+        "City_Warsaw"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    },
+    {
+      "answer_generation": {
+        "reason": "BM25 retrieval-only arm; answer generation requires pinned NEXUS_LLM_MODEL + API credentials and budget",
+        "status": "NOT_RUN"
+      },
+      "comparison_mode": "controlled",
+      "metrics": {
+        "mrr": {
+          "applicable": false,
+          "reason": "no_gold_entities",
+          "value": null
+        },
+        "recall_at_k": {
+          "applicable": false,
+          "denominator": null,
+          "k": 5,
+          "numerator": null,
+          "reason": "no_gold_entities",
+          "value": null
+        }
+      },
+      "question": "What is the population of Atlantis?",
+      "question_id": "mini_q3",
+      "relevant_doc_ids": [],
+      "retrieval_method": "bm25",
+      "retrieved": [
+        {
+          "doc_id": "City_Warsaw",
+          "rank": 1,
+          "score": 2.184558,
+          "source": "mini://cities/warsaw",
+          "text": "City_Warsaw | Warsaw Warszawa | Warsaw is the capital of Poland."
+        },
+        {
+          "doc_id": "Country_Poland",
+          "rank": 2,
+          "score": 0.139227,
+          "source": "mini://countries/poland",
+          "text": "Country_Poland | Poland Polska | Poland is a country in Europe."
+        },
+        {
+          "doc_id": "City_Krakow",
+          "rank": 3,
+          "score": 0.123432,
+          "source": "mini://cities/krakow",
+          "text": "City_Krakow | Krakow Cracow Kraków | Krakow is a major city in Poland."
+        }
+      ],
+      "retrieved_doc_ids": [
+        "City_Warsaw",
+        "Country_Poland",
+        "City_Krakow"
+      ],
+      "terminal_outcome": "not_run",
+      "top_k": 5
+    }
+  ],
+  "reranker": null,
+  "schema_version": "nexus-retrieval-eval-v1",
+  "source_commit": "518103188e797d1aded310ff56134045264f6968",
+  "status": "OK_RETRIEVAL_ONLY",
+  "system_id": "bm25_retrieval_only",
+  "top_k": 5
+}

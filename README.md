@@ -2,7 +2,16 @@
 
 **Architecture pivot: SAM → NEXUS** (2026-07-08)
 
-*Experimental research project. Not production code. Not a validated architecture.*
+*Experimental research project. Not production code.*
+
+**Canonical current-state document:** [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md)  
+**Phase evidence:** [`docs/EVIDENCE_REPORT_PHASE1.md`](docs/EVIDENCE_REPORT_PHASE1.md),
+[`docs/EVIDENCE_REPORT_PHASE2.md`](docs/EVIDENCE_REPORT_PHASE2.md)  
+
+Internal architecture validation against **deterministic placeholders** is **not**
+evidence that NEXUS outperforms real LLMs or modern RAG. Phase 2–3 add schema-v1
+evaluation, regenerable aggregates, honest baseline `NOT_RUN`, and e2e
+performance on the **mini** domain pack only.
 
 ---
 
@@ -95,8 +104,10 @@ for p in paths:
 
 ### Documentation (NEXUS)
 
-- [Analysis & Roadmap](ANALYSIS_AND_ROADMAP.md) — full architecture, roadmap, research questions
-- [Stack-v1 freeze](docs/stack-v1-freeze.md) — authoritative Stage 0–4 freeze attestation
+- [**CURRENT STATE (source of truth)**](docs/CURRENT_STATE.md) — active claims, artifacts, blockers, next gates
+- [Analysis & Roadmap](ANALYSIS_AND_ROADMAP.md) — historical architecture narrative (superseded for status)
+- [Stack-v1 freeze](docs/stack-v1-freeze.md) — Stage 0–4 freeze attestation
+- [External evaluation protocol](docs/external-evaluation-protocol.md) — sealed multi-domain controls
 - [Branch history archive](docs/branch-history.md) — deleted/merged topic branches with tip SHAs and PR links
 - [Production profiles](docs/production-profiles.md) — library default vs grounded production QA
 - [Graph Memory Model](docs/graph-memory.md) — data model, node/edge types, construction pipeline
@@ -162,4 +173,4 @@ See [sam-lm/README.md](sam-lm/README.md).
 
 ---
 
-*Last updated: 2026-07-21 (stack-v1 freeze documented; library default Realizer remains `synth` for Stage 2 compatibility while `ProductionNEXUSConfig.grounded()` is the recommended production profile; rejected Realizer architectures are registry-gated; copy/edit transducer remains the AnswerPlan pilot path.)*
+*Last updated: 2026-07-23 (Phase 4: local Ollama `qwen3.6:latest` closed-book/long-context/RAG arms; NEXUS-graph+Qwen eval-only; exploratory auto-subset stats; human adjudication still pending.)*

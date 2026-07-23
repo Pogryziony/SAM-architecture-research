@@ -1,5 +1,6 @@
 """NEXUS v1 pipeline — canonical end-to-end runner."""
 from nexus.pipeline.config import (
+    CONFIG_IDENTITY_SCHEMA,
     ProductionNEXUSConfig,
     PipelineIdentity,
     EncoderIdentity,
@@ -13,6 +14,7 @@ from nexus.pipeline.runner import (
 from nexus.pipeline.entity_resolver import EntityResolver
 
 __all__ = [
+    "CONFIG_IDENTITY_SCHEMA",
     "ProductionNEXUSConfig",
     "PipelineIdentity",
     "EncoderIdentity",

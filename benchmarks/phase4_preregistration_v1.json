@@ -1,0 +1,100 @@
+{
+  "schema_version": "nexus-phase4-preregistration-v1",
+  "created_utc": "2026-07-22T21:00:00+00:00",
+  "status": "FROZEN",
+  "dataset": {
+    "dataset_id": "oracle_v1",
+    "domain": "sam",
+    "question_count": 191,
+    "note": "Internal regression contract only; not sealed external holdout"
+  },
+  "local_qwen": {
+    "runtime": "ollama",
+    "model_name": "qwen3.6:latest",
+    "digest": "07d35212591fc27746f0a317c975a6d68754fb38e9053d82e25f06057af28522",
+    "architecture": "qwen35moe",
+    "parameter_size": "36.0B",
+    "quantization": "Q4_K_M",
+    "context_length": 262144,
+    "think": false
+  },
+  "decoding": {
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "top_k": 1,
+    "seed": 0,
+    "num_predict": 256,
+    "timeout_s": 180.0,
+    "retry_max": 0
+  },
+  "prompts": {
+    "system_prompt_id": "phase4_frozen_system_v1",
+    "closed_book_template_id": "phase4_closed_book_user_v1",
+    "evidence_template_id": "phase4_evidence_user_v1"
+  },
+  "rag": {
+    "corpus_artifact": "benchmarks/results/phase4_rag_corpus_v1.json",
+    "corpus_sha256": "12ad6401b707d7b403469b15b0390d9893d173060f6f2e558f2ac82fd5ad8bce",
+    "chunk_size": 800,
+    "overlap": 120,
+    "top_k": 5,
+    "dense_embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "fusion_method": "reciprocal_rank_fusion",
+    "rrf_k": 60,
+    "candidate_k_hybrid": 20,
+    "reranker": {
+      "type": "llm_listwise",
+      "model": "qwen3.6:latest",
+      "note": "Explicit LLM reranker; not a cross-encoder"
+    },
+    "long_context_truncation_chars": 120000,
+    "long_context_policy": "deterministic_prefix_truncation_or_NOT_RUN_if_estimate_exceeds_90pct_context"
+  },
+  "arms": [
+    "qwen_3_6_closed_book_internal",
+    "qwen_3_6_long_context_internal",
+    "bm25_rag_qwen_3_6_internal",
+    "dense_rag_qwen_3_6_internal",
+    "hybrid_rag_qwen_3_6_internal",
+    "hybrid_rerank_rag_qwen_3_6_internal",
+    "nexus_graph_evidence_qwen_3_6_internal",
+    "nexus_grounded_deterministic_phase3"
+  ],
+  "comparison_families": {
+    "controlled": [
+      "bm25_rag_qwen_3_6_internal",
+      "dense_rag_qwen_3_6_internal",
+      "hybrid_rag_qwen_3_6_internal",
+      "hybrid_rerank_rag_qwen_3_6_internal",
+      "nexus_graph_evidence_qwen_3_6_internal"
+    ],
+    "system_level": [
+      "nexus_grounded_deterministic_phase3",
+      "qwen_3_6_closed_book_internal",
+      "qwen_3_6_long_context_internal",
+      "hybrid_rerank_rag_qwen_3_6_internal",
+      "nexus_graph_evidence_qwen_3_6_internal"
+    ]
+  },
+  "metrics": {
+    "primary": "grounded_correct",
+    "secondary": ["fact_fuzzy_proxy", "retrieval_recall_at_k", "latency_ms"],
+    "failure_treatment": "FAILED/TIMED_OUT count as incorrect when metric absent; NOT_RUN forbids superiority",
+    "alpha": 0.05,
+    "tests": ["paired_bootstrap_ci", "mcnemar_exact"],
+    "multiple_comparison": "holm"
+  },
+  "adjudication": {
+    "auto_scorable": 120,
+    "human_dependent": 71,
+    "full_primary_requires_human_completion": true,
+    "llm_judge_allowed": "diagnostic_model_judgment only"
+  },
+  "permitted_claim_language": "On the internal oracle_v1 contract, configuration X achieved metric Y versus local Qwen 3.6 configuration Z under preregistered conditions.",
+  "forbidden_claims": [
+    "general LLM superiority",
+    "general modern RAG superiority",
+    "sealed external generalization",
+    "human adjudication complete while pending"
+  ]
+}

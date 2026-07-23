@@ -1,0 +1,222 @@
+{
+  "budgets": {
+    "latency_p50_gate": "PASS",
+    "latency_p50_ms_max": 500.0,
+    "peak_rss_gate": "PASS",
+    "peak_rss_mb_max": 500.0
+  },
+  "config_hash": "19c9738e88f0bc5c",
+  "config_identity_schema": "nexus-config-identity-v2",
+  "created_utc": "2026-07-22T19:11:24.132697+00:00",
+  "dataset_id": "mini-tasks",
+  "domain_pack_version": "mini-v1",
+  "graph_edge_count": 2,
+  "graph_node_count": 3,
+  "hardware": {
+    "machine": "AMD64",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "processor": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+    "python": "3.12.10"
+  },
+  "methodology": {
+    "cold_definition": "first measured call in this process",
+    "entry_point": "NEXUSRunner._run_single via measure_grounded_e2e",
+    "note": "End-to-end wall time around runner._run_single; not inferred from separate component campaigns",
+    "questions": 3,
+    "repeats": 5,
+    "warmup": 1
+  },
+  "profile": "grounded",
+  "realizer_backend": "grounded_v1",
+  "samples": [
+    {
+      "cold": true,
+      "latency_ms": 9.669,
+      "peak_rss_mb": 25.9296875,
+      "question_id": "mini_q1",
+      "stages_ms": {
+        "evidence_time": 0.867,
+        "parse_time": 0.632,
+        "realize_time": 0.133,
+        "traverse_time": 0.141
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.45,
+      "peak_rss_mb": 25.96484375,
+      "question_id": "mini_q1",
+      "stages_ms": {
+        "evidence_time": 0.451,
+        "parse_time": 0.374,
+        "realize_time": 0.112,
+        "traverse_time": 0.114
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.55,
+      "peak_rss_mb": 25.984375,
+      "question_id": "mini_q2",
+      "stages_ms": {
+        "evidence_time": 0.447,
+        "parse_time": 0.478,
+        "realize_time": 0.152,
+        "traverse_time": 0.092
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 0.358,
+      "peak_rss_mb": 25.984375,
+      "question_id": "mini_q3",
+      "stages_ms": {
+        "parse_time": 0.327
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.367,
+      "peak_rss_mb": 25.99609375,
+      "question_id": "mini_q1",
+      "stages_ms": {
+        "evidence_time": 0.432,
+        "parse_time": 0.348,
+        "realize_time": 0.137,
+        "traverse_time": 0.088
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.275,
+      "peak_rss_mb": 25.99609375,
+      "question_id": "mini_q2",
+      "stages_ms": {
+        "evidence_time": 0.464,
+        "parse_time": 0.296,
+        "realize_time": 0.147,
+        "traverse_time": 0.087
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 0.355,
+      "peak_rss_mb": 25.99609375,
+      "question_id": "mini_q3",
+      "stages_ms": {
+        "parse_time": 0.325
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.344,
+      "peak_rss_mb": 26.0,
+      "question_id": "mini_q1",
+      "stages_ms": {
+        "evidence_time": 0.423,
+        "parse_time": 0.344,
+        "realize_time": 0.136,
+        "traverse_time": 0.086
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.304,
+      "peak_rss_mb": 26.00390625,
+      "question_id": "mini_q2",
+      "stages_ms": {
+        "evidence_time": 0.463,
+        "parse_time": 0.293,
+        "realize_time": 0.15,
+        "traverse_time": 0.103
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 0.36,
+      "peak_rss_mb": 26.00390625,
+      "question_id": "mini_q3",
+      "stages_ms": {
+        "parse_time": 0.329
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.349,
+      "peak_rss_mb": 26.015625,
+      "question_id": "mini_q1",
+      "stages_ms": {
+        "evidence_time": 0.428,
+        "parse_time": 0.343,
+        "realize_time": 0.137,
+        "traverse_time": 0.085
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.229,
+      "peak_rss_mb": 26.0234375,
+      "question_id": "mini_q2",
+      "stages_ms": {
+        "evidence_time": 0.419,
+        "parse_time": 0.301,
+        "realize_time": 0.138,
+        "traverse_time": 0.084
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 0.354,
+      "peak_rss_mb": 26.0234375,
+      "question_id": "mini_q3",
+      "stages_ms": {
+        "parse_time": 0.325
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.331,
+      "peak_rss_mb": 26.03515625,
+      "question_id": "mini_q1",
+      "stages_ms": {
+        "evidence_time": 0.418,
+        "parse_time": 0.345,
+        "realize_time": 0.135,
+        "traverse_time": 0.084
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.244,
+      "peak_rss_mb": 26.0390625,
+      "question_id": "mini_q2",
+      "stages_ms": {
+        "evidence_time": 0.457,
+        "parse_time": 0.294,
+        "realize_time": 0.139,
+        "traverse_time": 0.081
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 0.349,
+      "peak_rss_mb": 26.0390625,
+      "question_id": "mini_q3",
+      "stages_ms": {
+        "parse_time": 0.321
+      }
+    }
+  ],
+  "schema_version": "nexus-performance-v1",
+  "source_commit": "518103188e797d1aded310ff56134045264f6968",
+  "status": "VALID",
+  "summary": {
+    "cold_latency_ms": 9.669,
+    "peak_rss_mb": 26.039,
+    "throughput_qps": 985.6101,
+    "warm_n": 15,
+    "warm_p50_ms": 1.275,
+    "warm_p95_ms": 1.48,
+    "warm_p99_ms": 1.536
+  }
+}

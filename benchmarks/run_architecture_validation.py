@@ -1,8 +1,14 @@
-"""Stage-4 style NEXUS vs RAG vs LLM-only campaign on frozen oracle_v1.
+"""Internal Stage-4 style NEXUS vs placeholder-baseline campaign on oracle_v1.
 
-No training. Uses SynthesizingModel / EvidenceBlindModel so the run is
-CI-safe without Ollama. Verdict thresholds come from
-EXPERIMENT_NEXUS_ARCHITECTURE_VALIDATION.md.
+No training. Uses deterministic ``SynthesizingModel`` /
+``EvidenceBlindModel`` so the run is CI-safe without Ollama.
+
+IMPORTANT — claim scope:
+  These placeholder arms are **not** real LLMs and **not** modern RAG.
+  A ``VALIDATED`` decision means the internal repository contract passed
+  against deterministic placeholders under the preregistered thresholds.
+  It does **not** authorize claims that NEXUS outperforms production LLM
+  or competitive RAG systems. See ``docs/CURRENT_STATE.md``.
 """
 
 from __future__ import annotations
@@ -62,6 +68,17 @@ def _mean(values: list[float | None]) -> float | None:
     if not kept:
         return None
     return round(sum(kept) / len(kept), 4)
+
+
+def _mean_with_denominators(values: list[float | None]) -> dict[str, float | int | None]:
+    """Mean plus explicit scored/total counts (never hide reduced subsets)."""
+    kept = [float(v) for v in values if v is not None and math.isfinite(float(v))]
+    return {
+        "mean": round(sum(kept) / len(kept), 4) if kept else None,
+        "n_scored": len(kept),
+        "n_total": len(values),
+        "n_unscorable": len(values) - len(kept),
+    }
 
 
 def _run_nexus_arm(
@@ -126,23 +143,37 @@ def _run_nexus_arm(
             }
         )
 
+    fact_stats = _mean_with_denominators(facts)
+    entry_stats = _mean_with_denominators(entries)
+    path_stats = _mean_with_denominators(paths)
+    proof_stats = _mean_with_denominators(proofs)
     return {
         "arm": "nexus_l1_union",
+        "model_class": "SynthesizingModel",
+        "is_real_llm": False,
         "identity": identity,
         "graph": {
             "node_count": provenance.get("node_count"),
             "edge_count": provenance.get("edge_count"),
         },
         "metrics": {
-            "fact_accuracy_mean": _mean(facts),
-            "entry_recall_mean": _mean(entries),
-            "gold_path_recall_mean": _mean(paths),
-            "proof_valid_rate": _mean(proofs),
+            "fact_accuracy_mean": fact_stats["mean"],
+            "fact_accuracy_n_scored": fact_stats["n_scored"],
+            "fact_accuracy_n_unscorable": fact_stats["n_unscorable"],
+            "entry_recall_mean": entry_stats["mean"],
+            "entry_recall_n_scored": entry_stats["n_scored"],
+            "gold_path_recall_mean": path_stats["mean"],
+            "gold_path_recall_n_scored": path_stats["n_scored"],
+            "gold_path_recall_n_unscorable": path_stats["n_unscorable"],
+            "proof_valid_rate": proof_stats["mean"],
+            "proof_valid_n_scored": proof_stats["n_scored"],
             "abstain_recall": (
                 round(abstain_ok / abstain_total, 4) if abstain_total else None
             ),
+            "abstain_n": abstain_total,
             "answered": sum(1 for r in rows if not _is_abstain(r["answer"])),
             "questions": len(rows),
+            "questions_total": len(rows),
         },
         "per_question": rows,
     }
@@ -178,15 +209,23 @@ def _run_rag_arm(records: list[dict[str, Any]]) -> dict[str, Any]:
                 "error": result.get("error") or "",
             }
         )
+    fact_stats = _mean_with_denominators(facts)
     return {
-        "arm": "rag_lexical",
+        "arm": "rag_lexical_synthesizing_placeholder",
+        "model_class": "SynthesizingModel",
+        "is_real_llm": False,
+        "is_modern_rag": False,
         "metrics": {
-            "fact_accuracy_mean": _mean(facts),
+            "fact_accuracy_mean": fact_stats["mean"],
+            "fact_accuracy_n_scored": fact_stats["n_scored"],
+            "fact_accuracy_n_unscorable": fact_stats["n_unscorable"],
             "abstain_recall": (
                 round(abstain_ok / abstain_total, 4) if abstain_total else None
             ),
+            "abstain_n": abstain_total,
             "answered": sum(1 for r in rows if not _is_abstain(r["answer"])),
             "questions": len(rows),
+            "questions_total": len(rows),
         },
         "per_question": rows,
     }
@@ -223,15 +262,23 @@ def _run_llm_only_arm(records: list[dict[str, Any]]) -> dict[str, Any]:
                 "predicted_abstain": predicted_abstain,
             }
         )
+    fact_stats = _mean_with_denominators(facts)
     return {
-        "arm": "llm_only_evidence_blind",
+        "arm": "evidence_blind_deterministic_placeholder",
+        "model_class": "EvidenceBlindModel",
+        "is_real_llm": False,
+        "is_modern_rag": False,
         "metrics": {
-            "fact_accuracy_mean": _mean(facts),
+            "fact_accuracy_mean": fact_stats["mean"],
+            "fact_accuracy_n_scored": fact_stats["n_scored"],
+            "fact_accuracy_n_unscorable": fact_stats["n_unscorable"],
             "abstain_recall": (
                 round(abstain_ok / abstain_total, 4) if abstain_total else None
             ),
+            "abstain_n": abstain_total,
             "answered": sum(1 for r in rows if not _is_abstain(r["answer"])),
             "questions": len(rows),
+            "questions_total": len(rows),
         },
         "per_question": rows,
     }
@@ -285,16 +332,18 @@ def decide_verdict(
     )
 
     if graph_ok and surface_ok and beats_rag and beats_llm:
-        decision = "VALIDATED"
+        decision = "VALIDATED_INTERNAL"
         summary = (
-            "NEXUS L1 meets graph/ER and surface thresholds and beats RAG and "
-            "LLM-only on fact accuracy for this freeze."
+            "NEXUS L1 meets graph/ER and surface thresholds and beats "
+            "deterministic placeholder RAG and evidence-blind arms on fact "
+            "accuracy for this internal freeze. This is not an external "
+            "LLM/RAG superiority claim."
         )
     elif graph_ok and surface_ok:
         decision = "CONDITIONAL"
         summary = (
             "NEXUS L1 meets saturation/surface thresholds but does not clearly "
-            "beat both baselines on fact accuracy."
+            "beat both placeholder baselines on fact accuracy."
         )
     else:
         decision = "REJECTED"
@@ -305,6 +354,9 @@ def decide_verdict(
 
     return {
         "decision": decision,
+        "claim_scope": "internal_repository_contract",
+        "baselines_are_real_llms": False,
+        "baselines_are_modern_rag": False,
         "summary": summary,
         "thresholds": {
             "entry_min": ENTRY_MIN,
@@ -316,6 +368,9 @@ def decide_verdict(
         "checks": {
             "graph_er_saturated": graph_ok,
             "surface_competence": surface_ok,
+            "beats_placeholder_rag_fact": beats_rag,
+            "beats_placeholder_evidence_blind_fact": beats_llm,
+            # Historical aliases retained for readers of older docs/tests.
             "beats_rag_fact": beats_rag,
             "beats_llm_only_fact": beats_llm,
             "answerplan_binding": answerplan_binding,
@@ -325,9 +380,8 @@ def decide_verdict(
             "Authorize bounded AnswerPlan overfit+2048."
             if answerplan_binding
             else (
-                "No AnswerPlan training. If entry < 0.95 from new canonical "
-                "nodes only, consider bounded ER3 refresh; otherwise keep "
-                "lexical/L1 hygiene and baseline monitoring."
+                "No AnswerPlan training. Run fair real-LLM/RAG baselines under "
+                "the sealed external protocol before any superiority claim."
             )
         ),
     }
@@ -353,10 +407,14 @@ def run_campaign(
     llm_only = _run_llm_only_arm(records)
 
     nexus_vs_rag = compare_paired(
-        *_paired_fact_lists(nexus, rag), "NEXUS", "RAG"
+        *_paired_fact_lists(nexus, rag),
+        "NEXUS",
+        "PLACEHOLDER_RAG_SYNTH",
     )
     nexus_vs_llm = compare_paired(
-        *_paired_fact_lists(nexus, llm_only), "NEXUS", "LLM_ONLY"
+        *_paired_fact_lists(nexus, llm_only),
+        "NEXUS",
+        "PLACEHOLDER_EVIDENCE_BLIND",
     )
 
     oracle_fact = None
@@ -378,14 +436,30 @@ def run_campaign(
         predicted_fact=predicted_fact,
     )
 
+    rel_dataset = dataset.as_posix()
+    try:
+        rel_dataset = dataset.resolve().relative_to(
+            _project_root.resolve()
+        ).as_posix()
+    except Exception:
+        # Keep portable relative form when possible; never require abs paths.
+        if "benchmarks/" in rel_dataset.replace("\\", "/"):
+            rel_dataset = "benchmarks/" + rel_dataset.replace("\\", "/").split(
+                "benchmarks/"
+            )[-1]
+
     artifact = {
         "schema_version": "nexus-architecture-validation-v1",
+        "legacy_schema": True,
+        "claim_scope": "internal_repository_contract",
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "source_sha": source_sha,
-        "dataset": str(dataset.as_posix()),
+        "source_commit": source_sha,
+        "dataset": rel_dataset,
+        "dataset_id": "oracle_v1",
         "dataset_sha256": hashlib.sha256(dataset.read_bytes()).hexdigest(),
         "questions_total": len(records),
-        "er3_dir": er3_dir,
+        "er3_dir": er3_dir.replace("\\", "/"),
         "arms": {
             "nexus": {
                 "arm": nexus["arm"],
@@ -393,8 +467,20 @@ def run_campaign(
                 "graph": nexus["graph"],
                 "metrics": nexus["metrics"],
             },
-            "rag": {"arm": rag["arm"], "metrics": rag["metrics"]},
-            "llm_only": {"arm": llm_only["arm"], "metrics": llm_only["metrics"]},
+            "rag": {
+                "arm": rag["arm"],
+                "model_class": rag.get("model_class"),
+                "is_real_llm": False,
+                "is_modern_rag": False,
+                "metrics": rag["metrics"],
+            },
+            "llm_only": {
+                "arm": llm_only["arm"],
+                "model_class": llm_only.get("model_class"),
+                "is_real_llm": False,
+                "is_modern_rag": False,
+                "metrics": llm_only["metrics"],
+            },
         },
         "paired_comparisons": {
             "nexus_vs_rag": nexus_vs_rag,

@@ -135,6 +135,9 @@ recording `full_training_launched: false`.
 
 NEXUS is a curated-domain QA system for the SAM research project, with limited dialogue capability. It is NOT a general conversationalist. The associative encoder / Entity Ranker V3 provides CPU-only entity ranking. The graph engine (NEXUS) provides typed-traversal evidence. Realization L1 is template-based (Stage 2). Realization L2 for extractive factual QA is Pointer/Copy v3; constrained comparison uses the accepted comparison-plan pilot. Dialogue state (Stage 3) handles anaphora and ellipsis. The library default Realizer backend remains `synth` for historical Stage 2 semantics; production QA should use `ProductionNEXUSConfig.grounded()`. The stack fits within 500 MB RSS, runs CPU-only, and has zero GPU requirement.
 
+**Canonical current-state document:** [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md).  
+Architecture-validation “wins” vs RAG/LLM on `oracle_v1` used **deterministic placeholders**, not real LLMs or modern RAG.
+
 ---
 
 *Generated from EXPERIMENT_SAM_NEXUS_STACK.md pre-registered gates.*

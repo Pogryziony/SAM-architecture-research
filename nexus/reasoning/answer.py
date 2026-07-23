@@ -114,6 +114,66 @@ def _attach_reasoning_audit(
     return result
 
 
+_FAIL_CLOSED_ABSTAIN = (
+    "Insufficient evidence to answer. Deterministic grounded realization "
+    "could not produce a supported answer and synth/LLM fallback is disabled."
+)
+
+
+def _synth_fallback_permitted(config: NEXUSConfig) -> bool:
+    """Return whether unconstrained synth/LLM cascade is allowed."""
+    return bool(getattr(config, "allow_synth_fallback", True))
+
+
+def _record_fallback_decision(
+    result: dict[str, Any],
+    *,
+    selected_realizer: str,
+    fallback_considered: bool,
+    fallback_permitted: bool,
+    fallback_reason: str,
+    terminal_outcome: str,
+) -> None:
+    """Attach fail-closed fallback audit fields to an answer result."""
+    result["selected_realizer"] = selected_realizer
+    result["fallback_considered"] = fallback_considered
+    result["fallback_permitted"] = fallback_permitted
+    result["fallback_reason"] = fallback_reason
+    result["fallback_terminal_outcome"] = terminal_outcome
+
+
+def _fail_closed_abstain_result(
+    result: dict[str, Any],
+    *,
+    selected_realizer: str,
+    fallback_reason: str,
+    timing: dict[str, Any],
+    verifier: Verifier,
+    evidence_pack: dict[str, Any],
+) -> dict[str, Any]:
+    """Return a structured abstention when synth/LLM fallback is forbidden."""
+    answer = _FAIL_CLOSED_ABSTAIN
+    result["answer"] = answer
+    result["raw_answer"] = answer
+    result["cascade_level"] = 0
+    result["realization"] = {
+        "strategy": "fail_closed_abstain",
+        "reason": fallback_reason,
+        "allow_synth_fallback": False,
+    }
+    result["verification"] = verifier.verify(answer, evidence_pack or {})
+    result["timing"] = timing
+    _record_fallback_decision(
+        result,
+        selected_realizer=selected_realizer,
+        fallback_considered=True,
+        fallback_permitted=False,
+        fallback_reason=fallback_reason,
+        terminal_outcome="ABSTAIN",
+    )
+    return result
+
+
 def _tier3_generate_answer(
     question: str,
     direct_pack: dict[str, Any],
@@ -127,6 +187,8 @@ def _tier3_generate_answer(
       - "synth" (default): SynthesizingModel — template-based, never refuses.
       - "llm_no_refusal": Standard LLM model (passed as ``model``).
     """
+    if not _synth_fallback_permitted(config):
+        return _FAIL_CLOSED_ABSTAIN
     if config.tier3_backend == "synth":
         # Build a prompt the synthesizer can parse.
         # Include metric term from question for metric-aware selection.
@@ -1212,6 +1274,24 @@ def answer_question(
             elif deterministic is not None:
                 answer_direct = deterministic["answer"]
                 realization = deterministic["realization"]
+            elif not _synth_fallback_permitted(config):
+                _fail_closed_abstain_result(
+                    result,
+                    selected_realizer=str(
+                        getattr(config, "realizer_backend", "") or "none"
+                    ),
+                    fallback_reason=(
+                        "zero_hop_deterministic_realization_failed;"
+                        "allow_synth_fallback=false"
+                    ),
+                    timing=timing,
+                    verifier=verifier,
+                    evidence_pack=direct_pack,
+                )
+                result["evidence_pack"] = direct_pack
+                return _attach_reasoning_audit(
+                    result, graph, audit_paths, config, max_paths
+                )
             else:
                 answer_direct = _tier3_generate_answer(
                     question,
@@ -1221,6 +1301,16 @@ def answer_question(
                     config,
                 )
                 realization = None
+                _record_fallback_decision(
+                    result,
+                    selected_realizer=str(
+                        getattr(config, "tier3_backend", "synth") or "synth"
+                    ),
+                    fallback_considered=True,
+                    fallback_permitted=True,
+                    fallback_reason="zero_hop_deterministic_realization_failed",
+                    terminal_outcome="ANSWERED_VIA_FALLBACK",
+                )
             result["answer"] = answer_direct
             result["raw_answer"] = answer_direct
             result["evidence_pack"] = direct_pack
@@ -1427,6 +1517,31 @@ def answer_question(
         result["cascade_level"] = 1
         result["verification"] = verifier.verify(deterministic["answer"], evidence_pack)
         result["timing"] = timing
+        _record_fallback_decision(
+            result,
+            selected_realizer="deterministic_render",
+            fallback_considered=False,
+            fallback_permitted=_synth_fallback_permitted(config),
+            fallback_reason="",
+            terminal_outcome="ANSWERED",
+        )
+        return _attach_reasoning_audit(result, graph, paths, config, max_paths)
+
+    # Fail closed: do not cascade to synth/LLM when the safe profile forbids it.
+    if not _synth_fallback_permitted(config):
+        timing["realize_time"] = round(time.perf_counter() - t0, 6)
+        _fail_closed_abstain_result(
+            result,
+            selected_realizer=str(getattr(config, "realizer_backend", "") or "none"),
+            fallback_reason=(
+                "path_bearing_deterministic_realization_failed;"
+                "allow_synth_fallback=false"
+            ),
+            timing=timing,
+            verifier=verifier,
+            evidence_pack=evidence_pack,
+        )
+        result["evidence_pack"] = evidence_pack
         return _attach_reasoning_audit(result, graph, paths, config, max_paths)
 
     # ── Step 4: Build prompt ──
@@ -1435,6 +1550,14 @@ def answer_question(
     t0 = time.perf_counter()
     prompt = build_prompt(question, evidence_json)
     timing["prompt_time"] = round(time.perf_counter() - t0, 6)
+    _record_fallback_decision(
+        result,
+        selected_realizer=str(getattr(config, "tier3_backend", "synth") or "model"),
+        fallback_considered=True,
+        fallback_permitted=True,
+        fallback_reason="path_bearing_deterministic_realization_failed",
+        terminal_outcome="ANSWERED_VIA_FALLBACK",
+    )
 
     # ── Step 5: Generate answer ──
     t0 = time.perf_counter()

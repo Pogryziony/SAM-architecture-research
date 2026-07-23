@@ -1,0 +1,277 @@
+{
+  "budgets": {
+    "latency_p50_gate": "PASS",
+    "latency_p50_ms_max": 500.0,
+    "peak_rss_gate": "PASS",
+    "peak_rss_mb_max": 500.0
+  },
+  "config_hash": "38fc7c94004b07c1",
+  "config_identity_schema": "nexus-config-identity-v2",
+  "created_utc": "2026-07-22T19:11:24.461697+00:00",
+  "dataset_id": "mini-tasks",
+  "domain_pack_version": "mini-v1",
+  "graph_edge_count": 2,
+  "graph_node_count": 3,
+  "hardware": {
+    "machine": "AMD64",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "processor": "AMD64 Family 26 Model 68 Stepping 0, AuthenticAMD",
+    "python": "3.12.10"
+  },
+  "methodology": {
+    "cold_definition": "first measured call in this process",
+    "entry_point": "NEXUSRunner._run_single via measure_grounded_e2e",
+    "note": "End-to-end wall time around runner._run_single; not inferred from separate component campaigns",
+    "questions": 3,
+    "repeats": 5,
+    "warmup": 1
+  },
+  "profile": "lexical",
+  "realizer_backend": "synth",
+  "samples": [
+    {
+      "cold": true,
+      "latency_ms": 12.376,
+      "peak_rss_mb": 25.66015625,
+      "question_id": "mini_q1",
+      "stages_ms": {
+        "cascade_level3_time": 1.239,
+        "cascade_retry_time": 0.548,
+        "evidence_time": 0.908,
+        "generate_time": 0.007,
+        "parse_time": 0.681,
+        "post_edit_time": 0.0,
+        "prompt_time": 0.606,
+        "traverse_time": 0.154,
+        "verify_time": 1.932
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.997,
+      "peak_rss_mb": 25.703125,
+      "question_id": "mini_q1",
+      "stages_ms": {
+        "cascade_level3_time": 0.108,
+        "cascade_retry_time": 0.438,
+        "evidence_time": 0.445,
+        "generate_time": 0.006,
+        "parse_time": 0.378,
+        "post_edit_time": 0.0,
+        "prompt_time": 0.079,
+        "traverse_time": 0.115,
+        "verify_time": 0.267
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 2.057,
+      "peak_rss_mb": 25.71875,
+      "question_id": "mini_q2",
+      "stages_ms": {
+        "cascade_level3_time": 0.084,
+        "cascade_retry_time": 0.437,
+        "evidence_time": 0.436,
+        "generate_time": 0.004,
+        "parse_time": 0.456,
+        "post_edit_time": 0.0,
+        "prompt_time": 0.203,
+        "traverse_time": 0.085,
+        "verify_time": 0.252
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 0.331,
+      "peak_rss_mb": 25.71875,
+      "question_id": "mini_q3",
+      "stages_ms": {
+        "parse_time": 0.299
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.833,
+      "peak_rss_mb": 25.734375,
+      "question_id": "mini_q1",
+      "stages_ms": {
+        "cascade_level3_time": 0.091,
+        "cascade_retry_time": 0.516,
+        "evidence_time": 0.384,
+        "generate_time": 0.006,
+        "parse_time": 0.305,
+        "post_edit_time": 0.0,
+        "prompt_time": 0.085,
+        "traverse_time": 0.085,
+        "verify_time": 0.249
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 2.045,
+      "peak_rss_mb": 25.7578125,
+      "question_id": "mini_q2",
+      "stages_ms": {
+        "cascade_level3_time": 0.106,
+        "cascade_retry_time": 0.504,
+        "evidence_time": 0.569,
+        "generate_time": 0.006,
+        "parse_time": 0.282,
+        "post_edit_time": 0.0,
+        "prompt_time": 0.098,
+        "traverse_time": 0.088,
+        "verify_time": 0.256
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 0.332,
+      "peak_rss_mb": 25.7578125,
+      "question_id": "mini_q3",
+      "stages_ms": {
+        "parse_time": 0.298
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.977,
+      "peak_rss_mb": 25.7734375,
+      "question_id": "mini_q1",
+      "stages_ms": {
+        "cascade_level3_time": 0.114,
+        "cascade_retry_time": 0.495,
+        "evidence_time": 0.482,
+        "generate_time": 0.005,
+        "parse_time": 0.311,
+        "post_edit_time": 0.0,
+        "prompt_time": 0.08,
+        "traverse_time": 0.093,
+        "verify_time": 0.274
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 2.059,
+      "peak_rss_mb": 25.77734375,
+      "question_id": "mini_q2",
+      "stages_ms": {
+        "cascade_level3_time": 0.1,
+        "cascade_retry_time": 0.607,
+        "evidence_time": 0.501,
+        "generate_time": 0.005,
+        "parse_time": 0.289,
+        "post_edit_time": 0.0,
+        "prompt_time": 0.087,
+        "traverse_time": 0.092,
+        "verify_time": 0.251
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 0.329,
+      "peak_rss_mb": 25.77734375,
+      "question_id": "mini_q3",
+      "stages_ms": {
+        "parse_time": 0.296
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.907,
+      "peak_rss_mb": 25.78125,
+      "question_id": "mini_q1",
+      "stages_ms": {
+        "cascade_level3_time": 0.09,
+        "cascade_retry_time": 0.519,
+        "evidence_time": 0.448,
+        "generate_time": 0.005,
+        "parse_time": 0.31,
+        "post_edit_time": 0.0,
+        "prompt_time": 0.083,
+        "traverse_time": 0.087,
+        "verify_time": 0.255
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.704,
+      "peak_rss_mb": 25.79296875,
+      "question_id": "mini_q2",
+      "stages_ms": {
+        "cascade_level3_time": 0.081,
+        "cascade_retry_time": 0.433,
+        "evidence_time": 0.392,
+        "generate_time": 0.004,
+        "parse_time": 0.292,
+        "post_edit_time": 0.0,
+        "prompt_time": 0.076,
+        "traverse_time": 0.088,
+        "verify_time": 0.24
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 0.32,
+      "peak_rss_mb": 25.79296875,
+      "question_id": "mini_q3",
+      "stages_ms": {
+        "parse_time": 0.289
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.879,
+      "peak_rss_mb": 25.79296875,
+      "question_id": "mini_q1",
+      "stages_ms": {
+        "cascade_level3_time": 0.089,
+        "cascade_retry_time": 0.447,
+        "evidence_time": 0.475,
+        "generate_time": 0.005,
+        "parse_time": 0.303,
+        "post_edit_time": 0.0,
+        "prompt_time": 0.077,
+        "traverse_time": 0.081,
+        "verify_time": 0.285
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 1.731,
+      "peak_rss_mb": 25.79296875,
+      "question_id": "mini_q2",
+      "stages_ms": {
+        "cascade_level3_time": 0.084,
+        "cascade_retry_time": 0.433,
+        "evidence_time": 0.411,
+        "generate_time": 0.004,
+        "parse_time": 0.289,
+        "post_edit_time": 0.0,
+        "prompt_time": 0.079,
+        "traverse_time": 0.088,
+        "verify_time": 0.245
+      }
+    },
+    {
+      "cold": false,
+      "latency_ms": 0.325,
+      "peak_rss_mb": 25.79296875,
+      "question_id": "mini_q3",
+      "stages_ms": {
+        "parse_time": 0.295
+      }
+    }
+  ],
+  "schema_version": "nexus-performance-v1",
+  "source_commit": "518103188e797d1aded310ff56134045264f6968",
+  "status": "VALID",
+  "summary": {
+    "cold_latency_ms": 12.376,
+    "peak_rss_mb": 25.793,
+    "throughput_qps": 720.2535,
+    "warm_n": 15,
+    "warm_p50_ms": 1.833,
+    "warm_p95_ms": 2.058,
+    "warm_p99_ms": 2.059
+  }
+}

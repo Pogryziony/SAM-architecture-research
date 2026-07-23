@@ -1,0 +1,402 @@
+{
+  "aggregates": {
+    "abstention": {
+      "f1": {
+        "applicable": false,
+        "denominator": 1.0,
+        "numerator": null,
+        "reason": "harmonic_mean",
+        "value": null
+      },
+      "fn": 0,
+      "fp": 0,
+      "precision": {
+        "applicable": false,
+        "denominator": 0.0,
+        "numerator": 0.0,
+        "reason": "tp/(tp+fp)",
+        "value": null
+      },
+      "recall": {
+        "applicable": false,
+        "denominator": 0.0,
+        "numerator": 0.0,
+        "reason": "tp/(tp+fn)",
+        "value": null
+      },
+      "tn": 1,
+      "tp": 0
+    },
+    "answer_coverage": {
+      "applicable": true,
+      "denominator": 1.0,
+      "numerator": 0.0,
+      "reason": "answered_over_all_questions",
+      "value": 0.0
+    },
+    "by_domain": {
+      "smoke": {
+        "grounded_correct": {
+          "applicable": false,
+          "denominator": 0.0,
+          "name": "grounded_correct",
+          "numerator": null,
+          "reason": "no_applicable_rows",
+          "value": null
+        },
+        "questions_total": 1,
+        "terminal_outcomes": {
+          "not_run": 1
+        }
+      }
+    },
+    "by_question_type": {
+      "smoke": {
+        "grounded_correct": {
+          "applicable": false,
+          "denominator": 0.0,
+          "name": "grounded_correct",
+          "numerator": null,
+          "reason": "no_applicable_rows",
+          "value": null
+        },
+        "questions_total": 1,
+        "terminal_outcomes": {
+          "not_run": 1
+        }
+      }
+    },
+    "failure_categories": {
+      "not_run": 1
+    },
+    "grounded_correct": {
+      "applicable": false,
+      "denominator": 0.0,
+      "name": "grounded_correct",
+      "numerator": null,
+      "reason": "no_applicable_rows",
+      "value": null
+    },
+    "latency_ms": {
+      "mean": null,
+      "n_scored": 0,
+      "n_total": 1,
+      "p50": null,
+      "p95": null,
+      "p99": null
+    },
+    "metrics": {
+      "abstention_precision": {
+        "applicable": false,
+        "denominator": 0.0,
+        "name": "abstention_precision",
+        "numerator": null,
+        "reason": "no_applicable_rows",
+        "value": null
+      },
+      "abstention_recall": {
+        "applicable": false,
+        "denominator": 0.0,
+        "name": "abstention_recall",
+        "numerator": null,
+        "reason": "no_applicable_rows",
+        "value": null
+      },
+      "answer_correctness": {
+        "applicable": false,
+        "denominator": 0.0,
+        "name": "answer_correctness",
+        "numerator": null,
+        "reason": "no_applicable_rows",
+        "value": null
+      },
+      "citation_completeness": {
+        "applicable": false,
+        "denominator": 0.0,
+        "name": "citation_completeness",
+        "numerator": null,
+        "reason": "no_applicable_rows",
+        "value": null
+      },
+      "citation_correctness": {
+        "applicable": false,
+        "denominator": 0.0,
+        "name": "citation_correctness",
+        "numerator": null,
+        "reason": "no_applicable_rows",
+        "value": null
+      },
+      "entry_recall": {
+        "applicable": false,
+        "denominator": 0.0,
+        "name": "entry_recall",
+        "numerator": null,
+        "reason": "no_applicable_rows",
+        "value": null
+      },
+      "evidence_precision": {
+        "applicable": false,
+        "denominator": 0.0,
+        "name": "evidence_precision",
+        "numerator": null,
+        "reason": "no_applicable_rows",
+        "value": null
+      },
+      "fact_fuzzy_accuracy": {
+        "applicable": false,
+        "denominator": 0.0,
+        "name": "fact_fuzzy_accuracy",
+        "numerator": null,
+        "reason": "no_applicable_rows",
+        "value": null
+      },
+      "grounded_correct": {
+        "applicable": false,
+        "denominator": 0.0,
+        "name": "grounded_correct",
+        "numerator": null,
+        "reason": "no_applicable_rows",
+        "value": null
+      },
+      "path_validity": {
+        "applicable": false,
+        "denominator": 0.0,
+        "name": "path_validity",
+        "numerator": null,
+        "reason": "no_applicable_rows",
+        "value": null
+      },
+      "proof_validity": {
+        "applicable": false,
+        "denominator": 0.0,
+        "name": "proof_validity",
+        "numerator": null,
+        "reason": "no_applicable_rows",
+        "value": null
+      },
+      "retrieval_recall": {
+        "applicable": false,
+        "denominator": 0.0,
+        "name": "retrieval_recall",
+        "numerator": null,
+        "reason": "no_applicable_rows",
+        "value": null
+      },
+      "unsupported_material_claim": {
+        "applicable": false,
+        "denominator": 0.0,
+        "name": "unsupported_material_claim",
+        "numerator": null,
+        "reason": "no_applicable_rows",
+        "value": null
+      }
+    },
+    "peak_rss_mb": {
+      "max": null,
+      "mean": null,
+      "n_scored": 0,
+      "n_total": 1
+    },
+    "questions_total": {
+      "applicable": true,
+      "denominator": 1.0,
+      "numerator": 1.0,
+      "reason": "all_input_questions",
+      "value": 1.0
+    },
+    "terminal_outcome_counts": {
+      "not_run": 1
+    }
+  },
+  "arm_metadata": {
+    "description": "Hybrid RAG with competitive reranking.",
+    "family": "rag",
+    "is_placeholder": false,
+    "modern_rag": true,
+    "requires_env": [
+      "NEXUS_LLM_API_KEY",
+      "NEXUS_LLM_MODEL"
+    ],
+    "requires_packages": [
+      "rank_bm25",
+      "sentence_transformers"
+    ]
+  },
+  "comparison_mode": "system_level",
+  "config_hash": "baseline-adapter-v1",
+  "config_identity_schema": "nexus-config-identity-v2",
+  "created_utc": "2026-07-22T19:49:25.425697+00:00",
+  "dataset_id": "smoke_inline_v1",
+  "dataset_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "per_question": [
+    {
+      "abstention": false,
+      "checkpoint_id": "",
+      "citations": [],
+      "comparison_mode": "system_level",
+      "config_hash": "baseline-adapter-v1",
+      "config_identity_schema": "nexus-config-identity-v2",
+      "dataset_id": "smoke_inline_v1",
+      "dataset_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "diagnostic_message": "",
+      "domain": "smoke",
+      "domain_pack_id": "",
+      "domain_pack_version": "",
+      "entry_nodes": [],
+      "exception_class": "",
+      "executed_at_utc": "2026-07-22T19:49:25.425697+00:00",
+      "execution_environment": {
+        "api_version": "",
+        "base_url": "",
+        "command": "python benchmarks/run_fair_baselines.py --arm hybrid_rag_rerank --comparison-mode system_level",
+        "comparison_mode": "system_level",
+        "corpus_id": "",
+        "decoding": {
+          "max_tokens": 512,
+          "retry_max": 0,
+          "seed": null,
+          "temperature": 0.0,
+          "timeout_s": 60.0,
+          "top_p": 1.0
+        },
+        "fixture": "",
+        "is_placeholder": false,
+        "modern_rag": true,
+        "prerequisites": [
+          "env:NEXUS_LLM_API_KEY",
+          "env:NEXUS_LLM_MODEL",
+          "package:rank_bm25"
+        ],
+        "provider": "",
+        "status": "NOT_RUN",
+        "system_prompt": ""
+      },
+      "failure_category": "not_run",
+      "failure_reason": "missing_prerequisites",
+      "final_answer": "",
+      "graph_paths": [],
+      "graph_snapshot_id": "",
+      "latency_ms": null,
+      "metrics": {
+        "abstention_precision": {
+          "applicable": false,
+          "denominator": null,
+          "numerator": null,
+          "reason": "not_computed",
+          "value": null
+        },
+        "abstention_recall": {
+          "applicable": false,
+          "denominator": null,
+          "numerator": null,
+          "reason": "not_computed",
+          "value": null
+        },
+        "answer_correctness": {
+          "applicable": false,
+          "denominator": null,
+          "numerator": null,
+          "reason": "not_computed",
+          "value": null
+        },
+        "citation_completeness": {
+          "applicable": false,
+          "denominator": null,
+          "numerator": null,
+          "reason": "not_computed",
+          "value": null
+        },
+        "citation_correctness": {
+          "applicable": false,
+          "denominator": null,
+          "numerator": null,
+          "reason": "not_computed",
+          "value": null
+        },
+        "entry_recall": {
+          "applicable": false,
+          "denominator": null,
+          "numerator": null,
+          "reason": "not_computed",
+          "value": null
+        },
+        "evidence_precision": {
+          "applicable": false,
+          "denominator": null,
+          "numerator": null,
+          "reason": "not_computed",
+          "value": null
+        },
+        "fact_fuzzy_accuracy": {
+          "applicable": false,
+          "denominator": null,
+          "numerator": null,
+          "reason": "not_computed",
+          "value": null
+        },
+        "grounded_correct": {
+          "applicable": false,
+          "denominator": null,
+          "numerator": null,
+          "reason": "not_computed",
+          "value": null
+        },
+        "path_validity": {
+          "applicable": false,
+          "denominator": null,
+          "numerator": null,
+          "reason": "not_computed",
+          "value": null
+        },
+        "proof_validity": {
+          "applicable": false,
+          "denominator": null,
+          "numerator": null,
+          "reason": "not_computed",
+          "value": null
+        },
+        "retrieval_recall": {
+          "applicable": false,
+          "denominator": null,
+          "numerator": null,
+          "reason": "not_computed",
+          "value": null
+        },
+        "unsupported_material_claim": {
+          "applicable": false,
+          "denominator": null,
+          "numerator": null,
+          "reason": "not_computed",
+          "value": null
+        }
+      },
+      "model_id": "hybrid_rag_rerank",
+      "peak_rss_mb": null,
+      "profile": "hybrid_rag_rerank",
+      "provenance": {},
+      "question": "Smoke question for baseline harness.",
+      "question_id": "smoke_q0",
+      "question_type": "smoke",
+      "reasoning_audit": {},
+      "resolved_entities": [],
+      "resolver_identity": {},
+      "retrieved_candidates": [],
+      "retrieved_documents": [],
+      "run_id": "",
+      "source_commit": "518103188e797d1aded310ff56134045264f6968",
+      "structured_evidence": {},
+      "system_id": "hybrid_rag_rerank",
+      "system_version": "",
+      "terminal_outcome": "not_run",
+      "token_cost": {},
+      "traversal_stats": {},
+      "verifier": {}
+    }
+  ],
+  "profile": "hybrid_rag_rerank",
+  "questions_total": 1,
+  "schema_version": "nexus-eval-result-v1",
+  "source_commit": "518103188e797d1aded310ff56134045264f6968",
+  "status": "NOT_RUN",
+  "system_id": "hybrid_rag_rerank"
+}

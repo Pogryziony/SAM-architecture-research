@@ -23,7 +23,9 @@ def test_decide_verdict_validated_when_thresholds_and_baselines_hold():
     verdict = decide_verdict(
         nexus, rag, llm, oracle_fact=0.73, predicted_fact=0.72
     )
-    assert verdict["decision"] == "VALIDATED"
+    assert verdict["decision"] == "VALIDATED_INTERNAL"
+    assert verdict["claim_scope"] == "internal_repository_contract"
+    assert verdict["baselines_are_real_llms"] is False
     assert verdict["checks"]["answerplan_binding"] is False
 
 

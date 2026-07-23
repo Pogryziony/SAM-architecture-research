@@ -2,6 +2,10 @@
 
 **Date:** 2026-07-08 | **Architecture pivot:** SAM → NEXUS (Non-Parametric Execution and Understanding System)
 
+> **Historical document.** For current claims, artifacts, and acceptance gates
+> see [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md). Numbers and roadmap
+> items below may be superseded.
+
 ---
 
 ## Part 0: The Pivot — From Associative Memory to Graph-First Reasoning

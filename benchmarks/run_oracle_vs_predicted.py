@@ -188,6 +188,12 @@ def _max_identical_entry_pack(rows: Sequence[dict[str, Any]]) -> int:
 
 
 def summarize_rows(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
+    """Aggregate per-question metrics with explicit denominators.
+
+    Means that drop unscorable rows (``None``) always publish ``*_n_scored``
+    alongside ``questions_total`` so a reduced scorable subset cannot hide.
+    """
+    n_total = len(rows)
     fact_values = [float(r["fact_accuracy"]) for r in rows if r["fact_accuracy"] is not None]
     token_values = [float(r["token_f1"]) for r in rows]
     path_values = [float(r["gold_path_recall"]) for r in rows if r["gold_path_recall"] is not None]
@@ -202,22 +208,37 @@ def summarize_rows(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
     recall = tp / (tp + fn) if tp + fn else 0.0
     abstention_f1 = 0.0 if precision + recall == 0 else 2 * precision * recall / (precision + recall)
     return {
+        "questions_total": n_total,
         "fact_accuracy_mean": round(sum(fact_values) / len(fact_values), 4) if fact_values else None,
+        "fact_accuracy_n_scored": len(fact_values),
+        "fact_accuracy_n_unscorable": n_total - len(fact_values),
         "token_f1_mean": round(sum(token_values) / len(token_values), 4) if token_values else 0.0,
+        "token_f1_n_scored": len(token_values),
         "gold_path_recall_mean": round(sum(path_values) / len(path_values), 4) if path_values else None,
+        "gold_path_recall_n_scored": len(path_values),
+        "gold_path_recall_n_unscorable": n_total - len(path_values),
         "gold_entity_coverage_mean": round(sum(entity_values) / len(entity_values), 4) if entity_values else 0.0,
+        "gold_entity_coverage_n_scored": len(entity_values),
         "entry_recall_mean": round(sum(entry_values) / len(entry_values), 4) if entry_values else 0.0,
+        "entry_recall_n_scored": len(entry_values),
         "pool_recall_mean": round(sum(pool_values) / len(pool_values), 4) if pool_values else 0.0,
+        "pool_recall_n_scored": len(pool_values),
         "max_identical_entry_pack": _max_identical_entry_pack(rows),
         "proof_valid_rate": round(sum(1 for r in rows if r["proof_valid"]) / len(rows), 4) if rows else 0.0,
+        "proof_valid_n_scored": n_total,
         "provenance_coverage_mean": round(
             sum(float(r["provenance_coverage"]) for r in rows) / len(rows), 4
         ) if rows else 0.0,
+        "provenance_coverage_n_scored": n_total,
         "abstention_precision": round(precision, 4),
         "abstention_recall": round(recall, 4),
         "abstention_f1": round(abstention_f1, 4),
+        "abstention_tp": tp,
+        "abstention_fp": fp,
+        "abstention_fn": fn,
         "latency_p50_ms": round(_percentile(latencies, 0.50), 3),
         "latency_p95_ms": round(_percentile(latencies, 0.95), 3),
+        "latency_n_scored": len(latencies),
     }
 
 

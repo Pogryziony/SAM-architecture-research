@@ -1,0 +1,48 @@
+{
+  "analysis_level": "exploratory_auto_scorable_subset",
+  "bootstrap": {
+    "alpha": 0.05,
+    "ci_high": 0.0,
+    "ci_low": -0.058333,
+    "mean_diff": -0.025,
+    "n": 120,
+    "n_bootstrap": 2000,
+    "seed": 0
+  },
+  "dataset_id": "oracle_v1",
+  "dataset_sha256": "fb86a9671fb7bfd4f1a4e6f0fd6a5433a3c6ee4aeb12224ee7463437041b4a5c",
+  "effect_size": {
+    "cohens_dz": -0.15946,
+    "mean_diff": -0.025,
+    "n": 120
+  },
+  "error_timeout_policy": "FAILED/TIMED_OUT/INVALID_INPUT count as incorrect (0) when the primary metric slot is absent; NOT_RUN forbids comparison",
+  "excluded_question_ids": [],
+  "full_primary_superiority_eligible": false,
+  "interpretation": "Exploratory only on automatically scorable subset. NO FULL SUPERIORITY VERDICT — human adjudication incomplete.",
+  "left_system": "bm25_rag_qwen_3_6_internal",
+  "mcnemar": {
+    "b": 0,
+    "c": 3,
+    "n_discordant": 3,
+    "p_value": 0.25
+  },
+  "metric_name": "grounded_correct",
+  "multiple_comparison": {
+    "adjusted_p_value": 0.25,
+    "method": "holm",
+    "n_tests": 1
+  },
+  "paired_n": 120,
+  "questions_total": 120,
+  "resource_pareto": {
+    "left_latency_p50_ms": 1614.855,
+    "left_peak_rss_mb_max": null,
+    "note": "Pareto points are descriptive; dominance claims require both quality CI and resource deltas under the same comparison mode",
+    "right_latency_p50_ms": 4497.853,
+    "right_peak_rss_mb_max": null
+  },
+  "right_system": "hybrid_rerank_rag_qwen_3_6_internal",
+  "schema_version": "nexus-paired-comparison-v1",
+  "superiority_verdict": "INCONCLUSIVE"
+}

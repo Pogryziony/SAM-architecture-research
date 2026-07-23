@@ -1,0 +1,3341 @@
+{
+  "agreement": {
+    "annotators": 0,
+    "cohen_kappa": null,
+    "reason": "no human annotators available in this phase",
+    "status": "NOT_RUN"
+  },
+  "completed_count": 120,
+  "created_utc": "2026-07-22T19:48:40.859195+00:00",
+  "pending_count": 71,
+  "primary_metric_denominator": 191,
+  "questions_total": 191,
+  "reason_not_eligible": "PENDING_ADJUDICATION remains for human-dependent questions; do not issue superiority verdicts",
+  "rows": [
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q377",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q377",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q378",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q378",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q379",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q379",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q380",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q380",
+        "reason": "short gold allows key-fact proxy",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q381",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q381",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q382",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q382",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q383",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q383",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q384",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q384",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q385",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q385",
+        "reason": "short gold allows key-fact proxy",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q386",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q386",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q387",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q387",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q389",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q389",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q390",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q390",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q391",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q391",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q392",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q392",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q393",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q393",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q394",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q394",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q395",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q395",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q396",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q396",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q397",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q397",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q398",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q398",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q399",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q399",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q400",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q400",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q401",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q401",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q402",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q402",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q404",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q404",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q405",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q405",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q406",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q406",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q407",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q407",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q408",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q408",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q409",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q409",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q410",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q410",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q411",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q411",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q412",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q412",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q413",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q413",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q414",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q414",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q415",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q415",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q416",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q416",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q417",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q417",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q418",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q418",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q419",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q419",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q420",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q420",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q421",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q421",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q422",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q422",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q423",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q423",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q424",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q424",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q425",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q425",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q426",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q426",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q427",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q427",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q428",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q428",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q429",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q429",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q430",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q430",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q431",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q431",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q432",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q432",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q434",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q434",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q436",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q436",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q438",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q438",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q439",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q439",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q440",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q440",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q441",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q441",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q442",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q442",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q443",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q443",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q444",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q444",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q445",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q445",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q446",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q446",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q447",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q447",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q448",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q448",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q449",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q449",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q450",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q450",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q451",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q451",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q452",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q452",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q453",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q453",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q454",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q454",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q455",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q455",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q456",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q456",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q457",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q457",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q458",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q458",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q459",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q459",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q460",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q460",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q461",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q461",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q462",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q462",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q463",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q463",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q464",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q464",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q465",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q465",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q466",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q466",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q467",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q467",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q468",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q468",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q469",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q469",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q470",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q470",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q471",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q471",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q472",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q472",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q473",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q473",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q474",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q474",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q475",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q475",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q476",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q476",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q477",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q477",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q478",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q478",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q479",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q479",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q480",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q480",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q481",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q481",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q482",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q482",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q483",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q483",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q484",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q484",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q485",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q485",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q486",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q486",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q487",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q487",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q488",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q488",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q489",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q489",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q490",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q490",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q491",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q491",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q492",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q492",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q493",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q493",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q494",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q494",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q495",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q495",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q496",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q496",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q497",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q497",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q498",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q498",
+        "reason": "narrative type=comparative needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q499",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q499",
+        "reason": "narrative type=multi-hop needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q500",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q500",
+        "reason": "narrative type=multi-hop needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q501",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q501",
+        "reason": "narrative type=multi-hop needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q502",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q502",
+        "reason": "narrative type=multi-hop needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q503",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q503",
+        "reason": "narrative type=multi-hop needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q504",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q504",
+        "reason": "narrative type=multi-hop needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q505",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q505",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q506",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q506",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q507",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q507",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q508",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q508",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q509",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q509",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q510",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q510",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q511",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q511",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q512",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q512",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q513",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q513",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q514",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q514",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q515",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q515",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q516",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q516",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q517",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q517",
+        "reason": "narrative type=diagnostic needs human adjudication",
+        "route": "human_blinded"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q518",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q518",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q519",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q519",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q520",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q520",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q521",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q521",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q522",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q522",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q523",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q523",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q524",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q524",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q525",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q525",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q526",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q526",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q527",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q527",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q528",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q528",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q529",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q529",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q530",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q530",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incorrect_abstention",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "answer_q531",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "answer_q531",
+        "reason": "structured-friendly type=factual",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "family_contradict_001",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "family_contradict_001",
+        "reason": "short gold allows key-fact proxy",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "family_direct_001",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "family_direct_001",
+        "reason": "structured-friendly type=direct_lookup",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "abstain_required",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "family_noanswer_001",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "family_noanswer_001",
+        "reason": "gold marks abstention",
+        "route": "should_abstain"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "abstain_required",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "family_temporal_001",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "family_temporal_001",
+        "reason": "gold marks abstention",
+        "route": "should_abstain"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "abstain_required",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "family_temporal_002",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "family_temporal_002",
+        "reason": "gold marks abstention",
+        "route": "should_abstain"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "abstain_required",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "family_temporal_003",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "family_temporal_003",
+        "reason": "gold marks abstention",
+        "route": "should_abstain"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": null,
+      "llm_judge_diagnostic_only": null,
+      "question_id": "family_temporal_004",
+      "route": {
+        "automated": false,
+        "primary_metric": "grounded_correct",
+        "question_id": "family_temporal_004",
+        "reason": "temporal narrative not safely auto-scored alone",
+        "route": "human_temporal"
+      },
+      "status": "PENDING_ADJUDICATION"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "family_threehop_001",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "family_threehop_001",
+        "reason": "short gold allows key-fact proxy",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "family_twohop_001",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "family_twohop_001",
+        "reason": "short gold allows key-fact proxy",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_000_58043a8593",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_000_58043a8593",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_001_9610599dc5",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_001_9610599dc5",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_002_4b971c36ed",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_002_4b971c36ed",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_003_5f2c3b4088",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_003_5f2c3b4088",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_004_e6940b666e",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_004_e6940b666e",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_005_8fe5c5f7e1",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_005_8fe5c5f7e1",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_006_f814cf16d8",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_006_f814cf16d8",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_007_cf8960e413",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_007_cf8960e413",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_008_d1895b9f71",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_008_d1895b9f71",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_009_f687703268",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_009_f687703268",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_010_f554e506e0",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_010_f554e506e0",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_011_d65f5987ef",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_011_d65f5987ef",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_012_d301546885",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_012_d301546885",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_013_97541c849c",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_013_97541c849c",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_014_839217902d",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_014_839217902d",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_015_0a29e7c75a",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_015_0a29e7c75a",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_016_0b6f8d57f6",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_016_0b6f8d57f6",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_017_c2b6b6e571",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_017_c2b6b6e571",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_018_5569098780",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_018_5569098780",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_019_1d07d350f7",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_019_1d07d350f7",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_020_9546396970",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_020_9546396970",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_021_32f3d59db7",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_021_32f3d59db7",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_022_0f41dfd3c7",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_022_0f41dfd3c7",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_023_8e804c96e8",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_023_8e804c96e8",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_024_c5ac39dc32",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_024_c5ac39dc32",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_025_a46b21376e",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_025_a46b21376e",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_026_281e334890",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_026_281e334890",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 0.0,
+        "reason": "incomplete_adjudication_fail_closed",
+        "value": 0.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_027_ae8fa0a008",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_027_ae8fa0a008",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "abstain_required",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_028_5957253a81",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_028_5957253a81",
+        "reason": "gold marks abstention",
+        "route": "should_abstain"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "abstain_required",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_029_f9769cc640",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_029_f9769cc640",
+        "reason": "gold marks abstention",
+        "route": "should_abstain"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "abstain_required",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_030_5715f8d2cf",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_030_5715f8d2cf",
+        "reason": "gold marks abstention",
+        "route": "should_abstain"
+      },
+      "status": "SCORED_AUTOMATED"
+    },
+    {
+      "grounded_correct": {
+        "applicable": true,
+        "denominator": 1.0,
+        "name": "grounded_correct",
+        "numerator": 1.0,
+        "reason": "proxy_answer_correct_only",
+        "value": 1.0
+      },
+      "llm_judge_diagnostic_only": null,
+      "question_id": "relation_031_64aefbf014",
+      "route": {
+        "automated": true,
+        "primary_metric": "grounded_correct",
+        "question_id": "relation_031_64aefbf014",
+        "reason": "structured-friendly type=relation",
+        "route": "key_fact_fuzzy"
+      },
+      "status": "SCORED_AUTOMATED"
+    }
+  ],
+  "schema_version": "nexus-adjudication-scores-v1",
+  "superiority_eligible": false
+}

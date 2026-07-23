@@ -85,12 +85,73 @@ class InMemoryGraphStore:
 
     # ── Node operations ──
 
+    def _purge_node_indexes(self, node_id: str, previous: Node | None) -> None:
+        """Remove stale index entries for a node before re-indexing an update."""
+        if previous is None:
+            return
+
+        # Type index: remove from prior type when the type changes or on rewrite.
+        old_type_ids = self._type_index.get(previous.type, [])
+        if node_id in old_type_ids:
+            self._type_index[previous.type] = [
+                nid for nid in old_type_ids if nid != node_id
+            ]
+            if not self._type_index[previous.type]:
+                del self._type_index[previous.type]
+
+        # Alias index: drop aliases that pointed at this node.
+        stale_aliases = [
+            key for key, nid in self._alias_index.items() if nid == node_id
+        ]
+        for key in stale_aliases:
+            del self._alias_index[key]
+
+        # Property index: remove this node from all token postings.
+        for token, nids in list(self._property_index.items()):
+            if node_id in nids:
+                self._property_index[token] = [
+                    nid for nid in nids if nid != node_id
+                ]
+                if not self._property_index[token]:
+                    del self._property_index[token]
+
+        self._property_text.pop(node_id, None)
+
+        # Trigram index: remove prior (norm, id) tuples for this node.
+        stale_trigrams = []
+        for tg, entries in self._trigram_index.items():
+            kept = {(norm, nid) for norm, nid in entries if nid != node_id}
+            if len(kept) != len(entries):
+                stale_trigrams.append((tg, kept))
+        for tg, kept in stale_trigrams:
+            if kept:
+                self._trigram_index[tg] = kept
+            else:
+                del self._trigram_index[tg]
+        self._node_trigrams.pop(node_id, None)
+
+        # Word index: rebuild membership lazily by removing the id; empty sets drop.
+        for word, members in list(self._word_index.items()):
+            if node_id in members:
+                members.discard(node_id)
+                if not members:
+                    del self._word_index[word]
+
     def add_node(self, node: Node) -> None:
-        """Add or update a node. Updates do not duplicate type-index entries."""
-        is_new = node.id not in self._nodes
+        """Add or update a node.
+
+        Updates rebuild indexes so type changes, removed aliases, and removed
+        properties cannot leave stale lookup entries.
+        """
+        previous = self._nodes.get(node.id)
+        is_new = previous is None
+        if not is_new:
+            self._purge_node_indexes(node.id, previous)
+
         self._nodes[node.id] = node
-        if is_new:
-            self._type_index[node.type].append(node.id)
+        type_ids = self._type_index[node.type]
+        if node.id not in type_ids:
+            type_ids.append(node.id)
         self._name_index[self._normalize(node.id)] = node.id
 
         # Build node_id → normalized_name reverse mapping
@@ -130,6 +191,8 @@ class InMemoryGraphStore:
                 text_parts.append(val.lower())
         if text_parts:
             self._property_text[node.id] = " ".join(text_parts)
+        else:
+            self._property_text.pop(node.id, None)
 
         # Invalidate cached name-index and alias-index key lists
         self._name_index_keys = []
@@ -150,6 +213,8 @@ class InMemoryGraphStore:
                 for tg in alias_trigrams:
                     self._trigram_index[tg].add((norm_alias, node.id))
 
+        # Rebuild the combined word set after purge+reindex.
+        self._all_indexed_words = set(self._word_index.keys())
     def get_node(self, node_id: str) -> Optional[Node]:
         return self._nodes.get(node_id)
 
@@ -165,19 +230,32 @@ class InMemoryGraphStore:
 
     # ── Edge operations ──
 
-    def add_edge(self, edge: Edge) -> None:
-        """Add a directed edge. Both source and target nodes must exist.
-        Duplicate edges (same type, source, target) are silently ignored."""
+    def add_edge(self, edge: Edge) -> Edge:
+        """Add or update a directed edge.
+
+        Both source and target nodes must exist. When an edge with the same
+        ``(type, source, target)`` already exists, confidence, evidence, and
+        bi-temporal fields are updated in place rather than discarded.
+        Returns the stored edge instance.
+        """
         if edge.source not in self._nodes:
             raise KeyError(f"Source node '{edge.source}' not found")
         if edge.target not in self._nodes:
             raise KeyError(f"Target node '{edge.target}' not found")
-        # Dedup: check if identical edge already exists
         for existing in self._edges_out.get(edge.source, []):
             if existing.type == edge.type and existing.target == edge.target:
-                return  # Duplicate — skip
+                existing.confidence = edge.confidence
+                existing.evidence = edge.evidence
+                existing.valid_from = edge.valid_from
+                existing.valid_to = edge.valid_to
+                existing.observed_at = edge.observed_at
+                existing.retracted_at = edge.retracted_at
+                if edge.created_at:
+                    existing.created_at = edge.created_at
+                return existing
         self._edges_out[edge.source].append(edge)
         self._edges_in[edge.target].append(edge)
+        return edge
 
     def get_outgoing(self, node_id: str) -> list[Edge]:
         return self._edges_out.get(node_id, [])

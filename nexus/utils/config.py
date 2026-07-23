@@ -147,6 +147,12 @@ class NEXUSConfig:
     #       insufficiency instruction (for A/B testing later).
     tier3_backend: str = "synth"
 
+    # When False, grounded/L1/pointer/comparison/deterministic profiles must
+    # abstain instead of cascading to SynthesizingModel / get_available_model().
+    # Library default True preserves historical Stage-2 synth semantics.
+    # Production factories set this False.
+    allow_synth_fallback: bool = True
+
     # ── Stage 1 candidate gates (Stage 0 baseline: both False) ──
     # enable_embedding_er: When True, builds an all-MiniLM-L6-v2 embedding index
     #   for semantic entity resolution (Stage 1 experiment).

@@ -89,22 +89,32 @@ class NEXUSRunner:
     """Canonical NEXUS v1 pipeline runner.
 
     Usage:
-        config = ProductionNEXUSConfig.lexical_only()
+        config = ProductionNEXUSConfig.grounded()  # or another named factory
         runner = NEXUSRunner(graph, config)
         result = runner.run(questions)
+
+    ``config`` is required. Silent fallback to ``lexical_only()``/``synth`` is
+    forbidden — callers must select a named ``ProductionNEXUSConfig`` factory.
     """
 
     def __init__(
         self,
         graph: InMemoryGraphStore,
-        config: ProductionNEXUSConfig | None = None,
+        config: ProductionNEXUSConfig,
         model: ModelInterface | None = None,
         entity_resolver: EntityResolver | None = None,
         normalizer: Callable[[str], str] | None = None,
         dialogue_state: Any = None,
     ):
+        if not isinstance(config, ProductionNEXUSConfig):
+            raise TypeError(
+                "NEXUSRunner requires an explicit ProductionNEXUSConfig "
+                "(e.g. ProductionNEXUSConfig.grounded() or "
+                "ProductionNEXUSConfig.lexical_only()). Silent synth/lexical "
+                "defaults are not allowed."
+            )
         self.graph = graph
-        self.config = config or ProductionNEXUSConfig.lexical_only()
+        self.config = config
         self.model = model
         self._verifier: Verifier | None = None
         self._entity_resolver = entity_resolver
@@ -145,7 +155,13 @@ class NEXUSRunner:
             )
 
         if self.model is None:
-            self.model = get_available_model()
+            if bool(getattr(self.config, "allow_synth_fallback", True)):
+                self.model = get_available_model()
+            else:
+                from nexus.reasoning.model_interface import DummyModel
+
+                # Safe profiles must not silently resolve an LLM/synth backend.
+                self.model = DummyModel()
         model = self.model
         pipeline_start = time.perf_counter()
 
@@ -207,7 +223,12 @@ class NEXUSRunner:
             )
 
         if self.model is None:
-            self.model = get_available_model()
+            if bool(getattr(self.config, "allow_synth_fallback", True)):
+                self.model = get_available_model()
+            else:
+                from nexus.reasoning.model_interface import DummyModel
+
+                self.model = DummyModel()
         model = self.model
         pipeline_start = time.perf_counter()
         results: list[QuestionResult] = []
@@ -385,26 +406,101 @@ class NEXUSRunner:
                 )
                 qr.proof_valid = bool(audit.get("proof_valid", False))
 
+            # Fail-closed fallback audit (also mirrored into reasoning_audit).
+            fallback_audit = {
+                "allow_synth_fallback": bool(
+                    getattr(active_config, "allow_synth_fallback", True)
+                ),
+                "selected_realizer": result.get("selected_realizer")
+                or active_config.realizer_backend,
+                "fallback_considered": bool(result.get("fallback_considered", False)),
+                "fallback_permitted": bool(
+                    result.get(
+                        "fallback_permitted",
+                        getattr(active_config, "allow_synth_fallback", True),
+                    )
+                ),
+                "fallback_reason": str(result.get("fallback_reason") or ""),
+                "fallback_terminal_outcome": str(
+                    result.get("fallback_terminal_outcome") or ""
+                ),
+            }
+            qr.reasoning_audit = {**(qr.reasoning_audit or {}), **fallback_audit}
+
             # Check lexical fallback
             if (entry_nodes_override is None
                     and self._entity_resolver is None
                     and not self.config.enable_associative_encoder):
                 qr.lexical_fallback_used = True
 
-            # Failure categorization
-            if not parsed or not parsed.entity_ids:
+            # Failure categorization — zero-hop answers with evidence/answer
+            # are not traversal failures even when graph_paths_count == 0.
+            entities = qr.selected_entry_nodes or qr.predicted_entities
+            answer = (qr.answer or "").strip()
+            abstain = (not answer) or ("insufficient" in answer.casefold())
+            has_evidence = bool(qr.evidence_pack) or bool(qr.evidence_pack_keys)
+            if not entities:
                 qr.failure_category = "no_entities_resolved"
-            elif qr.graph_paths_count == 0:
-                qr.failure_category = "no_graph_paths"
-            elif not qr.answer or "insufficient" in qr.answer.lower():
+            elif abstain:
                 qr.failure_category = "insufficient_answer"
             elif not qr.verifier_passed:
                 qr.failure_category = "verifier_failed"
+            elif qr.graph_paths_count == 0 and not has_evidence and not answer:
+                qr.failure_category = "no_graph_paths"
+            else:
+                qr.failure_category = ""
 
         except Exception as exc:
             qr.failure_category = f"exception:{exc.__class__.__name__}"
+            # Preserve a safe diagnostic without traceback secrets.
+            qr.reasoning_audit = {
+                **(qr.reasoning_audit or {}),
+                "exception_class": exc.__class__.__name__,
+                "diagnostic_message": f"{exc.__class__.__name__}: {exc}"[:500],
+            }
 
         return qr
+
+    def run_eval(
+        self,
+        questions: list[dict[str, Any]],
+        *,
+        dataset_id: str,
+        dataset_sha256: str,
+        source_sha: str = "",
+        system_id: str = "nexus",
+        profile: str = "",
+        domain_pack_id: str = "",
+        domain_pack_version: str = "",
+        graph_snapshot_id: str = "",
+        model_id: str = "",
+        checkpoint_id: str = "",
+        comparison_mode: str = "",
+        evaluation_mode: str = "predicted",
+    ) -> dict[str, Any]:
+        """Run and emit a schema-valid ``nexus-eval-result-v1`` artifact."""
+        from nexus.evaluation.export import pipeline_to_eval_artifact
+
+        if evaluation_mode == "oracle":
+            pipeline = self.run_oracle(questions, source_sha=source_sha)
+        else:
+            pipeline = self.run(questions, source_sha=source_sha)
+        return pipeline_to_eval_artifact(
+            pipeline,
+            config=self.config,
+            questions=questions,
+            dataset_id=dataset_id,
+            dataset_sha256=dataset_sha256,
+            system_id=system_id,
+            profile=profile or self.config.realizer_backend,
+            domain_pack_id=domain_pack_id,
+            domain_pack_version=domain_pack_version,
+            graph_snapshot_id=graph_snapshot_id,
+            model_id=model_id
+            or (self.model.name if self.model is not None else ""),
+            checkpoint_id=checkpoint_id,
+            comparison_mode=comparison_mode,
+        )
 
     def serialize_result(
         self, result: PipelineResult, output_path: Path | None = None

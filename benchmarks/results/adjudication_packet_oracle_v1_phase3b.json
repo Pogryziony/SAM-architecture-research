@@ -1,0 +1,1227 @@
+{
+  "_release_only_system_map_sha256": "b6d30820a02f5cfcd34877282f093d557d0911211867a9f74eaa89eaa3093687",
+  "annotator_requirements": {
+    "disagreement_tracking": true,
+    "independent_annotators": 2,
+    "inter_annotator_agreement_required": true,
+    "third_adjudicator_or_resolution_process": true
+  },
+  "anonymization": {
+    "mapping_held_separately": true,
+    "note": "Do not disclose system identity to annotators"
+  },
+  "created_utc": "2026-07-22T19:48:40.862698+00:00",
+  "item_count": 71,
+  "items": [
+    {
+      "candidate_answer": "Yes. Concept_RetrievalMismatch caused_by Concept_SelectorBottleneck, and Concept_SelectorBottleneck derived_from Decision_PivotToNEXUS, and Concept_PivotToNEXUS validates Exp_0_12_Selection, and Concept_PivotToNEXUS validates Exp_0_13A_NoisyMemory, and Concept_PivotToNEXUS derived_from Decision_PivotToNEXUS, and Concept_PivotToNEXUS implements Decision_PivotToNEXUS.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "e129b3ca8952a882",
+      "permitted_reference_evidence": [],
+      "question": "How does the concept 'retrieval projection mismatch' relate to the NEXUS architecture pivot?",
+      "question_id": "answer_q377",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Experiment_0 depends_on 0.5, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS implements Concept_PivotToNEXUS, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "ea20a95d5f446f90",
+      "permitted_reference_evidence": [],
+      "question": "Why is it important that architecture is validated?",
+      "question_id": "answer_q379",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer. Deterministic grounded realization could not produce a supported answer and synth/LLM fallback is disabled.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "d50d00bfddfacfec",
+      "permitted_reference_evidence": [],
+      "question": "If the concept 'architecture is validated' were false, how would the research arc change?",
+      "question_id": "answer_q381",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Concept_PivotToNEXUS derived_from Decision_PivotToNEXUS.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "1b4907e51118d30e",
+      "permitted_reference_evidence": [],
+      "question": "How does the concept 'architecture is validated' relate to the NEXUS architecture pivot?",
+      "question_id": "answer_q382",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. sam depends_on Learned_Selector, and Learned_Selector depends_on Chain_Set, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS implements Concept_PivotToNEXUS, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "996bf34216616121",
+      "permitted_reference_evidence": [],
+      "question": "Why is it important that pivot from SAM to NEXUS?",
+      "question_id": "answer_q384",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. sam depends_on Learned_Selector, and Learned_Selector depends_on Chain_Set.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "3d3ee8fa4839803c",
+      "permitted_reference_evidence": [],
+      "question": "If the concept 'pivot from SAM to NEXUS' were false, how would the research arc change?",
+      "question_id": "answer_q386",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. sam depends_on Learned_Selector, and Learned_Selector depends_on Chain_Set, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS implements Concept_PivotToNEXUS, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory, and Concept_PivotToNEXUS validates Exp_0_12_Selection, and Concept_PivotToNEXUS validates Exp_0_13A_NoisyMemory, and Concept_PivotToNEXUS derived_from Decision_PivotToNEXUS, and Concept_PivotToNEXUS implements Decision_PivotToNEXUS.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "b4872311c5a85cf3",
+      "permitted_reference_evidence": [],
+      "question": "How does the concept 'pivot from SAM to NEXUS' relate to the NEXUS architecture pivot?",
+      "question_id": "answer_q387",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Exp_0_12_Selection depends_on Exp_0_13A_NoisyMemory, and Exp_0_13A_NoisyMemory depends_on Exp_0_13B_RealisticDistractors.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "38008abe08385cda",
+      "permitted_reference_evidence": [],
+      "question": "Why does the learned selector achieve 96.6% recall but fail to improve QA accuracy?",
+      "question_id": "answer_q436",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Concept_SelectorBottleneck derived_from Decision_PivotToNEXUS.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "043add5c7b7af635",
+      "permitted_reference_evidence": [],
+      "question": "Why is the 50% selector precision a structural problem rather than a training problem?",
+      "question_id": "answer_q438",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS implements Concept_PivotToNEXUS, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "142c55d233841cc5",
+      "permitted_reference_evidence": [],
+      "question": "Why does SAM's 3-hop reasoning collapse between +8 and +16 distractors?",
+      "question_id": "answer_q439",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. sam depends_on Learned_Selector, and Learned_Selector depends_on Chain_Set, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS implements Concept_PivotToNEXUS, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "93c55971f0fc7a7c",
+      "permitted_reference_evidence": [],
+      "question": "Why does SAM 1-hop accuracy stay above 92% even at +16 distractors?",
+      "question_id": "answer_q440",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. sam depends_on Learned_Selector, and Learned_Selector depends_on Chain_Set, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS implements Concept_PivotToNEXUS, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory, and Slot_3 depends_on 0.220, and Slot_2 depends_on 0.710.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "fc82d79114f5672b",
+      "permitted_reference_evidence": [],
+      "question": "Why doesn't the SAM gate cause the retrieval failure?",
+      "question_id": "answer_q441",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Exp_0_5_DenseDataset depends_on Exp_0_6_Validation, and Exp_0_6_Validation depends_on Exp_0_7_ExternalText, and Exp_0_7_ExternalText depends_on Exp_0_8_Aggregation, and Exp_0_8_Aggregation depends_on Exp_0_9_OracleFilter, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS implements Concept_PivotToNEXUS, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "2d69f7a2787db767",
+      "permitted_reference_evidence": [],
+      "question": "Why was the dense dataset necessary for retrieval to work?",
+      "question_id": "answer_q442",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. sam depends_on Learned_Selector, and Learned_Selector depends_on Chain_Set.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "267f16c6d6c0e559",
+      "permitted_reference_evidence": [],
+      "question": "Why did SAM equal the dense baseline at identical accuracy (68.74%)?",
+      "question_id": "answer_q443",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Exp_0_12_Selection depends_on Exp_0_13A_NoisyMemory, and Exp_0_13A_NoisyMemory depends_on Exp_0_13B_RealisticDistractors, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS implements Concept_PivotToNEXUS, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "621e991d3e6a44fa",
+      "permitted_reference_evidence": [],
+      "question": "Why does NEXUS replace the learned selector instead of improving it?",
+      "question_id": "answer_q444",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer. Deterministic grounded realization could not produce a supported answer and synth/LLM fallback is disabled.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "4a826dc9af9bb810",
+      "permitted_reference_evidence": [],
+      "question": "Why is CPU-first design a key differentiator for NEXUS?",
+      "question_id": "answer_q445",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer. Deterministic grounded realization could not produce a supported answer and synth/LLM fallback is disabled.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "17eec8753dd383f4",
+      "permitted_reference_evidence": [],
+      "question": "Why can NEXUS provide better source traceability than RAG?",
+      "question_id": "answer_q446",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS implements Concept_PivotToNEXUS, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "588f10b58d83a6e2",
+      "permitted_reference_evidence": [],
+      "question": "Why does the NEXUS evidence pack reduce hallucination risk?",
+      "question_id": "answer_q447",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Exp_0_11_ChainRetrieval depends_on Exp_0_12_Selection, and Exp_0_12_Selection depends_on Exp_0_13A_NoisyMemory, and Exp_0_13A_NoisyMemory depends_on Exp_0_13B_RealisticDistractors, and Infonce depends_on no_learning, and Infonce depends_on Live_Slot_Only_Negative_Sampling.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "d237e4166ecb1767",
+      "permitted_reference_evidence": [],
+      "question": "Why is multi-positive BCE loss superior to InfoNCE for chain retrieval?",
+      "question_id": "answer_q448",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Concept_RetrievalMismatch caused_by Concept_SelectorBottleneck, and Concept_SelectorBottleneck derived_from Decision_PivotToNEXUS, and Any_Required depends_on 97.6%_|_✓_confirmed_|, and All_Required depends_on Hop.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "4edb931f92069eab",
+      "permitted_reference_evidence": [],
+      "question": "Why does the recall@32 metric for dual encoder show 100% any_required but 27% all_required?",
+      "question_id": "answer_q449",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. sam depends_on Learned_Selector, and Learned_Selector depends_on Chain_Set, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS implements Concept_PivotToNEXUS, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "a02ffb702fd31cc7",
+      "permitted_reference_evidence": [],
+      "question": "Why is the NEXUS approach expected to handle multi-hop reasoning better than SAM?",
+      "question_id": "answer_q450",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "6efecb38e82231b0",
+      "permitted_reference_evidence": [],
+      "question": "Compare the role of memory in SAM vs NEXUS.",
+      "question_id": "answer_q451",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "ef7e7cd549b04fbf",
+      "permitted_reference_evidence": [],
+      "question": "Compare SAM core_only vs SAM oracle_memory performance.",
+      "question_id": "answer_q452",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "90958a7860c4ad79",
+      "permitted_reference_evidence": [],
+      "question": "Compare dual encoder vs chain-set BCE retriever for multi-hop.",
+      "question_id": "answer_q453",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "205e37ed5dec51a9",
+      "permitted_reference_evidence": [],
+      "question": "Compare RAG vs NEXUS for knowledge representation.",
+      "question_id": "answer_q454",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "4836670a25ce5e21",
+      "permitted_reference_evidence": [],
+      "question": "Compare RAG vs NEXUS for multi-hop reasoning.",
+      "question_id": "answer_q455",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "fe7cb4180baaac00",
+      "permitted_reference_evidence": [],
+      "question": "Compare RAG vs NEXUS for hallucination risk.",
+      "question_id": "answer_q456",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "a4a256060149b9ba",
+      "permitted_reference_evidence": [],
+      "question": "Compare RAG vs NEXUS for knowledge updates.",
+      "question_id": "answer_q457",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "05e011409d0f2642",
+      "permitted_reference_evidence": [],
+      "question": "Compare SAM phase 1-4 research vs NEXUS phase 5.",
+      "question_id": "answer_q458",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "73d3bf92c3d9e726",
+      "permitted_reference_evidence": [],
+      "question": "Compare the training requirements of SAM vs NEXUS.",
+      "question_id": "answer_q459",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "0e6f14e84584fe96",
+      "permitted_reference_evidence": [],
+      "question": "Compare the debuggability of SAM vs NEXUS.",
+      "question_id": "answer_q460",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "30b77525ddf10033",
+      "permitted_reference_evidence": [],
+      "question": "Compare controlled distractors vs realistic distractors.",
+      "question_id": "answer_q461",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "dad65ed5f86f95e9",
+      "permitted_reference_evidence": [],
+      "question": "Compare SAM oracle-filter results with learned selector results.",
+      "question_id": "answer_q462",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "7a5957684daf7eec",
+      "permitted_reference_evidence": [],
+      "question": "Compare the compute requirements of dense LLMs vs NEXUS.",
+      "question_id": "answer_q463",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "b542b33bd751b6c2",
+      "permitted_reference_evidence": [],
+      "question": "Compare the first SAM experiment (0 — Diagnosis) with the last (0.13A).",
+      "question_id": "answer_q464",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Query_Vector depends_on step_1:_embed_question, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "e75918331cf89234",
+      "permitted_reference_evidence": [],
+      "question": "What would happen if NEXUS graph traversal finds zero paths for a query?",
+      "question_id": "answer_q477",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Query_Vector depends_on step_1:_embed_question.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "5ffe7bb049645862",
+      "permitted_reference_evidence": [],
+      "question": "What if the NEXUS graph has a missing edge that would complete a reasoning chain?",
+      "question_id": "answer_q478",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer. Deterministic grounded realization could not produce a supported answer and synth/LLM fallback is disabled.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "db0772f0f97e268e",
+      "permitted_reference_evidence": [],
+      "question": "What if two NEXUS graph paths contradict each other?",
+      "question_id": "answer_q479",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "db5bf21e8e5152ec",
+      "permitted_reference_evidence": [],
+      "question": "What happens when a NEXUS graph node has no edges?",
+      "question_id": "answer_q480",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Concept_SelectorBottleneck caused_by Concept_RetrievalMismatch, and Concept_SelectorBottleneck blocked_by Concept_ArchitectureWorks, and Concept_SelectorBottleneck validates Exp_0_12_Selection, and sam depends_on Learned_Selector, and Concept_SelectorBottleneck derived_from Decision_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "d657d38e6c8c08e1",
+      "permitted_reference_evidence": [],
+      "question": "What if SAM had achieved >80% selector precision?",
+      "question_id": "answer_q481",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Exp_0_13B_RealisticDistractors depends_on Exp_0_13A_NoisyMemory, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "d8922f5ecb9023de",
+      "permitted_reference_evidence": [],
+      "question": "What if the 0.13B experiment shows realistic distractors are NOT harder than random?",
+      "question_id": "answer_q482",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Concept_ChainRetrieval validates Exp_0_11_ChainRetrieval, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "7bde39ce4501c734",
+      "permitted_reference_evidence": [],
+      "question": "What if the chain-set BCE retriever had only achieved 60% all_required@32 instead of 100%?",
+      "question_id": "answer_q483",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "95dee6af2aabe5c5",
+      "permitted_reference_evidence": [],
+      "question": "What scale of graph does NEXUS target long-term?",
+      "question_id": "answer_q484",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer. Deterministic grounded realization could not produce a supported answer and synth/LLM fallback is disabled.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "349a6a0134804e5d",
+      "permitted_reference_evidence": [],
+      "question": "What is the failure mode if entity extraction is only 60% accurate?",
+      "question_id": "answer_q485",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "8e47939cdcf11da6",
+      "permitted_reference_evidence": [],
+      "question": "What if the small reasoning model (<1B params) cannot effectively use structured evidence?",
+      "question_id": "answer_q486",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Query_Vector depends_on step_1:_embed_question, and migrationdatatest depends_on [blocked_by,_0.90].",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "754ffeab37d87ba5",
+      "permitted_reference_evidence": [],
+      "question": "If you query 'What causes MigrationDataTest to fail?' what edge types would NEXUS prioritize?",
+      "question_id": "answer_q487",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Exp_0_6_Validation depends_on Exp_0_5_DenseDataset, and Exp_0_6_Validation depends_on Exp_0_7_ExternalText, and Exp_0_6_Validation validates Concept_ArchitectureWorks, and Exp_0_6_Validation validates Concept_OracleMemory, and Iterative_Querying depends_on one_memory_read,_do, and Exp_0_6_Validation validates Concept_RetrievalMismatch, and Exp_0_6_Validation sub_experiment Exp_0_6_Validation_core_only, and Exp_0_6_Validation sub_experiment Exp_0_6_Validation_dense_baseline, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS implements Concept_PivotToNEXUS.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "a7686cd6dc616843",
+      "permitted_reference_evidence": [],
+      "question": "If you query 'Show all experiments that depend on Exp_0_6_Validation' what direction would traversal use?",
+      "question_id": "answer_q488",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS implements Concept_PivotToNEXUS, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "fb35abfe5b2c1867",
+      "permitted_reference_evidence": [],
+      "question": "What is the maximum traversal depth and why?",
+      "question_id": "answer_q489",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "5e073bc2e5aca001",
+      "permitted_reference_evidence": [],
+      "question": "How does beam width affect traversal quality vs performance?",
+      "question_id": "answer_q490",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer. Deterministic grounded realization could not produce a supported answer and synth/LLM fallback is disabled.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "9df05c4f034569a7",
+      "permitted_reference_evidence": [],
+      "question": "What happens when two paths share the same root cause?",
+      "question_id": "answer_q491",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer. Deterministic grounded realization could not produce a supported answer and synth/LLM fallback is disabled.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "6bc80e7bda028d5b",
+      "permitted_reference_evidence": [],
+      "question": "How would NEXUS handle a question like 'List all test cases that validate DHM'?",
+      "question_id": "answer_q492",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer. Deterministic grounded realization could not produce a supported answer and synth/LLM fallback is disabled.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "879fbec0db7807d3",
+      "permitted_reference_evidence": [],
+      "question": "What edge type would be used least in a 'why is X failing' diagnostic query?",
+      "question_id": "answer_q493",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "adbc64600f59dadb",
+      "permitted_reference_evidence": [],
+      "question": "When would classic RAG outperform NEXUS?",
+      "question_id": "answer_q494",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer. Deterministic grounded realization could not produce a supported answer and synth/LLM fallback is disabled.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "249bf4352597acd3",
+      "permitted_reference_evidence": [],
+      "question": "What type of question is hardest for RAG but easiest for NEXUS?",
+      "question_id": "answer_q495",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "58eec901d4cedae7",
+      "permitted_reference_evidence": [],
+      "question": "How does RAG handle knowledge updates compared to NEXUS?",
+      "question_id": "answer_q496",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer. Deterministic grounded realization could not produce a supported answer and synth/LLM fallback is disabled.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "d7eb26a97313ccf1",
+      "permitted_reference_evidence": [],
+      "question": "What is the context size advantage of NEXUS over RAG?",
+      "question_id": "answer_q497",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS implements Concept_PivotToNEXUS, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "93ee46cec9468752",
+      "permitted_reference_evidence": [],
+      "question": "Why does RAG struggle with questions requiring negation reasoning?",
+      "question_id": "answer_q498",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Rag_Vs_Graph_Sam_(nexus)_—_Detailed_Comparison: Single-hop fact lookup | Good (similar text → correct chunk) | Good (entity lookup → properties) | | Multi-hop reasoning | Poor (chunks may not contain the chain) | Good (traverse explicit edges) | | Causal questions (\"Why X?\") | Requires LLM to infer causality from text | Traverse caused_by, blocked_by edges | | Dependency questions (\"What depends on X?\") | Chunks may mention X",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "702185f4ef510fb5",
+      "permitted_reference_evidence": [],
+      "question": "Walk through the entire SAM experiment dependency chain from start to end.",
+      "question_id": "answer_q499",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Exp_0_Diagnosis depends_on Exp_0_2_CompactPKM, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "0124bc0498414856",
+      "permitted_reference_evidence": [],
+      "question": "What was the transition point from Phase 1 (Pipeline Setup) to Phase 2 (Core Validation)?",
+      "question_id": "answer_q500",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Exp_0_Diagnosis depends_on Exp_0_2_CompactPKM, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "a71f2cbf90fcb16d",
+      "permitted_reference_evidence": [],
+      "question": "What was the transition point from Phase 2 (Core Validation) to Phase 3 (Retrieval Revolution)?",
+      "question_id": "answer_q501",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Exp_0_13B_RealisticDistractors depends_on Exp_0_13A_NoisyMemory, and Exp_0_Diagnosis depends_on Exp_0_2_CompactPKM, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "8bbff8f6c05ddf66",
+      "permitted_reference_evidence": [],
+      "question": "What was the transition point from Phase 3 (Retrieval Revolution) to Phase 4 (Selection & Noise)?",
+      "question_id": "answer_q502",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Exp_0_13B_RealisticDistractors depends_on Exp_0_13A_NoisyMemory, and Concept_PivotToNEXUS validates Exp_0_12_Selection, and Concept_PivotToNEXUS validates Exp_0_13A_NoisyMemory, and Concept_PivotToNEXUS implements Decision_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "a81aec71619f7c77",
+      "permitted_reference_evidence": [],
+      "question": "What was the transition point from Phase 4 (Selection & Noise) to Phase 5 (NEXUS pivot)?",
+      "question_id": "answer_q503",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. sam depends_on Learned_Selector.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "18fe369036719e97",
+      "permitted_reference_evidence": [],
+      "question": "How many total experiments were run in the SAM project?",
+      "question_id": "answer_q504",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Iterative_Querying depends_on one_memory_read,_do, and sam depends_on Learned_Selector.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "87de8eb8d3fe48de",
+      "permitted_reference_evidence": [],
+      "question": "What is the synthetic-only data risk for SAM?",
+      "question_id": "answer_q511",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. sam depends_on Learned_Selector.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "83cb7c09462d55a0",
+      "permitted_reference_evidence": [],
+      "question": "What is the tiny scale risk for SAM?",
+      "question_id": "answer_q512",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Insufficient evidence to answer. Deterministic grounded realization could not produce a supported answer and synth/LLM fallback is disabled.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "1dcdf8a7b7b1e0d3",
+      "permitted_reference_evidence": [],
+      "question": "What is the gate training-dynamics risk?",
+      "question_id": "answer_q513",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Iterative_Querying depends_on one_memory_read,_do.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "c7fd10916a38a43c",
+      "permitted_reference_evidence": [],
+      "question": "What is the aggregation architecture risk?",
+      "question_id": "answer_q514",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Query_Vector depends_on step_1:_embed_question.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "93f9b069504ef815",
+      "permitted_reference_evidence": [],
+      "question": "What is the entity extraction quality risk for NEXUS?",
+      "question_id": "answer_q515",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Query_Vector depends_on step_1:_embed_question, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "9c84c78d900f40b7",
+      "permitted_reference_evidence": [],
+      "question": "What is the missing edges risk for NEXUS?",
+      "question_id": "answer_q516",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS derived_from Concept_PivotToNEXUS, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "0b26e86dbb4aca60",
+      "permitted_reference_evidence": [],
+      "question": "What is the graph staleness risk for NEXUS?",
+      "question_id": "answer_q517",
+      "system_slot": "A"
+    },
+    {
+      "candidate_answer": "Yes. Concept_PivotToNEXUS implements Decision_PivotToNEXUS, and Concept_PivotToNEXUS validates Exp_0_12_Selection, and Concept_PivotToNEXUS validates Exp_0_13A_NoisyMemory, and Decision_PivotToNEXUS replaces Concept_LegacyFlatMemory, and Decision_PivotToNEXUS derived_from Concept_ArchitectureWorks, and Decision_PivotToNEXUS derived_from Concept_SelectorBottleneck.",
+      "dimensions": [
+        "conclusion_correctness",
+        "material_claim_support",
+        "citation_entailment",
+        "completeness",
+        "temporal_correctness",
+        "unsupported_claims",
+        "abstention_appropriate"
+      ],
+      "packet_item_id": "0d0f5d928b3b19b0",
+      "permitted_reference_evidence": [],
+      "question": "As known after the NEXUS pivot, according to the graph, what does Decision_PivotToNEXUS replace?",
+      "question_id": "family_temporal_004",
+      "system_slot": "A"
+    }
+  ],
+  "schema_version": "nexus-adjudication-packet-v1",
+  "seed": 0,
+  "status": "PENDING_ADJUDICATION"
+}

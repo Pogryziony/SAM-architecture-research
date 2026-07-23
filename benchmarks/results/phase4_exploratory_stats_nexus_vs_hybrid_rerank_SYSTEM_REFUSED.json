@@ -1,0 +1,6 @@
+{
+  "analysis_level": "exploratory_auto_scorable_subset",
+  "error": "comparison_mode mismatch between arms; refuse mixing 'system_level' vs 'controlled'",
+  "full_primary_superiority_eligible": false,
+  "interpretation": "NO FULL SUPERIORITY VERDICT — human adjudication incomplete."
+}

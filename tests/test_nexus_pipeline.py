@@ -933,6 +933,11 @@ class TestPipelineConfig:
         c3 = ProductionNEXUSConfig.lexical_only(max_depth=10)
         assert c1.config_hash != c3.config_hash
 
+    def test_runner_requires_explicit_config(self):
+        graph = InMemoryGraphStore()
+        with pytest.raises(TypeError, match="explicit ProductionNEXUSConfig"):
+            NEXUSRunner(graph, None)  # type: ignore[arg-type]
+
 
 class TestPipelineRunner:
     def test_empty_graph(self):

@@ -1,11 +1,18 @@
 # EXPERIMENT: NEXUS architecture validation (next training gate)
 
-**Status:** COMPLETE — decision **VALIDATED** (2026-07-21).  
+**Status:** COMPLETE — decision **VALIDATED_INTERNAL** (2026-07-21 campaign;
+claim scope clarified 2026-07-22).  
 **Verdict:** `docs/nexus-architecture-validation-verdict.md`  
+**Canonical status:** `docs/CURRENT_STATE.md`  
 **Campaign artifact:** `benchmarks/results/architecture_validation_20260721T241500Z.json`  
-**Goal:** Answer whether NEXUS is a *good* architecture that can *perform
-well* under honest paired evaluation — not whether AnswerPlan weights can
-paper over surface gaps.
+**Goal:** Answer whether NEXUS passes a preregistered *internal* paired
+contract on `oracle_v1` without AnswerPlan weight training — not whether it
+beats real LLMs/modern RAG, and not whether AnswerPlan weights can paper over
+surface gaps.
+
+> Historical artifact JSON may still say `"decision": "VALIDATED"`. Interpret
+> that as the internal contract only. New runner emissions use
+> `VALIDATED_INTERNAL` and set `baselines_are_real_llms: false`.
 
 ## Decision question
 
@@ -17,8 +24,10 @@ shows, on the frozen oracle contract (`oracle_v1` or a successor freeze):
    scorer (or a preregistered qualitative token-F1 secondary)
 3. **Realization gap** — if oracle fact ≥ 0.50 and predicted lag ≥ 0.15,
    then (and only then) authorize bounded AnswerPlan copy/edit pilots
-4. **Baselines** — NEXUS L1 beats classic RAG and LLM-only on the same
-   freeze for fact + abstain calibration (Stage 4 comparison arm)
+4. **Baselines** — NEXUS L1 beats deterministic placeholder RAG
+   (`SynthesizingModel`) and evidence-blind placeholder
+   (`EvidenceBlindModel`) on the same freeze for fact + abstain calibration
+   (Stage 4 comparison arm). These are **not** real LLM/modern RAG baselines.
 
 ## Observed (2026-07-21)
 

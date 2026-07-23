@@ -1,0 +1,1349 @@
+{
+  "automatically_scorable": 120,
+  "created_utc": "2026-07-22T19:48:40.809695+00:00",
+  "human_dependent": 71,
+  "note": "Human-dependent metrics remain PENDING_ADJUDICATION until two independent annotators complete the blinded packet.",
+  "primary_metric_denominator": 191,
+  "questions_total": 191,
+  "routes": [
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q377",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q378",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q379",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q380",
+      "reason": "short gold allows key-fact proxy",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q381",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q382",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q383",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q384",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q385",
+      "reason": "short gold allows key-fact proxy",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q386",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q387",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q389",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q390",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q391",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q392",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q393",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q394",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q395",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q396",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q397",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q398",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q399",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q400",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q401",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q402",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q404",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q405",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q406",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q407",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q408",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q409",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q410",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q411",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q412",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q413",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q414",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q415",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q416",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q417",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q418",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q419",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q420",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q421",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q422",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q423",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q424",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q425",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q426",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q427",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q428",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q429",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q430",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q431",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q432",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q434",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q436",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q438",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q439",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q440",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q441",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q442",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q443",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q444",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q445",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q446",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q447",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q448",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q449",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q450",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q451",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q452",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q453",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q454",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q455",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q456",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q457",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q458",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q459",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q460",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q461",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q462",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q463",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q464",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q465",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q466",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q467",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q468",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q469",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q470",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q471",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q472",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q473",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q474",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q475",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q476",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q477",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q478",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q479",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q480",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q481",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q482",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q483",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q484",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q485",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q486",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q487",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q488",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q489",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q490",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q491",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q492",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q493",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q494",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q495",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q496",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q497",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q498",
+      "reason": "narrative type=comparative needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q499",
+      "reason": "narrative type=multi-hop needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q500",
+      "reason": "narrative type=multi-hop needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q501",
+      "reason": "narrative type=multi-hop needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q502",
+      "reason": "narrative type=multi-hop needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q503",
+      "reason": "narrative type=multi-hop needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q504",
+      "reason": "narrative type=multi-hop needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q505",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q506",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q507",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q508",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q509",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q510",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q511",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q512",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q513",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q514",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q515",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q516",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q517",
+      "reason": "narrative type=diagnostic needs human adjudication",
+      "route": "human_blinded"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q518",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q519",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q520",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q521",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q522",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q523",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q524",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q525",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q526",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q527",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q528",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q529",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q530",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "answer_q531",
+      "reason": "structured-friendly type=factual",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "family_contradict_001",
+      "reason": "short gold allows key-fact proxy",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "family_direct_001",
+      "reason": "structured-friendly type=direct_lookup",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "family_noanswer_001",
+      "reason": "gold marks abstention",
+      "route": "should_abstain"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "family_temporal_001",
+      "reason": "gold marks abstention",
+      "route": "should_abstain"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "family_temporal_002",
+      "reason": "gold marks abstention",
+      "route": "should_abstain"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "family_temporal_003",
+      "reason": "gold marks abstention",
+      "route": "should_abstain"
+    },
+    {
+      "automated": false,
+      "primary_metric": "grounded_correct",
+      "question_id": "family_temporal_004",
+      "reason": "temporal narrative not safely auto-scored alone",
+      "route": "human_temporal"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "family_threehop_001",
+      "reason": "short gold allows key-fact proxy",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "family_twohop_001",
+      "reason": "short gold allows key-fact proxy",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_000_58043a8593",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_001_9610599dc5",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_002_4b971c36ed",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_003_5f2c3b4088",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_004_e6940b666e",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_005_8fe5c5f7e1",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_006_f814cf16d8",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_007_cf8960e413",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_008_d1895b9f71",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_009_f687703268",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_010_f554e506e0",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_011_d65f5987ef",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_012_d301546885",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_013_97541c849c",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_014_839217902d",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_015_0a29e7c75a",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_016_0b6f8d57f6",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_017_c2b6b6e571",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_018_5569098780",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_019_1d07d350f7",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_020_9546396970",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_021_32f3d59db7",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_022_0f41dfd3c7",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_023_8e804c96e8",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_024_c5ac39dc32",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_025_a46b21376e",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_026_281e334890",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_027_ae8fa0a008",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_028_5957253a81",
+      "reason": "gold marks abstention",
+      "route": "should_abstain"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_029_f9769cc640",
+      "reason": "gold marks abstention",
+      "route": "should_abstain"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_030_5715f8d2cf",
+      "reason": "gold marks abstention",
+      "route": "should_abstain"
+    },
+    {
+      "automated": true,
+      "primary_metric": "grounded_correct",
+      "question_id": "relation_031_64aefbf014",
+      "reason": "structured-friendly type=relation",
+      "route": "key_fact_fuzzy"
+    }
+  ],
+  "schema_version": "nexus-adjudication-routes-v1",
+  "status": "ROUTES_DEFINED"
+}

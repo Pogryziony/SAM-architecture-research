@@ -9,11 +9,48 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from types import MappingProxyType
+from typing import Any, Mapping
 
 from nexus.utils.config import NEXUSConfig
+
+# Bump when the hashed identity payload shape changes. Historical artifacts
+# that record only ``config_hash`` without this field are treated as
+# ``nexus-config-identity-v1`` readers (hash algorithm not re-derived).
+CONFIG_IDENTITY_SCHEMA = "nexus-config-identity-v2"
+
+
+def _portable_path(value: str) -> str:
+    """Normalize paths for identity hashing (relative POSIX, no abs drive)."""
+    if not value:
+        return ""
+    text = str(value).replace("\\", "/")
+    # Strip absolute Windows / POSIX prefixes down to repo-relative when possible.
+    markers = (
+        "/models/",
+        "/training/",
+        "/benchmarks/",
+        "/data/",
+        "/nexus/",
+        "/stack/",
+    )
+    lower = text.lower()
+    for marker in markers:
+        idx = lower.find(marker)
+        if idx >= 0:
+            return text[idx + 1 :]  # drop leading slash → models/...
+    if re.match(r"^[A-Za-z]:/", text) or text.startswith("/"):
+        parts = Path(text).as_posix().strip("/").split("/")
+        return "/".join(parts[-3:]) if len(parts) >= 3 else "/".join(parts)
+    return text
+
+
+def _freeze_mapping(value: Mapping[str, Any] | None) -> Mapping[str, Any]:
+    if value is None:
+        return MappingProxyType({})
+    return MappingProxyType(dict(value))
 
 
 @dataclass(frozen=True)
@@ -35,6 +72,13 @@ class PipelineIdentity:
     lexical_fallback: bool = True
     entity_ranker_v3_enabled: bool = False
     entity_ranker_v3_dir: str = ""
+    entity_ranker_v3_checkpoint_sha256: str = ""
+    entity_ranker_v3_config_sha256: str = ""
+    entity_ranker_v3_vocab_sha256: str = ""
+    domain_pack_id: str = "sam"
+    domain_pack_version: str = "sam-v1"
+    graph_snapshot_id: str = ""
+    dataset_id: str = ""
 
 
 class ProductionNEXUSConfig(NEXUSConfig):
@@ -45,7 +89,7 @@ class ProductionNEXUSConfig(NEXUSConfig):
     instead of the constructor directly.
     """
 
-    __slots__ = ("_pipeline_id", "_config_hash", "_frozen")
+    __slots__ = ("_pipeline_id", "_config_hash", "_frozen", "_identity_schema")
 
     def __init__(
         self,
@@ -55,7 +99,12 @@ class ProductionNEXUSConfig(NEXUSConfig):
         # Prevent modification after init
         object.__setattr__(self, "_frozen", False)
         super().__init__(**kwargs)
+        # Deep-freeze nested behavior-changing mappings.
+        object.__setattr__(
+            self, "type_priority", _freeze_mapping(self.type_priority)
+        )
         object.__setattr__(self, "_pipeline_id", pipeline_id or PipelineIdentity())
+        object.__setattr__(self, "_identity_schema", CONFIG_IDENTITY_SCHEMA)
         object.__setattr__(self, "_config_hash", self._compute_hash())
         object.__setattr__(self, "_frozen", True)
 
@@ -74,95 +123,101 @@ class ProductionNEXUSConfig(NEXUSConfig):
     def config_hash(self) -> str:
         return self._config_hash  # type: ignore[attr-defined]
 
-    def _compute_hash(self) -> str:
-        """Deterministic hash of all config fields (excluding config_hash itself)."""
-        payload = json.dumps(
-            {
-                "nexus_config": {
-                    "model_name": self.model_name,
-                    "max_entry_nodes": self.max_entry_nodes,
-                    "max_depth": self.max_depth,
-                    "beam_width": self.beam_width,
-                    "max_expanded_edges": self.max_expanded_edges,
-                    "max_expanded_nodes": self.max_expanded_nodes,
-                    "max_traversal_ms": self.max_traversal_ms,
-                    "path_score_focus": self.path_score_focus,
-                    "max_paths": self.max_paths,
-                    "as_valid_at": getattr(self, "as_valid_at", ""),
-                    "as_known_at": getattr(self, "as_known_at", ""),
-                    "edge_confidence_threshold": self.edge_confidence_threshold,
-                    "hallucination_threshold": self.hallucination_threshold,
-                    "readiness_answer_threshold": self.readiness_answer_threshold,
-                    "readiness_conditional_threshold": self.readiness_conditional_threshold,
-                    "require_structured_provenance": self.require_structured_provenance,
-                    "fuzzy_cutoff": self.fuzzy_cutoff,
-                    "enable_associative_encoder": self.enable_associative_encoder,
-                    "enable_embedding_er": self.enable_embedding_er,
-                    "enable_cooccurrence_edges": self.enable_cooccurrence_edges,
-                    "enable_normalization": self.enable_normalization,
-                    "post_edit_enabled": self.post_edit_enabled,
-                    "realizer_backend": self.realizer_backend,
-                    "realizer_model_dir": self.realizer_model_dir,
-                    "realizer_config_path": self.realizer_config_path,
-                    "realizer_checkpoint_sha256": self.realizer_checkpoint_sha256,
-                    "tier3_backend": self.tier3_backend,
-                    "dialogue_decay": self.dialogue_decay,
-                    "dialogue_boost": self.dialogue_boost,
-                },
-                "pipeline_identity": {
-                    "encoder_enabled": self.pipeline_id.encoder.enabled,
-                    "encoder_model_dir": self.pipeline_id.encoder.model_dir,
-                    "lexical_fallback": self.pipeline_id.lexical_fallback,
-                    "entity_ranker_v3_enabled": self.pipeline_id.entity_ranker_v3_enabled,
-                },
-            },
-            sort_keys=True, separators=(",", ":"), ensure_ascii=False,
-        )
-        return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+    @property
+    def identity_schema(self) -> str:
+        return self._identity_schema  # type: ignore[attr-defined]
 
-    def to_dict(self) -> dict[str, Any]:
+    def _identity_payload(self) -> dict[str, Any]:
+        """Canonical payload covering all behavior-changing fields."""
         return {
+            "identity_schema": CONFIG_IDENTITY_SCHEMA,
             "nexus_config": {
                 "model_name": self.model_name,
+                "fuzzy_cutoff": self.fuzzy_cutoff,
                 "max_entry_nodes": self.max_entry_nodes,
+                "property_keyword_boost": self.property_keyword_boost,
+                "curated_node_boost": self.curated_node_boost,
+                "word_boundary_boost": self.word_boundary_boost,
+                "sub_run_penalty": self.sub_run_penalty,
+                "alias_match_boost": self.alias_match_boost,
+                "embedding_match_boost": self.embedding_match_boost,
+                "type_prior_boost": self.type_prior_boost,
+                "type_priority": dict(self.type_priority),
                 "max_depth": self.max_depth,
                 "beam_width": self.beam_width,
+                "edge_confidence_threshold": self.edge_confidence_threshold,
                 "max_expanded_edges": self.max_expanded_edges,
                 "max_expanded_nodes": self.max_expanded_nodes,
                 "max_traversal_ms": self.max_traversal_ms,
                 "path_score_focus": self.path_score_focus,
                 "max_paths": self.max_paths,
-                "edge_confidence_threshold": self.edge_confidence_threshold,
+                "as_valid_at": getattr(self, "as_valid_at", ""),
+                "as_known_at": getattr(self, "as_known_at", ""),
                 "hallucination_threshold": self.hallucination_threshold,
                 "readiness_answer_threshold": self.readiness_answer_threshold,
                 "readiness_conditional_threshold": self.readiness_conditional_threshold,
                 "require_structured_provenance": self.require_structured_provenance,
-                "fuzzy_cutoff": self.fuzzy_cutoff,
-                "enable_associative_encoder": self.enable_associative_encoder,
+                "post_edit_enabled": self.post_edit_enabled,
+                "realizer_backend": self.realizer_backend,
+                "realizer_model_dir": _portable_path(self.realizer_model_dir),
+                "realizer_config_path": _portable_path(self.realizer_config_path),
+                "realizer_checkpoint_sha256": self.realizer_checkpoint_sha256,
+                "tier3_backend": self.tier3_backend,
+                "allow_synth_fallback": bool(
+                    getattr(self, "allow_synth_fallback", True)
+                ),
                 "enable_embedding_er": self.enable_embedding_er,
                 "enable_cooccurrence_edges": self.enable_cooccurrence_edges,
                 "enable_normalization": self.enable_normalization,
-                "post_edit_enabled": self.post_edit_enabled,
-                "realizer_backend": self.realizer_backend,
-                "realizer_model_dir": self.realizer_model_dir,
-                "realizer_config_path": self.realizer_config_path,
-                "realizer_checkpoint_sha256": self.realizer_checkpoint_sha256,
-                "tier3_backend": self.tier3_backend,
+                "enable_associative_encoder": self.enable_associative_encoder,
                 "dialogue_decay": self.dialogue_decay,
                 "dialogue_boost": self.dialogue_boost,
             },
             "pipeline_identity": {
                 "encoder_enabled": self.pipeline_id.encoder.enabled,
-                "encoder_model_dir": self.pipeline_id.encoder.model_dir,
+                "encoder_model_dir": _portable_path(
+                    self.pipeline_id.encoder.model_dir
+                ),
                 "encoder_checkpoint_sha256": self.pipeline_id.encoder.checkpoint_sha256,
+                "encoder_config_sha256": self.pipeline_id.encoder.config_sha256,
+                "encoder_vocab_sha256": self.pipeline_id.encoder.vocab_sha256,
                 "encoder_run_id": self.pipeline_id.encoder.run_id,
                 "encoder_source_sha": self.pipeline_id.encoder.source_sha,
                 "lexical_fallback": self.pipeline_id.lexical_fallback,
                 "entity_ranker_v3_enabled": self.pipeline_id.entity_ranker_v3_enabled,
-                "entity_ranker_v3_dir": self.pipeline_id.entity_ranker_v3_dir,
+                "entity_ranker_v3_dir": _portable_path(
+                    self.pipeline_id.entity_ranker_v3_dir
+                ),
+                "entity_ranker_v3_checkpoint_sha256": (
+                    self.pipeline_id.entity_ranker_v3_checkpoint_sha256
+                ),
+                "entity_ranker_v3_config_sha256": (
+                    self.pipeline_id.entity_ranker_v3_config_sha256
+                ),
+                "entity_ranker_v3_vocab_sha256": (
+                    self.pipeline_id.entity_ranker_v3_vocab_sha256
+                ),
+                "domain_pack_id": self.pipeline_id.domain_pack_id,
+                "domain_pack_version": self.pipeline_id.domain_pack_version,
+                "graph_snapshot_id": self.pipeline_id.graph_snapshot_id,
+                "dataset_id": self.pipeline_id.dataset_id,
             },
-            "config_hash": self.config_hash,
         }
+
+    def _compute_hash(self) -> str:
+        """Deterministic hash of all behavior-changing config fields."""
+        payload = json.dumps(
+            self._identity_payload(),
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        )
+        return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+
+    def to_dict(self) -> dict[str, Any]:
+        payload = self._identity_payload()
+        payload["config_hash"] = self.config_hash
+        return payload
 
     @classmethod
     def lexical_only(cls, **overrides: Any) -> "ProductionNEXUSConfig":
@@ -183,6 +238,7 @@ class ProductionNEXUSConfig(NEXUSConfig):
             "enable_embedding_er": False,
             "enable_normalization": False,
             "realizer_backend": "pointer_copy",
+            "allow_synth_fallback": False,
         }
         kwargs.update(overrides)
         return cls(pipeline_id=PipelineIdentity(lexical_fallback=True), **kwargs)
@@ -205,6 +261,7 @@ class ProductionNEXUSConfig(NEXUSConfig):
             "realizer_model_dir": DEFAULT_MODEL_DIR,
             "realizer_config_path": DEFAULT_CONFIG_PATH,
             "realizer_checkpoint_sha256": DEFAULT_WEIGHTS_SHA256,
+            "allow_synth_fallback": False,
         }
         kwargs.update(overrides)
         return cls(pipeline_id=PipelineIdentity(lexical_fallback=True), **kwargs)
@@ -214,8 +271,8 @@ class ProductionNEXUSConfig(NEXUSConfig):
         """Factory for grounded zero-LLM realization.
 
         Routes comparison → comparison-plan, factual/diagnostic → pointer/copy,
-        and other path-bearing intents → deterministic proof render before any
-        synth/LLM fallback.
+        and other path-bearing intents → deterministic proof render. Synth/LLM
+        cascade is disabled unless ``allow_synth_fallback=True`` is passed.
         """
         from nexus.realizer.comparison_plan import (
             DEFAULT_CONFIG_PATH,
@@ -233,6 +290,7 @@ class ProductionNEXUSConfig(NEXUSConfig):
             "realizer_config_path": DEFAULT_CONFIG_PATH,
             "realizer_checkpoint_sha256": DEFAULT_WEIGHTS_SHA256,
             "require_structured_provenance": True,
+            "allow_synth_fallback": False,
         }
         kwargs.update(overrides)
         return cls(pipeline_id=PipelineIdentity(lexical_fallback=True), **kwargs)
@@ -246,6 +304,7 @@ class ProductionNEXUSConfig(NEXUSConfig):
             "enable_normalization": False,
             "realizer_backend": "deterministic_render",
             "require_structured_provenance": True,
+            "allow_synth_fallback": False,
         }
         kwargs.update(overrides)
         return cls(pipeline_id=PipelineIdentity(lexical_fallback=True), **kwargs)
@@ -273,6 +332,7 @@ class ProductionNEXUSConfig(NEXUSConfig):
             "realizer_config_path": DEFAULT_CONFIG_PATH,
             "realizer_checkpoint_sha256": DEFAULT_WEIGHTS_SHA256,
             "require_structured_provenance": True,
+            "allow_synth_fallback": False,
         }
         kwargs.update(overrides)
         return cls(pipeline_id=PipelineIdentity(lexical_fallback=True), **kwargs)
@@ -338,6 +398,17 @@ def validate_config(config: ProductionNEXUSConfig) -> list[str]:
             if not model_dir.exists():
                 errors.append(
                     f"encoder model_dir not found: {model_dir}"
+                )
+
+    if config.pipeline_id.entity_ranker_v3_enabled:
+        if not config.pipeline_id.entity_ranker_v3_dir:
+            errors.append("entity_ranker_v3 enabled but dir is empty")
+        elif config.pipeline_id.entity_ranker_v3_checkpoint_sha256:
+            # Fail closed when a SHA is declared but the directory is missing.
+            ranker_dir = Path(config.pipeline_id.entity_ranker_v3_dir)
+            if not ranker_dir.exists():
+                errors.append(
+                    f"entity_ranker_v3_dir not found: {ranker_dir}"
                 )
 
     allowed_realizers = {
