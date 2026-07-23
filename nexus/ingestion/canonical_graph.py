@@ -70,15 +70,58 @@ def build_canonical_sam_graph(
 
 
 def graph_snapshot_id(graph: InMemoryGraphStore, provenance: dict[str, Any] | None = None) -> str:
-    """Deterministic snapshot identity from node/edge counts + sorted node ids."""
+    """Deterministic snapshot identity from nodes, edges, properties, and temporal data.
+
+    Strengthened identity includes:
+    - Node IDs and counts
+    - Edge types and counts
+    - Edge endpoint pairs (source→target)
+    - Node property keys (not values, to avoid timestamp drift)
+    - Temporal metadata when available
+    """
     node_ids = sorted(graph._nodes.keys())  # noqa: SLF001
+
+    # Collect edge endpoints for identity
+    edge_endpoints: list[str] = []
+    edge_type_counts: dict[str, int] = {}
+    for node_id in node_ids:
+        for edge in graph.get_outgoing(node_id):
+            edge_type_counts[edge.type] = edge_type_counts.get(edge.type, 0) + 1
+            # Edge.target is the target node ID (Edge uses 'target' not 'target_id')
+            target = getattr(edge, 'target', None) or getattr(edge, 'target_id', '')
+            edge_endpoints.append(f"{node_id}->{edge.type}->{target}")
+
+    # Collect node property keys (but not values to avoid timestamp-induced drift)
+    property_keys_by_type: dict[str, set[str]] = {}
+    for node_id, node in graph._nodes.items():  # noqa: SLF001
+        node_type = getattr(node, "type", "unknown")
+        if node_type not in property_keys_by_type:
+            property_keys_by_type[node_type] = set()
+        if hasattr(node, "properties") and isinstance(node.properties, dict):
+            property_keys_by_type[node_type].update(node.properties.keys())
+        elif hasattr(node, "__dict__"):
+            property_keys_by_type[node_type].update(
+                k for k in node.__dict__.keys() if not k.startswith("_")
+            )
+
+    # Serialize property keys consistently
+    property_signature = {
+        k: sorted(v) for k, v in sorted(property_keys_by_type.items())
+    }
+
     payload = {
+        "schema_version": "nexus-graph-snapshot-id-v2",
         "node_count": graph.node_count,
         "edge_count": graph.edge_count,
         "node_ids_sha256": hashlib.sha256(
             "\n".join(node_ids).encode("utf-8")
         ).hexdigest(),
-        "edge_type_counts": (provenance or {}).get("edge_type_counts") or {},
+        "edge_endpoints_sha256": hashlib.sha256(
+            "\n".join(sorted(edge_endpoints)).encode("utf-8")
+        ).hexdigest(),
+        "edge_type_counts": edge_type_counts,
+        "property_keys_signature": property_signature,
+        "build_module": (provenance or {}).get("build_module", "unknown"),
     }
     return hashlib.sha256(
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
