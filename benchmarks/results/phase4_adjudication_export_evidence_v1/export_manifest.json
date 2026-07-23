@@ -1,0 +1,9 @@
+{
+  "annotator_A_packet": "C:\\Users\\Pogry\\Projects\\SAM-architecture-research\\benchmarks\\results\\phase4_adjudication_export_evidence_v1\\annotator_A_packet.json",
+  "annotator_B_packet": "C:\\Users\\Pogry\\Projects\\SAM-architecture-research\\benchmarks\\results\\phase4_adjudication_export_evidence_v1\\annotator_B_packet.json",
+  "created_utc": "2026-07-23T07:19:39.226196+00:00",
+  "item_count_A": 213,
+  "item_count_B": 213,
+  "schema_version": "nexus-adjudication-dual-export-v1",
+  "status": "PENDING_HUMAN_RESPONSES"
+}

@@ -2,9 +2,9 @@
 
 **Document role:** canonical current-state attestation for this repository.  
 **Supersedes for status claims:** informal “validated architecture” wording in older docs.  
-**Analyzed HEAD:** `d4ebf4eccadcffa9f657e9ef008014f86bbd9dad`  
+**Analyzed HEAD:** `adff97ca12b21468b2781a37fc211daf2ef162f7`  
 **Generated (UTC):** 2026-07-23 via `benchmarks/sync_current_state.py`  
-**Evidence manifest:** `c64de69bff453c9228e3e9fa9649f712fbb9bd050bbdc8545786d690549253b3`
+**Evidence manifest:** `418d3de240361961c42de301f36891b073858771635f4862654715151a093804`
 
 > If this file and another document disagree on *current* status, **this file wins**.
 > Regenerate with: `python benchmarks/sync_current_state.py`
@@ -62,11 +62,11 @@
 | Hybrid RAG+Qwen | VALID @ `518103188e79` ds=`fb86a9671fb7` | `phase4_hybrid_rag_qwen_oracle_v1.json` |
 | Hybrid+rerank RAG+Qwen | VALID @ `518103188e79` ds=`fb86a9671fb7` | `phase4_hybrid_rerank_rag_qwen_oracle_v1.json` |
 | NEXUS graph-evidence+Qwen | VALID @ `518103188e79` ds=`fb86a9671fb7` | `phase4_nexus_graph_evidence_qwen_oracle_v1.json` |
-| NEXUS grounded (evidence repair) | VALID @ `d4ebf4eccadc` ds=`568f9ce45444` | `eval_oracle_v1_grounded_evidence_repair.json` |
+| NEXUS grounded (evidence repair) | VALID @ `adff97ca12b2` ds=`568f9ce45444` | `eval_oracle_v1_grounded_evidence_repair.json` |
 | Human adjudication | PENDING | `phase4_adjudication_export/` |
 | Sealed external | BLOCKED | `evaluator_handoff/` |
 
-NEXUS grounded source_commit in latest repair artifact: `d4ebf4eccadcffa9f657e9ef008014f86bbd9dad`
+NEXUS grounded source_commit in latest repair artifact: `adff97ca12b21468b2781a37fc211daf2ef162f7`
 
 ---
 
