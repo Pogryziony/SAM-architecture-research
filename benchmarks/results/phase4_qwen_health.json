@@ -1,5 +1,5 @@
 {
-  "created_utc": "2026-07-23T10:36:16.065197+00:00",
+  "created_utc": "2026-07-23T14:47:31.097198+00:00",
   "device": "ollama-managed",
   "error": "",
   "eval_count": 2,
@@ -30,8 +30,8 @@
     "system_prompt_sha256": "6be35f329e633d11ccd93eecfd03c0c720725c65a209b0c8365541f4ebee67f3",
     "think_disabled": true
   },
-  "latency_ms": 410.283,
-  "load_duration_ns": 322566400,
+  "latency_ms": 596.648,
+  "load_duration_ns": 325183400,
   "ok": true,
   "parsed_answer": "OK",
   "prompt_eval_count": 72,
@@ -39,6 +39,6 @@
   "schema_version": "nexus-local-qwen-health-v1",
   "seed_honored": true,
   "structured_json_supported": "unknown",
-  "time_to_first_token_ms": 51.008,
-  "tokens_per_second": 75.933
+  "time_to_first_token_ms": 113.001,
+  "tokens_per_second": 74.8839
 }

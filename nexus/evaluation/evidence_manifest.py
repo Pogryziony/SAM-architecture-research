@@ -28,12 +28,33 @@ def current_checkout_identity(root: Path) -> dict[str, Any]:
     }
 
 
-def file_sha256(path: Path) -> str:
-    h = hashlib.sha256()
-    with path.open("rb") as f:
-        for chunk in iter(lambda: f.read(1024 * 1024), b""):
-            h.update(chunk)
-    return h.hexdigest()
+def lf_normalize_bytes(data: bytes) -> bytes:
+    """Normalize CRLF/CR to LF so Windows checkouts match git blob hashes."""
+    return data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+def file_sha256(path: Path, *, lf_normalize: bool = True) -> str:
+    """SHA-256 of file bytes, LF-normalized by default for cross-platform stability."""
+    data = path.read_bytes()
+    if lf_normalize:
+        data = lf_normalize_bytes(data)
+    return hashlib.sha256(data).hexdigest()
+
+
+def git_blob_sha256(root: Path, rel_path: str, *, lf_normalize: bool = True) -> str | None:
+    """SHA-256 of the as-in-git blob for ``rel_path``, or None if unavailable."""
+    rel = rel_path.replace("\\", "/")
+    try:
+        raw = subprocess.check_output(
+            ["git", "show", f"HEAD:{rel}"],
+            cwd=root,
+            stderr=subprocess.DEVNULL,
+        )
+    except Exception:
+        return None
+    if lf_normalize:
+        raw = lf_normalize_bytes(raw)
+    return hashlib.sha256(raw).hexdigest()
 
 
 def _normalize_path_for_manifest(p: Path, root: Path) -> str:
@@ -136,8 +157,13 @@ def write_evidence_manifest(path: Path, manifest: Mapping[str, Any]) -> None:
     path.write_bytes(content.encode("utf-8"))
 
 
-def verify_manifest_hashes(manifest_path: Path, root: Path) -> list[str]:
-    """Verify all artifact hashes in a manifest match the files on disk.
+def verify_manifest_hashes(
+    manifest_path: Path,
+    root: Path,
+    *,
+    prefer_git_blob: bool = True,
+) -> list[str]:
+    """Verify all artifact hashes match LF-normalized file bytes (or as-in-git blobs).
 
     Returns a list of error messages (empty if all hashes match).
     """
@@ -158,12 +184,43 @@ def verify_manifest_hashes(manifest_path: Path, root: Path) -> list[str]:
             errors.append(f"artifact missing: {art_path_str}")
             continue
         expected_hash = art.get("sha256")
-        if expected_hash:
-            actual_hash = file_sha256(art_path)
-            if actual_hash != expected_hash:
-                errors.append(
-                    f"hash mismatch for {art_path_str}: "
-                    f"expected {expected_hash[:16]}..., got {actual_hash[:16]}..."
-                )
+        if not expected_hash:
+            continue
+
+        disk_hash = file_sha256(art_path, lf_normalize=True)
+        if disk_hash == expected_hash:
+            continue
+        git_hash = (
+            git_blob_sha256(root, art_path_str, lf_normalize=True)
+            if prefer_git_blob
+            else None
+        )
+        # Accept as-in-git when CRLF checkout mutates working-tree bytes.
+        if git_hash and git_hash == expected_hash:
+            continue
+        detail = (
+            f"expected {expected_hash[:16]}..., disk_lf={disk_hash[:16]}..."
+        )
+        if git_hash:
+            detail += f", git_lf={git_hash[:16]}..."
+        errors.append(f"hash mismatch for {art_path_str}: {detail}")
+
+    for stat in manifest.get("statistics", []):
+        stat_path_str = (stat.get("path") or "").replace("\\", "/")
+        if not stat_path_str:
+            continue
+        stat_path = root / stat_path_str
+        expected_hash = stat.get("sha256")
+        if not expected_hash:
+            continue
+        if not stat_path.exists():
+            errors.append(f"statistics missing: {stat_path_str}")
+            continue
+        actual_hash = file_sha256(stat_path, lf_normalize=True)
+        if actual_hash != expected_hash:
+            errors.append(
+                f"hash mismatch for {stat_path_str}: "
+                f"expected {expected_hash[:16]}..., got {actual_hash[:16]}..."
+            )
 
     return errors

@@ -19,6 +19,10 @@ from pathlib import Path
 
 from nexus.evaluation.compare import compare_paired_artifacts
 from nexus.evaluation.dataset_identity import hash_dataset
+from nexus.evaluation.evidence_provenance import (
+    CANONICAL_DATASET_SHA256,
+    assert_source_commit_owns_dataset,
+)
 from nexus.evaluation.multiple_comparison import apply_holm_to_comparisons
 from nexus.evaluation.validate import ValidationError
 
@@ -26,9 +30,6 @@ from nexus.evaluation.validate import ValidationError
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "benchmarks" / "results"
 ORACLE = ROOT / "benchmarks" / "qa-dataset" / "oracle_v1.jsonl"
-
-# Canonical dataset hash for Phase-4
-CANONICAL_DATASET_SHA256 = "ca96877de86990e7757c18efe3576ec660b454d6984866cbebc5939ead1a63d5"
 
 # System-level family: no retrieval, raw LLM capability
 SYSTEM_LEVEL = [
@@ -63,12 +64,13 @@ def _load(name: str) -> dict:
 
 
 def _verify_dataset_hash(artifact: dict, name: str) -> None:
-    """Verify artifact uses canonical dataset hash."""
+    """Verify artifact uses canonical dataset hash and honest source_commit."""
     got = artifact.get("dataset_sha256", "")
     if got != CANONICAL_DATASET_SHA256:
         raise ValidationError(
             f"{name} has dataset_sha256 {got[:16]}..., expected {CANONICAL_DATASET_SHA256[:16]}..."
         )
+    assert_source_commit_owns_dataset(artifact, root=ROOT, name=name)
 
 
 def _prepare_for_proxy_metric(art: dict) -> dict:

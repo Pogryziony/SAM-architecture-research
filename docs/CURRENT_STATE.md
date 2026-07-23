@@ -2,9 +2,9 @@
 
 **Document role:** canonical current-state attestation for this repository.  
 **Supersedes for status claims:** informal “validated architecture” wording in older docs.  
-**Analyzed HEAD:** `3e951b9c77b80bf96c014df39bb8df66f5094f8e`  
+**Analyzed HEAD:** `93cd009a8d6ccb91f48a436395f2d62006f31470`  
 **Generated (UTC):** 2026-07-23 via `benchmarks/sync_current_state.py`  
-**Evidence manifest:** `00e73f1f60d75ef401cb2911f252eb48438343839e3416608856dd2f7051e8fb`
+**Evidence manifest:** `91dfb4fcf288ae544d824f91fbbdd4e08b6d8565fe3c906adea9312ff392e7b1`
 
 > If this file and another document disagree on *current* status, **this file wins**.
 > Regenerate with: `python benchmarks/sync_current_state.py`
@@ -20,7 +20,7 @@
 | Local LLM for Phase 4 comparisons | Ollama `qwen3.6:latest` (full digest enforced) |
 | Kuzu | Experimental; deferred (ADR-0001) |
 | Dataset identity | full canonical record hash (`nexus-canonical-dataset-v1`) |
-| Retrieval relevance | entity/fact→chunk map (`191/191` nonzero) |
+| Retrieval relevance | entity/fact→chunk map (`188/191` nonzero) |
 
 ---
 
@@ -55,18 +55,18 @@
 
 | Arm | Status | Artifact |
 |-----|--------|----------|
-| Qwen closed-book | VALID @ `b4d7e9e0314b` ds=`ca96877de869` | `phase4_qwen_closed_book_oracle_v1.json` |
-| Qwen long-context | VALID @ `b4d7e9e0314b` ds=`ca96877de869` | `phase4_qwen_long_context_oracle_v1.json` |
-| BM25 RAG+Qwen | VALID @ `6a13f8e260b1` ds=`ca96877de869` | `phase4_bm25_rag_qwen_oracle_v1.json` |
-| Dense RAG+Qwen | VALID @ `6a13f8e260b1` ds=`ca96877de869` | `phase4_dense_rag_qwen_oracle_v1.json` |
-| Hybrid RAG+Qwen | VALID @ `6a13f8e260b1` ds=`ca96877de869` | `phase4_hybrid_rag_qwen_oracle_v1.json` |
-| Hybrid+rerank RAG+Qwen | VALID @ `6a13f8e260b1` ds=`ca96877de869` | `phase4_hybrid_rerank_rag_qwen_oracle_v1.json` |
-| NEXUS graph-evidence+Qwen | VALID @ `6a13f8e260b1` ds=`ca96877de869` | `phase4_nexus_graph_evidence_qwen_oracle_v1.json` |
-| NEXUS grounded (evidence repair) | VALID @ `6a13f8e260b1` ds=`ca96877de869` | `eval_oracle_v1_grounded_evidence_repair.json` |
+| Qwen closed-book | VALID @ `93cd009a8d6c` ds=`ca96877de869` | `phase4_qwen_closed_book_oracle_v1.json` |
+| Qwen long-context | VALID @ `93cd009a8d6c` ds=`ca96877de869` | `phase4_qwen_long_context_oracle_v1.json` |
+| BM25 RAG+Qwen | VALID @ `93cd009a8d6c` ds=`ca96877de869` | `phase4_bm25_rag_qwen_oracle_v1.json` |
+| Dense RAG+Qwen | VALID @ `93cd009a8d6c` ds=`ca96877de869` | `phase4_dense_rag_qwen_oracle_v1.json` |
+| Hybrid RAG+Qwen | VALID @ `93cd009a8d6c` ds=`ca96877de869` | `phase4_hybrid_rag_qwen_oracle_v1.json` |
+| Hybrid+rerank RAG+Qwen | VALID @ `93cd009a8d6c` ds=`ca96877de869` | `phase4_hybrid_rerank_rag_qwen_oracle_v1.json` |
+| NEXUS graph-evidence+Qwen | VALID @ `93cd009a8d6c` ds=`ca96877de869` | `phase4_nexus_graph_evidence_qwen_oracle_v1.json` |
+| NEXUS grounded (evidence repair) | VALID @ `93cd009a8d6c` ds=`ca96877de869` | `eval_oracle_v1_grounded_evidence_repair.json` |
 | Human adjudication | PENDING | `phase4_adjudication_export/` |
 | Sealed external | BLOCKED | `evaluator_handoff/` |
 
-NEXUS grounded source_commit in latest repair artifact: `6a13f8e260b192e58ca6a3a6815ec3ff1029d89e`
+NEXUS grounded source_commit in latest repair artifact: `93cd009a8d6ccb91f48a436395f2d62006f31470`
 
 ---
 
@@ -74,7 +74,7 @@ NEXUS grounded source_commit in latest repair artifact: `6a13f8e260b192e58ca6a3a
 
 1. Import dual human annotator responses; compute κ; resolve disagreements.  
 2. Bind complete primary metrics; publish family-wide Holm-corrected paired stats.  
-3. Regenerate all Phase-4 Qwen arms from this checkout (Ollama required).  
+3. Dense arms record degraded HF-cache snapshot identity until pinned revision c9745ed1 is available offline.  
 4. Independent evaluator + sealed external corpus.  
 5. Revisit Kuzu only if product scope requires persistence.
 

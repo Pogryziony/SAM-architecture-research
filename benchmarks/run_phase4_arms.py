@@ -361,7 +361,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.arm == "dense_rag":
-        retrieve, meta = make_dense_retriever(corpus, top_k=args.top_k)
+        retrieve, meta, dense_ident = make_dense_retriever(corpus, top_k=args.top_k)
         art = run_rag_answer_arm(
             arm_id="dense_rag_qwen_3_6_internal",
             questions=questions,
@@ -372,6 +372,7 @@ def main(argv: list[str] | None = None) -> int:
             source_commit=commit,
             extra_meta=meta,
             relevance_table=relevance_table,
+            dense_identity=dense_ident,
             on_progress=_progress,
         )
         _write(args.output, art)
@@ -379,7 +380,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.arm == "hybrid_rag":
-        retrieve, meta = make_hybrid_retriever(corpus, top_k=args.top_k)
+        retrieve, meta, dense_ident = make_hybrid_retriever(corpus, top_k=args.top_k)
         art = run_rag_answer_arm(
             arm_id="hybrid_rag_qwen_3_6_internal",
             questions=questions,
@@ -390,6 +391,7 @@ def main(argv: list[str] | None = None) -> int:
             source_commit=commit,
             extra_meta=meta,
             relevance_table=relevance_table,
+            dense_identity=dense_ident,
             on_progress=_progress,
         )
         _write(args.output, art)
@@ -397,7 +399,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.arm == "hybrid_rerank_rag":
-        retrieve, meta = make_hybrid_qwen_rerank_retriever(
+        retrieve, meta, dense_ident = make_hybrid_qwen_rerank_retriever(
             corpus, adapter, top_k=args.top_k
         )
         art = run_rag_answer_arm(
@@ -410,6 +412,7 @@ def main(argv: list[str] | None = None) -> int:
             source_commit=commit,
             extra_meta=meta,
             relevance_table=relevance_table,
+            dense_identity=dense_ident,
             on_progress=_progress,
         )
         _write(args.output, art)

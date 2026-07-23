@@ -280,6 +280,7 @@ def run_rag_answer_arm(
     source_commit: str = "UNKNOWN",
     extra_meta: Mapping[str, Any] | None = None,
     relevance_table: Mapping[str, Any] | None = None,
+    dense_identity: Mapping[str, Any] | None = None,
     on_progress: Callable[[int, int, str], None] | None = None,
 ) -> dict[str, Any]:
     identity = adapter.identity.to_dict()
@@ -423,6 +424,7 @@ def run_rag_answer_arm(
         source_commit=source_commit,
         config_hash=config_hash,
         qwen_identity=identity,
+        dense_identity=dense_identity,
         arm_metadata={
             "family": "rag",
             "modern_rag": arm_id.startswith("hybrid"),
