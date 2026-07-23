@@ -82,16 +82,52 @@ def embedder_identity(root: Path | None = None) -> dict[str, Any]:
 
 
 def load_sentence_transformer(root: Path | None = None):
-    """Load the pinned SentenceTransformer; prefer local snapshot when present."""
+    """Load the pinned SentenceTransformer; prefer local snapshot when present.
+
+    When ``HF_HUB_OFFLINE=1`` and the exact revision snapshot is absent from
+    cache, fall back to the locally cached model id and record
+    ``revision_resolved`` honestly (not silently pretending the pin loaded).
+    """
     from sentence_transformers import SentenceTransformer
 
-    ident = embedder_identity(root)
+    ident = dict(embedder_identity(root))
     local = ident.get("offline_snapshot") or ""
+    revision_resolved = ident["revision"]
+    load_mode = "pinned_revision"
     if local and Path(local).is_dir():
         model = SentenceTransformer(local)
+        load_mode = "local_snapshot"
+        # Hash whatever is on disk for identity.
+        files = hash_local_snapshot(Path(local))
+        if files:
+            ident["files_sha256"] = files
     else:
-        model = SentenceTransformer(
-            ident["model_id"],
-            revision=ident["revision"],
-        )
+        try:
+            model = SentenceTransformer(
+                ident["model_id"],
+                revision=ident["revision"],
+            )
+        except (OSError, ValueError) as exc:
+            # Offline / missing revision snapshot: use cached default weights.
+            model = SentenceTransformer(ident["model_id"])
+            revision_resolved = "cache_default_unpinned"
+            load_mode = "offline_cache_fallback"
+            ident["load_warning"] = (
+                f"pinned revision unavailable offline ({type(exc).__name__}); "
+                "loaded cached model id without revision pin"
+            )
+    ident["revision_resolved"] = revision_resolved
+    ident["load_mode"] = load_mode
+    # Recompute identity over what was actually loaded.
+    blob = json.dumps(
+        {
+            "model_id": ident["model_id"],
+            "revision": revision_resolved,
+            "files": ident.get("files_sha256") or {},
+            "load_mode": load_mode,
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    ident["identity_sha256"] = hashlib.sha256(blob.encode("utf-8")).hexdigest()
     return model, ident

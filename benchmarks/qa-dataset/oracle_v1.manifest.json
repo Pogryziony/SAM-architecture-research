@@ -13,12 +13,12 @@
     "three_hop": 1,
     "two_hop": 1
   },
-  "created_utc": "2026-07-21T19:19:27.410526+00:00",
+  "created_utc": "2026-07-23T11:19:22.634195+00:00",
   "dataset_id": "oracle_v1",
-  "file_sha256": "51d5c02dee663a17a2213a5e1d0ff56297ea37b0c6c3b879d986a75725c9c64b",
+  "file_sha256": "e540763acd920b3cf4f0906146b6a9b0940b6be3be2708aaa6dbfaa31542616b",
   "record_count": 191,
   "schema_version": "nexus-oracle-v1",
-  "sha256": "568f9ce4544426e092cb5e1dfc2abbb6f0ad2bf2ec146a7f7b309b3b438e5dfc",
+  "sha256": "ca96877de86990e7757c18efe3576ec660b454d6984866cbebc5939ead1a63d5",
   "sources": {
     "C:/Users/Pogry/Projects/SAM-architecture-research/benchmarks/qa-dataset/oracle_families_v1.jsonl": "281f1e9f2e79a803c36a629ee45ffa4d6aa6eab07424701ad0d349d96c47e376",
     "C:/Users/Pogry/Projects/SAM-architecture-research/benchmarks/qa-dataset/relation_gold.jsonl": "c1ace6694c3bebc29a50d8a66f6a4090e2ce84d166782abb9b53e8abf86e46a4",

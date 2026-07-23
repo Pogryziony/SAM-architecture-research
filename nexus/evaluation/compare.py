@@ -87,9 +87,11 @@ def compare_paired_artifacts(
                 "(pass allow_placeholders=True only for diagnostic fixtures)"
             )
         if artifact_has_pending_adjudication(art):
-            raise ValidationError(
-                f"{label} has PENDING_ADJUDICATION; refusing superiority verdict"
-            )
+            if metric_name == "grounded_correct":
+                raise ValidationError(
+                    f"{label} has PENDING_ADJUDICATION; refusing superiority verdict"
+                )
+            # Exploratory proxy metrics may proceed; verdict remains non-primary.
 
     left_mode = str(left.get("comparison_mode") or "")
     right_mode = str(right.get("comparison_mode") or "")

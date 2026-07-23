@@ -2,19 +2,19 @@
   "adjudication_status": "PENDING_ADJUDICATION",
   "artifacts": [
     {
-      "bytes": 4686032,
+      "bytes": 4685265,
       "path": "benchmarks\\results\\eval_oracle_v1_grounded_evidence_repair.json",
-      "sha256": "7308af497752b43a7c3fac69be3c5fa107620330dd5e8ffd93fbd52e00035dc2"
+      "sha256": "d239921699d048deae0f3e600e69f84e455adb4df5bafdf8e02113ccd81ba941"
     },
     {
       "bytes": 2037992,
       "path": "benchmarks\\results\\oracle_v1_retrieval_relevance_v1.json",
-      "sha256": "a6457db70361ec28a025a75bef8493b0402ae1f230fc823de392472632363350"
+      "sha256": "006c06b39a7453182a6b1bd314af0e46bc45b224d012bea4c2dc6f4608cb7893"
     }
   ],
   "checkout": {
-    "source_commit": "adff97ca12b21468b2781a37fc211daf2ef162f7",
-    "source_tree": "d30e31e76937db78fa3818f080131d8ffcb4cb22",
+    "source_commit": "6a13f8e260b192e58ca6a3a6815ec3ff1029d89e",
+    "source_tree": "894d6c55c61740810edfe2c261f82ba889213fe6",
     "working_tree_dirty": true
   },
   "claim_eligibility": {
@@ -24,13 +24,13 @@
   "config_hashes": {
     "nexus_grounded": "1182c840a0855408"
   },
-  "created_utc": "2026-07-23T07:19:38.891198+00:00",
+  "created_utc": "2026-07-23T11:18:33.984695+00:00",
   "dataset": {
     "dataset_id": "oracle_v1",
-    "dataset_sha256": "568f9ce4544426e092cb5e1dfc2abbb6f0ad2bf2ec146a7f7b309b3b438e5dfc"
+    "dataset_sha256": "ca96877de86990e7757c18efe3576ec660b454d6984866cbebc5939ead1a63d5"
   },
-  "graph_snapshot_id": "78d1a15f0e7f32aa",
-  "manifest_sha256": "418d3de240361961c42de301f36891b073858771635f4862654715151a093804",
+  "graph_snapshot_id": "1b1760cba8d5ab00",
+  "manifest_sha256": "00e73f1f60d75ef401cb2911f252eb48438343839e3416608856dd2f7051e8fb",
   "model_identities": {
     "nexus_grounded": "DummyModel+ProductionNEXUSConfig.grounded"
   },
